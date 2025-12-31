@@ -1,0 +1,68 @@
+:root {
+    --primary: #38bdf8;
+    --dark: #0f172a;
+    --card-bg: #1e293b;
+    --text: #f8fafc;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { background: var(--dark); color: var(--text); }
+
+/* Navbar Styling */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5%;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--primary);
+    position: sticky;
+    top: 0; z-index: 1000;
+}
+
+.logo { width: 50px; border-radius: 50%; }
+.glow-text { color: var(--primary); text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); font-size: 1.5rem; }
+
+/* Profile Hover Menu */
+.profile-trigger { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px 15px; border-radius: 30px; transition: 0.3s; }
+.profile-trigger:hover { background: rgba(255,255,255,0.1); }
+.profile-trigger img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--primary); }
+
+.profile-dropdown { position: relative; }
+.dropdown-menu {
+    position: absolute; right: 0; top: 50px; width: 280px;
+    background: var(--card-bg); border: 1px solid #334155;
+    border-radius: 15px; padding: 20px; display: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.profile-dropdown:hover .dropdown-menu { display: block; }
+
+.profile-header { text-align: center; border-bottom: 1px solid #334155; padding-bottom: 15px; }
+.profile-header img { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px; border: 3px solid var(--primary); }
+.profile-details { padding: 15px 0; font-size: 0.9rem; }
+.profile-details p { margin-bottom: 8px; color: #94a3b8; }
+.profile-details span { color: white; float: right; font-weight: 600; }
+
+/* Dashboard Layout */
+.main-layout { padding: 30px 5%; display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+.card { background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid #334155; }
+.card h2 { margin-bottom: 20px; color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; }
+
+/* Form Elements */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+input, select, textarea {
+    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155;
+    background: #0f172a; color: white; margin-bottom: 10px;
+}
+.id-pass-container { grid-column: span 2; display: flex; gap: 10px; }
+.gen-btn { background: #6366f1; border: none; padding: 0 15px; border-radius: 8px; color: white; cursor: pointer; }
+
+.submit-btn { width: 100%; padding: 15px; background: var(--primary); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 15px; }
+
+/* Notification Group */
+textarea { height: 100px; resize: none; }
+.btn-group { display: flex; flex-direction: column; gap: 10px; }
+.btn-group button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: 600; }
+.btn-t { background: #f59e0b; }
+.btn-s { background: #10b981; }
+.btn-a { background: #ef4444; }
