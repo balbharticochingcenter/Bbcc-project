@@ -14,13 +14,19 @@
             <div class="logo-ring">
                 <img src="/assets/logo.png" alt="Logo" class="logo">
             </div>
+        </div>
+        
+        <div class="nav-center">
             <div class="brand-info">
                 <h1 class="glow-text rainbow-header">Bal Bharti Coaching Center</h1>
                 <span class="powered-by">Powered by PTCC</span>
             </div>
         </div>
+
         <div class="nav-right">
-            <button class="dropbtn" onclick="openPopup()"><i class="fa-solid fa-user-shield"></i> Portal Login</button>
+            <button class="dropbtn" onclick="openPopup()">
+                <i class="fa-solid fa-user-shield"></i> Portal Login
+            </button>
         </div>
     </nav>
 
@@ -119,20 +125,44 @@
                 <h3>🔹 CLASS 10</h3>
             </div>
             <div class="box-back">
-                <p>Board Exam Special: All Main & Vocational Subjects</p>
+                <p>Board Exam Special: All Subjects</p>
                 <button class="view-btn" onclick="checkAndRedirect('class10.html', 'Class 10')">View Now</button>
             </div>
         </div>
     </section>
 
-    <footer>
-        <div class="footer-content">
-            <p><i class="fab fa-whatsapp"></i> 9868698696 | <i class="far fa-envelope"></i> bszbj@gamil.com</p>
-            <div class="footer-links">
-                <a href="/">Home</a> | <a href="#courses">Our Class</a> | <a href="#" onclick="openPopup()">Login</a>
+    <footer class="modern-footer">
+        <div class="footer-container">
+            <div class="footer-row">
+                <div class="footer-col">
+                    <h3>BBCC Portal</h3>
+                    <p>Shaping the future of students through digital excellence and quality education.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="#courses">Our Classes</a></li>
+                        <li><a href="#" onclick="openPopup()">Portal Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>Get In Touch</h3>
+                    <p><i class="fab fa-whatsapp"></i> +91 9868698696</p>
+                    <p><i class="far fa-envelope"></i> bszbj@gmail.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Bihar, India</p>
+                </div>
             </div>
-            <hr>
-            <p class="dev-credit">Website Developed by Santosh Sir "Ethical Hacker"</p>
+            <div class="footer-bottom">
+                <hr>
+                <p class="dev-credit">Website Developed by <span>Santosh Sir "Ethical Hacker"</span></p>
+            </div>
         </div>
     </footer>
 
@@ -148,13 +178,11 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script src="/js/client.js"></script>
     <script>
-        // Infinite Slider Logic
+        // Slider Logic
         let slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
-
         function nextSlide() {
             slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide + 1) % slides.length;
@@ -168,26 +196,16 @@
         // Smart Redirect Logic
         function checkAndRedirect(fileName, className) {
             const url = "/html/" + fileName;
-
-            // Fetch check karega ki file server pe hai ya nahi
             fetch(url, { method: 'HEAD' })
             .then(res => {
-                if (res.ok) {
-                    // Agar file hai toh wahan bhej do
-                    window.location.href = url;
-                } else {
-                    // Agar file nahi hai (404) toh message dikhao
-                    showMsg(className);
-                }
+                if (res.ok) { window.location.href = url; } 
+                else { showMsg(className); }
             })
-            .catch(err => {
-                // Network error ya file na milne par message dikhao
-                showMsg(className);
-            });
+            .catch(() => showMsg(className));
         }
 
         function showMsg(className) {
-            alert("📢 Notification:\n\n" + className + " ka page abhi under development hai. \nJald hi ise live kiya jayega. \n\n- Bal Bharti Coaching Center");
+            alert("📢 Notification:\n\n" + className + " ka page abhi under development hai.\n- Bal Bharti Coaching Center");
         }
     </script>
 </body>
