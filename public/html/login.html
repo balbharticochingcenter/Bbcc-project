@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balbharti Coaching Center | Premium Learning</title>
+    <title>Balbharti Coaching Center </title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -13,61 +13,136 @@
         <div class="nav-left">
             <img src="/assets/logo.png" alt="Logo" class="logo">
             <div class="brand-info">
-                <h1>Balbharti Coaching Center</h1>
+                <h1>Bal Bharti Coaching Center</h1>
                 <span class="powered-by">Powered by PTCC</span>
             </div>
         </div>
         <div class="nav-right">
             <div class="dropdown">
-                <button class="dropbtn"><i class="fa-solid fa-user-circle"></i> Account <i class="fa-solid fa-caret-down"></i></button>
+                <button class="dropbtn"><i class="fa-solid fa-user-shield"></i> Portal Login <i class="fa-solid fa-caret-down"></i></button>
                 <div class="dropdown-content">
-                    <a href="#" onclick="openPopup('login')">Login</a>
-                    <a href="#" onclick="openPopup('signup')">Sign Up</a>
+                    <a href="#" onclick="openPopup('student')">Student Login</a>
+                    <a href="#" onclick="openPopup('teacher')">Teacher Login</a>
+                    <a href="#" onclick="openPopup('admin')">Admin Login</a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main>
-        <section class="slider-container">
-            <div class="slider">
-                <img src="/slider/img1.jpg" alt="Coaching Life" class="slide active">
-                <img src="/slider/img2.jpg" alt="Student Success" class="slide">
-                <img src="/slider/img3.jpg" alt="Our Faculty" class="slide">
-            </div>
-        </section>
+    <section class="stats-container">
+        <div class="stat-box">
+            <img src="/assets/course-icon.png" alt="Courses">
+            <h2>50+</h2>
+            <p>Courses</p>
+        </div>
+        <div class="stat-box">
+            <img src="/assets/learners-icon.png" alt="Learners">
+            <h2>100k+</h2>
+            <p>Learners</p>
+        </div>
+        <div class="stat-box">
+            <img src="/assets/doubts-icon.png" alt="Doubts">
+            <h2>100k+</h2>
+            <p>Doubts Solved</p>
+        </div>
+        <div class="stat-box">
+            <img src="/assets/projects-icon.png" alt="Projects">
+            <h2>10k+</h2>
+            <p>Student Projects</p>
+        </div>
+    </section>
 
-        <section class="stats-container">
-            <div class="stat-box">
-                <h2>50+</h2>
-                <p>Courses</p>
+    <div class="magical-title-container">
+        <h1 class="magical-text">Browse our Courses</h1>
+    </div>
+
+    <section class="courses-grid">
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class5.jpg" alt="Class 5">
+                <h3>📘 CLASS 5</h3>
             </div>
-            <div class="stat-box">
-                <h2>100k+</h2>
-                <p>Learners</p>
+            <div class="box-back">
+                <p>English, Hindi, Maths, EVS, Computer, GK, Sanskrit</p>
+                <button class="enroll-btn" onclick="location.href='/html/class5.html'">Enroll Now</button>
             </div>
-            <div class="stat-box">
-                <h2>100k+</h2>
-                <p>Doubts Solved</p>
+        </div>
+
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class6.jpg" alt="Class 6">
+                <h3>📗 CLASS 6</h3>
             </div>
-            <div class="stat-box">
-                <h2>10k+</h2>
-                <p>Student Projects</p>
+            <div class="box-back">
+                <p>Maths, Science, SST (History, Geo, Civics), Computer</p>
+                <button class="enroll-btn" onclick="location.href='/html/class6.html'">Enroll Now</button>
             </div>
-        </section>
-    </main>
+        </div>
+
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class7.jpg" alt="Class 7">
+                <h3>📙 CLASS 7</h3>
+            </div>
+            <div class="box-back">
+                <p>Science, Maths, English, SST, Regional Language</p>
+                <button class="enroll-btn" onclick="location.href='/html/class7.html'">Enroll Now</button>
+            </div>
+        </div>
+
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class8.jpg" alt="Class 8">
+                <h3>📕 CLASS 8</h3>
+            </div>
+            <div class="box-back">
+                <p>Full Syllabus (CBSE/ICSE/BSEB), Computer, Science</p>
+                <button class="enroll-btn" onclick="location.href='/html/class8.html'">Enroll Now</button>
+            </div>
+        </div>
+
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class9.jpg" alt="Class 9">
+                <h3>📘 CLASS 9</h3>
+            </div>
+            <div class="box-back">
+                <p>Physics, Chemistry, Bio, Maths, Economics, IT</p>
+                <button class="enroll-btn" onclick="location.href='/html/class9.html'">Enroll Now</button>
+            </div>
+        </div>
+
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class10.jpg" alt="Class 10">
+                <h3>🔹 CLASS 10</h3>
+            </div>
+            <div class="box-back">
+                <p>Board Exam Special: All Main & Vocational Subjects</p>
+                <button class="enroll-btn" onclick="location.href='/html/class10.html'">Enroll Now</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <p><i class="fab fa-whatsapp"></i> 9868698696 | <i class="far fa-envelope"></i> bszbj@gamil.com</p>
+            <div class="footer-links">
+                <a href="/">Home</a> | <a href="#courses">Our Class</a> | <a href="#" onclick="openPopup('student')">Login</a>
+            </div>
+            <hr>
+            <p class="dev-credit">Website Developed by Santosh Sir "Ethical Hacker"</p>
+        </div>
+    </footer>
 
     <div id="loginPopup" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closePopup()">&times;</span>
-            <h2>Welcome Student Login</h2>
+            <h2 id="popupTitle">Welcome Student Login</h2>
+            <input type="hidden" id="role" value="student">
             <div class="input-group">
-                <label>User Name</label>
-                <input type="text" id="username" placeholder="Enter Username">
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="Enter Password">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
             </div>
             <button class="btn-go" onclick="login()">Go to Class</button>
         </div>
@@ -76,22 +151,12 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/client.js"></script>
     <script>
-        // Simple Slider Logic
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        setInterval(() => {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 3000);
-
-        // Popup Logic
-        function openPopup(type) {
+        function openPopup(role) {
+            document.getElementById('role').value = role;
+            document.getElementById('popupTitle').innerText = `Welcome ${role.charAt(0).toUpperCase() + role.slice(1)} Login`;
             document.getElementById('loginPopup').style.display = "block";
         }
-        function closePopup() {
-            document.getElementById('loginPopup').style.display = "none";
-        }
+        function closePopup() { document.getElementById('loginPopup').style.display = "none"; }
     </script>
 </body>
 </html>
