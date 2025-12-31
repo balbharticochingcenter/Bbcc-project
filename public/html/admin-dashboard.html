@@ -11,25 +11,16 @@
 <body>
 
     <nav class="navbar">
-        <div class="nav-left">
-            <img src="/assets/logo.png" alt="Logo" class="logo">
-        </div>
-        <div class="nav-center">
-            <h1 class="glow-text">Balbharti Coaching Center</h1>
-        </div>
+        <div class="nav-left"><img src="/assets/logo.png" alt="Logo" class="logo"></div>
+        <div class="nav-center"><h1 class="glow-text">Balbharti Coaching Center</h1></div>
         <div class="nav-right">
             <div class="profile-dropdown">
                 <div class="profile-trigger">
                     <img src="/assets/admin-avatar.png" id="navAvatar" alt="Admin">
-                    <span>Admin Profile <i class="fa fa-caret-down"></i></span>
+                    <span id="adminDisplayName">Admin Profile</span>
                 </div>
                 <div class="dropdown-menu">
-                    <div class="profile-header">
-                        <img src="/assets/admin-avatar.png" alt="Profile">
-                        <h4 id="adminDisplayName">Santosh Sir</h4>
-                        <p>Super Admin</p>
-                    </div>
-                    <button class="logout-btn" onclick="logout()"><i class="fa fa-sign-out-alt"></i> Logout</button>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
                 </div>
             </div>
         </div>
@@ -62,18 +53,32 @@
             </section>
 
             <section class="card communication-card">
-                <h2><i class="fa fa-bullhorn"></i> Communications</h2>
-                <textarea id="notifMsg" placeholder="Type notice here..."></textarea>
-                <div class="comms-actions">
-                    <button onclick="sendBroadcast('teacher')" class="btn-t">Teacher Only</button>
-                    <button onclick="sendBroadcast('student')" class="btn-s">Student Only</button>
-                    <button onclick="sendBroadcast('all')" class="btn-a">Broadcast All</button>
-                </div>
-                <div class="history-grid">
-                    <div class="history-box">
-                        <h4>Recent Logs</h4>
-                        <ul id="notifHistory"></ul>
+                <h2><i class="fa fa-bullhorn"></i> Communications Center</h2>
+                
+                <div class="comm-split">
+                    <div class="comm-box">
+                        <h3>Official Notices (Public)</h3>
+                        <textarea id="noticeMsg" placeholder="Type official notice here..."></textarea>
+                        <div class="comms-actions">
+                            <button onclick="sendComms('notice', 'teacher')" class="btn-t">Teacher</button>
+                            <button onclick="sendComms('notice', 'student')" class="btn-s">Student</button>
+                            <button onclick="sendComms('notice', 'all')" class="btn-a">All</button>
+                        </div>
                     </div>
+                    <div class="comm-box">
+                        <h3>App Notifications (Alerts)</h3>
+                        <textarea id="notifMsg" placeholder="Type app notification here..."></textarea>
+                        <div class="comms-actions">
+                            <button onclick="sendComms('notification', 'teacher')" class="btn-t">Teacher</button>
+                            <button onclick="sendComms('notification', 'student')" class="btn-s">Student</button>
+                            <button onclick="sendComms('notification', 'all')" class="btn-a">All</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-grid">
+                    <div class="history-box"><h4>Old Notices</h4><ul id="noticeHistory"></ul></div>
+                    <div class="history-box"><h4>Old Notifications</h4><ul id="notifHistory"></ul></div>
                 </div>
             </section>
         </div>
@@ -81,13 +86,16 @@
         <section class="card table-card">
             <div class="card-header">
                 <h2><i class="fa fa-chalkboard-teacher"></i> Teacher Management</h2>
+                <div class="search-box">
+                    <input type="text" id="searchTeacherID" placeholder="Search ID...">
+                    <input type="date" id="searchTeacherDate">
+                    <button onclick="filterTable('teacher')" class="search-btn"><i class="fa fa-search"></i></button>
+                </div>
                 <button onclick="exportToExcel('teacherTable')" class="dl-btn">Excel</button>
             </div>
             <table id="teacherTable">
                 <thead>
-                    <tr>
-                        <th>Date</th><th>Name</th><th>ID</th><th>Salary</th><th>Status</th><th>Action</th>
-                    </tr>
+                    <tr><th>Date</th><th>Name</th><th>ID</th><th>Password</th><th>Salary</th><th>Status</th><th>Contact</th></tr>
                 </thead>
                 <tbody id="teacherTableBody"></tbody>
             </table>
@@ -96,13 +104,16 @@
         <section class="card table-card">
             <div class="card-header">
                 <h2><i class="fa fa-user-graduate"></i> Student Management</h2>
+                <div class="search-box">
+                    <input type="text" id="searchStudentID" placeholder="Search ID...">
+                    <input type="date" id="searchStudentDate">
+                    <button onclick="filterTable('student')" class="search-btn"><i class="fa fa-search"></i></button>
+                </div>
                 <button onclick="exportToExcel('studentTable')" class="dl-btn">Excel</button>
             </div>
             <table id="studentTable">
                 <thead>
-                    <tr>
-                        <th>Date</th><th>Name</th><th>ID</th><th>Fees</th><th>Status</th><th>Action</th>
-                    </tr>
+                    <tr><th>Date</th><th>Name</th><th>ID</th><th>Password</th><th>Fees</th><th>Status</th><th>Contact</th></tr>
                 </thead>
                 <tbody id="studentTableBody"></tbody>
             </table>
@@ -112,45 +123,64 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let allUsers = [];
 
-        // Security Check: Login hai ya nahi?
+        // Security & Display Name
         const adminData = JSON.parse(localStorage.getItem('userData'));
-        if(!adminData || adminData.role !== 'admin') {
-            window.location.href = '/';
-        } else {
-            document.getElementById('adminDisplayName').innerText = adminData.fname + " " + adminData.lname;
-        }
+        if(!adminData || adminData.role !== 'admin') window.location.href = '/';
+        else document.getElementById('adminDisplayName').innerText = adminData.fname + " " + adminData.lname;
 
-        // --- 1. Load Data from MongoDB ---
-        async function loadDashboardData() {
+        // --- 1. Load Data ---
+        async function loadData() {
             try {
-                const res = await fetch('/api/admin/users');
-                const users = await res.json();
-                
-                const sBody = document.getElementById('studentTableBody');
-                const tBody = document.getElementById('teacherTableBody');
-                sBody.innerHTML = ""; tBody.innerHTML = "";
+                // Fetch Users
+                const uRes = await fetch('/api/admin/users');
+                allUsers = await uRes.json();
+                renderTables(allUsers);
 
-                users.forEach(user => {
-                    const row = `<tr>
-                        <td>${new Date(user.joinDate).toLocaleDateString()}</td>
-                        <td>${user.fname} ${user.lname}</td>
-                        <td>${user.username}</td>
-                        <td>₹${user.financeAmount || 0}</td>
-                        <td><span class="status-badge">${user.paymentStatus || 'Unpaid'}</span></td>
-                        <td class="action-icons">
-                            <a href="tel:${user.mobile}"><i class="fa fa-phone"></i></a>
-                            <a href="https://wa.me/91${user.mobile}" target="_blank"><i class="fab fa-whatsapp"></i></a>
-                        </td>
-                    </tr>`;
-                    
-                    if(user.role === 'student') sBody.innerHTML += row;
-                    else if(user.role === 'teacher') tBody.innerHTML += row;
-                });
-            } catch (err) { console.error("Load Error:", err); }
+                // Fetch Comms History
+                const cRes = await fetch('/api/admin/comms-history');
+                const history = await cRes.json();
+                renderHistory(history);
+            } catch (err) { console.error(err); }
         }
 
-        // --- 2. Registration Logic (Saves to DB) ---
+        function renderTables(data) {
+            const sBody = document.getElementById('studentTableBody');
+            const tBody = document.getElementById('teacherTableBody');
+            sBody.innerHTML = ""; tBody.innerHTML = "";
+
+            data.forEach(user => {
+                const row = `<tr>
+                    <td>${user.joinDate}</td>
+                    <td>${user.fname} ${user.lname}</td>
+                    <td><b>${user.username}</b></td>
+                    <td>${user.password}</td>
+                    <td>₹${user.financeAmount}</td>
+                    <td><span class="status-badge">${user.paymentStatus || 'Unpaid'}</span></td>
+                    <td class="action-icons">
+                        <a href="tel:${user.mobile}"><i class="fa fa-phone"></i></a>
+                        <a href="https://wa.me/91${user.mobile}" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    </td>
+                </tr>`;
+                if(user.role === 'student') sBody.innerHTML += row;
+                else if(user.role === 'teacher') tBody.innerHTML += row;
+            });
+        }
+
+        function renderHistory(history) {
+            const nLog = document.getElementById('noticeHistory');
+            const ntLog = document.getElementById('notifHistory');
+            nLog.innerHTML = ""; ntLog.innerHTML = "";
+
+            history.forEach(item => {
+                const li = `<li>[${item.target.toUpperCase()}] ${item.message}</li>`;
+                if(item.type === 'notice') nLog.innerHTML += li;
+                else ntLog.innerHTML += li;
+            });
+        }
+
+        // --- 2. Registration ---
         document.getElementById('regForm').onsubmit = async (e) => {
             e.preventDefault();
             const newUser = {
@@ -164,40 +194,47 @@
                 financeAmount: document.getElementById('financeAmount').value,
                 joinDate: document.getElementById('joinDate').value
             };
-
             const res = await fetch('/api/admin/create-user', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(newUser)
             });
-
-            const data = await res.json();
-            if(data.success) {
-                alert("✅ Success: User saved to Database!");
-                document.getElementById('regForm').reset();
-                loadDashboardData();
-            } else {
-                alert("❌ Error: " + data.message);
-            }
+            if(res.ok) { alert("User Saved!"); loadData(); }
         };
 
-        // --- 3. Communication Logic ---
-        async function sendBroadcast(target) {
-            const msg = document.getElementById('notifMsg').value;
-            if(!msg) return alert("Please type a message!");
+        // --- 3. Advanced Search/Filter ---
+        function filterTable(role) {
+            const idKey = role === 'student' ? 'searchStudentID' : 'searchTeacherID';
+            const dateKey = role === 'student' ? 'searchStudentDate' : 'searchTeacherDate';
+            
+            const searchID = document.getElementById(idKey).value.toLowerCase();
+            const searchDate = document.getElementById(dateKey).value;
+
+            const filtered = allUsers.filter(u => {
+                const matchID = u.username.toLowerCase().includes(searchID);
+                const matchDate = searchDate ? u.joinDate === searchDate : true;
+                return u.role === role && matchID && matchDate;
+            });
+
+            renderTables(filtered);
+        }
+
+        // --- 4. Dual Comms (Save & Broadcast) ---
+        async function sendComms(type, target) {
+            const fieldID = type === 'notice' ? 'noticeMsg' : 'notifMsg';
+            const msg = document.getElementById(fieldID).value;
+            if(!msg) return alert("Message is empty!");
 
             const res = await fetch('/api/admin/send-comms', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg, target: target, type: 'notification' })
+                body: JSON.stringify({ message: msg, target: target, type: type })
             });
 
-            const data = await res.json();
-            if(data.success) {
-                alert("🚀 Broadcast Sent via Socket.io!");
-                document.getElementById('notifMsg').value = "";
-                const log = document.getElementById('notifHistory');
-                log.innerHTML = `<li>[${target.toUpperCase()}] ${msg.substring(0,20)}...</li>` + log.innerHTML;
+            if(res.ok) {
+                alert(`${type} Sent Successfully!`);
+                document.getElementById(fieldID).value = "";
+                loadData();
             }
         }
 
@@ -206,24 +243,16 @@
             document.getElementById('regID').value = "BBCC" + Math.floor(1000 + Math.random() * 9000);
             document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase();
         }
-
         function toggleFinancePlaceholder() {
             const role = document.getElementById('regRole').value;
             document.getElementById('financeAmount').placeholder = (role === 'student') ? "Monthly Fees" : "Monthly Salary";
         }
-
-        function exportToExcel(tableID) {
-            const wb = XLSX.utils.table_to_book(document.getElementById(tableID));
-            XLSX.writeFile(wb, `BBCC_Report_${tableID}.xlsx`);
+        function exportToExcel(tID) {
+            XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(tID)), `${tID}.xlsx`);
         }
+        function logout() { localStorage.clear(); window.location.href = '/'; }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = '/';
-        }
-
-        // Initial Load
-        window.onload = loadDashboardData;
+        window.onload = loadData;
     </script>
 </body>
 </html>
