@@ -202,16 +202,18 @@
 
     <script src="/js/client.js"></script>
     <script>
-        async function login() {
+      async function login() {
     const userID = document.getElementById('username').value;
     const userPass = document.getElementById('password').value;
 
+    // Basic validation
     if (!userID || !userPass) {
-        alert("ID aur Password dono bhariye!");
+        alert("🚨 Error: Please enter both ID and Password!");
         return;
     }
 
     try {
+        // lddata.js ke login route par request bhejna
         const response = await fetch('/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -221,14 +223,20 @@
         const data = await response.json();
 
         if (data.success) {
-            // Success hone par backend se aayi hui URL par bhej dega
+            // Role ke basis par redirection (Backend se aayi hui URL par)
+            alert(`✅ Welcome ${data.user.fname || 'User'}! Logging in as ${data.user.role}...`);
+            
+            // User ka data local storage mein save karna (Dashboard par dikhane ke liye)
+            localStorage.setItem('userData', JSON.stringify(data.user));
+            
             window.location.href = data.redirect; 
         } else {
-            alert(data.message); // Galat ID/Pass hone par alert dega
+            // Agar ID/Pass galat ho
+            alert("❌ " + data.message);
         }
     } catch (error) {
-        console.error("Error:", error);
-        alert("Server se connection nahi ho paa raha hai!");
+        console.error("Login Error:", error);
+        alert("🔌 Connection Error: Server is not responding!");
     }
 }
         // Slider Logic
@@ -261,6 +269,7 @@
     </script>
 </body>
 </html>
+
 
 
 
