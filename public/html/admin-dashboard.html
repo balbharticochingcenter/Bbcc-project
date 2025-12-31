@@ -224,6 +224,18 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // --- SESSION SECURITY CHECK ---
+        (function() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            
+            // Agar data nahi hai ya role 'admin' nahi hai, toh turant bahar phenk do
+            if (!userData || userData.role !== 'admin') {
+                alert("⛔ Access Denied! Please login as Admin.");
+                window.location.href = "/"; // Login page par redirect
+            }
+        })();
+        // ------------------------------
+
         const socket = io();
         let mainData = [];
 
@@ -248,7 +260,6 @@
             const classSelect = document.getElementById('resClassSelect');
             if(!classSelect) return;
             
-            // Sabhi students ki class filter karna (chahe field ka naam studentClass ho ya class)
             const classes = [...new Set(mainData
                 .filter(u => u.role === 'student' && (u.studentClass || u.class)) 
                 .map(u => u.studentClass || u.class))];
@@ -329,7 +340,6 @@
             if(res.ok) { alert("Updated Successfully!"); closeModal('updateModal'); loadData(); }
         };
 
-        // Baki purane Functions (Result calculation, Excel, Registration, etc.)
         function loadStudentsForResult() {
             const selectedClass = document.getElementById('resClassSelect').value;
             const globalTotal = document.getElementById('globalTotalMarks').value;
