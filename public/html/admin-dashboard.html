@@ -11,11 +11,7 @@
 <body>
 
     <nav class="navbar">
-        <div class="nav-left">
-            <div class="logo-container">
-                <img src="/assets/logo.png" alt="Logo" class="logo">
-            </div>
-        </div>
+        <div class="nav-left"><img src="/assets/logo.png" alt="Logo" class="logo"></div>
         <div class="nav-center"><h1 class="glow-text">BBCC Portal Control</h1></div>
         <div class="nav-right">
             <span id="adminDisplayName">Admin</span>
@@ -26,37 +22,49 @@
     <div class="main-menu">
         <button class="menu-btn" onclick="openModal('regModal')"><i class="fa fa-user-plus"></i> <span>Registration</span></button>
         <button class="menu-btn" onclick="openModal('updateModal')"><i class="fa fa-user-edit"></i> <span>Update User</span></button>
-        <button class="menu-btn" onclick="openModal('commModal')"><i class="fa fa-bullhorn"></i> <span>Send Messages</span></button>
+        <button class="menu-btn" onclick="openModal('commModal')"><i class="fa fa-bullhorn"></i> <span>Communications</span></button>
         <button class="menu-btn" onclick="openModal('teacherModal')"><i class="fa fa-chalkboard-teacher"></i> <span>Teacher Mgmt</span></button>
         <button class="menu-btn" onclick="openModal('studentModal')"><i class="fa fa-user-graduate"></i> <span>Student Mgmt</span></button>
     </div>
 
-    <div class="dashboard-history card">
-        <h3><i class="fa fa-history"></i> Recent Communications History</h3>
-        <div class="table-scroll">
-            <table>
-                <thead>
-                    <tr><th>Type</th><th>Target</th><th>Message</th><th>Actions</th></tr>
-                </thead>
-                <tbody id="historyBody"></tbody>
-            </table>
+    <div class="dashboard-history" style="padding: 20px 5%;">
+        <div class="card" style="background: var(--card-bg); padding: 20px; border-radius: 15px;">
+            <h3><i class="fa fa-history"></i> Recent Messages History</h3>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr><th>Type</th><th>Target ID</th><th>Message</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <div id="regModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('regModal')">&times;</span>
-            <h2>Registration</h2>
+            <h2><i class="fa fa-id-card"></i> User Registration</h2>
             <form id="regForm">
                 <div class="modal-grid">
                     <input type="text" id="fname" placeholder="First Name" required>
+                    <input type="text" id="mname" placeholder="Middle Name">
                     <input type="text" id="lname" placeholder="Last Name" required>
                     <input type="text" id="regMobile" placeholder="Mobile Number" required>
-                    <select id="regRole"><option value="student">Student</option><option value="teacher">Teacher</option></select>
-                    <input type="file" id="photoFile" accept="image/*">
+                    <select id="gender"><option value="Male">Male</option><option value="Female">Female</option></select>
+                    <select id="regRole">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                    <input type="date" id="dob">
+                    <input type="email" id="email" placeholder="Email ID">
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <label style="font-size:12px;">Upload Photo (.png/.jpg)</label>
+                        <input type="file" id="photoFile" accept="image/*">
+                    </div>
                     <input type="number" id="financeAmount" placeholder="Fees/Salary">
                     <div class="id-pass-group">
-                        <input type="text" id="regID" placeholder="User ID">
+                        <input type="text" id="regID" placeholder="User ID/Roll No">
                         <input type="text" id="regPass" placeholder="Password">
                         <button type="button" onclick="generateCredentials()">Gen</button>
                     </div>
@@ -69,19 +77,20 @@
     <div id="updateModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('updateModal')">&times;</span>
-            <h2>Update User Details</h2>
-            <div class="search-group" style="margin-bottom:20px;">
-                <input type="text" id="updateSearchID" placeholder="Enter User ID to Edit">
-                <button onclick="fetchUserForUpdate()" class="gen-btn">Find</button>
+            <h2><i class="fa fa-edit"></i> Update User Details</h2>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="searchUpdateID" placeholder="Enter ID to Search (e.g. BBCC1234)">
+                <button onclick="fetchUserToEdit()" style="background:var(--primary); padding:10px; border-radius:8px; cursor:pointer;">Search</button>
             </div>
-            <form id="updateForm" style="display:none;">
+            <form id="editForm" style="display:none;">
                 <div class="modal-grid">
                     <input type="text" id="uFname" placeholder="First Name">
                     <input type="text" id="uLname" placeholder="Last Name">
                     <input type="text" id="uMobile" placeholder="Mobile">
                     <input type="number" id="uFinance" placeholder="Fees/Salary">
+                    <input type="text" id="uPass" placeholder="Change Password">
                 </div>
-                <button type="submit" class="save-btn">Update Profile</button>
+                <button type="submit" class="save-btn">Update Record</button>
             </form>
         </div>
     </div>
@@ -89,13 +98,13 @@
     <div id="commModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('commModal')">&times;</span>
-            <h2>Broadcast</h2>
-            <textarea id="msgBody" placeholder="Type message..."></textarea>
-            <input type="text" id="targetID" placeholder="Target ID (Required for Private)">
+            <h2><i class="fa fa-broadcast-tower"></i> Send Messages</h2>
+            <textarea id="msgBody" placeholder="Write notice here..."></textarea>
+            <input type="text" id="targetID" placeholder="Specific ID (Required for Private)">
             <div class="btn-group">
-                <button onclick="sendMsg('notice', 'teacher')" class="btn-t">Teacher</button>
-                <button onclick="sendMsg('notice', 'student')" class="btn-s">Student</button>
-                <button onclick="sendMsg('notification', 'private')" class="btn-p">Private ID</button>
+                <button onclick="sendMsg('notice', 'teacher')" class="btn-t">To Teachers</button>
+                <button onclick="sendMsg('notice', 'student')" class="btn-s">To Students</button>
+                <button onclick="sendMsg('notification', 'private')" class="btn-p">Private (By ID)</button>
             </div>
         </div>
     </div>
@@ -104,14 +113,22 @@
         <div class="modal-content">
             <span class="close" onclick="closeModal('teacherModal')">&times;</span>
             <div class="modal-header">
-                <div class="search-bar">
-                    <input type="text" id="tSearchID" placeholder="Search ID">
-                    <input type="date" id="tSD"> to <input type="date" id="tED">
-                    <button onclick="filterRecords('teacher')">Search</button>
+                <h2>Teacher Records</h2>
+                <div class="filter-box">
+                    <input type="text" id="tSearch" placeholder="Search ID..." onkeyup="filterTable('teacher')">
+                    <input type="date" id="tStartDate"> to <input type="date" id="tEndDate">
+                    <button onclick="filterTable('teacher')" class="btn-s">Filter Date</button>
                 </div>
-                <button onclick="exportToExcel('teacherTable')" class="excel-btn">Download PDF/Excel</button>
+                <button onclick="exportToExcel('teacherTable')" class="excel-btn">Download Excel</button>
             </div>
-            <div class="table-scroll"><table id="teacherTable"><thead><tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Salary</th><th>Contact</th></tr></thead><tbody id="tBody"></tbody></table></div>
+            <div class="table-scroll">
+                <table id="teacherTable">
+                    <thead>
+                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Pass</th><th>Salary</th><th>Contact</th></tr>
+                    </thead>
+                    <tbody id="tBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -119,89 +136,128 @@
         <div class="modal-content">
             <span class="close" onclick="closeModal('studentModal')">&times;</span>
             <div class="modal-header">
-                <div class="search-bar">
-                    <input type="text" id="sSearchID" placeholder="Search ID">
-                    <input type="date" id="sSD"> to <input type="date" id="sED">
-                    <button onclick="filterRecords('student')">Search</button>
+                <h2>Student Records</h2>
+                <div class="filter-box">
+                    <input type="text" id="sSearch" placeholder="Search ID..." onkeyup="filterTable('student')">
+                    <input type="date" id="sStartDate"> to <input type="date" id="sEndDate">
+                    <button onclick="filterTable('student')" class="btn-s">Filter Date</button>
                 </div>
-                <button onclick="exportToExcel('studentTable')" class="excel-btn">Download List</button>
+                <button onclick="exportToExcel('studentTable')" class="excel-btn">Download Excel</button>
             </div>
-            <div class="table-scroll"><table id="studentTable"><thead><tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Fees</th><th>Contact</th></tr></thead><tbody id="sBody"></tbody></table></div>
+            <div class="table-scroll">
+                <table id="studentTable">
+                    <thead>
+                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Pass</th><th>Fees</th><th>Contact</th></tr>
+                    </thead>
+                    <tbody id="sBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let allUsers = [];
+        let mainData = [];
 
+        function openModal(id) { document.getElementById(id).style.display = "block"; loadData(); }
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+
+        // Load All Data
         async function loadData() {
             const res = await fetch('/api/admin/users');
-            allUsers = await res.json();
-            renderTable(allUsers, 'teacher', 'tBody');
-            renderTable(allUsers, 'student', 'sBody');
+            mainData = await res.json();
+            renderTables(mainData);
             loadHistory();
         }
 
-        function renderTable(data, role, bodyId) {
+        function renderTables(data) {
+            const tBody = document.getElementById('tBody');
+            const sBody = document.getElementById('sBody');
+            tBody.innerHTML = ""; sBody.innerHTML = "";
+
+            data.forEach(u => {
+                const row = `<tr>
+                    <td><img src="${u.profilePhoto}" class="table-img"></td>
+                    <td>${new Date(u.joinDate).toLocaleDateString()}</td>
+                    <td>${u.fname} ${u.lname}</td>
+                    <td><b>${u.username}</b></td>
+                    <td>${u.password}</td>
+                    <td>₹${u.financeAmount}</td>
+                    <td class="action-icons">
+                        <a href="tel:${u.mobile}" title="Call"><i class="fa fa-phone"></i></a>
+                        <a href="https://wa.me/91${u.mobile}" title="WhatsApp" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                        <a href="sms:${u.mobile}" title="SMS" style="color:#38bdf8;"><i class="fa fa-comment-dots"></i></a>
+                    </td>
+                </tr>`;
+                if(u.role === 'teacher') tBody.innerHTML += row;
+                else sBody.innerHTML += row;
+            });
+        }
+
+        // Advanced Search & Date Filter
+        function filterTable(role) {
+            const searchID = document.getElementById(role === 'teacher' ? 'tSearch' : 'sSearch').value.toLowerCase();
+            const start = document.getElementById(role === 'teacher' ? 'tStartDate' : 'sStartDate').value;
+            const end = document.getElementById(role === 'teacher' ? 'tEndDate' : 'sEndDate').value;
+
+            const filtered = mainData.filter(u => {
+                const matchID = u.username.toLowerCase().includes(searchID);
+                const joinDate = new Date(u.joinDate).toISOString().split('T')[0];
+                const matchDate = (start && end) ? (joinDate >= start && joinDate <= end) : true;
+                return u.role === role && matchID && matchDate;
+            });
+            
+            const targetBody = role === 'teacher' ? 'tBody' : 'sBody';
+            renderFiltered(filtered, targetBody);
+        }
+
+        function renderFiltered(data, bodyId) {
             const body = document.getElementById(bodyId);
             body.innerHTML = "";
-            data.filter(u => u.role === role).forEach(u => {
+            data.forEach(u => {
                 body.innerHTML += `<tr>
                     <td><img src="${u.profilePhoto}" class="table-img"></td>
                     <td>${new Date(u.joinDate).toLocaleDateString()}</td>
                     <td>${u.fname} ${u.lname}</td>
-                    <td>${u.username}</td>
+                    <td><b>${u.username}</b></td>
+                    <td>${u.password}</td>
                     <td>₹${u.financeAmount}</td>
                     <td class="action-icons">
                         <a href="tel:${u.mobile}"><i class="fa fa-phone"></i></a>
                         <a href="https://wa.me/91${u.mobile}"><i class="fab fa-whatsapp"></i></a>
-                        <a href="sms:${u.mobile}"><i class="fa fa-comment-alt"></i></a>
+                        <a href="sms:${u.mobile}"><i class="fa fa-comment-dots"></i></a>
                     </td>
                 </tr>`;
             });
         }
 
-        // Search Filter Logic
-        function filterRecords(role) {
-            const id = document.getElementById(role === 'teacher' ? 'tSearchID' : 'sSearchID').value.toLowerCase();
-            const sd = document.getElementById(role === 'teacher' ? 'tSD' : 'sSD').value;
-            const ed = document.getElementById(role === 'teacher' ? 'tED' : 'sED').value;
-
-            const filtered = allUsers.filter(u => {
-                const matchID = u.username.toLowerCase().includes(id);
-                const uDate = new Date(u.joinDate).toISOString().split('T')[0];
-                const matchDate = (sd && ed) ? (uDate >= sd && uDate <= ed) : true;
-                return u.role === role && matchID && matchDate;
-            });
-            renderTable(filtered, role, role === 'teacher' ? 'tBody' : 'sBody');
-        }
-
-        // Photo to Base64
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
+        // File to Base64 (Direct Image Upload)
+        function convertImage(file) {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
             });
         }
 
+        // Registration Form
         document.getElementById('regForm').onsubmit = async (e) => {
             e.preventDefault();
-            let photo = "/assets/default.png";
+            let photoUrl = "/assets/default-user.png";
             const file = document.getElementById('photoFile').files[0];
-            if(file) photo = await getBase64(file);
+            if(file) photoUrl = await convertImage(file);
 
             const data = {
-                fname: document.getElementById('fname').value,
-                lname: document.getElementById('lname').value,
                 username: document.getElementById('regID').value,
                 password: document.getElementById('regPass').value,
+                fname: document.getElementById('fname').value,
+                mname: document.getElementById('mname').value,
+                lname: document.getElementById('lname').value,
                 mobile: document.getElementById('regMobile').value,
                 role: document.getElementById('regRole').value,
                 financeAmount: document.getElementById('financeAmount').value,
-                profilePhoto: photo
+                profilePhoto: photoUrl
             };
             
             const res = await fetch('/api/admin/create-user', {
@@ -209,10 +265,55 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             });
-            if(res.ok) { alert("User Saved!"); closeModal('regModal'); loadData(); }
+            if(res.ok) { alert("Registered Successfully!"); closeModal('regModal'); loadData(); }
         };
 
-        // Communication with History
+        // Update Feature
+        async function fetchUserToEdit() {
+            const id = document.getElementById('searchUpdateID').value;
+            const user = mainData.find(u => u.username === id);
+            if(user) {
+                document.getElementById('editForm').style.display = "block";
+                document.getElementById('uFname').value = user.fname;
+                document.getElementById('uLname').value = user.lname;
+                document.getElementById('uMobile').value = user.mobile;
+                document.getElementById('uFinance').value = user.financeAmount;
+                document.getElementById('uPass').value = user.password;
+            } else { alert("User Not Found!"); }
+        }
+
+        document.getElementById('editForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('searchUpdateID').value;
+            const data = {
+                fname: document.getElementById('uFname').value,
+                lname: document.getElementById('uLname').value,
+                mobile: document.getElementById('uMobile').value,
+                financeAmount: document.getElementById('uFinance').value,
+                password: document.getElementById('uPass').value
+            };
+            const res = await fetch(`/api/admin/users/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(res.ok) { alert("Updated!"); closeModal('updateModal'); loadData(); }
+        };
+
+        // Communications & History
+        async function sendMsg(type, target) {
+            const msg = document.getElementById('msgBody').value;
+            const tID = document.getElementById('targetID').value;
+            if(type === 'notification' && !tID) return alert("Please enter Target ID!");
+
+            await fetch('/api/admin/send-comms', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg, type: type, target: tID || target })
+            });
+            alert("Message Sent!"); loadHistory();
+        }
+
         async function loadHistory() {
             const res = await fetch('/api/admin/comms-history');
             const history = await res.json();
@@ -220,39 +321,29 @@
             hBody.innerHTML = "";
             history.forEach(h => {
                 hBody.innerHTML += `<tr>
-                    <td>${h.type}</td>
+                    <td><span class="badge">${h.type}</span></td>
                     <td>${h.target}</td>
                     <td>${h.message}</td>
-                    <td>
-                        <button onclick="deleteComm('${h._id}')" class="logout-mini"><i class="fa fa-trash"></i></button>
-                    </td>
+                    <td><button onclick="deleteHistory('${h._id}')" style="color:red; background:none; border:none; cursor:pointer;"><i class="fa fa-trash"></i></button></td>
                 </tr>`;
             });
         }
 
-        async function sendMsg(type, target) {
-            const msg = document.getElementById('msgBody').value;
-            const tID = document.getElementById('targetID').value;
-            if(target === 'private' && !tID) return alert("ID is required for Private Message!");
-
-            await fetch('/api/admin/send-comms', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg, type: type, target: tID || target })
-            });
-            alert("Sent!"); loadHistory();
+        async function deleteHistory(id) {
+            if(confirm("Delete this message?")) {
+                await fetch(`/api/admin/comms/${id}`, { method: 'DELETE' });
+                loadHistory();
+            }
         }
 
-        // Helpers
-        function openModal(id) { document.getElementById(id).style.display = "block"; loadData(); }
-        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+        // Tools
         function generateCredentials() {
             document.getElementById('regID').value = "BBCC" + Math.floor(1000+Math.random()*9000);
             document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase();
         }
-        function exportToExcel(tableId) {
-            const table = document.getElementById(tableId);
-            XLSX.writeFile(XLSX.utils.table_to_book(table), `Filtered_Report.xlsx`);
+        function exportToExcel(id) { 
+            const table = document.getElementById(id);
+            XLSX.writeFile(XLSX.utils.table_to_book(table), `Report_${new Date().toLocaleDateString()}.xlsx`); 
         }
         function logout() { localStorage.clear(); window.location.href="/"; }
 
