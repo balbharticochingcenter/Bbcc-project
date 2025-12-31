@@ -2,54 +2,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>VIP Admin Panel</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <style>
-        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 40px; }
-        .card { background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155; }
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
-        input:checked + .slider { background-color: #38bdf8; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Admin Panel | BBCC</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body style="background:#0f172a; color:white;">
-    <h1 style="text-align:center; padding-top:40px;">VIP Admin Control Center</h1>
-    
-    <div class="admin-grid">
-        <div class="card">
-            <h3>Website Features</h3>
-            <p>Show Gallery: <label class="switch"><input type="checkbox" id="galleryToggle" checked onchange="updateSite()"><span class="slider"></span></label></p>
-            <p>Show Admission: <label class="switch"><input type="checkbox" id="admissionToggle" checked onchange="updateSite()"><span class="slider"></span></label></p>
-        </div>
+<body>
 
-        <div class="card">
-            <h3>Live News / Notice</h3>
-            <input type="text" id="newsText" placeholder="Update News" style="width:80%">
-            <button class="btn-main" style="width:auto; margin-top:10px;" onclick="updateSite()">Update Notice</button>
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="/assets/logo.png" alt="Logo" class="logo">
         </div>
+        <div class="nav-center">
+            <h1 class="glow-text">Balbharti Coaching Center</h1>
+        </div>
+        <div class="nav-right">
+            <div class="profile-dropdown">
+                <div class="profile-trigger">
+                    <img src="/assets/admin-avatar.png" id="navAvatar" alt="Admin">
+                    <span>Admin Profile <i class="fa fa-caret-down"></i></span>
+                </div>
+                <div class="dropdown-menu">
+                    <div class="profile-header">
+                        <img src="/assets/admin-avatar.png" alt="Profile">
+                        <h4 id="profName">Santosh Sir</h4>
+                        <p id="profRole">Super Admin</p>
+                    </div>
+                    <div class="profile-details">
+                        <p><i class="fa fa-id-badge"></i> Name: <span>Santosh Kumar</span></p>
+                        <p><i class="fa fa-phone"></i> Mobile: <span>9868698696</span></p>
+                        <p><i class="fa fa-envelope"></i> Email: <span>bszbj@gmail.com</span></p>
+                    </div>
+                    <button class="edit-btn"><i class="fa fa-edit"></i> Edit Profile</button>
+                    <button class="logout-btn" onclick="logout()"><i class="fa fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-        <div class="card">
-            <h3>Send Alert To All</h3>
-            <button class="btn-main" onclick="sendAlert('VIP Alert: Tomorrow is a holiday!')">Send Holiday Notice</button>
-        </div>
+    <div class="main-layout">
+        <section class="admin-section">
+            <div class="card">
+                <h2><i class="fa fa-user-plus"></i> New Registration</h2>
+                <form id="regForm" onsubmit="handleRegistration(event)">
+                    <div class="form-grid">
+                        <input type="text" id="fname" placeholder="First Name" required>
+                        <input type="text" id="mname" placeholder="Middle Name">
+                        <input type="text" id="lname" placeholder="Last Name" required>
+                        <input type="text" id="regMobile" placeholder="Mobile Number" required>
+                        <input type="email" id="regEmail" placeholder="Email ID">
+                        <select id="regRole">
+                            <option value="student">Student</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <div class="id-pass-container">
+                            <input type="text" id="regID" placeholder="Manual ID or Auto">
+                            <input type="text" id="regPass" placeholder="Password">
+                            <button type="button" onclick="generateCredentials()" class="gen-btn">Generate</button>
+                        </div>
+                        <input type="file" id="regPhoto" accept="image/*">
+                    </div>
+                    <button type="submit" class="submit-btn">Register User</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <div class="card notification-card">
+                <h2><i class="fa fa-bullhorn"></i> Send Notifications</h2>
+                <textarea id="notifMsg" placeholder="Write message here..."></textarea>
+                <div class="btn-group">
+                    <button onclick="sendTo('teacher')" class="btn-t"><i class="fa fa-user-tie"></i> To Teacher</button>
+                    <button onclick="sendTo('student')" class="btn-s"><i class="fa fa-user-graduate"></i> To Student</button>
+                    <button onclick="sendTo('all')" class="btn-a"><i class="fa fa-globe"></i> Notice Board (All)</button>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/client.js"></script>
     <script>
-        function updateSite() {
-            const data = {
-                showGallery: document.getElementById('galleryToggle').checked,
-                showAdmission: document.getElementById('admissionToggle').checked,
-                announcement: document.getElementById('newsText').value
-            };
-            fetch('/api/admin/update-site', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            }).then(res => alert("Settings Updated Live!"));
+        function generateCredentials() {
+            const randomID = "BBCC" + Math.floor(1000 + Math.random() * 9000);
+            const randomPass = Math.random().toString(36).slice(-8);
+            document.getElementById('regID').value = randomID;
+            document.getElementById('regPass').value = randomPass;
         }
+
+        function handleRegistration(e) {
+            e.preventDefault();
+            // Data collection and fetch logic here (connects to your server.js API)
+            alert("User Registered Successfully!");
+        }
+
+        function sendTo(target) {
+            const msg = document.getElementById('notifMsg').value;
+            if(!msg) return alert("Message cannot be empty!");
+            // Socket logic
+            socket.emit('send-notification', { message: msg, target: target });
+            alert("Broadcasted to: " + target);
+        }
+
+        function logout() { window.location.href = '/'; }
     </script>
 </body>
 </html>
