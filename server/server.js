@@ -28,6 +28,12 @@ const userSchema = new mongoose.Schema({
     lname: String,
     mobile: String,
     email: String,
+    // --- Nayi Fields Add Ki Gayi Hain ---
+    studentClass: { type: String }, // Class save karne ke liye
+    marksObtained: { type: Number, default: 0 },
+    totalMarks: { type: Number, default: 500 },
+    division: { type: String, default: "-" },
+    // ----------------------------------
     financeAmount: Number,
     paymentStatus: { type: String, default: "Unpaid" },
     joinDate: { type: Date, default: Date.now },
@@ -45,7 +51,7 @@ const Comms = mongoose.model('Comms', commsSchema);
 
 // --- MIDDLEWARES ---
 app.use(cors());
-app.use(bodyParser.json({ limit: '10mb' })); // Photo upload ke liye limit badha di hai
+app.use(bodyParser.json({ limit: '10mb' })); 
 
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
@@ -70,13 +76,16 @@ app.post('/login', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 2. Create User
+// 2. Create User (Ab studentClass bhi save karega)
 app.post('/api/admin/create-user', async (req, res) => {
     try {
         const newUser = new User(req.body);
         await newUser.save();
         res.json({ success: true, message: "User registered!" });
-    } catch (err) { res.json({ success: false, message: "ID exists!" }); }
+    } catch (err) { 
+        console.log(err);
+        res.json({ success: false, message: "ID exists or Error!" }); 
+    }
 });
 
 // 3. Get All Users
@@ -100,7 +109,28 @@ app.put('/api/admin/users/:username', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 5. Communications History
+// 5. Batch Update Results (Result Modal ke liye)
+app.post('/api/admin/update-batch-results', async (req, res) => {
+    try {
+        const { results } = req.body;
+        const promises = results.map(resObj => {
+            return User.findOneAndUpdate(
+                { username: resObj.username },
+                { 
+                    marksObtained: resObj.marksObtained,
+                    totalMarks: resObj.totalMarks,
+                    division: resObj.division
+                }
+            );
+        });
+        await Promise.all(promises);
+        res.json({ success: true, message: "Results Updated!" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// 6. Communications History
 app.get('/api/admin/comms-history', async (req, res) => {
     try {
         const history = await Comms.find().sort({ date: -1 }).limit(30);
@@ -108,7 +138,7 @@ app.get('/api/admin/comms-history', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 6. Delete Communication Message
+// 7. Delete Communication Message
 app.delete('/api/admin/comms/:id', async (req, res) => {
     try {
         await Comms.findByIdAndDelete(req.params.id);
@@ -116,7 +146,7 @@ app.delete('/api/admin/comms/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 7. Send & Broadcast Message
+// 8. Send & Broadcast Message
 app.post('/api/admin/send-comms', async (req, res) => {
     try {
         const { message, target, type } = req.body;
@@ -133,5 +163,3 @@ app.get('/html/:page', (req, res) => { res.sendFile(path.join(publicPath, 'html'
 
 // --- SERVER START ---
 server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server Live: ${PORT}`));
-
-
