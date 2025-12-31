@@ -228,7 +228,6 @@
         const socket = io();
         let mainData = [];
 
-        // Updated openModal to refresh class list
         function openModal(id) { 
             document.getElementById(id).style.display = "block"; 
             loadData(); 
@@ -244,10 +243,8 @@
             loadHistory();
         }
 
-        // Dropdown dynamic load karne ka logic
         function refreshClassList() {
             const classSelect = document.getElementById('resClassSelect');
-            // Data se wahi classes nikaalna jinka data hai
             const classes = [...new Set(mainData
                 .filter(u => u.role === 'student' && u.studentClass) 
                 .map(u => u.studentClass))];
@@ -339,7 +336,7 @@
                 dob: document.getElementById('dob').value,
                 email: document.getElementById('email').value,
                 role: document.getElementById('regRole').value,
-                studentClass: document.getElementById('regClass').value, // Class added
+                studentClass: document.getElementById('regClass').value,
                 financeAmount: document.getElementById('financeAmount').value,
                 profilePhoto: photoUrl
             };
@@ -440,7 +437,7 @@
 
         window.onload = loadData;
 
-        // Result Logic with CLASS FILTERING
+        // Result Logic
         function loadStudentsForResult() {
             const selectedClass = document.getElementById('resClassSelect').value;
             const globalTotal = document.getElementById('globalTotalMarks').value;
@@ -449,7 +446,6 @@
 
             if(!selectedClass) return alert("Pahle class select karein!");
 
-            // FILTER: Role 'student' ho AUR class match kare
             const students = mainData.filter(u => u.role === 'student' && u.studentClass === selectedClass);
 
             if(students.length === 0) {
@@ -498,24 +494,57 @@
             document.querySelectorAll('.obtained-marks').forEach(input => calculateSingleDivision(input));
         }
 
+        // Updated Save Function
         async function saveAllResults() {
             const rows = document.querySelectorAll('#resultTableBody tr');
+            if (rows.length === 0) return alert("Pahle students load karein!");
+
             const results = [];
+            const globalTotal = document.getElementById('globalTotalMarks').value;
+
             rows.forEach(row => {
+                const obtained = row.querySelector('.obtained-marks').value;
+                const percentage = (parseFloat(obtained) / parseFloat(globalTotal)) * 100;
+                
+                let division = "Fail";
+                if (percentage >= 60) division = "1st Div";
+                else if (percentage >= 45) division = "2nd Div";
+                else if (percentage >= 33) division = "3rd Div";
+
                 results.push({
                     username: row.getAttribute('data-id'),
-                    marksObtained: row.querySelector('.obtained-marks').value,
-                    totalMarks: document.getElementById('globalTotalMarks').value
+                    marksObtained: obtained,
+                    totalMarks: globalTotal,
+                    division: division,
+                    lastUpdated: new Date().toISOString()
                 });
             });
+
+            const saveBtn = document.querySelector('.save-btn');
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = "Saving to Cloud...";
+            saveBtn.disabled = true;
+
             try {
                 const res = await fetch('/api/admin/update-batch-results', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ results })
                 });
-                if(res.ok) alert("Results updated successfully!");
-            } catch (err) { alert("Error saving results"); }
+
+                if(res.ok) {
+                    alert("✅ Sabhi students ka result database mein save ho gaya hai!");
+                    loadData(); 
+                } else {
+                    alert("❌ Server error: Data save nahi ho paya.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("❌ Network error: Connection check karein.");
+            } finally {
+                saveBtn.innerText = originalText;
+                saveBtn.disabled = false;
+            }
         }
     </script>
 </body>
