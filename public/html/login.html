@@ -58,54 +58,72 @@
     </div>
 
     <section class="courses-grid">
-        <div class="course-box">
-            <div class="box-front"><img src="/assets/class5.jpg" alt="Class 5"><h3>📘 CLASS 5</h3></div>
-            <div class="box-back">
-                <p>English, Hindi, Maths, EVS, Computer, GK, Sanskrit</p>
-                <button class="view-btn" onclick="underDev()">View Now</button>
-            </div>
+    <div class="course-box">
+        <div class="box-front">
+            <img src="/assets/class5.jpg" alt="Class 5">
+            <h3>📘 CLASS 5</h3>
         </div>
+        <div class="box-back">
+            <p>English, Hindi, Maths, EVS, Computer, GK, Sanskrit</p>
+            <button class="view-btn" onclick="showMsg('Class 5')">View Now</button>
+        </div>
+    </div>
 
-        <div class="course-box">
-            <div class="box-front"><img src="/assets/class6.jpg" alt="Class 6"><h3>📗 CLASS 6</h3></div>
-            <div class="box-back">
-                <p>Maths, Science, SST, Computer</p>
-                <button class="view-btn" onclick="underDev()">View Now</button>
-            </div>
+    <div class="course-box">
+        <div class="box-front">
+            <img src="/assets/class6.jpg" alt="Class 6">
+            <h3>📗 CLASS 6</h3>
         </div>
+        <div class="box-back">
+            <p>Maths, Science, SST (History, Geo, Civics), Computer</p>
+            <button class="view-btn" onclick="showMsg('Class 6')">View Now</button>
+        </div>
+    </div>
 
-        <div class="course-box">
-            <div class="box-front"><img src="/assets/class7.jpg" alt="Class 7"><h3>📙 CLASS 7</h3></div>
-            <div class="box-back">
-                <p>Science, Maths, English, SST, Regional Language</p>
-                <button class="view-btn" onclick="underDev()">View Now</button>
-            </div>
+    <div class="course-box">
+        <div class="box-front">
+            <img src="/assets/class7.jpg" alt="Class 7">
+            <h3>📙 CLASS 7</h3>
         </div>
+        <div class="box-back">
+            <p>Science, Maths, English, SST, Regional Language</p>
+            <button class="view-btn" onclick="showMsg('Class 7')">View Now</button>
+        </div>
+    </div>
 
-        <div class="course-box">
-            <div class="box-front"><img src="/assets/class8.jpg" alt="Class 8"><h3>📕 CLASS 8</h3></div>
-            <div class="box-back">
-                <p>Full Syllabus (CBSE/ICSE/BSEB), Computer, Science</p>
-                <button class="view-btn" onclick="underDev()">View Now</button>
-            </div>
+    <div class="course-box">
+        <div class="box-front">
+            <img src="/assets/class8.jpg" alt="Class 8">
+            <h3>📕 CLASS 8</h3>
         </div>
+        <div class="box-back">
+            <p>Full Syllabus (CBSE/ICSE/BSEB), Computer, Science</p>
+            <button class="view-btn" onclick="showMsg('Class 8')">View Now</button>
+        </div>
+    </div>
 
-        <div class="course-box">
-            <div class="box-front"><img src="/assets/class9.jpg" alt="Class 9"><h3>📘 CLASS 9</h3></div>
-            <div class="box-back">
-                <p>Physics, Chemistry, Bio, Maths, Economics, IT</p>
-                <button class="view-btn" onclick="underDev()">View Now</button>
-            </div>
+    <div class="course-box">
+        <div class="box-front">
+            <img src="/assets/class9.jpg" alt="Class 9">
+            <h3>📘 CLASS 9</h3>
         </div>
+        <div class="box-back">
+            <p>Physics, Chemistry, Bio, Maths, Economics, IT</p>
+            <button class="view-btn" onclick="showMsg('Class 9')">View Now</button>
+        </div>
+    </div>
 
-        <div class="course-box">
-            <div class="box-front"><img src="/assets/class10.jpg" alt="Class 10"><h3>🔹 CLASS 10</h3></div>
-            <div class="box-back">
-                <p>Board Exam Special: All Subjects</p>
-                <button class="view-btn" onclick="underDev()">View Now</button>
-            </div>
+    <div class="course-box">
+        <div class="box-front">
+            <img src="/assets/class10.jpg" alt="Class 10">
+            <h3>🔹 CLASS 10</h3>
         </div>
-    </section>
+        <div class="box-back">
+            <p>Board Exam Special: All Main & Vocational Subjects</p>
+            <button class="view-btn" onclick="showMsg('Class 10')">View Now</button>
+        </div>
+    </div>
+</section>
 
     <footer>
         <div class="footer-content">
@@ -151,6 +169,11 @@
         function underDev() {
             alert("Sorry! This page is currently under development.");
         }
+        // Ye function click karte hi message dikhayega
+function showMsg(className) {
+    alert("📢 Notification:\n\n" + className + " ka page abhi under development hai. \nJald hi ise live kiya jayega. \n\n- Bal Bharti Coaching Center");
+}
     </script>
 </body>
 </html>
+
