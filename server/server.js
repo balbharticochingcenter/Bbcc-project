@@ -43,16 +43,16 @@ const commsSchema = new mongoose.Schema({
 });
 const Comms = mongoose.model('Comms', commsSchema);
 
-// --- MIDDLEWARES & STATIC FILES ---
+// --- MIDDLEWARES ---
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' })); // Photo upload ke liye limit badha di hai
 
-// Kyunki server.js 'server/' folder mein hai, hume ek step bahar nikal kar 'public' mein jaana hoga
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
 // --- API ROUTES ---
 
+// 1. Login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -70,6 +70,7 @@ app.post('/login', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
+// 2. Create User
 app.post('/api/admin/create-user', async (req, res) => {
     try {
         const newUser = new User(req.body);
@@ -78,53 +79,57 @@ app.post('/api/admin/create-user', async (req, res) => {
     } catch (err) { res.json({ success: false, message: "ID exists!" }); }
 });
 
+// 3. Get All Users
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const users = await User.find({ role: { $ne: 'admin' } });
+        res.json(users);
+    } catch (err) { res.status(500).json({ success: false }); }
+});
 
-// Purana notices aur notifications fetch karne ke liye
+// 4. Update User Detail (ID ke basis par)
+app.put('/api/admin/users/:username', async (req, res) => {
+    try {
+        const updatedUser = await User.findOneAndUpdate(
+            { username: req.params.username }, 
+            req.body, 
+            { new: true }
+        );
+        if (updatedUser) res.json({ success: true, message: "Profile Updated!" });
+        else res.status(404).json({ success: false, message: "User not found" });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 5. Communications History
 app.get('/api/admin/comms-history', async (req, res) => {
     try {
-        const history = await Comms.find().sort({ date: -1 }).limit(20); // Latest 20 records
+        const history = await Comms.find().sort({ date: -1 }).limit(30);
         res.json(history);
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Error fetching history" });
-    }
+    } catch (err) { res.status(500).json({ success: false }); }
 });
-// Notice ya Notification save aur broadcast karne ke liye
+
+// 6. Delete Communication Message
+app.delete('/api/admin/comms/:id', async (req, res) => {
+    try {
+        await Comms.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: "Deleted!" });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 7. Send & Broadcast Message
 app.post('/api/admin/send-comms', async (req, res) => {
     try {
         const { message, target, type } = req.body;
-        
-        // 1. Database mein save karein
         const newComm = new Comms({ message, target, type });
         await newComm.save();
-
-        // 2. Socket.io ke zariye live broadcast karein
         io.emit('new_announcement', { message, target, type });
-
-        res.json({ success: true, message: "Communication sent and saved!" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: "Error sending message" });
-    }
-});
-// Saare users ko table mein dikhane ke liye
-app.get('/api/admin/users', async (req, res) => {
-    try {
-        const users = await User.find({ role: { $ne: 'admin' } }); // Admin ko chhod kar baaki sab
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ success: false });
-    }
-});
-// Base URL (https://balbharticoachingcenter.onrender.com/) pe ye khulega
-app.get('/', (req, res) => {
-    res.sendFile(path.join(publicPath, 'html/login.html'));
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// Baaki saare pages ke liye
-app.get('/html/:page', (req, res) => {
-    res.sendFile(path.join(publicPath, 'html', req.params.page));
-});
-
+// --- HTML ROUTES ---
+app.get('/', (req, res) => { res.sendFile(path.join(publicPath, 'html/login.html')); });
+app.get('/html/:page', (req, res) => { res.sendFile(path.join(publicPath, 'html', req.params.page)); });
 
 // --- SERVER START ---
-server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server Live on Port: ${PORT}`));
-
+server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server Live: ${PORT}`));
