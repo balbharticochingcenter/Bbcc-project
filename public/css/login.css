@@ -194,3 +194,25 @@ body { background-color: #0b0f19; color: #ffffff; overflow-x: hidden; }
     from { transform: translateY(50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+.magical-title-container {
+    width: 100%;
+    text-align: center;      /* Text ko center mein lane ke liye */
+    margin-top: 50px;       /* Upar se thoda gap */
+    margin-bottom: 30px;    /* Neeche courses se thoda gap */
+}
+
+.magical-text {
+    display: inline-block;  /* Animation sahi se dikhne ke liye */
+    font-size: 3rem;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #f472b6, #38bdf8);
+    background-size: 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: magic-flow 5s linear infinite;
+}
+
+/* Animation agar pehle se nahi hai */
+@keyframes magic-flow {
+    0% { background-position: 0%; }
+    100% { background-position: 100%; }
+}
