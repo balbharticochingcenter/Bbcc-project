@@ -26,7 +26,48 @@
         <button class="menu-btn" onclick="openModal('teacherModal')"><i class="fa fa-chalkboard-teacher"></i> <span>Teacher Mgmt</span></button>
         <button class="menu-btn" onclick="openModal('studentModal')"><i class="fa fa-user-graduate"></i> <span>Student Mgmt</span></button>
     </div>
+<div id="resultModal" class="modal wide-modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('resultModal')">&times;</span>
+        <h2><i class="fa fa-file-invoice"></i> Update Student Results</h2>
+        
+        <div class="batch-config">
+            <div>
+                <label>Select Class: </label>
+                <select id="resClassSelect">
+                    <option value="10th">10th Standard</option>
+                    <option value="12th">12th Standard</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div>
+                <label>Total Marks (All Students): </label>
+                <input type="number" id="globalTotalMarks" value="500" oninput="updateAllDivisions()">
+            </div>
+            <button onclick="loadStudentsForResult()" class="btn-s">Go / Load Students</button>
+        </div>
 
+        <div class="table-scroll">
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Roll No (ID)</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Marks Obtained</th>
+                        <th>Total Marks</th>
+                        <th>Division</th>
+                    </tr>
+                </thead>
+                <tbody id="resultTableBody">
+                    </tbody>
+            </table>
+        </div>
+        <button onclick="saveAllResults()" class="save-btn" style="margin-top:20px;">Save All Results to Cloud</button>
+    </div>
+</div>
+    
     <div class="dashboard-history" style="padding: 20px 5%;">
         <div class="card" style="background: var(--card-bg); padding: 20px; border-radius: 15px;">
             <h3><i class="fa fa-history"></i> Recent Messages History</h3>
@@ -366,3 +407,4 @@
     </script>
 </body>
 </html>
+
