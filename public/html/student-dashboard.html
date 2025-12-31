@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - BBCC Templet</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.0/socket.io.js"></script>
+    <script src="../js/client.js" defer></script>
+</head>
+<body class="dark-mode">
+    <header class="glass-header">
+        <h1>Student Dashboard</h1>
+        <button id="dark-mode-toggle" class="toggle-btn">Toggle Light Mode</button>
+    </header>
+    <main class="glass-container">
+        <h2>Your Details</h2>
+        <div class="student-data">
+            <p><strong>Fee Status:</strong> <span id="feeStatus"></span></p>
+            <p><strong>Attendance:</strong> <span id="attendance"></span></p>
+        </div>
+    </main>
+    <div id="popupContainer"></div>  <!-- Yeh container popups display karta hai. -->
+    <script>
+        // Yeh script student data load karta hai aur popups handle karta hai.
+        async function loadData() {
+            const response = await fetch('/student/data');
+            const data = await response.json();
+            document.getElementById('feeStatus').textContent = data.feeStatus;
+            document.getElementById('attendance').textContent = data.attendance;
+        }
+        loadData();  // Yeh page load par data load karta hai.
+        // Dark mode toggle
+        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            document.body.classList.toggle('dark-mode');
+        });
+    </script>
+</body>
+</html>
