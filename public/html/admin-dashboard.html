@@ -404,7 +404,84 @@
         function logout() { localStorage.clear(); window.location.href="/"; }
 
         window.onload = loadData;
+        // Result Logic
+function loadStudentsForResult() {
+    const selectedClass = document.getElementById('resClassSelect').value;
+    const globalTotal = document.getElementById('globalTotalMarks').value;
+    const tbody = document.getElementById('resultTableBody');
+    tbody.innerHTML = "";
+
+    // Filter students only
+    const students = mainData.filter(u => u.role === 'student');
+
+    students.forEach(u => {
+        // Masking Mobile: 98******21
+        const mob = u.mobile || "0000000000";
+        const maskedMob = mob.substring(0, 2) + "******" + mob.substring(mob.length - 2);
+
+        tbody.innerHTML += `
+            <tr data-id="${u.username}">
+                <td><img src="${u.profilePhoto}" class="table-img"></td>
+                <td><b>${u.username}</b></td>
+                <td>${u.fname} ${u.lname}</td>
+                <td class="masked-mobile">${maskedMob}</td>
+                <td>
+                    <input type="number" class="obtained-marks" value="${u.marksObtained || 0}" 
+                    oninput="calculateSingleDivision(this)">
+                </td>
+                <td class="total-marks-cell">${globalTotal}</td>
+                <td class="division-cell">-</td>
+            </tr>
+        `;
+    });
+    updateAllDivisions();
+}
+
+function calculateSingleDivision(input) {
+    const row = input.closest('tr');
+    const obtained = parseFloat(input.value) || 0;
+    const total = parseFloat(document.getElementById('globalTotalMarks').value) || 1;
+    const cell = row.querySelector('.division-cell');
+    
+    const percentage = (obtained / total) * 100;
+    
+    if (percentage >= 60) cell.innerHTML = '<span class="division-badge div-first">1st Div</span>';
+    else if (percentage >= 45) cell.innerHTML = '<span class="division-badge div-second">2nd Div</span>';
+    else if (percentage >= 33) cell.innerHTML = '<span class="division-badge div-third">3rd Div</span>';
+    else cell.innerHTML = '<span class="division-badge div-fail">Fail</span>';
+}
+
+function updateAllDivisions() {
+    const total = document.getElementById('globalTotalMarks').value;
+    document.querySelectorAll('.total-marks-cell').forEach(td => td.innerText = total);
+    document.querySelectorAll('.obtained-marks').forEach(input => calculateSingleDivision(input));
+}
+
+async function saveAllResults() {
+    const rows = document.querySelectorAll('#resultTableBody tr');
+    const results = [];
+
+    rows.forEach(row => {
+        results.push({
+            username: row.getAttribute('data-id'),
+            marksObtained: row.querySelector('.obtained-marks').value,
+            totalMarks: document.getElementById('globalTotalMarks').value
+        });
+    });
+
+    try {
+        const res = await fetch('/api/admin/update-batch-results', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ results })
+        });
+        if(res.ok) alert("All results updated successfully!");
+    } catch (err) {
+        alert("Error saving results to server");
+    }
+}
     </script>
 </body>
 </html>
+
 
