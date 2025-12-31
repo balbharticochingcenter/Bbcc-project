@@ -11,9 +11,11 @@
 
     <nav class="navbar">
         <div class="nav-left">
-            <img src="/assets/logo.png" alt="Logo" class="logo">
+            <div class="logo-ring">
+                <img src="/assets/logo.png" alt="Logo" class="logo">
+            </div>
             <div class="brand-info">
-                <h1 class="glow-text">Bal Bharti Coaching Center</h1>
+                <h1 class="glow-text rainbow-header">Bal Bharti Coaching Center</h1>
                 <span class="powered-by">Powered by PTCC</span>
             </div>
         </div>
@@ -57,68 +59,50 @@
 
     <section class="courses-grid">
         <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class5.jpg" alt="Class 5">
-                <h3>📘 CLASS 5</h3>
-            </div>
+            <div class="box-front"><img src="/assets/class5.jpg" alt="Class 5"><h3>📘 CLASS 5</h3></div>
             <div class="box-back">
                 <p>English, Hindi, Maths, EVS, Computer, GK, Sanskrit</p>
-                <button class="enroll-btn" onclick="location.href='/html/class5.html'">Enroll Now</button>
+                <button class="view-btn" onclick="underDev()">View Now</button>
             </div>
         </div>
 
         <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class6.jpg" alt="Class 6">
-                <h3>📗 CLASS 6</h3>
-            </div>
+            <div class="box-front"><img src="/assets/class6.jpg" alt="Class 6"><h3>📗 CLASS 6</h3></div>
             <div class="box-back">
-                <p>Maths, Science, SST (History, Geo, Civics), Computer</p>
-                <button class="enroll-btn" onclick="location.href='/html/class6.html'">Enroll Now</button>
+                <p>Maths, Science, SST, Computer</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
             </div>
         </div>
 
         <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class7.jpg" alt="Class 7">
-                <h3>📙 CLASS 7</h3>
-            </div>
+            <div class="box-front"><img src="/assets/class7.jpg" alt="Class 7"><h3>📙 CLASS 7</h3></div>
             <div class="box-back">
                 <p>Science, Maths, English, SST, Regional Language</p>
-                <button class="enroll-btn" onclick="location.href='/html/class7.html'">Enroll Now</button>
+                <button class="view-btn" onclick="underDev()">View Now</button>
             </div>
         </div>
 
         <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class8.jpg" alt="Class 8">
-                <h3>📕 CLASS 8</h3>
-            </div>
+            <div class="box-front"><img src="/assets/class8.jpg" alt="Class 8"><h3>📕 CLASS 8</h3></div>
             <div class="box-back">
                 <p>Full Syllabus (CBSE/ICSE/BSEB), Computer, Science</p>
-                <button class="enroll-btn" onclick="location.href='/html/class8.html'">Enroll Now</button>
+                <button class="view-btn" onclick="underDev()">View Now</button>
             </div>
         </div>
 
         <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class9.jpg" alt="Class 9">
-                <h3>📘 CLASS 9</h3>
-            </div>
+            <div class="box-front"><img src="/assets/class9.jpg" alt="Class 9"><h3>📘 CLASS 9</h3></div>
             <div class="box-back">
                 <p>Physics, Chemistry, Bio, Maths, Economics, IT</p>
-                <button class="enroll-btn" onclick="location.href='/html/class9.html'">Enroll Now</button>
+                <button class="view-btn" onclick="underDev()">View Now</button>
             </div>
         </div>
 
         <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class10.jpg" alt="Class 10">
-                <h3>🔹 CLASS 10</h3>
-            </div>
+            <div class="box-front"><img src="/assets/class10.jpg" alt="Class 10"><h3>🔹 CLASS 10</h3></div>
             <div class="box-back">
-                <p>Board Exam Special: All Main & Vocational Subjects</p>
-                <button class="enroll-btn" onclick="location.href='/html/class10.html'">Enroll Now</button>
+                <p>Board Exam Special: All Subjects</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
             </div>
         </div>
     </section>
@@ -149,6 +133,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/client.js"></script>
     <script>
+        // Infinite Slider Logic
         let slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
 
@@ -157,16 +142,14 @@
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
         }
-
         setInterval(nextSlide, 3000);
 
-        // Updated OpenPopup for single login
-        function openPopup() {
-            document.getElementById('loginPopup').style.display = "block";
-        }
+        function openPopup() { document.getElementById('loginPopup').style.display = "block"; }
+        function closePopup() { document.getElementById('loginPopup').style.display = "none"; }
 
-        function closePopup() { 
-            document.getElementById('loginPopup').style.display = "none"; 
+        // Under Development Alert
+        function underDev() {
+            alert("Sorry! This page is currently under development.");
         }
     </script>
 </body>
