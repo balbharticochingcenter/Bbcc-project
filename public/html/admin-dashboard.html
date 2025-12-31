@@ -26,12 +26,8 @@
                 <div class="dropdown-menu">
                     <div class="profile-header">
                         <img src="/assets/admin-avatar.png" alt="Profile">
-                        <h4 id="profName">Santosh Sir</h4>
-                        <p id="profRole">Super Admin</p>
-                    </div>
-                    <div class="profile-details">
-                        <p><i class="fa fa-phone"></i> Mobile: <span>9868698696</span></p>
-                        <p><i class="fa fa-envelope"></i> Email: <span>bszbj@gmail.com</span></p>
+                        <h4 id="adminDisplayName">Santosh Sir</h4>
+                        <p>Super Admin</p>
                     </div>
                     <button class="logout-btn" onclick="logout()"><i class="fa fa-sign-out-alt"></i> Logout</button>
                 </div>
@@ -43,7 +39,7 @@
         <div class="admin-grid">
             <section class="card registration-card">
                 <h2><i class="fa fa-user-plus"></i> User Registration</h2>
-                <form id="regForm" onsubmit="handleRegistration(event)">
+                <form id="regForm">
                     <div class="form-grid">
                         <input type="text" id="fname" placeholder="First Name" required>
                         <input type="text" id="mname" placeholder="Middle Name">
@@ -56,9 +52,9 @@
                         <input type="number" id="financeAmount" placeholder="Monthly Fees">
                         <input type="date" id="joinDate" required>
                         <div class="id-pass-container">
-                            <input type="text" id="regID" placeholder="Manual ID">
-                            <input type="text" id="regPass" placeholder="Password">
-                            <button type="button" onclick="generateCredentials()" class="gen-btn">Generate</button>
+                            <input type="text" id="regID" placeholder="Manual ID" required>
+                            <input type="text" id="regPass" placeholder="Password" required>
+                            <button type="button" onclick="generateCredentials()" class="gen-btn">Gen</button>
                         </div>
                     </div>
                     <button type="submit" class="submit-btn">Register & Save to DB</button>
@@ -67,19 +63,15 @@
 
             <section class="card communication-card">
                 <h2><i class="fa fa-bullhorn"></i> Communications</h2>
-                <textarea id="notifMsg" placeholder="Type notice or notification here..."></textarea>
+                <textarea id="notifMsg" placeholder="Type notice here..."></textarea>
                 <div class="comms-actions">
                     <button onclick="sendBroadcast('teacher')" class="btn-t">Teacher Only</button>
                     <button onclick="sendBroadcast('student')" class="btn-s">Student Only</button>
-                    <button onclick="sendBroadcast('all')" class="btn-a">Notice Board (All)</button>
+                    <button onclick="sendBroadcast('all')" class="btn-a">Broadcast All</button>
                 </div>
                 <div class="history-grid">
                     <div class="history-box">
-                        <h4>Old Notices</h4>
-                        <ul id="noticeHistory"></ul>
-                    </div>
-                    <div class="history-box">
-                        <h4>Old Notifications</h4>
+                        <h4>Recent Logs</h4>
                         <ul id="notifHistory"></ul>
                     </div>
                 </div>
@@ -89,12 +81,12 @@
         <section class="card table-card">
             <div class="card-header">
                 <h2><i class="fa fa-chalkboard-teacher"></i> Teacher Management</h2>
-                <button onclick="exportToExcel('teacherTable')" class="dl-btn"><i class="fa fa-file-excel"></i> Download Excel</button>
+                <button onclick="exportToExcel('teacherTable')" class="dl-btn">Excel</button>
             </div>
             <table id="teacherTable">
                 <thead>
                     <tr>
-                        <th>Date</th><th>Name</th><th>ID</th><th>Salary</th><th>Payment</th><th>Contact</th>
+                        <th>Date</th><th>Name</th><th>ID</th><th>Salary</th><th>Status</th><th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="teacherTableBody"></tbody>
@@ -104,12 +96,12 @@
         <section class="card table-card">
             <div class="card-header">
                 <h2><i class="fa fa-user-graduate"></i> Student Management</h2>
-                <button onclick="exportToExcel('studentTable')" class="dl-btn"><i class="fa fa-file-excel"></i> Download Excel</button>
+                <button onclick="exportToExcel('studentTable')" class="dl-btn">Excel</button>
             </div>
             <table id="studentTable">
                 <thead>
                     <tr>
-                        <th>Date</th><th>Name</th><th>ID</th><th>Fees</th><th>Status</th><th>Contact</th>
+                        <th>Date</th><th>Name</th><th>ID</th><th>Fees</th><th>Status</th><th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="studentTableBody"></tbody>
@@ -119,53 +111,119 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // 1. Generate Credentials
-        function generateCredentials() {
-            const id = "BBCC" + Math.floor(1000 + Math.random() * 9000);
-            const pass = Math.random().toString(36).slice(-6);
-            document.getElementById('regID').value = id;
-            document.getElementById('regPass').value = pass;
+        const socket = io();
+
+        // Security Check: Login hai ya nahi?
+        const adminData = JSON.parse(localStorage.getItem('userData'));
+        if(!adminData || adminData.role !== 'admin') {
+            window.location.href = '/';
+        } else {
+            document.getElementById('adminDisplayName').innerText = adminData.fname + " " + adminData.lname;
         }
 
-        // 2. Toggle Fees/Salary Label
+        // --- 1. Load Data from MongoDB ---
+        async function loadDashboardData() {
+            try {
+                const res = await fetch('/api/admin/users');
+                const users = await res.json();
+                
+                const sBody = document.getElementById('studentTableBody');
+                const tBody = document.getElementById('teacherTableBody');
+                sBody.innerHTML = ""; tBody.innerHTML = "";
+
+                users.forEach(user => {
+                    const row = `<tr>
+                        <td>${new Date(user.joinDate).toLocaleDateString()}</td>
+                        <td>${user.fname} ${user.lname}</td>
+                        <td>${user.username}</td>
+                        <td>₹${user.financeAmount || 0}</td>
+                        <td><span class="status-badge">${user.paymentStatus || 'Unpaid'}</span></td>
+                        <td class="action-icons">
+                            <a href="tel:${user.mobile}"><i class="fa fa-phone"></i></a>
+                            <a href="https://wa.me/91${user.mobile}" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                        </td>
+                    </tr>`;
+                    
+                    if(user.role === 'student') sBody.innerHTML += row;
+                    else if(user.role === 'teacher') tBody.innerHTML += row;
+                });
+            } catch (err) { console.error("Load Error:", err); }
+        }
+
+        // --- 2. Registration Logic (Saves to DB) ---
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const newUser = {
+                fname: document.getElementById('fname').value,
+                mname: document.getElementById('mname').value,
+                lname: document.getElementById('lname').value,
+                username: document.getElementById('regID').value,
+                password: document.getElementById('regPass').value,
+                role: document.getElementById('regRole').value,
+                mobile: document.getElementById('regMobile').value,
+                financeAmount: document.getElementById('financeAmount').value,
+                joinDate: document.getElementById('joinDate').value
+            };
+
+            const res = await fetch('/api/admin/create-user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(newUser)
+            });
+
+            const data = await res.json();
+            if(data.success) {
+                alert("✅ Success: User saved to Database!");
+                document.getElementById('regForm').reset();
+                loadDashboardData();
+            } else {
+                alert("❌ Error: " + data.message);
+            }
+        };
+
+        // --- 3. Communication Logic ---
+        async function sendBroadcast(target) {
+            const msg = document.getElementById('notifMsg').value;
+            if(!msg) return alert("Please type a message!");
+
+            const res = await fetch('/api/admin/send-comms', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg, target: target, type: 'notification' })
+            });
+
+            const data = await res.json();
+            if(data.success) {
+                alert("🚀 Broadcast Sent via Socket.io!");
+                document.getElementById('notifMsg').value = "";
+                const log = document.getElementById('notifHistory');
+                log.innerHTML = `<li>[${target.toUpperCase()}] ${msg.substring(0,20)}...</li>` + log.innerHTML;
+            }
+        }
+
+        // --- Helpers ---
+        function generateCredentials() {
+            document.getElementById('regID').value = "BBCC" + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase();
+        }
+
         function toggleFinancePlaceholder() {
             const role = document.getElementById('regRole').value;
             document.getElementById('financeAmount').placeholder = (role === 'student') ? "Monthly Fees" : "Monthly Salary";
         }
 
-        // 3. Export to Excel
         function exportToExcel(tableID) {
-            const table = document.getElementById(tableID);
-            const wb = XLSX.utils.table_to_book(table, {sheet: "Records"});
-            XLSX.writeFile(wb, `${tableID}_Export.xlsx`);
+            const wb = XLSX.utils.table_to_book(document.getElementById(tableID));
+            XLSX.writeFile(wb, `BBCC_Report_${tableID}.xlsx`);
         }
 
-        // 4. Registration (Dummy Logic for UI)
-        function handleRegistration(e) {
-            e.preventDefault();
-            const role = document.getElementById('regRole').value;
-            const mobile = document.getElementById('regMobile').value;
-            const name = document.getElementById('fname').value + " " + document.getElementById('lname').value;
-            
-            // Add to Table (For Demo)
-            const tableBody = role === 'student' ? 'studentTableBody' : 'teacherTableBody';
-            const row = `<tr>
-                <td>${document.getElementById('joinDate').value}</td>
-                <td>${name}</td>
-                <td>${document.getElementById('regID').value}</td>
-                <td>${document.getElementById('financeAmount').value}</td>
-                <td><span class="status-unpaid">Unpaid</span></td>
-                <td class="action-icons">
-                    <a href="tel:${mobile}"><i class="fa fa-phone"></i></a>
-                    <a href="https://wa.me/${mobile}" target="_blank"><i class="fa fa-whatsapp"></i></a>
-                    <a href="sms:${mobile}"><i class="fa fa-comment-dots"></i></a>
-                </td>
-            </tr>`;
-            document.getElementById(tableBody).innerHTML += row;
-            alert("Registered and stored in local view!");
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/';
         }
 
-        function logout() { window.location.href = '/'; }
+        // Initial Load
+        window.onload = loadDashboardData;
     </script>
 </body>
 </html>
