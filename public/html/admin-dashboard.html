@@ -8,13 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* Naye badges ke liye CSS */
         .division-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
         .div-first { background: #10b981; }
         .div-second { background: #3b82f6; }
         .div-third { background: #f59e0b; }
         .div-fail { background: #ef4444; }
         .obtained-marks { width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #444; background: #000; color: #fff; }
+        .class-badge { background: #555; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -41,12 +41,11 @@
     <div class="modal-content">
         <span class="close" onclick="closeModal('resultModal')">&times;</span>
         <h2><i class="fa fa-file-invoice"></i> Update Student Results</h2>
-        
         <div class="batch-config">
             <div>
                 <label>Select Class: </label>
                 <select id="resClassSelect">
-                    <option value="">-- No Classes --</option>
+                    <option value="">-- Loading Classes --</option>
                 </select>
             </div>
             <div>
@@ -55,7 +54,6 @@
             </div>
             <button onclick="loadStudentsForResult()" class="btn-s">Go / Load Students</button>
         </div>
-
         <div class="table-scroll">
             <table class="result-table">
                 <thead>
@@ -75,20 +73,6 @@
         <button onclick="saveAllResults()" class="save-btn" style="margin-top:20px;">Save All Results to Cloud</button>
     </div>
 </div>
-    
-    <div class="dashboard-history" style="padding: 20px 5%;">
-        <div class="card" style="background: var(--card-bg); padding: 20px; border-radius: 15px;">
-            <h3><i class="fa fa-history"></i> Recent Messages History</h3>
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr><th>Type</th><th>Target ID</th><th>Message</th><th>Action</th></tr>
-                    </thead>
-                    <tbody id="historyBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
 
     <div id="regModal" class="modal">
         <div class="modal-content">
@@ -139,8 +123,8 @@
             <span class="close" onclick="closeModal('updateModal')">&times;</span>
             <h2><i class="fa fa-edit"></i> Update User Details</h2>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <input type="text" id="searchUpdateID" placeholder="Enter ID to Search (e.g. BBCC1234)">
-                <button onclick="fetchUserToEdit()" style="background:var(--primary); color:var(--dark); padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; border:none;">Search User</button>
+                <input type="text" id="searchUpdateID" placeholder="Enter ID to Search">
+                <button onclick="fetchUserToEdit()" class="btn-s">Search User</button>
             </div>
             <form id="editForm" style="display:none;">
                 <div class="modal-grid">
@@ -149,6 +133,17 @@
                     <input type="text" id="uLname" placeholder="Last Name">
                     <input type="text" id="uMobile" placeholder="Mobile Number">
                     <select id="uGender"><option value="Male">Male</option><option value="Female">Female</option></select>
+                    <select id="uClass">
+                        <option value="">Update Class (Optional)</option>
+                        <option value="5th">5th Standard</option>
+                        <option value="6th">6th Standard</option>
+                        <option value="7th">7th Standard</option>
+                        <option value="8th">8th Standard</option>
+                        <option value="9th">9th Standard</option>
+                        <option value="10th">10th Standard</option>
+                        <option value="11th">11th Standard</option>
+                        <option value="12th">12th Standard</option>
+                    </select>
                     <input type="date" id="uDob">
                     <input type="email" id="uEmail" placeholder="Email ID">
                     <input type="number" id="uFinance" placeholder="Fees/Salary">
@@ -182,17 +177,12 @@
             <span class="close" onclick="closeModal('teacherModal')">&times;</span>
             <div class="modal-header">
                 <h2>Teacher Records</h2>
-                <div class="filter-box">
-                    <input type="text" id="tSearch" placeholder="Search ID..." onkeyup="filterTable('teacher')">
-                    <input type="date" id="tStartDate"> to <input type="date" id="tEndDate">
-                    <button onclick="filterTable('teacher')" class="btn-s">Filter Date</button>
-                </div>
                 <button onclick="exportToExcel('teacherTable')" class="excel-btn">Download Excel</button>
             </div>
             <div class="table-scroll">
                 <table id="teacherTable">
                     <thead>
-                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Pass</th><th>Salary</th><th>Contact</th></tr>
+                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>Class Assigned</th><th>ID</th><th>Salary</th><th>Contact</th></tr>
                     </thead>
                     <tbody id="tBody"></tbody>
                 </table>
@@ -205,19 +195,28 @@
             <span class="close" onclick="closeModal('studentModal')">&times;</span>
             <div class="modal-header">
                 <h2>Student Records</h2>
-                <div class="filter-box">
-                    <input type="text" id="sSearch" placeholder="Search ID..." onkeyup="filterTable('student')">
-                    <input type="date" id="sStartDate"> to <input type="date" id="sEndDate">
-                    <button onclick="filterTable('student')" class="btn-s">Filter Date</button>
-                </div>
                 <button onclick="exportToExcel('studentTable')" class="excel-btn">Download Excel</button>
             </div>
             <div class="table-scroll">
                 <table id="studentTable">
                     <thead>
-                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Pass</th><th>Fees</th><th>Contact</th></tr>
+                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>Class</th><th>ID</th><th>Fees</th><th>Contact</th></tr>
                     </thead>
                     <tbody id="sBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-history" style="padding: 20px 5%;">
+        <div class="card" style="background: var(--card-bg); padding: 20px; border-radius: 15px;">
+            <h3><i class="fa fa-history"></i> Recent Messages History</h3>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr><th>Type</th><th>Target ID</th><th>Message</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
                 </table>
             </div>
         </div>
@@ -228,31 +227,37 @@
         const socket = io();
         let mainData = [];
 
-        function openModal(id) { 
-            document.getElementById(id).style.display = "block"; 
-            loadData(); 
-            if(id === 'resultModal') setTimeout(refreshClassList, 500);
-        }
-
-        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+        window.onload = loadData;
 
         async function loadData() {
             const res = await fetch('/api/admin/users');
             mainData = await res.json();
             renderTables(mainData);
             loadHistory();
+            refreshClassList();
         }
+
+        function openModal(id) { 
+            document.getElementById(id).style.display = "block"; 
+            if(id === 'resultModal') refreshClassList();
+        }
+
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
         function refreshClassList() {
             const classSelect = document.getElementById('resClassSelect');
+            if(!classSelect) return;
+            
+            // Sabhi students ki class filter karna (chahe field ka naam studentClass ho ya class)
             const classes = [...new Set(mainData
-                .filter(u => u.role === 'student' && u.studentClass) 
-                .map(u => u.studentClass))];
+                .filter(u => u.role === 'student' && (u.studentClass || u.class)) 
+                .map(u => u.studentClass || u.class))];
 
             if(classes.length > 0) {
-                classSelect.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                classSelect.innerHTML = '<option value="">-- Select Class --</option>' + 
+                    classes.map(c => `<option value="${c}">${c}</option>`).join('');
             } else {
-                classSelect.innerHTML = '<option value="">No Classes Found</option>';
+                classSelect.innerHTML = '<option value="">No Students Found</option>';
             }
         }
 
@@ -261,17 +266,17 @@
             const sBody = document.getElementById('sBody');
             tBody.innerHTML = ""; sBody.innerHTML = "";
             data.forEach(u => {
+                const userClass = u.studentClass || u.class || "N/A";
                 const row = `<tr>
                     <td><img src="${u.profilePhoto || '/assets/default-user.png'}" class="table-img"></td>
                     <td>${new Date(u.joinDate).toLocaleDateString()}</td>
                     <td>${u.fname} ${u.lname}</td>
+                    <td><span class="class-badge">${userClass}</span></td>
                     <td><b>${u.username}</b></td>
-                    <td>${u.password}</td>
                     <td>₹${u.financeAmount}</td>
                     <td class="action-icons">
-                        <a href="tel:${u.mobile}" title="Call"><i class="fa fa-phone"></i></a>
-                        <a href="https://wa.me/91${u.mobile}" title="WhatsApp" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
-                        <a href="sms:${u.mobile}" title="SMS" style="color:#38bdf8;"><i class="fa fa-comment-dots"></i></a>
+                        <a href="tel:${u.mobile}"><i class="fa fa-phone"></i></a>
+                        <a href="https://wa.me/91${u.mobile}" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
                     </td>
                 </tr>`;
                 if(u.role === 'teacher') tBody.innerHTML += row;
@@ -279,45 +284,113 @@
             });
         }
 
-        function filterTable(role) {
-            const searchID = document.getElementById(role === 'teacher' ? 'tSearch' : 'sSearch').value.toLowerCase();
-            const start = document.getElementById(role === 'teacher' ? 'tStartDate' : 'sStartDate').value;
-            const end = document.getElementById(role === 'teacher' ? 'tEndDate' : 'sEndDate').value;
-            const filtered = mainData.filter(u => {
-                const matchID = u.username.toLowerCase().includes(searchID);
-                const joinDate = new Date(u.joinDate).toISOString().split('T')[0];
-                const matchDate = (start && end) ? (joinDate >= start && joinDate <= end) : true;
-                return u.role === role && matchID && matchDate;
-            });
-            renderFiltered(filtered, role === 'teacher' ? 'tBody' : 'sBody');
+        async function fetchUserToEdit() {
+            const id = document.getElementById('searchUpdateID').value;
+            const user = mainData.find(u => u.username === id);
+            if(user) {
+                document.getElementById('editForm').style.display = "block";
+                document.getElementById('uFname').value = user.fname || "";
+                document.getElementById('uMname').value = user.mname || "";
+                document.getElementById('uLname').value = user.lname || "";
+                document.getElementById('uMobile').value = user.mobile || "";
+                document.getElementById('uGender').value = user.gender || "Male";
+                document.getElementById('uClass').value = user.studentClass || user.class || "";
+                document.getElementById('uDob').value = user.dob ? user.dob.split('T')[0] : "";
+                document.getElementById('uEmail').value = user.email || "";
+                document.getElementById('uFinance').value = user.financeAmount || "";
+                document.getElementById('uPass').value = user.password || "";
+            } else { alert("User Not Found!"); }
         }
 
-        function renderFiltered(data, bodyId) {
-            const body = document.getElementById(bodyId);
-            body.innerHTML = "";
-            data.forEach(u => {
-                body.innerHTML += `<tr>
-                    <td><img src="${u.profilePhoto || '/assets/default-user.png'}" class="table-img"></td>
-                    <td>${new Date(u.joinDate).toLocaleDateString()}</td>
-                    <td>${u.fname} ${u.lname}</td>
-                    <td><b>${u.username}</b></td>
-                    <td>${u.password}</td>
-                    <td>₹${u.financeAmount}</td>
-                    <td class="action-icons">
-                        <a href="tel:${u.mobile}"><i class="fa fa-phone"></i></a>
-                        <a href="https://wa.me/91${u.mobile}"><i class="fab fa-whatsapp"></i></a>
-                        <a href="sms:${u.mobile}"><i class="fa fa-comment-dots"></i></a>
-                    </td>
-                </tr>`;
+        document.getElementById('editForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('searchUpdateID').value;
+            let photoUrl = null;
+            const file = document.getElementById('uPhotoFile').files[0];
+            if(file) photoUrl = await convertImage(file);
+            const data = {
+                fname: document.getElementById('uFname').value,
+                mname: document.getElementById('uMname').value,
+                lname: document.getElementById('uLname').value,
+                mobile: document.getElementById('uMobile').value,
+                gender: document.getElementById('uGender').value,
+                studentClass: document.getElementById('uClass').value,
+                dob: document.getElementById('uDob').value,
+                email: document.getElementById('uEmail').value,
+                financeAmount: document.getElementById('uFinance').value,
+                password: document.getElementById('uPass').value
+            };
+            if(photoUrl) data.profilePhoto = photoUrl;
+            const res = await fetch(`/api/admin/users/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
             });
+            if(res.ok) { alert("Updated Successfully!"); closeModal('updateModal'); loadData(); }
+        };
+
+        // Baki purane Functions (Result calculation, Excel, Registration, etc.)
+        function loadStudentsForResult() {
+            const selectedClass = document.getElementById('resClassSelect').value;
+            const globalTotal = document.getElementById('globalTotalMarks').value;
+            const tbody = document.getElementById('resultTableBody');
+            tbody.innerHTML = "";
+            if(!selectedClass) return alert("Pahle class select karein!");
+            const students = mainData.filter(u => u.role === 'student' && (u.studentClass === selectedClass || u.class === selectedClass));
+            if(students.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='7'>No students in this class.</td></tr>";
+                return;
+            }
+            students.forEach(u => {
+                tbody.innerHTML += `
+                    <tr data-id="${u.username}">
+                        <td><img src="${u.profilePhoto || '/assets/default-user.png'}" class="table-img"></td>
+                        <td><b>${u.username}</b></td>
+                        <td>${u.fname} ${u.lname}</td>
+                        <td>${u.mobile}</td>
+                        <td><input type="number" class="obtained-marks" value="${u.marksObtained || 0}" oninput="calculateSingleDivision(this)"></td>
+                        <td class="total-marks-cell">${globalTotal}</td>
+                        <td class="division-cell">-</td>
+                    </tr>`;
+            });
+            updateAllDivisions();
         }
 
-        function convertImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
+        function calculateSingleDivision(input) {
+            const row = input.closest('tr');
+            const obtained = parseFloat(input.value) || 0;
+            const total = parseFloat(document.getElementById('globalTotalMarks').value) || 1;
+            const cell = row.querySelector('.division-cell');
+            const percentage = (obtained / total) * 100;
+            if (percentage >= 60) cell.innerHTML = '<span class="division-badge div-first">1st Div</span>';
+            else if (percentage >= 45) cell.innerHTML = '<span class="division-badge div-second">2nd Div</span>';
+            else if (percentage >= 33) cell.innerHTML = '<span class="division-badge div-third">3rd Div</span>';
+            else cell.innerHTML = '<span class="division-badge div-fail">Fail</span>';
+        }
+
+        function updateAllDivisions() {
+            const total = document.getElementById('globalTotalMarks').value;
+            document.querySelectorAll('.total-marks-cell').forEach(td => td.innerText = total);
+            document.querySelectorAll('.obtained-marks').forEach(input => calculateSingleDivision(input));
+        }
+
+        async function saveAllResults() {
+            const rows = document.querySelectorAll('#resultTableBody tr');
+            if (rows.length === 0) return alert("Load students first!");
+            const results = [];
+            const globalTotal = document.getElementById('globalTotalMarks').value;
+            rows.forEach(row => {
+                const obtained = row.querySelector('.obtained-marks').value;
+                const percentage = (parseFloat(obtained) / parseFloat(globalTotal)) * 100;
+                let division = percentage >= 60 ? "1st Div" : percentage >= 45 ? "2nd Div" : percentage >= 33 ? "3rd Div" : "Fail";
+                results.push({ username: row.getAttribute('data-id'), marksObtained: obtained, totalMarks: globalTotal, division: division });
             });
+            const res = await fetch('/api/admin/update-batch-results', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ results })
+            });
+            if(res.ok) { alert("Results Saved!"); loadData(); }
         }
 
         document.getElementById('regForm').onsubmit = async (e) => {
@@ -345,207 +418,26 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             });
-            if(res.ok) { alert("Registered Successfully!"); closeModal('regModal'); loadData(); }
+            if(res.ok) { alert("Registered!"); closeModal('regModal'); loadData(); }
         };
 
-        async function fetchUserToEdit() {
-            const id = document.getElementById('searchUpdateID').value;
-            const user = mainData.find(u => u.username === id);
-            if(user) {
-                document.getElementById('editForm').style.display = "block";
-                document.getElementById('uFname').value = user.fname || "";
-                document.getElementById('uMname').value = user.mname || "";
-                document.getElementById('uLname').value = user.lname || "";
-                document.getElementById('uMobile').value = user.mobile || "";
-                document.getElementById('uGender').value = user.gender || "Male";
-                document.getElementById('uDob').value = user.dob ? user.dob.split('T')[0] : "";
-                document.getElementById('uEmail').value = user.email || "";
-                document.getElementById('uFinance').value = user.financeAmount || "";
-                document.getElementById('uPass').value = user.password || "";
-            } else { alert("User Not Found!"); }
-        }
-
-        document.getElementById('editForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('searchUpdateID').value;
-            let photoUrl = null;
-            const file = document.getElementById('uPhotoFile').files[0];
-            if(file) photoUrl = await convertImage(file);
-            const data = {
-                fname: document.getElementById('uFname').value,
-                mname: document.getElementById('uMname').value,
-                lname: document.getElementById('uLname').value,
-                mobile: document.getElementById('uMobile').value,
-                gender: document.getElementById('uGender').value,
-                dob: document.getElementById('uDob').value,
-                email: document.getElementById('uEmail').value,
-                financeAmount: document.getElementById('uFinance').value,
-                password: document.getElementById('uPass').value
-            };
-            if(photoUrl) data.profilePhoto = photoUrl;
-            const res = await fetch(`/api/admin/users/${id}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            if(res.ok) { alert("Updated Successfully!"); closeModal('updateModal'); loadData(); }
-        };
-
+        function convertImage(file) { return new Promise(resolve => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); }); }
+        function generateCredentials() { document.getElementById('regID').value = "BBCC" + Math.floor(1000+Math.random()*9000); document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase(); }
+        function exportToExcel(id) { const table = document.getElementById(id); XLSX.writeFile(XLSX.utils.table_to_book(table), `Report.xlsx`); }
         async function sendMsg(type, target) {
             const msg = document.getElementById('msgBody').value;
             const tID = document.getElementById('targetID').value;
-            if(type === 'notification' && !tID) return alert("Please enter Target ID!");
-            await fetch('/api/admin/send-comms', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg, type: type, target: tID || target })
-            });
-            alert("Message Sent!"); loadHistory();
+            await fetch('/api/admin/send-comms', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: msg, type: type, target: tID || target }) });
+            alert("Sent!"); loadHistory();
         }
-
         async function loadHistory() {
             const res = await fetch('/api/admin/comms-history');
             const history = await res.json();
             const hBody = document.getElementById('historyBody');
-            hBody.innerHTML = "";
-            history.forEach(h => {
-                hBody.innerHTML += `<tr>
-                    <td><span class="badge">${h.type}</span></td>
-                    <td>${h.target}</td>
-                    <td>${h.message}</td>
-                    <td><button onclick="deleteHistory('${h._id}')" style="color:red; background:none; border:none; cursor:pointer;"><i class="fa fa-trash"></i></button></td>
-                </tr>`;
-            });
+            hBody.innerHTML = history.map(h => `<tr><td>${h.type}</td><td>${h.target}</td><td>${h.message}</td><td><button onclick="deleteHistory('${h._id}')" style="color:red;border:none;background:none;"><i class="fa fa-trash"></i></button></td></tr>`).join('');
         }
-
-        async function deleteHistory(id) {
-            if(confirm("Delete this message?")) {
-                await fetch(`/api/admin/comms/${id}`, { method: 'DELETE' });
-                loadHistory();
-            }
-        }
-
-        function generateCredentials() {
-            document.getElementById('regID').value = "BBCC" + Math.floor(1000+Math.random()*9000);
-            document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase();
-        }
-        function exportToExcel(id) { 
-            const table = document.getElementById(id);
-            XLSX.writeFile(XLSX.utils.table_to_book(table), `Report_${new Date().toLocaleDateString()}.xlsx`); 
-        }
+        async function deleteHistory(id) { if(confirm("Delete?")) { await fetch(`/api/admin/comms/${id}`, { method: 'DELETE' }); loadHistory(); } }
         function logout() { localStorage.clear(); window.location.href="/"; }
-
-        window.onload = loadData;
-
-        // Result Logic
-        function loadStudentsForResult() {
-            const selectedClass = document.getElementById('resClassSelect').value;
-            const globalTotal = document.getElementById('globalTotalMarks').value;
-            const tbody = document.getElementById('resultTableBody');
-            tbody.innerHTML = "";
-
-            if(!selectedClass) return alert("Pahle class select karein!");
-
-            const students = mainData.filter(u => u.role === 'student' && u.studentClass === selectedClass);
-
-            if(students.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>Is class mein koi student nahi mila.</td></tr>";
-                return;
-            }
-
-            students.forEach(u => {
-                const mob = u.mobile || "0000000000";
-                const maskedMob = mob.substring(0, 2) + "******" + mob.substring(mob.length - 2);
-
-                tbody.innerHTML += `
-                    <tr data-id="${u.username}">
-                        <td><img src="${u.profilePhoto || '/assets/default-user.png'}" class="table-img"></td>
-                        <td><b>${u.username}</b></td>
-                        <td>${u.fname} ${u.lname}</td>
-                        <td class="masked-mobile">${maskedMob}</td>
-                        <td>
-                            <input type="number" class="obtained-marks" value="${u.marksObtained || 0}" 
-                            oninput="calculateSingleDivision(this)">
-                        </td>
-                        <td class="total-marks-cell">${globalTotal}</td>
-                        <td class="division-cell">-</td>
-                    </tr>
-                `;
-            });
-            updateAllDivisions();
-        }
-
-        function calculateSingleDivision(input) {
-            const row = input.closest('tr');
-            const obtained = parseFloat(input.value) || 0;
-            const total = parseFloat(document.getElementById('globalTotalMarks').value) || 1;
-            const cell = row.querySelector('.division-cell');
-            const percentage = (obtained / total) * 100;
-            
-            if (percentage >= 60) cell.innerHTML = '<span class="division-badge div-first">1st Div</span>';
-            else if (percentage >= 45) cell.innerHTML = '<span class="division-badge div-second">2nd Div</span>';
-            else if (percentage >= 33) cell.innerHTML = '<span class="division-badge div-third">3rd Div</span>';
-            else cell.innerHTML = '<span class="division-badge div-fail">Fail</span>';
-        }
-
-        function updateAllDivisions() {
-            const total = document.getElementById('globalTotalMarks').value;
-            document.querySelectorAll('.total-marks-cell').forEach(td => td.innerText = total);
-            document.querySelectorAll('.obtained-marks').forEach(input => calculateSingleDivision(input));
-        }
-
-        // Updated Save Function
-        async function saveAllResults() {
-            const rows = document.querySelectorAll('#resultTableBody tr');
-            if (rows.length === 0) return alert("Pahle students load karein!");
-
-            const results = [];
-            const globalTotal = document.getElementById('globalTotalMarks').value;
-
-            rows.forEach(row => {
-                const obtained = row.querySelector('.obtained-marks').value;
-                const percentage = (parseFloat(obtained) / parseFloat(globalTotal)) * 100;
-                
-                let division = "Fail";
-                if (percentage >= 60) division = "1st Div";
-                else if (percentage >= 45) division = "2nd Div";
-                else if (percentage >= 33) division = "3rd Div";
-
-                results.push({
-                    username: row.getAttribute('data-id'),
-                    marksObtained: obtained,
-                    totalMarks: globalTotal,
-                    division: division,
-                    lastUpdated: new Date().toISOString()
-                });
-            });
-
-            const saveBtn = document.querySelector('.save-btn');
-            const originalText = saveBtn.innerText;
-            saveBtn.innerText = "Saving to Cloud...";
-            saveBtn.disabled = true;
-
-            try {
-                const res = await fetch('/api/admin/update-batch-results', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ results })
-                });
-
-                if(res.ok) {
-                    alert("✅ Sabhi students ka result database mein save ho gaya hai!");
-                    loadData(); 
-                } else {
-                    alert("❌ Server error: Data save nahi ho paya.");
-                }
-            } catch (err) {
-                console.error(err);
-                alert("❌ Network error: Connection check karein.");
-            } finally {
-                saveBtn.innerText = originalText;
-                saveBtn.disabled = false;
-            }
-        }
     </script>
 </body>
 </html>
