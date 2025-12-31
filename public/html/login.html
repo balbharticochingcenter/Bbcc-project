@@ -202,43 +202,41 @@
 
     <script src="/js/client.js"></script>
     <script>
-      async function login() {
-    const userID = document.getElementById('username').value;
-    const userPass = document.getElementById('password').value;
+     async function login() {
+            const userID = document.getElementById('username').value;
+            const userPass = document.getElementById('password').value;
 
-    // Basic validation
-    if (!userID || !userPass) {
-        alert("🚨 Error: Please enter both ID and Password!");
-        return;
-    }
+            if (!userID || !userPass) {
+                alert("🚨 Error: Please enter both ID and Password!");
+                return;
+            }
 
-    try {
-        // lddata.js ke login route par request bhejna
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: userID, password: userPass })
-        });
+            try {
+                // Backend URL Render par dynamic hoti hai
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: userID, password: userPass })
+                });
 
-        const data = await response.json();
+                const data = await response.json();
 
-        if (data.success) {
-            // Role ke basis par redirection (Backend se aayi hui URL par)
-            alert(`✅ Welcome ${data.user.fname || 'User'}! Logging in as ${data.user.role}...`);
-            
-            // User ka data local storage mein save karna (Dashboard par dikhane ke liye)
-            localStorage.setItem('userData', JSON.stringify(data.user));
-            
-            window.location.href = data.redirect; 
-        } else {
-            // Agar ID/Pass galat ho
-            alert("❌ " + data.message);
+                if (data.success) {
+                    alert(`✅ Welcome ${data.user.fname || 'User'}!`);
+                    
+                    // User data store karna dashboard ke liye
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    
+                    // Backend se aayi redirect path use karna
+                    window.location.href = data.redirect; 
+                } else {
+                    alert("❌ " + data.message);
+                }
+            } catch (error) {
+                console.error("Login Error:", error);
+                alert("🔌 Connection Error: Check if Render server is awake!");
+            }
         }
-    } catch (error) {
-        console.error("Login Error:", error);
-        alert("🔌 Connection Error: Server is not responding!");
-    }
-}
         // Slider Logic
         let slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
@@ -269,6 +267,7 @@
     </script>
 </body>
 </html>
+
 
 
 
