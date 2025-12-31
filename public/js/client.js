@@ -2,91 +2,111 @@
 const socket = io(); 
 
 socket.on('connect', () => {
-    console.log('✅ VIP Portal Connected! Socket ID:', socket.id);
+    console.log('✅ VIP Portal Connected! ID:', socket.id);
 });
 
 // --- LOGIN LOGIC ---
 function login() {
-    const role = document.getElementById('role').value;
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
     if (!username || !password) {
-        showPopup("Opps! Username aur Password likhna zaroori hai.", "warning");
+        showPopup("Opps! ID aur Password likhna zaroori hai.", "warning");
         return;
     }
 
     fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, username, password })
+        body: JSON.stringify({ username, password })
     })
     .then(res => res.json())
     .then(data => {
         if (data.success) {
-            // Sahi login par dashboard par bhej dega
+            // Login hote hi User ka data browser ki memory (localStorage) mein save karlo
+            localStorage.setItem('vipUser', JSON.stringify(data.user));
             window.location.href = data.redirect;
         } else {
-            // Galat hone par popup dikhayega
             showPopup(data.message, "error");
         }
     })
     .catch(err => {
-        console.error("Login Error:", err);
         showPopup("Server se connection nahi ho raha!", "error");
     });
 }
 
-// --- REAL-TIME NOTIFICATIONS ---
+// --- SMART REAL-TIME NOTIFICATIONS ---
 socket.on('receive-notification', (data) => {
-    // Agar data sirf string hai toh object mein convert karein
-    const msg = typeof data === 'string' ? data : data.message;
-    showPopup(msg, data.type || 'info');
+    // Browser memory se check karo ki main (User) kaun hoon
+    const currentUser = JSON.parse(localStorage.getItem('vipUser'));
+    
+    if (!currentUser) return; // Agar login nahi hai toh kuch mat dikhao
+
+    // Logic: Agar message 'all' ke liye hai, ya phir mere role ke liye hai
+    if (data.target === 'all' || data.target === currentUser.role) {
+        const title = data.type === 'notice' ? "📢 Notice Board" : "🔔 VIP Notification";
+        showPopup(`${data.message}`, data.type === 'notice' ? 'info' : 'warning', title);
+        
+        // Agar dashboard par koi Notice Board list hai toh wahan update karo
+        const noticeList = document.getElementById('liveNoticeList');
+        if (noticeList) {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${data.message}`;
+            noticeList.prepend(li);
+        }
+    }
 });
 
-// Admin ya Teacher se notification bhejne ke liye
-function sendAlert(msg) {
-    if(!msg) return;
-    socket.emit('send-notification', msg);
-}
-
 // --- POPUP UI FUNCTION ---
-function showPopup(message, type) {
+function showPopup(message, type, customTitle = "🔔 VIP Alert") {
     let container = document.getElementById('popupContainer');
     
     if (!container) {
         container = document.createElement('div');
         container.id = 'popupContainer';
-        container.style.cssText = "position: fixed; top: 20px; right: 20px; z-index: 9999;";
+        container.style.cssText = "position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 300px;";
         document.body.appendChild(container);
     }
 
     const popup = document.createElement('div');
     
-    // Type ke hisaab se color badalna
-    let bgColor = "rgba(56, 189, 248, 0.2)"; // Info (Blue)
-    if(type === 'error') bgColor = "rgba(239, 68, 68, 0.2)"; // Red
-    if(type === 'warning') bgColor = "rgba(245, 158, 11, 0.2)"; // Yellow
+    let bgColor = "rgba(56, 189, 248, 0.9)"; // Info (Blue)
+    if(type === 'error') bgColor = "rgba(239, 68, 68, 0.9)"; // Red
+    if(type === 'warning') bgColor = "rgba(245, 158, 11, 0.9)"; // Yellow
 
     popup.style.cssText = `
         background: ${bgColor};
         backdrop-filter: blur(15px);
-        padding: 15px 25px;
-        margin-bottom: 15px;
+        padding: 15px 20px;
+        margin-bottom: 10px;
         border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
-        min-width: 250px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        font-family: 'Segoe UI', sans-serif;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+        font-family: sans-serif;
+        animation: slideIn 0.5s ease-out;
     `;
     
-    popup.innerHTML = `<strong>🔔 VIP Alert:</strong><br>${message}`;
+    popup.innerHTML = `<strong>${customTitle}:</strong><br>${message}`;
     container.appendChild(popup);
 
     setTimeout(() => {
         popup.style.opacity = '0';
         popup.style.transition = '0.5s';
         setTimeout(() => popup.remove(), 500);
-    }, 5000);
+    }, 6000);
+}
+
+// CSS Animation for Popup
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}`;
+document.head.appendChild(style);
+
+// Logout Function
+function logout() {
+    localStorage.removeItem('vipUser');
+    window.location.href = '/';
 }
