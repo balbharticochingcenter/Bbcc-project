@@ -2,55 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Class 5 - Balbharti Coaching</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class 5 - Balbharti Coaching Center</title>
     <link rel="stylesheet" href="/css/class.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+
     <nav class="navbar">
-        <div class="nav-left"><img src="/assets/logo.png" class="logo"></div>
-        <div class="nav-right"><a href="/" style="color:white; text-decoration:none;">Home</a></div>
+        <div class="nav-left">
+            <img src="/assets/logo.png" class="logo">
+            <div class="vip-branding">
+                <h1 class="glow-text">Balbharti Coaching Center</h1>
+                <span class="ptcc-text">Powered by PTCC</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="/" style="color:white; text-decoration:none; font-weight:bold; background:rgba(255,255,255,0.1); padding:8px 20px; border-radius:20px;">Home</a>
+        </div>
     </nav>
 
     <section class="class-hero">
         <div class="class-info">
-            <h1>📘 CLASS 5</h1>
+            <h1>📘 CLASS 5 (All Boards)</h1>
             <ul class="subject-list">
-                <li>English</li><li>Hindi</li><li>Mathematics</li><li>Environmental Studies (EVS)</li>
-                <li>Computer / ICT</li><li>General Knowledge (GK)</li><li>Sanskrit / Urdu</li>
+                <li>English</li>
+                <li>Hindi</li>
+                <li>Mathematics</li>
+                <li>Environmental Studies (EVS)</li>
+                <li>Computer / ICT</li>
+                <li>General Knowledge (GK)</li>
+                <li>Sanskrit / Urdu (Optional)</li>
             </ul>
         </div>
         <div class="class-banner">
-            <img src="/assets/class5.jpg" alt="Class 5 Banner">
+            <img src="/class/class5/banner.jpg" alt="Class 5 Banner">
         </div>
     </section>
 
     <div class="teacher-section">
-        <h3>Our Experts:</h3>
+        <h3 style="margin-bottom:15px; color:#38bdf8;">Meet Your Subject Experts:</h3>
         <div class="teacher-slider">
             <div class="teacher-card active">
-                <img src="/assets/teacher1.jpg" class="teacher-img">
-                <div class="teacher-info"><h4>Santosh Sir</h4><p>Subject: Computer & Logic</p></div>
+                <img src="/class/class5/teacher1.jpg" class="teacher-img">
+                <div class="teacher-info">
+                    <h4>Santosh Sir</h4>
+                    <p>Expert in Computer & Logic</p>
+                </div>
             </div>
             <div class="teacher-card">
-                <img src="/assets/teacher2.jpg" class="teacher-img">
-                <div class="teacher-info"><h4>Anjali Ma'am</h4><p>Subject: Mathematics Specialist</p></div>
+                <img src="/class/class5/teacher2.jpg" class="teacher-img">
+                <div class="teacher-info">
+                    <h4>Specialist Teacher</h4>
+                    <p>Subject: Mathematics & Science</p>
+                </div>
             </div>
         </div>
     </div>
 
     <footer>
-        <p>WhatsApp: 9868698696 | Email: bszbj@gamil.com</p>
-        <p class="dev-credit">Website Developed by Santosh Sir "Ethical Hacker"</p>
+        <div class="footer-info">
+            <p><i class="fab fa-whatsapp"></i> 9868698696 | <i class="far fa-envelope"></i> bszbj@gamil.com</p>
+            <p class="dev-credit">Website Developed by Santosh Sir "Ethical Hacker"</p>
+        </div>
     </footer>
 
     <script>
+        // Automatic Slider Logic
         let current = 0;
         const cards = document.querySelectorAll('.teacher-card');
-        setInterval(() => {
-            cards[current].classList.remove('active');
-            current = (current + 1) % cards.length;
-            cards[current].classList.add('active');
-        }, 3000);
+        if(cards.length > 1) {
+            setInterval(() => {
+                cards[current].classList.remove('active');
+                current = (current + 1) % cards.length;
+                cards[current].classList.add('active');
+            }, 3000);
+        }
     </script>
 </body>
 </html>
