@@ -91,7 +91,106 @@ body { background-color: #0b0f19; color: #ffffff; overflow-x: hidden; }
 .dev-credit span { color: #38bdf8; font-weight: bold; }
 
 /* ===============================
-   MODAL
+   MODERN STYLISH MODAL
 ================================ */
-.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; }
-.modal-content { background: #1e293b; width: 320px; margin: 15% auto; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #38bdf8; }
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px); /* Background dhundhla ho jayega */
+    z-index: 2000;
+    animation: fadeIn 0.4s ease;
+}
+
+.modal-content {
+    background: rgba(30, 41, 59, 0.95);
+    width: 380px;
+    margin: 10% auto;
+    padding: 40px;
+    border-radius: 25px;
+    text-align: center;
+    position: relative;
+    border: 2px solid #38bdf8;
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.4); /* Neon Glow */
+    animation: slideUp 0.5s ease;
+}
+
+.modal-content h2 {
+    font-size: 2rem;
+    margin-bottom: 25px;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Close Button */
+.close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: 0.3s;
+}
+
+.close:hover {
+    color: #ff4757;
+    transform: rotate(90deg);
+}
+
+/* Input Fields */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid #334155;
+    color: #fff;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: 0.3s;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    background: #0f172a;
+}
+
+/* Stylish Login Button */
+.btn-go {
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    width: 100%;
+    padding: 15px;
+    border: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #0f172a;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.4s;
+    text-transform: uppercase;
+}
+
+.btn-go:hover {
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px #38bdf8;
+    transform: translateY(-3px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
