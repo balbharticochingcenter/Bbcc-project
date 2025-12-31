@@ -188,55 +188,48 @@
         </div>
     </footer>
 
-    <div id="loginPopup" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closePopup()">&times;</span>
-            <h2 id="popupTitle">BBCC Login</h2>
-            <div class="input-group">
-                <input type="text" id="username" placeholder="Enter Your ID">
-                <input type="password" id="password" placeholder="Enter Password">
-            </div>
-            <button class="btn-go" onclick="login()">Go to Dashboard</button>
-        </div>
-    </div>
+    
 
     <script src="/js/client.js"></script>
     <script>
-     async function login() {
-            const userID = document.getElementById('username').value;
-            const userPass = document.getElementById('password').value;
+    async function login() {
+    // Trim() se extra space hat jayegi
+    const userID = document.getElementById('username').value.trim();
+    const userPass = document.getElementById('password').value.trim();
 
-            if (!userID || !userPass) {
-                alert("🚨 Error: Please enter both ID and Password!");
-                return;
-            }
+    if (!userID || !userPass) {
+        alert("🚨 Please enter both ID and Password!");
+        return;
+    }
 
-            try {
-                // Backend URL Render par dynamic hoti hai
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: userID, password: userPass })
-                });
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: userID, password: userPass })
+        });
 
-                const data = await response.json();
+        const data = await response.json();
 
-                if (data.success) {
-                    alert(`✅ Welcome ${data.user.fname || 'User'}!`);
-                    
-                    // User data store karna dashboard ke liye
-                    localStorage.setItem('userData', JSON.stringify(data.user));
-                    
-                    // Backend se aayi redirect path use karna
-                    window.location.href = data.redirect; 
-                } else {
-                    alert("❌ " + data.message);
-                }
-            } catch (error) {
-                console.error("Login Error:", error);
-                alert("🔌 Connection Error: Check if Render server is awake!");
-            }
+        if (data.success) {
+            // Check karein ki backend kya bhej raha hai
+            console.log("User Role:", data.user.role);
+            console.log("Redirecting to:", data.redirect);
+
+            localStorage.setItem('userData', JSON.stringify(data.user));
+            
+            alert(`✅ Login Successful! Welcome ${data.user.fname}`);
+            
+            // Seedha redirect
+            window.location.href = data.redirect; 
+        } else {
+            alert("❌ " + data.message);
         }
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("🔌 Server Connection Error!");
+    }
+}
         // Slider Logic
         let slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
@@ -267,6 +260,7 @@
     </script>
 </body>
 </html>
+
 
 
 
