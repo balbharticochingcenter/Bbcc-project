@@ -21,7 +21,7 @@
             min-height: 100vh;
         }
 
-        /* Navbar & Header (Same as Login Page) */
+        /* Navbar & Header */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -117,7 +117,7 @@
         .info-value { color: #fff; font-weight: 600; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 25px; cursor: pointer; }
 
-        /* Footer (Same as Home) */
+        /* Footer */
         .modern-footer { background: #0f172a; padding: 50px 5% 20px; border-top: 1px solid var(--glass); margin-top: 50px; }
         .footer-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; }
         .footer-col { flex: 1; min-width: 250px; }
@@ -217,15 +217,25 @@
     </footer>
 
     <script>
+        // --- SESSION SECURITY CHECK ---
+        (function() {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            
+            if (!userData || userData.role !== 'student') {
+                alert("⛔ Access Denied! Please login as Student.");
+                window.location.href = "/"; 
+                // Execution rokne ke liye
+                document.body.innerHTML = "Redirecting...";
+            }
+        })();
+        // ------------------------------
+
         // Data Load Karo (LocalStorage se)
         document.addEventListener('DOMContentLoaded', () => {
             const userData = JSON.parse(localStorage.getItem('userData'));
 
-            if (!userData) {
-                alert("Please login first!");
-                window.location.href = "/";
-                return;
-            }
+            // Check if user exists (Double check for safety)
+            if (!userData) return;
 
             // Dashboard par data bharna
             document.getElementById('welcomeName').innerText = `Welcome, ${userData.fname}!`;
