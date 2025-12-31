@@ -12,247 +12,180 @@
 
     <nav class="navbar">
         <div class="nav-left"><img src="/assets/logo.png" alt="Logo" class="logo"></div>
-        <div class="nav-center"><h1 class="glow-text">Balbharti Coaching Center</h1></div>
+        <div class="nav-center"><h1 class="glow-text">BBCC Portal Control</h1></div>
         <div class="nav-right">
-            <div class="profile-dropdown">
-                <div class="profile-trigger">
-                    <img src="/assets/admin-avatar.png" id="navAvatar" alt="Admin">
-                    <span id="adminDisplayName">Admin Profile</span>
-                </div>
-                <div class="dropdown-menu">
-                    <button class="logout-btn" onclick="logout()">Logout</button>
-                </div>
-            </div>
+            <span id="adminDisplayName">Admin</span>
+            <button class="logout-mini" onclick="logout()"><i class="fa fa-sign-out-alt"></i></button>
         </div>
     </nav>
 
-    <div class="dashboard-content">
-        <div class="admin-grid">
-            <section class="card registration-card">
-                <h2><i class="fa fa-user-plus"></i> User Registration</h2>
-                <form id="regForm">
-                    <div class="form-grid">
-                        <input type="text" id="fname" placeholder="First Name" required>
-                        <input type="text" id="mname" placeholder="Middle Name">
-                        <input type="text" id="lname" placeholder="Last Name" required>
-                        <input type="text" id="regMobile" placeholder="Mobile Number" required>
-                        <select id="regRole" onchange="toggleFinancePlaceholder()">
-                            <option value="student">Student</option>
-                            <option value="teacher">Teacher</option>
-                        </select>
-                        <input type="number" id="financeAmount" placeholder="Monthly Fees">
-                        <input type="date" id="joinDate" required>
-                        <div class="id-pass-container">
-                            <input type="text" id="regID" placeholder="Manual ID" required>
-                            <input type="text" id="regPass" placeholder="Password" required>
-                            <button type="button" onclick="generateCredentials()" class="gen-btn">Gen</button>
-                        </div>
-                    </div>
-                    <button type="submit" class="submit-btn">Register & Save to DB</button>
-                </form>
-            </section>
+    <div class="main-menu">
+        <button class="menu-btn" onclick="openModal('regModal')">
+            <i class="fa fa-user-plus"></i> <span>New Registration</span>
+        </button>
+        <button class="menu-btn" onclick="openModal('commModal')">
+            <i class="fa fa-bullhorn"></i> <span>Communications</span>
+        </button>
+        <button class="menu-btn" onclick="openModal('teacherModal')">
+            <i class="fa fa-chalkboard-teacher"></i> <span>Teacher Mgmt</span>
+        </button>
+        <button class="menu-btn" onclick="openModal('studentModal')">
+            <i class="fa fa-user-graduate"></i> <span>Student Mgmt</span>
+        </button>
+    </div>
 
-            <section class="card communication-card">
-                <h2><i class="fa fa-bullhorn"></i> Communications Center</h2>
-                
-                <div class="comm-split">
-                    <div class="comm-box">
-                        <h3>Official Notices (Public)</h3>
-                        <textarea id="noticeMsg" placeholder="Type official notice here..."></textarea>
-                        <div class="comms-actions">
-                            <button onclick="sendComms('notice', 'teacher')" class="btn-t">Teacher</button>
-                            <button onclick="sendComms('notice', 'student')" class="btn-s">Student</button>
-                            <button onclick="sendComms('notice', 'all')" class="btn-a">All</button>
-                        </div>
-                    </div>
-                    <div class="comm-box">
-                        <h3>App Notifications (Alerts)</h3>
-                        <textarea id="notifMsg" placeholder="Type app notification here..."></textarea>
-                        <div class="comms-actions">
-                            <button onclick="sendComms('notification', 'teacher')" class="btn-t">Teacher</button>
-                            <button onclick="sendComms('notification', 'student')" class="btn-s">Student</button>
-                            <button onclick="sendComms('notification', 'all')" class="btn-a">All</button>
-                        </div>
+    <div id="regModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('regModal')">&times;</span>
+            <h2><i class="fa fa-id-card"></i> User Registration</h2>
+            <form id="regForm">
+                <div class="modal-grid">
+                    <input type="text" id="fname" placeholder="First Name" required>
+                    <input type="text" id="mname" placeholder="Middle Name">
+                    <input type="text" id="lname" placeholder="Last Name" required>
+                    <input type="text" id="regMobile" placeholder="Mobile Number" required>
+                    <select id="gender"><option value="Male">Male</option><option value="Female">Female</option></select>
+                    <select id="regRole" onchange="toggleFinance()">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                    <input type="date" id="dob" title="Date of Birth">
+                    <input type="email" id="email" placeholder="Email ID">
+                    <input type="text" id="photo" placeholder="Photo URL (Link)">
+                    <input type="number" id="financeAmount" placeholder="Fees/Salary">
+                    <div class="id-pass-group">
+                        <input type="text" id="regID" placeholder="User ID/Roll No">
+                        <input type="text" id="regPass" placeholder="Password">
+                        <button type="button" onclick="generateCredentials()">Gen</button>
                     </div>
                 </div>
-
-                <div class="history-grid">
-                    <div class="history-box"><h4>Old Notices</h4><ul id="noticeHistory"></ul></div>
-                    <div class="history-box"><h4>Old Notifications</h4><ul id="notifHistory"></ul></div>
-                </div>
-            </section>
+                <button type="submit" class="save-btn">Save to Cloud DB</button>
+            </form>
         </div>
+    </div>
 
-        <section class="card table-card">
-            <div class="card-header">
-                <h2><i class="fa fa-chalkboard-teacher"></i> Teacher Management</h2>
-                <div class="search-box">
-                    <input type="text" id="searchTeacherID" placeholder="Search ID...">
-                    <input type="date" id="searchTeacherDate">
-                    <button onclick="filterTable('teacher')" class="search-btn"><i class="fa fa-search"></i></button>
-                </div>
-                <button onclick="exportToExcel('teacherTable')" class="dl-btn">Excel</button>
+    <div id="commModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('commModal')">&times;</span>
+            <h2><i class="fa fa-broadcast-tower"></i> Send Messages</h2>
+            <textarea id="msgBody" placeholder="Write notice or private message here..."></textarea>
+            <div class="target-row">
+                <input type="text" id="targetID" placeholder="Specific ID (Optional for Private)">
             </div>
-            <table id="teacherTable">
-                <thead>
-                    <tr><th>Date</th><th>Name</th><th>ID</th><th>Password</th><th>Salary</th><th>Status</th><th>Contact</th></tr>
-                </thead>
-                <tbody id="teacherTableBody"></tbody>
-            </table>
-        </section>
+            <div class="btn-group">
+                <button onclick="sendMsg('notice', 'teacher')" class="btn-t">To Teachers</button>
+                <button onclick="sendMsg('notice', 'student')" class="btn-s">To Students</button>
+                <button onclick="sendMsg('notification', 'private')" class="btn-p">Private (By ID)</button>
+            </div>
+        </div>
+    </div>
 
-        <section class="card table-card">
-            <div class="card-header">
-                <h2><i class="fa fa-user-graduate"></i> Student Management</h2>
-                <div class="search-box">
-                    <input type="text" id="searchStudentID" placeholder="Search ID...">
-                    <input type="date" id="searchStudentDate">
-                    <button onclick="filterTable('student')" class="search-btn"><i class="fa fa-search"></i></button>
-                </div>
-                <button onclick="exportToExcel('studentTable')" class="dl-btn">Excel</button>
+    <div id="teacherModal" class="modal wide-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('teacherModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Teacher Records</h2>
+                <button onclick="exportToExcel('teacherTable')" class="excel-btn">Excel</button>
             </div>
-            <table id="studentTable">
-                <thead>
-                    <tr><th>Date</th><th>Name</th><th>ID</th><th>Password</th><th>Fees</th><th>Status</th><th>Contact</th></tr>
-                </thead>
-                <tbody id="studentTableBody"></tbody>
-            </table>
-        </section>
+            <div class="table-scroll">
+                <table id="teacherTable">
+                    <thead>
+                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Pass</th><th>Salary</th><th>Contact</th></tr>
+                    </thead>
+                    <tbody id="tBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="studentModal" class="modal wide-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('studentModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Student Records</h2>
+                <button onclick="exportToExcel('studentTable')" class="excel-btn">Excel</button>
+            </div>
+            <div class="table-scroll">
+                <table id="studentTable">
+                    <thead>
+                        <tr><th>Photo</th><th>Date</th><th>Name</th><th>ID</th><th>Pass</th><th>Fees</th><th>Contact</th></tr>
+                    </thead>
+                    <tbody id="sBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let allUsers = [];
 
-        // Security & Display Name
-        const adminData = JSON.parse(localStorage.getItem('userData'));
-        if(!adminData || adminData.role !== 'admin') window.location.href = '/';
-        else document.getElementById('adminDisplayName').innerText = adminData.fname + " " + adminData.lname;
+        // Modal Functions
+        function openModal(id) { document.getElementById(id).style.display = "block"; loadData(); }
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-        // --- 1. Load Data ---
+        // Data Loading
         async function loadData() {
-            try {
-                // Fetch Users
-                const uRes = await fetch('/api/admin/users');
-                allUsers = await uRes.json();
-                renderTables(allUsers);
+            const res = await fetch('/api/admin/users');
+            const users = await res.json();
+            const tBody = document.getElementById('tBody');
+            const sBody = document.getElementById('sBody');
+            tBody.innerHTML = ""; sBody.innerHTML = "";
 
-                // Fetch Comms History
-                const cRes = await fetch('/api/admin/comms-history');
-                const history = await cRes.json();
-                renderHistory(history);
-            } catch (err) { console.error(err); }
-        }
-
-        function renderTables(data) {
-            const sBody = document.getElementById('studentTableBody');
-            const tBody = document.getElementById('teacherTableBody');
-            sBody.innerHTML = ""; tBody.innerHTML = "";
-
-            data.forEach(user => {
+            users.forEach(u => {
                 const row = `<tr>
-                    <td>${user.joinDate}</td>
-                    <td>${user.fname} ${user.lname}</td>
-                    <td><b>${user.username}</b></td>
-                    <td>${user.password}</td>
-                    <td>₹${user.financeAmount}</td>
-                    <td><span class="status-badge">${user.paymentStatus || 'Unpaid'}</span></td>
-                    <td class="action-icons">
-                        <a href="tel:${user.mobile}"><i class="fa fa-phone"></i></a>
-                        <a href="https://wa.me/91${user.mobile}" target="_blank"><i class="fab fa-whatsapp"></i></a>
-                    </td>
+                    <td><img src="${u.profilePhoto}" class="table-img"></td>
+                    <td>${new Date(u.joinDate).toLocaleDateString()}</td>
+                    <td>${u.fname} ${u.lname}</td>
+                    <td><b>${u.username}</b></td>
+                    <td>${u.password}</td>
+                    <td>₹${u.financeAmount}</td>
+                    <td><a href="tel:${u.mobile}"><i class="fa fa-phone"></i></a></td>
                 </tr>`;
-                if(user.role === 'student') sBody.innerHTML += row;
-                else if(user.role === 'teacher') tBody.innerHTML += row;
+                if(u.role === 'teacher') tBody.innerHTML += row;
+                else sBody.innerHTML += row;
             });
         }
 
-        function renderHistory(history) {
-            const nLog = document.getElementById('noticeHistory');
-            const ntLog = document.getElementById('notifHistory');
-            nLog.innerHTML = ""; ntLog.innerHTML = "";
-
-            history.forEach(item => {
-                const li = `<li>[${item.target.toUpperCase()}] ${item.message}</li>`;
-                if(item.type === 'notice') nLog.innerHTML += li;
-                else ntLog.innerHTML += li;
-            });
-        }
-
-        // --- 2. Registration ---
+        // Registration
         document.getElementById('regForm').onsubmit = async (e) => {
             e.preventDefault();
-            const newUser = {
-                fname: document.getElementById('fname').value,
-                mname: document.getElementById('mname').value,
-                lname: document.getElementById('lname').value,
+            const data = {
                 username: document.getElementById('regID').value,
                 password: document.getElementById('regPass').value,
-                role: document.getElementById('regRole').value,
+                fname: document.getElementById('fname').value,
+                lname: document.getElementById('lname').value,
                 mobile: document.getElementById('regMobile').value,
+                role: document.getElementById('regRole').value,
                 financeAmount: document.getElementById('financeAmount').value,
-                joinDate: document.getElementById('joinDate').value
+                profilePhoto: document.getElementById('photo').value || "/assets/default-user.png"
             };
             const res = await fetch('/api/admin/create-user', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(newUser)
+                body: JSON.stringify(data)
             });
-            if(res.ok) { alert("User Saved!"); loadData(); }
+            if(res.ok) { alert("Registered!"); closeModal('regModal'); }
         };
 
-        // --- 3. Advanced Search/Filter ---
-        function filterTable(role) {
-            const idKey = role === 'student' ? 'searchStudentID' : 'searchTeacherID';
-            const dateKey = role === 'student' ? 'searchStudentDate' : 'searchTeacherDate';
-            
-            const searchID = document.getElementById(idKey).value.toLowerCase();
-            const searchDate = document.getElementById(dateKey).value;
-
-            const filtered = allUsers.filter(u => {
-                const matchID = u.username.toLowerCase().includes(searchID);
-                const matchDate = searchDate ? u.joinDate === searchDate : true;
-                return u.role === role && matchID && matchDate;
-            });
-
-            renderTables(filtered);
+        function generateCredentials() {
+            document.getElementById('regID').value = "BBCC" + Math.floor(1000+Math.random()*9000);
+            document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase();
         }
 
-        // --- 4. Dual Comms (Save & Broadcast) ---
-        async function sendComms(type, target) {
-            const fieldID = type === 'notice' ? 'noticeMsg' : 'notifMsg';
-            const msg = document.getElementById(fieldID).value;
-            if(!msg) return alert("Message is empty!");
-
+        async function sendMsg(type, target) {
+            const msg = document.getElementById('msgBody').value;
+            const tID = document.getElementById('targetID').value;
             const res = await fetch('/api/admin/send-comms', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg, target: target, type: type })
+                body: JSON.stringify({ message: msg, type: type, target: tID || target })
             });
-
-            if(res.ok) {
-                alert(`${type} Sent Successfully!`);
-                document.getElementById(fieldID).value = "";
-                loadData();
-            }
+            if(res.ok) alert("Sent!");
         }
 
-        // --- Helpers ---
-        function generateCredentials() {
-            document.getElementById('regID').value = "BBCC" + Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase();
-        }
-        function toggleFinancePlaceholder() {
-            const role = document.getElementById('regRole').value;
-            document.getElementById('financeAmount').placeholder = (role === 'student') ? "Monthly Fees" : "Monthly Salary";
-        }
-        function exportToExcel(tID) {
-            XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(tID)), `${tID}.xlsx`);
-        }
-        function logout() { localStorage.clear(); window.location.href = '/'; }
-
-        window.onload = loadData;
+        function exportToExcel(id) { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById(id)), `Report.xlsx`); }
+        function logout() { localStorage.clear(); window.location.href="/"; }
     </script>
 </body>
 </html>
