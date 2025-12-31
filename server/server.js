@@ -10,24 +10,19 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Render.com compatibility
 const PORT = process.env.PORT || 3000;
 
 // --- DATABASE CONNECTION ---
-// Render ke dashboard mein Environment Variable "MONGO_URI" zaroor set karein
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/BBCC_Portal'; 
-
+const MONGO_URI = process.env.MONGO_URI; 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ VIP Database Connected via Atlas/Render"))
-    .catch(err => console.error("❌ MongoDB Connection Error:", err));
+    .then(() => console.log("✅ VIP Database Connected"))
+    .catch(err => console.error("❌ DB Error:", err));
 
 // --- SCHEMAS ---
-
-// 1. User Schema (Detailed)
 const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
-    role: { type: String, required: true }, // admin, teacher, student
+    role: { type: String, required: true }, 
     fname: String,
     mname: String,
     lname: String,
@@ -40,7 +35,6 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// 2. Communication Schema (Notice Board)
 const commsSchema = new mongoose.Schema({
     message: String,
     type: String, 
@@ -49,15 +43,16 @@ const commsSchema = new mongoose.Schema({
 });
 const Comms = mongoose.model('Comms', commsSchema);
 
-// --- MIDDLEWARES ---
+// --- MIDDLEWARES & STATIC FILES ---
 app.use(cors());
 app.use(bodyParser.json());
-// Static files setup
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Kyunki server.js 'server/' folder mein hai, hume ek step bahar nikal kar 'public' mein jaana hoga
+const publicPath = path.join(__dirname, '../public');
+app.use(express.static(publicPath));
 
 // --- API ROUTES ---
 
-// 1. Login Logic
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -67,54 +62,33 @@ app.post('/login', async (req, res) => {
             if (user.role === 'admin') redirectPath = '/html/admin-dashboard.html';
             if (user.role === 'teacher') redirectPath = '/html/teacher-dashboard.html';
             
-            const { password, ...userData } = user._doc;
+            const { password: _, ...userData } = user._doc;
             res.json({ success: true, redirect: redirectPath, user: userData });
         } else {
             res.json({ success: false, message: "Invalid ID or Password!" });
         }
-    } catch (err) { 
-        res.status(500).json({ success: false, message: "Server Error" }); 
-    }
+    } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 2. Register New User (Admin function)
 app.post('/api/admin/create-user', async (req, res) => {
     try {
         const newUser = new User(req.body);
         await newUser.save();
-        res.json({ success: true, message: "User registered in VIP Database!" });
-    } catch (err) {
-        res.json({ success: false, message: "ID already exists or Data Error!" });
-    }
+        res.json({ success: true, message: "User registered!" });
+    } catch (err) { res.json({ success: false, message: "ID exists!" }); }
 });
 
-// 3. Get All Users
-app.get('/api/admin/users', async (req, res) => {
-    try {
-        const users = await User.find({}).select('-password');
-        res.json(users);
-    } catch (err) { res.status(500).send(err); }
+// --- HTML ROUTES (Sahi Paths) ---
+
+// Base URL (https://balbharticoachingcenter.onrender.com/) pe ye khulega
+app.get('/', (req, res) => {
+    res.sendFile(path.join(publicPath, 'html/login.html'));
 });
 
-// 4. Socket.io Notification Trigger
-app.post('/api/admin/send-comms', async (req, res) => {
-    try {
-        const newMsg = new Comms(req.body);
-        await newMsg.save();
-        io.emit('receive-notification', req.body); 
-        res.json({ success: true });
-    } catch (err) { res.json({ success: false }); }
+// Baaki saare pages ke liye
+app.get('/html/:page', (req, res) => {
+    res.sendFile(path.join(publicPath, 'html', req.params.page));
 });
-
-// 5. Notification History
-app.get('/api/comms/history', async (req, res) => {
-    const history = await Comms.find().sort({ date: -1 }).limit(10);
-    res.json(history);
-});
-
-// --- HTML ROUTES ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/html/login.html')));
-app.get('/admin-dashboard.html', (req, res) => res.sendFile(path.join(__dirname, 'public/html/admin-dashboard.html')));
 
 // --- SERVER START ---
 server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server Live on Port: ${PORT}`));
