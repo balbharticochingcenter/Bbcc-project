@@ -2,58 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - BBCC Templet</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.0/socket.io.js"></script>
-    <script src="../js/client.js" defer></script>
+    <title>VIP Admin Panel</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 40px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155; }
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
+        input:checked + .slider { background-color: #38bdf8; }
+    </style>
 </head>
-<body class="dark-mode">
-    <header class="glass-header">
-        <h1>Admin CMS Panel</h1>
-        <button id="dark-mode-toggle" class="toggle-btn">Toggle Light Mode</button>
-    </header>
-    <main class="glass-container">
-        <h2>Toggle Website Sections</h2>
-        <div class="toggle-section">
-            <label for="gallery-toggle">Gallery Section:</label>
-            <input type="checkbox" id="gallery-toggle" class="toggle-switch">  <!-- Yeh toggle switch gallery on/off karta hai. -->
-            <label for="courses-toggle">Courses Section:</label>
-            <input type="checkbox" id="courses-toggle" class="toggle-switch">
-            <label for="admission-toggle">Admission Section:</label>
-            <input type="checkbox" id="admission-toggle" class="toggle-switch">
+<body style="background:#0f172a; color:white;">
+    <h1 style="text-align:center; padding-top:40px;">VIP Admin Control Center</h1>
+    
+    <div class="admin-grid">
+        <div class="card">
+            <h3>Website Features</h3>
+            <p>Show Gallery: <label class="switch"><input type="checkbox" id="galleryToggle" checked onchange="updateSite()"><span class="slider"></span></label></p>
+            <p>Show Admission: <label class="switch"><input type="checkbox" id="admissionToggle" checked onchange="updateSite()"><span class="slider"></span></label></p>
         </div>
-        <button id="save-toggles" class="btn-primary">Save Changes</button>  <!-- Yeh button changes save karta hai. -->
-        <p id="message"></p>
-    </main>
+
+        <div class="card">
+            <h3>Live News / Notice</h3>
+            <input type="text" id="newsText" placeholder="Update News" style="width:80%">
+            <button class="btn-main" style="width:auto; margin-top:10px;" onclick="updateSite()">Update Notice</button>
+        </div>
+
+        <div class="card">
+            <h3>Send Alert To All</h3>
+            <button class="btn-main" onclick="sendAlert('VIP Alert: Tomorrow is a holiday!')">Send Holiday Notice</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/client.js"></script>
     <script>
-        // Yeh script toggles ko load aur save karta hai via backend.
-        async function loadToggles() {
-            const response = await fetch('/admin/toggles');
-            const toggles = await response.json();
-            document.getElementById('gallery-toggle').checked = toggles.gallery;
-            document.getElementById('courses-toggle').checked = toggles.courses;
-            document.getElementById('admission-toggle').checked = toggles.admission;
-        }
-        loadToggles();  // Yeh page load par toggles load karta hai.
-        document.getElementById('save-toggles').addEventListener('click', async () => {
-            const toggles = {
-                gallery: document.getElementById('gallery-toggle').checked,
-                courses: document.getElementById('courses-toggle').checked,
-                admission: document.getElementById('admission-toggle').checked
+        function updateSite() {
+            const data = {
+                showGallery: document.getElementById('galleryToggle').checked,
+                showAdmission: document.getElementById('admissionToggle').checked,
+                announcement: document.getElementById('newsText').value
             };
-            await fetch('/admin/toggles', {
+            fetch('/api/admin/update-site', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(toggles)
-            });
-            document.getElementById('message').textContent = 'Changes saved!';
-        });
-        // Dark mode toggle
-        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            document.body.classList.toggle('dark-mode');
-        });
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(res => alert("Settings Updated Live!"));
+        }
     </script>
 </body>
 </html>
