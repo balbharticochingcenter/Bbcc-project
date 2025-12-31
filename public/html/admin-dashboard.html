@@ -6,6 +6,7 @@
     <title>VIP Admin Panel | BBCC</title>
     <link rel="stylesheet" href="/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -29,80 +30,139 @@
                         <p id="profRole">Super Admin</p>
                     </div>
                     <div class="profile-details">
-                        <p><i class="fa fa-id-badge"></i> Name: <span>Santosh Kumar</span></p>
                         <p><i class="fa fa-phone"></i> Mobile: <span>9868698696</span></p>
                         <p><i class="fa fa-envelope"></i> Email: <span>bszbj@gmail.com</span></p>
                     </div>
-                    <button class="edit-btn"><i class="fa fa-edit"></i> Edit Profile</button>
                     <button class="logout-btn" onclick="logout()"><i class="fa fa-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="main-layout">
-        <section class="admin-section">
-            <div class="card">
-                <h2><i class="fa fa-user-plus"></i> New Registration</h2>
+    <div class="dashboard-content">
+        <div class="admin-grid">
+            <section class="card registration-card">
+                <h2><i class="fa fa-user-plus"></i> User Registration</h2>
                 <form id="regForm" onsubmit="handleRegistration(event)">
                     <div class="form-grid">
                         <input type="text" id="fname" placeholder="First Name" required>
                         <input type="text" id="mname" placeholder="Middle Name">
                         <input type="text" id="lname" placeholder="Last Name" required>
                         <input type="text" id="regMobile" placeholder="Mobile Number" required>
-                        <input type="email" id="regEmail" placeholder="Email ID">
-                        <select id="regRole">
+                        <select id="regRole" onchange="toggleFinancePlaceholder()">
                             <option value="student">Student</option>
                             <option value="teacher">Teacher</option>
-                            <option value="admin">Admin</option>
                         </select>
+                        <input type="number" id="financeAmount" placeholder="Monthly Fees">
+                        <input type="date" id="joinDate" required>
                         <div class="id-pass-container">
-                            <input type="text" id="regID" placeholder="Manual ID or Auto">
+                            <input type="text" id="regID" placeholder="Manual ID">
                             <input type="text" id="regPass" placeholder="Password">
                             <button type="button" onclick="generateCredentials()" class="gen-btn">Generate</button>
                         </div>
-                        <input type="file" id="regPhoto" accept="image/*">
                     </div>
-                    <button type="submit" class="submit-btn">Register User</button>
+                    <button type="submit" class="submit-btn">Register & Save to DB</button>
                 </form>
+            </section>
+
+            <section class="card communication-card">
+                <h2><i class="fa fa-bullhorn"></i> Communications</h2>
+                <textarea id="notifMsg" placeholder="Type notice or notification here..."></textarea>
+                <div class="comms-actions">
+                    <button onclick="sendBroadcast('teacher')" class="btn-t">Teacher Only</button>
+                    <button onclick="sendBroadcast('student')" class="btn-s">Student Only</button>
+                    <button onclick="sendBroadcast('all')" class="btn-a">Notice Board (All)</button>
+                </div>
+                <div class="history-grid">
+                    <div class="history-box">
+                        <h4>Old Notices</h4>
+                        <ul id="noticeHistory"></ul>
+                    </div>
+                    <div class="history-box">
+                        <h4>Old Notifications</h4>
+                        <ul id="notifHistory"></ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section class="card table-card">
+            <div class="card-header">
+                <h2><i class="fa fa-chalkboard-teacher"></i> Teacher Management</h2>
+                <button onclick="exportToExcel('teacherTable')" class="dl-btn"><i class="fa fa-file-excel"></i> Download Excel</button>
             </div>
+            <table id="teacherTable">
+                <thead>
+                    <tr>
+                        <th>Date</th><th>Name</th><th>ID</th><th>Salary</th><th>Payment</th><th>Contact</th>
+                    </tr>
+                </thead>
+                <tbody id="teacherTableBody"></tbody>
+            </table>
         </section>
 
-        <section class="admin-section">
-            <div class="card notification-card">
-                <h2><i class="fa fa-bullhorn"></i> Send Notifications</h2>
-                <textarea id="notifMsg" placeholder="Write message here..."></textarea>
-                <div class="btn-group">
-                    <button onclick="sendTo('teacher')" class="btn-t"><i class="fa fa-user-tie"></i> To Teacher</button>
-                    <button onclick="sendTo('student')" class="btn-s"><i class="fa fa-user-graduate"></i> To Student</button>
-                    <button onclick="sendTo('all')" class="btn-a"><i class="fa fa-globe"></i> Notice Board (All)</button>
-                </div>
+        <section class="card table-card">
+            <div class="card-header">
+                <h2><i class="fa fa-user-graduate"></i> Student Management</h2>
+                <button onclick="exportToExcel('studentTable')" class="dl-btn"><i class="fa fa-file-excel"></i> Download Excel</button>
             </div>
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>Date</th><th>Name</th><th>ID</th><th>Fees</th><th>Status</th><th>Contact</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody"></tbody>
+            </table>
         </section>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/client.js"></script>
     <script>
+        // 1. Generate Credentials
         function generateCredentials() {
-            const randomID = "BBCC" + Math.floor(1000 + Math.random() * 9000);
-            const randomPass = Math.random().toString(36).slice(-8);
-            document.getElementById('regID').value = randomID;
-            document.getElementById('regPass').value = randomPass;
+            const id = "BBCC" + Math.floor(1000 + Math.random() * 9000);
+            const pass = Math.random().toString(36).slice(-6);
+            document.getElementById('regID').value = id;
+            document.getElementById('regPass').value = pass;
         }
 
+        // 2. Toggle Fees/Salary Label
+        function toggleFinancePlaceholder() {
+            const role = document.getElementById('regRole').value;
+            document.getElementById('financeAmount').placeholder = (role === 'student') ? "Monthly Fees" : "Monthly Salary";
+        }
+
+        // 3. Export to Excel
+        function exportToExcel(tableID) {
+            const table = document.getElementById(tableID);
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Records"});
+            XLSX.writeFile(wb, `${tableID}_Export.xlsx`);
+        }
+
+        // 4. Registration (Dummy Logic for UI)
         function handleRegistration(e) {
             e.preventDefault();
-            // Data collection and fetch logic here (connects to your server.js API)
-            alert("User Registered Successfully!");
-        }
-
-        function sendTo(target) {
-            const msg = document.getElementById('notifMsg').value;
-            if(!msg) return alert("Message cannot be empty!");
-            // Socket logic
-            socket.emit('send-notification', { message: msg, target: target });
-            alert("Broadcasted to: " + target);
+            const role = document.getElementById('regRole').value;
+            const mobile = document.getElementById('regMobile').value;
+            const name = document.getElementById('fname').value + " " + document.getElementById('lname').value;
+            
+            // Add to Table (For Demo)
+            const tableBody = role === 'student' ? 'studentTableBody' : 'teacherTableBody';
+            const row = `<tr>
+                <td>${document.getElementById('joinDate').value}</td>
+                <td>${name}</td>
+                <td>${document.getElementById('regID').value}</td>
+                <td>${document.getElementById('financeAmount').value}</td>
+                <td><span class="status-unpaid">Unpaid</span></td>
+                <td class="action-icons">
+                    <a href="tel:${mobile}"><i class="fa fa-phone"></i></a>
+                    <a href="https://wa.me/${mobile}" target="_blank"><i class="fa fa-whatsapp"></i></a>
+                    <a href="sms:${mobile}"><i class="fa fa-comment-dots"></i></a>
+                </td>
+            </tr>`;
+            document.getElementById(tableBody).innerHTML += row;
+            alert("Registered and stored in local view!");
         }
 
         function logout() { window.location.href = '/'; }
