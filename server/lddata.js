@@ -1,19 +1,23 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Naya add kiya hai cross-origin request ke liye
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // lddata server ka port
 
-// --- MONGODB CONNECTION ---
-// MONGO_URI aapne environment variable mein rakha hai
+// Render.com ke liye PORT setting: process.env.PORT Render khud deta hai
+const PORT = process.env.PORT || 3000;
+
+// --- DATABASE CONNECTION ---
+// Render ke dashboard mein "MONGO_URI" variable set karein
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/BBCC_Portal'; 
+
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ BBCC VIP Database Linked Successfully"))
+    .then(() => console.log("✅ BBCC VIP Database Linked Successfully (Atlas/Render)"))
     .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-// --- USER SCHEMA (Database Structure) ---
+// --- USER SCHEMA ---
 const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
@@ -29,21 +33,22 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 // --- MIDDLEWARES ---
+app.use(cors()); // Isse login button backend se connect ho payega
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../public'))); // Aapki frontend files ki location
+// Render par static files serve karne ke liye sahi path setup
+app.use(express.static(path.join(__dirname, 'public'))); 
 
 // --- ROLE-BASED LOGIN API ---
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        // Database mein User dhoondhna
         const user = await User.findOne({ username });
 
         if (user && user.password === password) {
-            // User mil gaya aur password sahi hai, ab Role check karenge
             let redirectPath = '';
 
+            // Role check logic
             if (user.role === 'admin') {
                 redirectPath = '/html/admin-dashboard.html';
             } else if (user.role === 'teacher') {
@@ -52,7 +57,6 @@ app.post('/login', async (req, res) => {
                 redirectPath = '/html/student-dashboard.html';
             }
 
-            // Security ke liye password ko response se hata dena
             const { password, ...userData } = user._doc;
 
             res.json({ 
@@ -62,7 +66,6 @@ app.post('/login', async (req, res) => {
             });
 
         } else {
-            // Agar ID ya Password galat hai
             res.json({ success: false, message: "Invalid ID or Password!" });
         }
     } catch (err) {
@@ -72,18 +75,23 @@ app.post('/login', async (req, res) => {
 });
 
 // --- ADMIN API: CREATE NEW USER ---
-// Ise admin dashboard se call kiya jayega naye student/teacher add karne ke liye
 app.post('/api/admin/create-user', async (req, res) => {
     try {
         const newUser = new User(req.body);
         await newUser.save();
-        res.json({ success: true, message: "User added to Database!" });
+        res.json({ success: true, message: "User added successfully!" });
     } catch (err) {
-        res.json({ success: false, message: "Error: User ID might already exist!" });
+        res.json({ success: false, message: "Error: ID already exists!" });
     }
 });
 
+// Default Route (Homepage)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/html/login.html'));
+});
+
 // --- SERVER START ---
-app.listen(PORT, () => {
-    console.log(`🚀 LD-DATA Backend is running on: http://localhost:${PORT}`);
+// Render ke liye '0.0.0.0' par bind karna zaroori hai
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server Live on Port: ${PORT}`);
 });
