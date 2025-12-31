@@ -23,11 +23,29 @@
             </div>
         </div>
 
-        <div class="nav-right">
-            <button class="dropbtn" onclick="openPopup()">
-                <i class="fa-solid fa-user-shield"></i> Portal Login
+        <div id="loginPopup" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <i class="fa-solid fa-circle-user" style="font-size: 50px; color: #38bdf8; margin-bottom: 10px;"></i>
+            <h2>Student Login</h2>
+            
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Enter Your ID">
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Enter Password">
+            </div>
+            
+            <button class="btn-go" onclick="login()">
+                Unlock Dashboard <i class="fa-solid fa-arrow-right"></i>
             </button>
+            
+            <p style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8;">
+                Forget Password? Contact Admin
+            </p>
         </div>
+    </div>
     </nav>
 
     <section class="slider-container">
@@ -210,3 +228,4 @@
     </script>
 </body>
 </html>
+
