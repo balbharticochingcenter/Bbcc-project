@@ -202,6 +202,35 @@
 
     <script src="/js/client.js"></script>
     <script>
+        async function login() {
+    const userID = document.getElementById('username').value;
+    const userPass = document.getElementById('password').value;
+
+    if (!userID || !userPass) {
+        alert("ID aur Password dono bhariye!");
+        return;
+    }
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: userID, password: userPass })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Success hone par backend se aayi hui URL par bhej dega
+            window.location.href = data.redirect; 
+        } else {
+            alert(data.message); // Galat ID/Pass hone par alert dega
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Server se connection nahi ho paa raha hai!");
+    }
+}
         // Slider Logic
         let slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
@@ -232,5 +261,6 @@
     </script>
 </body>
 </html>
+
 
 
