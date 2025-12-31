@@ -238,3 +238,39 @@ td { padding: 15px; border-bottom: 1px solid #334155; }
 ::-webkit-scrollbar-track { background: var(--dark); }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+/* Result Table Styles */
+.result-table input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #2c2c2c;
+    color: white;
+}
+
+.masked-mobile {
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+.division-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.div-first { background: #22c55e; color: white; }
+.div-second { background: #eab308; color: black; }
+.div-third { background: #f97316; color: white; }
+.div-fail { background: #ef4444; color: white; }
+
+.batch-config {
+    display: flex;
+    gap: 20px;
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
