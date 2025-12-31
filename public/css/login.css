@@ -1,321 +1,179 @@
-/* ===============================
-   RESET & BASE STYLES
-================================ */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balbharti Coaching Center</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
 
-body {
-    background-color: #0b0f19;
-    color: #ffffff;
-}
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo-ring">
+                <img src="/assets/logo.png" alt="Logo" class="logo">
+            </div>
+            <div class="brand-info">
+                <h1 class="glow-text rainbow-header">Bal Bharti Coaching Center</h1>
+                <span class="powered-by">Powered by PTCC</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="dropbtn" onclick="openPopup()"><i class="fa-solid fa-user-shield"></i> Portal Login</button>
+        </div>
+    </nav>
 
-/* ===============================
-   NAVBAR
-================================ */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 5%;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+    <section class="slider-container" id="mainSlider">
+        <img src="/slider/img1.jpg" class="slide active" alt="Banner 1">
+        <img src="/slider/img2.jpg" class="slide" alt="Banner 2">
+        <img src="/slider/img3.jpg" class="slide" alt="Banner 3">
+        </section>
 
-.nav-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+    <section class="stats-container">
+        <div class="stat-box">
+            <img src="/assets/course-icon.png" alt="Courses">
+            <h2>50+</h2>
+            <p>Courses</p>
+        </div>
+        <div class="stat-box">
+            <img src="/assets/learners-icon.png" alt="Learners">
+            <h2>100k+</h2>
+            <p>Learners</p>
+        </div>
+        <div class="stat-box">
+            <img src="/assets/doubts-icon.png" alt="Doubts">
+            <h2>100k+</h2>
+            <p>Doubts Solved</p>
+        </div>
+        <div class="stat-box">
+            <img src="/assets/projects-icon.png" alt="Projects">
+            <h2>10k+</h2>
+            <p>Student Projects</p>
+        </div>
+    </section>
 
-.logo {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-}
+    <div class="magical-title-container">
+        <h1 class="magical-text">Browse our Courses</h1>
+    </div>
 
-.brand-info h1 {
-    font-size: 1.4rem;
-}
+    <section class="courses-grid">
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class5.jpg" alt="Class 5">
+                <h3>📘 CLASS 5</h3>
+            </div>
+            <div class="box-back">
+                <p>English, Hindi, Maths, EVS, Computer, GK, Sanskrit</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
+            </div>
+        </div>
 
-.powered-by {
-    font-size: 0.7rem;
-    color: #38bdf8;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class6.jpg" alt="Class 6">
+                <h3>📗 CLASS 6</h3>
+            </div>
+            <div class="box-back">
+                <p>Maths, Science, SST (History, Geo, Civics), Computer</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
+            </div>
+        </div>
 
-/* ===============================
-   DROPDOWN
-================================ */
-.dropdown {
-    position: relative;
-}
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class7.jpg" alt="Class 7">
+                <h3>📙 CLASS 7</h3>
+            </div>
+            <div class="box-back">
+                <p>Science, Maths, English, SST, Regional Language</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
+            </div>
+        </div>
 
-.dropbtn {
-    background: #38bdf8;
-    color: #0b0f19;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-}
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class8.jpg" alt="Class 8">
+                <h3>📕 CLASS 8</h3>
+            </div>
+            <div class="box-back">
+                <p>Full Syllabus (CBSE/ICSE/BSEB), Computer, Science</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
+            </div>
+        </div>
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    background-color: #1e293b;
-    min-width: 160px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-}
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class9.jpg" alt="Class 9">
+                <h3>📘 CLASS 9</h3>
+            </div>
+            <div class="box-back">
+                <p>Physics, Chemistry, Bio, Maths, Economics, IT</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
+            </div>
+        </div>
 
-.dropdown-content a {
-    display: block;
-    padding: 12px 16px;
-    text-decoration: none;
-    color: #fff;
-}
+        <div class="course-box">
+            <div class="box-front">
+                <img src="/assets/class10.jpg" alt="Class 10">
+                <h3>🔹 CLASS 10</h3>
+            </div>
+            <div class="box-back">
+                <p>Board Exam Special: All Main & Vocational Subjects</p>
+                <button class="view-btn" onclick="underDev()">View Now</button>
+            </div>
+        </div>
+    </section>
 
-.dropdown-content a:hover {
-    background-color: #334155;
-}
+    <footer>
+        <div class="footer-content">
+            <p><i class="fab fa-whatsapp"></i> 9868698696 | <i class="far fa-envelope"></i> bszbj@gamil.com</p>
+            <div class="footer-links">
+                <a href="/">Home</a> | <a href="#courses">Our Class</a> | <a href="#" onclick="openPopup()">Login</a>
+            </div>
+            <hr>
+            <p class="dev-credit">Website Developed by Santosh Sir "Ethical Hacker"</p>
+        </div>
+    </footer>
 
-.dropdown:hover .dropdown-content {
-    display: block;
-}
+    <div id="loginPopup" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <h2 id="popupTitle">BBCC Login</h2>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Enter Your ID">
+                <input type="password" id="password" placeholder="Enter Password">
+            </div>
+            <button class="btn-go" onclick="login()">Go to Dashboard</button>
+        </div>
+    </div>
 
-/* ===============================
-   IMAGE SLIDER
-================================ */
-.slider-container {
-    width: 100%;
-    height: 450px;
-    position: relative;
-    overflow: hidden;
-}
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/client.js"></script>
+    <script>
+        // Smooth Infinite Slider
+        let slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
 
-.slide {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-}
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        setInterval(nextSlide, 3000);
 
-.slide.active {
-    opacity: 1;
-}
+        function openPopup() {
+            document.getElementById('loginPopup').style.display = "block";
+        }
 
-/* ===============================
-   STATS SECTION
-================================ */
-.stats-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 50px 10%;
-    text-align: center;
-}
+        function closePopup() { 
+            document.getElementById('loginPopup').style.display = "none"; 
+        }
 
-.stat-box h2 {
-    font-size: 2.5rem;
-    color: #38bdf8;
-}
-
-.stat-box p {
-    color: #94a3b8;
-    font-weight: 500;
-}
-
-/* ===============================
-   MODAL / POPUP
-================================ */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 2000;
-}
-
-.modal-content {
-    background: #1e293b;
-    width: 350px;
-    margin: 10% auto;
-    padding: 30px;
-    border-radius: 20px;
-    border: 1px solid #334155;
-    text-align: center;
-}
-
-.close {
-    float: right;
-    font-size: 28px;
-    cursor: pointer;
-    color: #94a3b8;
-}
-
-.input-group {
-    margin: 15px 0;
-    text-align: left;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    background: #0f172a;
-    color: white;
-}
-
-.btn-go {
-    width: 100%;
-    padding: 12px;
-    background: #38bdf8;
-    color: #0f172a;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-/* ===============================
-   MAGICAL TITLE
-================================ */
-.magical-title-container {
-    text-align: center;
-    padding: 50px 0;
-}
-
-.magical-text {
-    font-size: 3rem;
-    background: linear-gradient(90deg, #38bdf8, #818cf8, #f472b6, #38bdf8);
-    background-size: 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: magic-flow 5s linear infinite;
-    cursor: pointer;
-}
-
-@keyframes magic-flow {
-    0% { background-position: 0%; }
-    100% { background-position: 100%; }
-}
-
-/* ===============================
-   COURSES SECTION
-================================ */
-.courses-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    padding: 20px 8%;
-}
-
-.course-box {
-    height: 350px;
-    perspective: 1000px;
-    position: relative;
-}
-
-.course-box:hover .box-front {
-    transform: rotateY(180deg);
-    opacity: 0;
-}
-
-.course-box:hover .box-back {
-    transform: rotateY(0deg);
-    opacity: 1;
-    visibility: visible;
-}
-
-.box-front,
-.box-back {
-    position: absolute;
-    inset: 0;
-    backface-visibility: hidden;
-    transition: 0.6s ease;
-    border-radius: 20px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-.box-front {
-    background: #1e293b;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.box-front img {
-    width: 100%;
-    height: 75%;
-    object-fit: cover;
-}
-
-.box-back {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    transform: rotateY(-180deg);
-    padding: 20px;
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-}
-
-.enroll-btn {
-    background: #38bdf8;
-    color: #0f172a;
-    border: none;
-    padding: 12px;
-    margin-top: 20px;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.enroll-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px #38bdf8;
-}
-
-/* ===============================
-   FOOTER
-================================ */
-footer {
-    background: #0f172a;
-    padding: 40px 0 20px;
-    margin-top: 100px;
-    text-align: center;
-    border-top: 1px solid #1e293b;
-}
-
-.footer-links a {
-    color: #94a3b8;
-    margin: 0 10px;
-    text-decoration: none;
-}
-
-.dev-credit {
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #38bdf8;
-    font-family: 'Courier New', monospace;
-    font-weight: bold;
-}
+        // View Now Click Function
+        function underDev() {
+            alert("This page is under development. Please check back later!");
+        }
+    </script>
+</body>
+</html>
