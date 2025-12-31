@@ -80,17 +80,25 @@
             <h2><i class="fa fa-edit"></i> Update User Details</h2>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <input type="text" id="searchUpdateID" placeholder="Enter ID to Search (e.g. BBCC1234)">
-                <button onclick="fetchUserToEdit()" style="background:var(--primary); padding:10px; border-radius:8px; cursor:pointer;">Search</button>
+                <button onclick="fetchUserToEdit()" style="background:var(--primary); color:var(--dark); padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; border:none;">Search User</button>
             </div>
             <form id="editForm" style="display:none;">
                 <div class="modal-grid">
                     <input type="text" id="uFname" placeholder="First Name">
+                    <input type="text" id="uMname" placeholder="Middle Name">
                     <input type="text" id="uLname" placeholder="Last Name">
-                    <input type="text" id="uMobile" placeholder="Mobile">
+                    <input type="text" id="uMobile" placeholder="Mobile Number">
+                    <select id="uGender"><option value="Male">Male</option><option value="Female">Female</option></select>
+                    <input type="date" id="uDob">
+                    <input type="email" id="uEmail" placeholder="Email ID">
                     <input type="number" id="uFinance" placeholder="Fees/Salary">
                     <input type="text" id="uPass" placeholder="Change Password">
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <label style="font-size:12px;">Update Photo (Optional)</label>
+                        <input type="file" id="uPhotoFile" accept="image/*">
+                    </div>
                 </div>
-                <button type="submit" class="save-btn">Update Record</button>
+                <button type="submit" class="save-btn">Update to Cloud DB</button>
             </form>
         </div>
     </div>
@@ -163,7 +171,6 @@
         function openModal(id) { document.getElementById(id).style.display = "block"; loadData(); }
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-        // Load All Data
         async function loadData() {
             const res = await fetch('/api/admin/users');
             mainData = await res.json();
@@ -175,7 +182,6 @@
             const tBody = document.getElementById('tBody');
             const sBody = document.getElementById('sBody');
             tBody.innerHTML = ""; sBody.innerHTML = "";
-
             data.forEach(u => {
                 const row = `<tr>
                     <td><img src="${u.profilePhoto}" class="table-img"></td>
@@ -195,21 +201,17 @@
             });
         }
 
-        // Advanced Search & Date Filter
         function filterTable(role) {
             const searchID = document.getElementById(role === 'teacher' ? 'tSearch' : 'sSearch').value.toLowerCase();
             const start = document.getElementById(role === 'teacher' ? 'tStartDate' : 'sStartDate').value;
             const end = document.getElementById(role === 'teacher' ? 'tEndDate' : 'sEndDate').value;
-
             const filtered = mainData.filter(u => {
                 const matchID = u.username.toLowerCase().includes(searchID);
                 const joinDate = new Date(u.joinDate).toISOString().split('T')[0];
                 const matchDate = (start && end) ? (joinDate >= start && joinDate <= end) : true;
                 return u.role === role && matchID && matchDate;
             });
-            
-            const targetBody = role === 'teacher' ? 'tBody' : 'sBody';
-            renderFiltered(filtered, targetBody);
+            renderFiltered(filtered, role === 'teacher' ? 'tBody' : 'sBody');
         }
 
         function renderFiltered(data, bodyId) {
@@ -232,7 +234,6 @@
             });
         }
 
-        // File to Base64 (Direct Image Upload)
         function convertImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -241,13 +242,11 @@
             });
         }
 
-        // Registration Form
         document.getElementById('regForm').onsubmit = async (e) => {
             e.preventDefault();
             let photoUrl = "/assets/default-user.png";
             const file = document.getElementById('photoFile').files[0];
             if(file) photoUrl = await convertImage(file);
-
             const data = {
                 username: document.getElementById('regID').value,
                 password: document.getElementById('regPass').value,
@@ -255,11 +254,13 @@
                 mname: document.getElementById('mname').value,
                 lname: document.getElementById('lname').value,
                 mobile: document.getElementById('regMobile').value,
+                gender: document.getElementById('gender').value,
+                dob: document.getElementById('dob').value,
+                email: document.getElementById('email').value,
                 role: document.getElementById('regRole').value,
                 financeAmount: document.getElementById('financeAmount').value,
                 profilePhoto: photoUrl
             };
-            
             const res = await fetch('/api/admin/create-user', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -268,44 +269,59 @@
             if(res.ok) { alert("Registered Successfully!"); closeModal('regModal'); loadData(); }
         };
 
-        // Update Feature
+        // --- UPDATED UPDATE FEATURE ---
         async function fetchUserToEdit() {
             const id = document.getElementById('searchUpdateID').value;
             const user = mainData.find(u => u.username === id);
             if(user) {
                 document.getElementById('editForm').style.display = "block";
-                document.getElementById('uFname').value = user.fname;
-                document.getElementById('uLname').value = user.lname;
-                document.getElementById('uMobile').value = user.mobile;
-                document.getElementById('uFinance').value = user.financeAmount;
-                document.getElementById('uPass').value = user.password;
+                document.getElementById('uFname').value = user.fname || "";
+                document.getElementById('uMname').value = user.mname || "";
+                document.getElementById('uLname').value = user.lname || "";
+                document.getElementById('uMobile').value = user.mobile || "";
+                document.getElementById('uGender').value = user.gender || "Male";
+                document.getElementById('uDob').value = user.dob ? user.dob.split('T')[0] : "";
+                document.getElementById('uEmail').value = user.email || "";
+                document.getElementById('uFinance').value = user.financeAmount || "";
+                document.getElementById('uPass').value = user.password || "";
             } else { alert("User Not Found!"); }
         }
 
         document.getElementById('editForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('searchUpdateID').value;
+            
+            // Photo handling
+            let photoUrl = null;
+            const file = document.getElementById('uPhotoFile').files[0];
+            if(file) photoUrl = await convertImage(file);
+
             const data = {
                 fname: document.getElementById('uFname').value,
+                mname: document.getElementById('uMname').value,
                 lname: document.getElementById('uLname').value,
                 mobile: document.getElementById('uMobile').value,
+                gender: document.getElementById('uGender').value,
+                dob: document.getElementById('uDob').value,
+                email: document.getElementById('uEmail').value,
                 financeAmount: document.getElementById('uFinance').value,
                 password: document.getElementById('uPass').value
             };
+            
+            if(photoUrl) data.profilePhoto = photoUrl;
+
             const res = await fetch(`/api/admin/users/${id}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             });
-            if(res.ok) { alert("Updated!"); closeModal('updateModal'); loadData(); }
+            if(res.ok) { alert("Updated to Cloud DB Successfully!"); closeModal('updateModal'); loadData(); }
         };
 
-        // Communications & History
         async function sendMsg(type, target) {
             const msg = document.getElementById('msgBody').value;
             const tID = document.getElementById('targetID').value;
             if(type === 'notification' && !tID) return alert("Please enter Target ID!");
-
             await fetch('/api/admin/send-comms', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -336,7 +352,6 @@
             }
         }
 
-        // Tools
         function generateCredentials() {
             document.getElementById('regID').value = "BBCC" + Math.floor(1000+Math.random()*9000);
             document.getElementById('regPass').value = Math.random().toString(36).slice(-6).toUpperCase();
