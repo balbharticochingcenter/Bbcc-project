@@ -55,26 +55,66 @@
     
 
 <div id="teacherModal" class="modal">
-    <div class="modal-content" style="border-color: #e84393;">
+    <div class="modal-content" style="border-color: #e84393; width: 70%;">
         <span class="close" id="closeTeacher">&times;</span>
         <form id="teacherForm">
             <h3><i class="fas fa-user-graduate"></i> Teacher Registration</h3>
+            
             <input type="text" name="teacher_name" id="t_name" placeholder="Full Name" required>
+            
             <div style="display: flex; gap: 10px;">
-                <input type="text" name="teacher_id" id="t_id" placeholder="ID (Auto)" readonly>
-                <input type="text" name="pass" id="t_pass" placeholder="Password (Auto)" readonly>
+                <div style="flex:1">
+                    <label>ID:</label>
+                    <input type="text" name="teacher_id" id="t_id" placeholder="ID">
+                </div>
+                <div style="flex:1">
+                    <label>Password:</label>
+                    <input type="text" name="pass" id="t_pass" placeholder="Password">
+                </div>
             </div>
+
             <input type="text" name="mobile" placeholder="Mobile Number">
             <input type="file" id="t_photo" accept="image/*">
             <input type="number" name="salary" placeholder="Salary">
             <input type="date" name="joining_date">
             
-            <label><b>Classes:</b></label>
+            <label><b>Select Classes:</b></label>
             <div class="checkbox-group">
-                <input type="checkbox" name="classes" value="1st to 10th"> 1st-10th
-                <input type="checkbox" name="classes" value="B.A"> B.A
-                <input type="checkbox" name="classes" value="B.Sc"> B.Sc
+                <label><input type="checkbox" name="classes" value="1st"> 1st</label>
+                <label><input type="checkbox" name="classes" value="2nd"> 2nd</label>
+                <label><input type="checkbox" name="classes" value="3rd"> 3rd</label>
+                <label><input type="checkbox" name="classes" value="4th"> 4th</label>
+                <label><input type="checkbox" name="classes" value="5th"> 5th</label>
+                <label><input type="checkbox" name="classes" value="6th"> 6th</label>
+                <label><input type="checkbox" name="classes" value="7th"> 7th</label>
+                <label><input type="checkbox" name="classes" value="8th"> 8th</label>
+                <label><input type="checkbox" name="classes" value="9th"> 9th</label>
+                <label><input type="checkbox" name="classes" value="10th"> 10th</label>
+                <label><input type="checkbox" name="classes" value="11th"> 11th</label>
+                <label><input type="checkbox" name="classes" value="12th"> 12th</label>
+                <label><input type="checkbox" name="classes" value="B.A"> B.A</label>
+                <label><input type="checkbox" name="classes" value="B.Com"> B.Com</label>
+                <label><input type="checkbox" name="classes" value="B.Sc"> B.Sc</label>
             </div>
+
+            <label><b>Select Subjects:</b></label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
+                <label><input type="checkbox" name="subjects" value="English"> English</label>
+                <label><input type="checkbox" name="subjects" value="Maths"> Maths</label>
+                <label><input type="checkbox" name="subjects" value="Science"> Science</label>
+                <label><input type="checkbox" name="subjects" value="Social Science"> S. Science</label>
+                <label><input type="checkbox" name="subjects" value="Sanskrit"> Sanskrit</label>
+                <label><input type="checkbox" name="subjects" value="Physics"> Physics</label>
+                <label><input type="checkbox" name="subjects" value="Chemistry"> Chemistry</label>
+                <label><input type="checkbox" name="subjects" value="Biology"> Biology</label>
+                <label><input type="checkbox" name="subjects" value="History"> History</label>
+                <label><input type="checkbox" name="subjects" value="Geography"> Geography</label>
+                <label><input type="checkbox" name="subjects" value="Economics"> Economics</label>
+                <label><input type="checkbox" name="subjects" value="Accountancy"> Accountancy</label>
+                <label><input type="checkbox" name="subjects" value="Computer"> Computer</label>
+            </div>
+
             <button type="submit" class="btn-update" style="background: #e84393;">Register Now</button>
         </form>
     </div>
