@@ -259,28 +259,60 @@ document.getElementById("openStudentDataBtn").onclick = () => {
 };
 
 // Load Student Cards with Parent SMS Option
+// --- LOAD STUDENT CARDS WITH DYNAMIC SMS & WHATSAPP ---
 async function loadStudentData() {
-    const res = await fetch('/api/get-students'); // Backend route banana hoga
+    const res = await fetch('/api/get-students');
     const students = await res.json();
     const container = document.getElementById("studentTableBody");
-    container.innerHTML = "";
+    
+    if (students.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#666;'>Koi student nahi mila!</p>";
+        return;
+    }
+
+    container.innerHTML = ""; 
 
     students.forEach(s => {
+        // Message Templates
+        const p_msg = `Dear Parent, your child ${s.student_name} CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
+        const s_msg = `Dear STUDENT, your CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
+
         container.innerHTML += `
-            <div class="teacher-card" style="background:white; padding:15px; border-radius:15px; color:#333;">
-                <h4>${s.student_name} <small>(${s.student_id})</small></h4>
-                <p>Parent: ${s.parent_name}</p>
-                <p style="color:green; font-weight:bold;">Monthly Fees: ₹${s.fees}</p>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <a href="tel:${s.mobile}" title="Call Student"><i class="fas fa-phone"></i></a>
-                    <a href="sms:${s.parent_mobile}?body=Dear Parent, your child ${s.student_name} fees is due." style="color:#e84393;" title="SMS Parent">
-                        <i class="fas fa-user-shield"></i> Parent SMS
-                    </a>
-                    <a href="https://wa.me/${s.mobile}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+            <div class="teacher-card" style="background:white; padding:18px; border-radius:15px; color:#333; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                    <h4 style="margin:0; color:var(--primary-glow);">${s.student_name} <span style="font-size:12px; color:#777;">(${s.student_id})</span></h4>
+                    <small><b>DOJ:</b> ${s.joining_date || 'N/A'} | <b>Class:</b> ${s.student_class}</small>
+                </div>
+                
+                <p style="font-size:13px; margin:5px 0;"><b>Parent:</b> ${s.parent_name}</p>
+                <p style="font-size:13px; margin:5px 0;"><b>Fees:</b> <span style="color:green; font-weight:bold;">₹${s.fees}</span></p>
+
+                <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-top:10px;">
+                    <p style="font-size:11px; font-weight:bold; margin-bottom:8px; color:#555;">SEND FEE REMINDER:</p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px; border-right:1px solid #ddd; padding-right:5px;">
+                            <span style="font-size:10px; font-weight:bold;">PARENT:</span>
+                            <div style="display:flex; gap:12px;">
+                                <a href="sms:${s.parent_mobile}?body=${encodeURIComponent(p_msg)}" title="SMS Parent" style="color:#e84393;"><i class="fas fa-comment-alt"></i> SMS</a>
+                                <a href="https://wa.me/${s.parent_mobile}?text=${encodeURIComponent(p_msg)}" target="_blank" title="WhatsApp Parent" style="color:#25D366;"><i class="fab fa-whatsapp"></i> WA</a>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:5px; padding-left:5px;">
+                            <span style="font-size:10px; font-weight:bold;">STUDENT:</span>
+                            <div style="display:flex; gap:12px;">
+                                <a href="sms:${s.mobile}?body=${encodeURIComponent(s_msg)}" title="SMS Student" style="color:#6c5ce7;"><i class="fas fa-comment-alt"></i> SMS</a>
+                                <a href="https://wa.me/${s.mobile}?text=${encodeURIComponent(s_msg)}" target="_blank" title="WhatsApp Student" style="color:#25D366;"><i class="fab fa-whatsapp"></i> WA</a>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>`;
     });
 }
+//---------------------------------------------------------------------------
 // --- STUDENT FORM SUBMISSION ---
 document.getElementById("studentForm").onsubmit = async (e) => {
     e.preventDefault();
