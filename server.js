@@ -69,7 +69,30 @@ app.post('/api/update-settings', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+// --- NEW TEACHER SCHEMA ---
+const TeacherSchema = new mongoose.Schema({
+    teacher_name: String,
+    mobile: String,
+    teacher_id: String,
+    pass: String,
+    photo: String, 
+    salary: String,
+    joining_date: String,
+    classes: [String],
+    subjects: [String]
+});
+const Teacher = mongoose.model('Teacher', TeacherSchema);
 
+// --- TEACHER REGISTRATION API ---
+app.post('/api/teacher-reg', async (req, res) => {
+    try {
+        const newTeacher = new Teacher(req.body);
+        await newTeacher.save();
+        res.json({ message: "Teacher Registered Successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // --- SERVER INITIALIZATION ---
 // Render will provide the PORT automatically via environment variables
 const PORT = process.env.PORT || 5000;
