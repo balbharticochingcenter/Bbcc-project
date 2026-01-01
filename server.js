@@ -8,7 +8,8 @@ const app = express();
 
 // --- MIDDLEWARE ---
 app.use(cors());
-app.use(bodyParser.json({ limit: '10mb' })); 
+// Limit badha di gayi hai kyunki Base64 images badi hoti hain
+app.use(bodyParser.json({ limit: '15mb' })); 
 app.use(express.static('public')); 
 
 // --- MONGODB CONNECTION ---
@@ -45,12 +46,7 @@ const Teacher = mongoose.model('Teacher', TeacherSchema);
 
 // --- API ROUTES ---
 
-// Home Route
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-// Settings APIs
+// Settings APIs (Get & Update)
 app.get('/api/get-settings', async (req, res) => {
     try {
         const data = await SystemConfig.findOne();
@@ -65,12 +61,12 @@ app.post('/api/update-settings', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Teacher Registration API
+// Teacher Registration
 app.post('/api/teacher-reg', async (req, res) => {
     try {
         const newTeacher = new Teacher(req.body);
         await newTeacher.save();
-        res.status(200).json({ success: true, message: "Teacher Registered! 🎉" });
+        res.status(200).json({ success: true, message: "Teacher Registered!" });
     } catch (err) {
         const errorMsg = err.code === 11000 ? "ID already exists!" : err.message;
         res.status(500).json({ success: false, error: errorMsg });
@@ -85,7 +81,24 @@ app.get('/api/get-teachers', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Update Salary/Paid Status
+// Update Teacher Full Data
+app.post('/api/update-teacher-data', async (req, res) => {
+    try {
+        const { teacher_id, ...updateData } = req.body;
+        await Teacher.findOneAndUpdate({ teacher_id: teacher_id }, updateData);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Delete Teacher
+app.delete('/api/delete-teacher', async (req, res) => {
+    try {
+        await Teacher.findOneAndDelete({ teacher_id: req.body.teacher_id });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Salary Status Update
 app.post('/api/update-salary-status', async (req, res) => {
     try {
         const { teacher_id, month, status } = req.body;
@@ -100,23 +113,5 @@ app.post('/api/update-salary-status', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- UPDATE TEACHER DATA (Full Profile) ---
-app.post('/api/update-teacher-data', async (req, res) => {
-    try {
-        const { teacher_id, ...updateData } = req.body;
-        await Teacher.findOneAndUpdate({ teacher_id: teacher_id }, updateData);
-        res.json({ success: true, message: "Teacher Profile Updated!" });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// --- DELETE TEACHER ---
-app.delete('/api/delete-teacher', async (req, res) => {
-    try {
-        await Teacher.findOneAndDelete({ teacher_id: req.body.teacher_id });
-        res.json({ success: true, message: "Teacher Deleted!" });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// --- START SERVER ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
