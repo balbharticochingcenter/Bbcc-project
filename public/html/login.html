@@ -6,6 +6,9 @@
     <title id="pageTitle">Balbharti Coaching Center</title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         /* Extra CSS for dynamic layout */
         .enroll-btn {
@@ -23,6 +26,49 @@
         .box-back p { font-size: 0.85rem; margin-bottom: 10px; }
         .brand-info { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
         .powered-by { font-size: 0.9rem; color: var(--primary); opacity: 0.8; }
+
+        /* Result Button Style */
+        .result-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            transition: 0.3s;
+        }
+        .result-btn:hover { background: #059669; }
+        .nav-right { display: flex; align-items: center; }
+
+        /* Result Card UI */
+        #resultContainer {
+            display: none;
+            margin-top: 20px;
+            background: white;
+            color: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #38bdf8;
+            text-align: center;
+        }
+        .res-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .res-photo {
+            width: 100px; height: 100px;
+            border-radius: 50%; border: 3px solid #38bdf8;
+            object-fit: cover; margin-bottom: 10px;
+        }
+        .download-res-btn {
+            background: #0f172a; color: white;
+            border: none; padding: 10px; margin-top: 15px;
+            width: 100%; border-radius: 5px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -42,9 +88,44 @@
         </div>
 
         <div class="nav-right">
+            <button class="result-btn" onclick="openResultPopup()">
+                <i class="fa-solid fa-graduation-cap"></i> Student Results
+            </button>
             <button class="dropbtn" onclick="openPopup()">
                 <i class="fa-solid fa-user-shield"></i> Portal Login
             </button>
+        </div>
+
+        <div id="resultPopup" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeResultPopup()">&times;</span>
+                <h2 style="color: #38bdf8;"><i class="fa fa-search"></i> Check Result</h2>
+                <div class="input-group">
+                    <input type="text" id="resRoll" placeholder="Enter Roll Number / ID">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="resMobile" placeholder="Enter Mobile Number">
+                </div>
+                <button class="btn-go" onclick="searchResult()">
+                    Search Result <i class="fa fa-search"></i>
+                </button>
+
+                <div id="resultContainer">
+                    <div id="resultCardCapture" class="res-card">
+                        <h3 style="margin-bottom: 5px;">BALBHARTI COACHING CENTER</h3>
+                        <p style="font-size: 0.7rem; color: #64748b; margin-bottom: 10px;">EXAM PROGRESS REPORT</p>
+                        <img id="stPhoto" src="/assets/default-user.png" class="res-photo">
+                        <h4 id="stName">Student Name</h4>
+                        <p>ID: <b id="stID">000</b></p>
+                        <hr style="margin: 10px 0;">
+                        <p>Total Marks: <b id="stMarks">00</b></p>
+                        <p>Division: <span id="stDiv" style="color: #10b981; font-weight: bold;">First</span></p>
+                    </div>
+                    <button class="download-res-btn" onclick="downloadJPG()">
+                        <i class="fa fa-download"></i> Download Result JPG
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="loginPopup" class="modal">
@@ -85,8 +166,7 @@
         <h1 class="magical-text">Explore Our Dynamic Classes</h1>
     </div>
 
-    <section class="courses-grid" id="dynamicCoursesGrid">
-        </section>
+    <section class="courses-grid" id="dynamicCoursesGrid"></section>
 
     <footer class="modern-footer">
         <div class="footer-container">
@@ -94,8 +174,7 @@
                 <div class="footer-col">
                     <h3 id="footerTitle">BBCC Portal</h3>
                     <p id="footerAbout">Shaping the future of students...</p>
-                    <div class="social-icons" id="footerSocials">
-                        </div>
+                    <div class="social-icons" id="footerSocials"></div>
                 </div>
                 <div class="footer-col">
                     <h3>Quick Links</h3>
@@ -117,12 +196,54 @@
     </footer>
 
     <script>
-        // --- 1. INITIAL DATA LOAD (Header, Footer, Classes) ---
+        // --- 1. RESULT LOGIC ---
+        function openResultPopup() { document.getElementById('resultPopup').style.display = "block"; }
+        function closeResultPopup() { 
+            document.getElementById('resultPopup').style.display = "none"; 
+            document.getElementById('resultContainer').style.display = "none";
+        }
+
+        async function searchResult() {
+            const roll = document.getElementById('resRoll').value.trim();
+            const mob = document.getElementById('resMobile').value.trim();
+
+            if(!roll || !mob) return alert("Enter both ID and Mobile Number");
+
+            try {
+                // Fetching from users API
+                const res = await fetch('/api/admin/users');
+                const users = await res.json();
+
+                const student = users.find(u => (u.username === roll || u._id === roll) && u.mobile === mob);
+
+                if(student) {
+                    document.getElementById('stName').innerText = student.fname + " " + student.lname;
+                    document.getElementById('stID').innerText = student.username;
+                    document.getElementById('stMarks').innerText = student.marks || 'N/A';
+                    document.getElementById('stDiv').innerText = student.division || 'N/A';
+                    document.getElementById('stPhoto').src = student.profilePhoto || '/assets/default-user.png';
+                    document.getElementById('resultContainer').style.display = "block";
+                } else {
+                    alert("No record found! Please check details.");
+                }
+            } catch (e) { alert("Error fetching result!"); }
+        }
+
+        function downloadJPG() {
+            const card = document.getElementById('resultCardCapture');
+            html2canvas(card).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Student_Result_BBCC.jpg';
+                link.href = canvas.toDataURL("image/jpeg");
+                link.click();
+            });
+        }
+
+        // --- 2. INITIAL DATA LOAD ---
         document.addEventListener('DOMContentLoaded', loadPageData);
 
         async function loadPageData() {
             try {
-                // Fetch Settings (Logo, Title, Footer)
                 const settingsRes = await fetch('/api/admin/hp-settings');
                 if (settingsRes.ok) {
                     const data = await settingsRes.json();
@@ -138,11 +259,10 @@
                     }
                 }
 
-                // Fetch Classes for Grid
                 const classRes = await fetch('/api/admin/all-classes');
                 const classes = await classRes.json();
                 const grid = document.getElementById('dynamicCoursesGrid');
-                grid.innerHTML = ''; // Clear old data
+                grid.innerHTML = ''; 
 
                 classes.forEach(cls => {
                     const subjectsList = cls.subjects.map(s => s.name).join(", ");
@@ -161,24 +281,17 @@
                     `;
                     grid.appendChild(box);
                 });
-            } catch (err) {
-                console.error("Error loading page data:", err);
-            }
+            } catch (err) { console.error("Error loading data:", err); }
         }
 
         function goToDetails(className) {
             window.location.href = `/html/class-details.html?class=${encodeURIComponent(className)}`;
         }
 
-        // --- 2. LOGIN LOGIC ---
         async function login() {
             const userID = document.getElementById('username').value.trim();
             const userPass = document.getElementById('password').value.trim();
-
-            if (!userID || !userPass) {
-                alert("🚨 Please enter ID and Password!");
-                return;
-            }
+            if (!userID || !userPass) return alert("🚨 Please enter ID and Password!");
 
             try {
                 const response = await fetch('/login', {
@@ -191,15 +304,10 @@
                     localStorage.setItem('userData', JSON.stringify(data.user));
                     alert(`✅ Welcome ${data.user.fname}`);
                     window.location.href = data.redirect; 
-                } else {
-                    alert("❌ " + data.message);
-                }
-            } catch (error) {
-                alert("🔌 Server Connection Error!");
-            }
+                } else { alert("❌ " + data.message); }
+            } catch (error) { alert("🔌 Server Error!"); }
         }
 
-        // Slider Logic
         let currentSlide = 0;
         setInterval(() => {
             let slides = document.querySelectorAll('.slide');
