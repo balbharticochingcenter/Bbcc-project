@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Admin Control Panel</h1>
+        <button id="openModalBtn" class="btn-primary">System</button>
+        <button onclick="location.href='login.html'" class="btn-secondary">Back to Home</button>
+    </div>
+
+    <div id="systemModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="adminForm">
+                <h3>Header Settings</h3>
+                <input type="file" id="logoInput" accept="image/*">
+                <input type="text" name="title" placeholder="Site Title">
+                <input type="text" name="sub_title" placeholder="Sub Title">
+
+                <h3>Footer Settings</h3>
+                <input type="text" name="contact" placeholder="Contact Number">
+                <input type="text" name="help" placeholder="Help Link">
+                <input type="email" name="gmail" placeholder="Gmail Address">
+                <input type="url" name="youtube_link" placeholder="YouTube URL">
+                <input type="url" name="facebook" placeholder="Facebook URL">
+                <input type="url" name="instagram" placeholder="Instagram URL">
+                <input type="url" name="twitter" placeholder="Twitter URL">
+                <textarea name="add_more" placeholder="Additional Details"></textarea>
+
+                <h3>Admin Info</h3>
+                <input type="text" name="admin_name" placeholder="Admin Name">
+
+                <button type="submit" class="btn-update">Update & Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="adminscript.js"></script>
+</body>
+</html>
