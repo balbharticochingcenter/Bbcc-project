@@ -211,6 +211,62 @@ app.post('/api/admin/send-comms', async (req, res) => {
 // --- HTML ROUTES ---
 app.get('/', (req, res) => { res.sendFile(path.join(publicPath, 'html/login.html')); });
 app.get('/html/:page', (req, res) => { res.sendFile(path.join(publicPath, 'html', req.params.page)); });
+// --- 1. NEW CLASS SETUP SCHEMA ---
+const classSetSchema = new mongoose.Schema({
+    className: { type: String, unique: true, required: true }, // e.g., "10th"
+    banner: { type: String, default: "" }, // Base64 Image string
+    classTeacher: { type: String, default: "" }, // Teacher's username
+    classYT: { type: String, default: "" }, // Global YT Link
+    subjects: [{
+        name: String,
+        teacher: String,
+        videos: [String] // Array for multiple YouTube links
+    }]
+});
+const ClassSet = mongoose.model('ClassSet', classSetSchema);
 
+// --- 2. NEW CLASS MANAGEMENT ROUTES ---
+
+// A. Save or Update Class Data
+app.post('/api/admin/save-class', async (req, res) => {
+    try {
+        const { className } = req.body;
+        // findOneAndUpdate with upsert: true helps in "Search & Update" logic
+        const updatedClass = await ClassSet.findOneAndUpdate(
+            { className: className }, 
+            req.body, 
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ success: true, message: "Class settings updated!", data: updatedClass });
+    } catch (err) { 
+        console.error("Save Class Error:", err);
+        res.status(500).json({ success: false, message: "Server error while saving class" }); 
+    }
+});
+
+// B. Get Class Data by Name (Used for the "Search/Load" function)
+app.get('/api/admin/get-class/:className', async (req, res) => {
+    try {
+        const classData = await ClassSet.findOne({ className: req.params.className });
+        if (classData) {
+            res.json(classData);
+        } else {
+            res.status(404).json({ message: "No data found for this class" });
+        }
+    } catch (err) { 
+        res.status(500).json({ success: false, message: "Error fetching class data" }); 
+    }
+});
+
+// C. Get All Classes (Optional: If you want to list them somewhere)
+app.get('/api/admin/all-classes', async (req, res) => {
+    try {
+        const classes = await ClassSet.find({});
+        res.json(classes);
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// --- END CLASS MANAGEMENT ROUTES ---
 // --- SERVER START ---
 server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server Live: ${PORT}`));
+
