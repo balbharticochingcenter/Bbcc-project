@@ -28,6 +28,7 @@
     <button id="openStudentBtn" class="btn-primary" style="background: #6c5ce7;"><i class="fas fa-graduation-cap"></i> Student Reg</button>
     <button id="openStudentDataBtn" class="btn-primary" style="background: #2ecc71;"><i class="fas fa-user-graduate"></i> Fees/Data</button>
     <button id="openStudentUpdateBtn" class="btn-primary" style="background: #f1c40f; color: #000;"><i class="fas fa-user-edit"></i> Stu. Update</button>
+     <button id="openResultBtn" class="btn-primary" style="background:#f39c12;"><i class="fas fa-poll-h"></i> Class Result</button>       
 </div>
     </div>
 
@@ -270,6 +271,61 @@
                 <button type="button" onclick="deleteStudent()" class="btn-update" style="background:#e74c3c; flex:1;">Delete Student</button>
             </div>
         </form>
+    </div>
+</div>
+    <div id="resultModal" class="modal">
+    <div class="modal-content" style="max-width: 95%;">
+        <span class="close" onclick="closeModal('resultModal')">&times;</span>
+        <h3><i class="fas fa-graduation-cap"></i> Class-wise Result Manager</h3>
+        
+        <div style="background:#f8f9fa; padding:15px; border-radius:10px; display:flex; gap:15px; align-items:flex-end; margin-bottom:20px;">
+            <div>
+                <label>Select Class</label>
+                <select id="res_class_filter" style="width:150px;">
+                   <option value="1st">1st</option>
+    <option value="2nd">2nd</option>
+    <option value="3rd">3rd</option>
+    <option value="4th">4th</option>
+    <option value="5th">5th</option>
+    <option value="6th">6th</option>
+    <option value="7th">7th</option>
+    <option value="8th">8th</option>
+    <option value="9th">9th</option>
+    <option value="10th">10th</option>
+                        <option value="I.Sc">I.Sc</option>
+                        <option value="I.A">I.A</option>
+                        <option value="I.COM">I.COM</option>
+                        <option value="B.Sc">I.Sc</option>
+                        <option value="B.A">I.A</option>
+                        <option value="B.COM">I.COM</option>
+                </select>
+            </div>
+            <div>
+                <label>Total Marks (Full)</label>
+                <input type="number" id="bulk_total_marks" placeholder="e.g. 500" style="width:100px;">
+            </div>
+            <div>
+                <label>Exam Date</label>
+                <input type="date" id="bulk_exam_date">
+            </div>
+            <button onclick="filterClassForResults()" class="btn-primary" style="margin:0;">Search & Load Class</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="diary-table" style="width:100%; border-collapse: collapse;">
+                <thead style="background:#6c5ce7; color:white;">
+                    <tr>
+                        <th style="padding:10px;">ID/Roll</th>
+                        <th>Student Name</th>
+                        <th>Obtained Marks</th>
+                        <th>Division</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="resultTableBody">
+                    </tbody>
+            </table>
+        </div>
     </div>
 </div>
 <footer class="magical-footer">
