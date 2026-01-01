@@ -555,65 +555,50 @@ async function saveIndividualResult(sid) {
 }
 //====================================------===============================-------------------=================
 
-// --- ADMIN LOGIN LOGIC ---
-function adminLogin() {
-    const user = document.getElementById('admin_user').value;
-    const pass = document.getElementById('admin_pass').value;
+async function universalLogin() {
+    const userId = document.getElementById('login_id').value.trim().toUpperCase();
+    const userPass = document.getElementById('login_pass').value;
 
-    if(user === "admin" && pass === "7543") { // Password change as needed
+    if (!userId || !userPass) return alert("Please fill ID and Password!");
+
+    // 1. ADMIN CHECK (Hardcoded for Security)
+    if (userId === "ADMIN" && userPass === "7543") {
+        alert("Welcome Admin! Redirecting...");
         location.href = 'admin.html';
-    } else {
-        alert("Invalid Admin Credentials!");
-    }
-}
-
-// --- CHECK STUDENT RESULT LOGIC ---
-async function checkResult() {
-    const rollId = document.getElementById('stu_roll_id').value.trim().toUpperCase();
-    const display = document.getElementById('resultDisplayArea');
-    
-    const res = await fetch('/api/get-students');
-    const students = await res.json();
-    const s = students.find(x => x.student_id === rollId);
-
-    if(!s) {
-        alert("Roll Number/ID not found!");
         return;
     }
 
-    // Check if result is available (exam_date check)
-    if(!s.exam_date || s.exam_date === "") {
-        display.style.display = 'block';
-        display.innerHTML = `<h4 style="color:red; text-align:center;">Aapka exam abhi nahi hua hai!</h4>`;
-        return;
+    // 2. TEACHER CHECK (From Database)
+    const tRes = await fetch('/api/get-teachers');
+    const teachers = await tRes.json();
+    const teacher = teachers.find(t => t.teacher_id === userId);
+
+    if (teacher) {
+        if (teacher.pass === userPass) {
+            alert("Teacher Login Successful!");
+            // location.href = 'teacher_dashboard.html'; // Jab ban jayega
+            return;
+        } else {
+            alert("Wrong Teacher Password!");
+            return;
+        }
     }
 
-    // Show Result Data
-    display.style.display = 'block';
-    display.innerHTML = `
-        <div style="display:flex; gap:15px; align-items:center;">
-            <img src="${s.photo || 'https://via.placeholder.com/80'}" style="width:70px; height:70px; border-radius:50%; border:2px solid #6c5ce7;">
-            <div>
-                <h3 style="margin:0;">${s.student_name}</h3>
-                <p style="margin:0; font-size:12px;">ID: ${s.student_id} | Class: ${s.student_class}</p>
-            </div>
-        </div>
-        <hr>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <p><b>Exam Date:</b> ${s.exam_date}</p>
-            <p><b>Total Marks:</b> ${s.total_marks}</p>
-            <p><b>Marks Obtained:</b> ${s.obtained_marks}</p>
-            <p><b>Division:</b> ${calculateDivision(s.obtained_marks, s.total_marks)}</p>
-        </div>
-    `;
-}
+    // 3. STUDENT CHECK (From Database)
+    const sRes = await fetch('/api/get-students');
+    const students = await sRes.json();
+    const student = students.find(s => s.student_id === userId);
 
-// Ye helper function marks ke hisab se div dikhayega
-function calculateDivision(obt, total) {
-    if(!obt || !total) return "---";
-    const per = (parseInt(obt) / parseInt(total)) * 100;
-    if(per >= 60) return "1st Division";
-    if(per >= 45) return "2nd Division";
-    if(per >= 33) return "3rd Division";
-    return "Fail";
+    if (student) {
+        if (student.pass === userPass) {
+            alert("Student Login Successful!");
+            // location.href = 'student_profile.html'; // Jab ban jayega
+            return;
+        } else {
+            alert("Wrong Student Password!");
+            return;
+        }
+    }
+
+    alert("User ID not found in our records!");
 }
