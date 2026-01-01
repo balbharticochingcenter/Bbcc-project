@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' })); 
 
 // Sabhi static files (CSS, JS, Images) ko serve karne ke liye
-app.use(express.static(__dirname)); 
+app.use(express.static(path.join(__dirname, 'public')));
 
 // --- MONGODB CONNECTION ---
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://balbharticochingcenter_db_user:6mPWwKglys8ii8O2@cluster0.g0w0fgn.mongodb.net/BBCC_Portal?retryWrites=true&w=majority&appName=Cluster0";
@@ -52,12 +52,11 @@ const Student = mongoose.model('Student', new mongoose.Schema({
 
 // Jab koi website khole, toh login.html dikhao
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
-
 // Admin page route
 app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // --- API ROUTES ---
