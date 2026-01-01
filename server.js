@@ -82,6 +82,27 @@ app.get('/api/get-students', async (req, res) => {
     const students = await Student.find().sort({ _id: -1 });
     res.json(students);
 });
+/////////////////////////////////////////////////////////////
+// --- UPDATE STUDENT FEES PAID MONTHS ---
+app.post('/api/update-fees-status', async (req, res) => {
+    const { student_id, month, status } = req.body;
+    try {
+        const student = await Student.findOne({ student_id });
+        if (status) {
+            // Agar check kiya toh month add karo
+            if (!student.paid_months.includes(month)) {
+                student.paid_months.push(month);
+            }
+        } else {
+            // Agar uncheck kiya toh month hatao
+            student.paid_months = student.paid_months.filter(m => m !== month);
+        }
+        await student.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 //-------------------------------------------------------------------------------------
 // 1. Settings APIs (Header/Footer/Social)
 app.get('/api/get-settings', async (req, res) => {
