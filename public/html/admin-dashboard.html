@@ -178,6 +178,12 @@
                     <select id="uGender"><option value="Male">Male</option><option value="Female">Female</option></select>
                     <select id="uClass">
                         <option value="">Update Class (Optional)</option>
+
+                        
+                        <option value="1st">1st Standard</option>
+                        <option value="2nd">2nd Standard</option>
+                        <option value="3rd">3rd Standard</option>
+                        <option value="4th">4th Standard</option>
                         <option value="5th">5th Standard</option>
                         <option value="6th">6th Standard</option>
                         <option value="7th">7th Standard</option>
@@ -265,7 +271,6 @@
         </div>
     </div>
 
-<button class="menu-btn" onclick="openClassSetupModal()" style="border-color: #3b82f6;"><i class="fa fa-graduation-cap"></i> <span>Class Setup</span></button>
 
 <div id="classSetupModal" class="modal wide-modal">
     <div class="modal-content">
@@ -276,6 +281,10 @@
             <div style="flex: 1;">
                 <label>Search & Select Class</label>
                 <select id="setupClassSelect">
+                    <option value="1st">1st Standard</option>
+                    <option value="2nd">2nd Standard</option>
+                    <option value="3rd">3rd Standard</option>
+                    <option value="4th">4th Standard</option>
                     <option value="5th">5th Standard</option>
                     <option value="6th">6th Standard</option>
                     <option value="7th">7th Standard</option>
@@ -721,5 +730,6 @@ document.getElementById('classBannerFile').onchange = async function(e) {
     </script>
 </body>
 </html>
+
 
 
