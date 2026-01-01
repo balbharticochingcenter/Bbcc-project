@@ -241,3 +241,43 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     });
     alert("Settings Saved!"); loadSettings(); modals.sys.style.display="none";
 };
+// Student ID Auto Generation
+document.getElementById('s_name').oninput = (e) => {
+    const name = e.target.value.trim().toUpperCase();
+    if(name.length >= 3) {
+        const rand = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('s_id').value = "STU" + rand;
+        document.getElementById('s_pass').value = name.substring(0, 3) + "@" + rand;
+    }
+};
+
+// Open/Close Modals for Students
+document.getElementById("openStudentBtn").onclick = () => document.getElementById("studentModal").style.display = "block";
+document.getElementById("openStudentDataBtn").onclick = () => { 
+    document.getElementById("studentDataModal").style.display = "block"; 
+    loadStudentData(); 
+};
+
+// Load Student Cards with Parent SMS Option
+async function loadStudentData() {
+    const res = await fetch('/api/get-students'); // Backend route banana hoga
+    const students = await res.json();
+    const container = document.getElementById("studentTableBody");
+    container.innerHTML = "";
+
+    students.forEach(s => {
+        container.innerHTML += `
+            <div class="teacher-card" style="background:white; padding:15px; border-radius:15px; color:#333;">
+                <h4>${s.student_name} <small>(${s.student_id})</small></h4>
+                <p>Parent: ${s.parent_name}</p>
+                <p style="color:green; font-weight:bold;">Monthly Fees: ₹${s.fees}</p>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <a href="tel:${s.mobile}" title="Call Student"><i class="fas fa-phone"></i></a>
+                    <a href="sms:${s.parent_mobile}?body=Dear Parent, your child ${s.student_name} fees is due." style="color:#e84393;" title="SMS Parent">
+                        <i class="fas fa-user-shield"></i> Parent SMS
+                    </a>
+                    <a href="https://wa.me/${s.mobile}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>`;
+    });
+}
