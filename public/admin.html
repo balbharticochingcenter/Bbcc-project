@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Magical Admin Dashboard</title>
-    <link rel="stylesheet" href="admin.css">
+    <title>Admin Dashboard - BBCC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body onload="loadSettings()">
+    <link rel="stylesheet" href="admin.css"> </head>
+<body onload="initDashboard()">
 
     <header class="magical-header">
         <div class="logo-container">
@@ -18,178 +17,90 @@
         </div>
     </header>
 
-    <div class="dashboard">
-        <h1>Admin Control Panel</h1>
-        <button id="openModalBtn" class="btn-primary">System</button>
+    <div class="dashboard" style="text-align:center; padding: 20px;">
+        <button id="openModalBtn" class="btn-primary">System Settings</button>
         <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;">Teacher Reg</button>
-        <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;">Teacher Data</button>
-        <button id="openUpdateBtn" class="btn-primary" style="background: #fdcb6e; color: #000;">Update Teacher</button>
-        <button onclick="location.href='login.html'" class="btn-secondary">Back to Home</button>
+        <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;">Salary/Data</button>
+        <button id="openUpdateBtn" class="btn-primary" style="background: #fdcb6e; color: #000;">Update/Delete</button>
     </div>
 
     <div id="systemModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <form id="adminForm">
-                <h3><i class="fas fa-heading"></i> Header Settings</h3>
+                <h3>System Settings</h3>
                 <input type="file" id="logoInput" accept="image/*">
                 <input type="text" name="title" id="form-title" placeholder="Site Title">
                 <input type="text" name="sub_title" id="form-subtitle" placeholder="Sub Title">
-
-                <h3><i class="fas fa-shoe-prints"></i> Footer Settings</h3>
-                <input type="text" name="contact" id="form-contact" placeholder="Contact Number">
-                <input type="text" name="help" id="form-help" placeholder="Help Link">
-                <input type="email" name="gmail" id="form-gmail" placeholder="Gmail Address">
-                <input type="url" name="youtube_link" id="form-youtube" placeholder="YouTube URL">
+                <input type="text" name="contact" id="form-contact" placeholder="Contact">
+                <input type="email" name="gmail" id="form-gmail" placeholder="Email">
                 <input type="url" name="facebook" id="form-facebook" placeholder="Facebook URL">
-                <input type="url" name="instagram" id="form-instagram" placeholder="Instagram URL">
-                <input type="url" name="twitter" id="form-twitter" placeholder="Twitter URL">
-                <textarea name="add_more" id="form-addmore" placeholder="Additional Details"></textarea>
-
-                <h3><i class="fas fa-user-shield"></i> Admin Info</h3>
-                <input type="text" name="admin_name" id="form-adminname" placeholder="Admin Name">
-
-                <button type="submit" class="btn-update">Update & Save</button>
+                <button type="submit" class="btn-update">Save Settings</button>
             </form>
         </div>
     </div>
 
-    
-
-<div id="teacherModal" class="modal">
-    <div class="modal-content" style="border-color: #e84393; width: 70%;">
-        <span class="close" id="closeTeacher">&times;</span>
-        <form id="teacherForm">
-            <h3><i class="fas fa-user-graduate"></i> Teacher Registration</h3>
-            
-            <input type="text" name="teacher_name" id="t_name" placeholder="Full Name" required>
-            
-            <div style="display: flex; gap: 10px;">
-                <div style="flex:1">
-                    <label>ID:</label>
-                    <input type="text" name="teacher_id" id="t_id" placeholder="ID">
-                </div>
-                <div style="flex:1">
-                    <label>Password:</label>
-                    <input type="text" name="pass" id="t_pass" placeholder="Password">
-                </div>
-            </div>
-
-            <input type="text" name="mobile" placeholder="Mobile Number">
-            <input type="file" id="t_photo" accept="image/*">
-            <input type="number" name="salary" placeholder="Salary">
-            <input type="date" name="joining_date">
-            
-            <label><b>Select Classes:</b></label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" name="classes" value="1st"> 1st</label>
-                <label><input type="checkbox" name="classes" value="2nd"> 2nd</label>
-                <label><input type="checkbox" name="classes" value="3rd"> 3rd</label>
-                <label><input type="checkbox" name="classes" value="4th"> 4th</label>
-                <label><input type="checkbox" name="classes" value="5th"> 5th</label>
-                <label><input type="checkbox" name="classes" value="6th"> 6th</label>
-                <label><input type="checkbox" name="classes" value="7th"> 7th</label>
-                <label><input type="checkbox" name="classes" value="8th"> 8th</label>
-                <label><input type="checkbox" name="classes" value="9th"> 9th</label>
-                <label><input type="checkbox" name="classes" value="10th"> 10th</label>
-                <label><input type="checkbox" name="classes" value="11th"> 11th</label>
-                <label><input type="checkbox" name="classes" value="12th"> 12th</label>
-                <label><input type="checkbox" name="classes" value="B.A"> B.A</label>
-                <label><input type="checkbox" name="classes" value="B.Com"> B.Com</label>
-                <label><input type="checkbox" name="classes" value="B.Sc"> B.Sc</label>
-            </div>
-
-            <label><b>Select Subjects:</b></label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
-                <label><input type="checkbox" name="subjects" value="English"> English</label>
-                <label><input type="checkbox" name="subjects" value="Maths"> Maths</label>
-                <label><input type="checkbox" name="subjects" value="Science"> Science</label>
-                <label><input type="checkbox" name="subjects" value="Social Science"> S. Science</label>
-                <label><input type="checkbox" name="subjects" value="Sanskrit"> Sanskrit</label>
-                <label><input type="checkbox" name="subjects" value="Physics"> Physics</label>
-                <label><input type="checkbox" name="subjects" value="Chemistry"> Chemistry</label>
-                <label><input type="checkbox" name="subjects" value="Biology"> Biology</label>
-                <label><input type="checkbox" name="subjects" value="History"> History</label>
-                <label><input type="checkbox" name="subjects" value="Geography"> Geography</label>
-                <label><input type="checkbox" name="subjects" value="Economics"> Economics</label>
-                <label><input type="checkbox" name="subjects" value="Accountancy"> Accountancy</label>
-                <label><input type="checkbox" name="subjects" value="Computer"> Computer</label>
-            </div>
-
-            <button type="submit" class="btn-update" style="background: #e84393;">Register Now</button>
-        </form>
-    </div>
-</div>
-    <footer class="magical-footer">
-        <div class="footer-icons" id="db-socials">
-            </div>
-        <p id="footer-info"></p>
-        <div class="developer-tag">
-            Developed by <span class="magic-name">Santosh Sir</span>
+    <div id="teacherModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="teacherForm">
+                <h3>New Teacher Registration</h3>
+                <input type="text" name="teacher_name" id="t_name" placeholder="Full Name" required>
+                <input type="text" name="teacher_id" id="t_id" placeholder="Auto-ID" readonly>
+                <input type="text" name="pass" id="t_pass" placeholder="Auto-Password" readonly>
+                <input type="text" name="mobile" placeholder="Mobile Number">
+                <input type="file" id="t_photo" accept="image/*">
+                <input type="number" name="salary" placeholder="Monthly Salary">
+                <input type="date" name="joining_date">
+                <button type="submit" class="btn-update">Register Teacher</button>
+            </form>
         </div>
-    </footer>
-<div id="dataModal" class="modal">
-    <div class="modal-content" style="width: 95%; max-width: 1200px; border-color: #00cec9;">
-        <span class="close" onclick="document.getElementById('dataModal').style.display='none'">&times;</span>
-        <h3><i class="fas fa-database"></i> Teacher Salary & Data Management</h3>
-        <div style="overflow-x: auto;">
-            <table class="magical-table">
+    </div>
+
+    <div id="dataModal" class="modal">
+        <div class="modal-content" style="width: 95%;">
+            <span class="close">&times;</span>
+            <h3>Teacher Salary Management</h3>
+            <table class="magical-table" border="1" style="width:100%; text-align:left;">
                 <thead>
                     <tr>
                         <th>Photo</th>
-                        <th>Name (Click to View)</th>
+                        <th>Name</th>
                         <th>Joining</th>
-                        <th>Total Months</th>
-                        <th>Salary Status (Tick = Paid)</th>
-                        <th>Contact</th>
+                        <th>Salary Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="teacherTableBody"></tbody>
             </table>
         </div>
     </div>
-</div>
 
-<div id="profileModal" class="modal">
-    <div class="modal-content" style="border-color: #6c5ce7; width: 400px; text-align: center;">
-        <span class="close" onclick="document.getElementById('profileModal').style.display='none'">&times;</span>
-        <div id="profileDetails"></div>
-    </div>
-</div>
-    <form id="updateForm">
-    <input type="hidden" name="teacher_id" id="up_id">
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Name:</label><input type="text" name="teacher_name" id="up_name"></div>
-        <div><label>Mobile:</label><input type="text" name="mobile" id="up_mobile"></div>
-        <div><label>Password:</label><input type="text" name="pass" id="up_pass"></div>
-        <div><label>Salary (Monthly):</label><input type="number" name="salary" id="up_salary"></div>
-        <div><label>Joining Date:</label><input type="date" name="joining_date" id="up_joining"></div>
-    </div>
-
-    <label>Teacher Photo:</label>
-    <input type="file" id="up_photo" accept="image/*">
-
-    <label><b>Classes:</b></label>
-    <div class="checkbox-group" id="up_classes_div">
-        <label><input type="checkbox" name="classes" value="1st"> 1st</label>
-        <label><input type="checkbox" name="classes" value="12th"> 12th</label>
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Search & Update Teacher</h3>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="search_tid" placeholder="Enter Teacher ID">
+                <button type="button" onclick="searchTeacher()">Search</button>
+            </div>
+            
+            <form id="updateForm">
+                <input type="hidden" name="teacher_id" id="up_id">
+                <input type="text" name="teacher_name" id="up_name" placeholder="Name">
+                <input type="text" name="mobile" id="up_mobile" placeholder="Mobile">
+                <input type="text" name="pass" id="up_pass" placeholder="Password">
+                <input type="number" name="salary" id="up_salary" placeholder="Salary">
+                <input type="date" name="joining_date" id="up_joining">
+                <input type="file" id="up_photo" accept="image/*">
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" style="background:green; color:white;">Update</button>
+                    <button type="button" onclick="deleteTeacher()" style="background:red; color:white;">Delete</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <label><b>Subjects:</b></label>
-    <div class="checkbox-group" id="up_subjects_div">
-        <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
-        <label><input type="checkbox" name="subjects" value="Computer"> Computer</label>
-    </div>
-
-    <div style="display: flex; gap: 10px; margin-top:15px;">
-        <button type="submit" class="btn-update" style="background: #2ecc71; flex: 2;">Update Record</button>
-        <button type="button" onclick="deleteTeacher()" class="btn-update" style="background: #ff7675; flex: 1;">Delete</button>
-    </div>
-</form>
-    </div>
-</div>
     <script src="adminscript.js"></script>
 </body>
 </html>
