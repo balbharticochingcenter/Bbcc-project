@@ -1,0 +1,115 @@
+/* Magical Background Animation */
+@keyframes magicalColors {
+    0% { background-color: #0f0c29; }
+    33% { background-color: #302b63; }
+    66% { background-color: #24243e; }
+    100% { background-color: #0f0c29; }
+}
+
+body.magical-bg {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    animation: magicalColors 10s infinite alternate;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Layout */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.header-left img { height: 60px; border-radius: 8px; }
+
+.header-center { text-align: center; flex-grow: 1; }
+.header-center h1 { margin: 0; font-size: 24px; text-transform: uppercase; }
+.header-center p { margin: 0; font-size: 12px; opacity: 0.8; }
+
+.login-trigger {
+    background: #6c5ce7;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Hero Section */
+.hero-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Footer Result Button */
+.main-footer {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.result-btn {
+    background: #f39c12;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    color: #333;
+    padding: 30px;
+    border-radius: 15px;
+    width: 350px;
+    position: relative;
+    text-align: center;
+}
+
+.result-popup { width: 500px; }
+
+.modal-content input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.btn-auth { width: 100%; padding: 10px; background: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer; }
+
+.close { position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer; }
+
+/* Result Card UI */
+.result-card {
+    margin-top: 20px;
+    padding: 15px;
+    border: 2px solid #6c5ce7;
+    border-radius: 10px;
+    text-align: left;
+}
