@@ -20,7 +20,7 @@ mongoose.connect(MONGO_URI)
 
 // --- SCHEMAS ---
 
-// 1. User Schema (Existing)
+// 1. User Schema
 const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// 2. Comms Schema (Existing)
+// 2. Comms Schema
 const commsSchema = new mongoose.Schema({
     message: String,
     type: String, 
@@ -50,7 +50,7 @@ const commsSchema = new mongoose.Schema({
 });
 const Comms = mongoose.model('Comms', commsSchema);
 
-// 3. NEW: Settings Schema (For Header & Footer)
+// 3. Settings Schema
 const settingsSchema = new mongoose.Schema({
     header: {
         title: { type: String, default: "BBCC Portal" },
@@ -67,6 +67,20 @@ const settingsSchema = new mongoose.Schema({
 });
 const Settings = mongoose.model('Settings', settingsSchema);
 
+// 4. Class Setup Schema
+const classSetSchema = new mongoose.Schema({
+    className: { type: String, unique: true, required: true },
+    banner: { type: String, default: "" },
+    classTeacher: { type: String, default: "" },
+    classYT: { type: String, default: "" },
+    subjects: [{
+        name: String,
+        teacher: String,
+        videos: [String] 
+    }]
+});
+const ClassSet = mongoose.model('ClassSet', classSetSchema);
+
 // --- MIDDLEWARES ---
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' })); 
@@ -76,7 +90,7 @@ app.use(express.static(publicPath));
 
 // --- API ROUTES ---
 
-// 1. Login (Existing)
+// Login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -94,19 +108,18 @@ app.post('/login', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 2. Create User (Existing)
+// Create User
 app.post('/api/admin/create-user', async (req, res) => {
     try {
         const newUser = new User(req.body);
         await newUser.save();
         res.json({ success: true, message: "User registered!" });
     } catch (err) { 
-        console.log(err);
         res.json({ success: false, message: "ID exists or Error!" }); 
     }
 });
 
-// 3. Get All Users (Existing)
+// Get All Users
 app.get('/api/admin/users', async (req, res) => {
     try {
         const users = await User.find({ role: { $ne: 'admin' } });
@@ -114,7 +127,7 @@ app.get('/api/admin/users', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 4. Update User Detail (Existing)
+// Update User Detail
 app.put('/api/admin/users/:username', async (req, res) => {
     try {
         const updatedUser = await User.findOneAndUpdate(
@@ -127,7 +140,7 @@ app.put('/api/admin/users/:username', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 5. Batch Update Results (Existing)
+// Batch Update Results
 app.post('/api/admin/update-batch-results', async (req, res) => {
     try {
         const { results } = req.body;
@@ -148,14 +161,12 @@ app.post('/api/admin/update-batch-results', async (req, res) => {
     }
 });
 
-// --- NEW HP SETTINGS ROUTES ---
+// --- HP SETTINGS ROUTES ---
 
-// 6. Get HP Settings (HP Button click karne pe ye data load hoga)
 app.get('/api/admin/hp-settings', async (req, res) => {
     try {
         let settings = await Settings.findOne();
         if (!settings) {
-            // Agar pehli baar hai toh default settings bana lo
             settings = new Settings({});
             await settings.save();
         }
@@ -163,7 +174,6 @@ app.get('/api/admin/hp-settings', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 7. Update Header Detail
 app.post('/api/admin/update-header', async (req, res) => {
     try {
         await Settings.findOneAndUpdate({}, { header: req.body }, { upsert: true });
@@ -171,7 +181,6 @@ app.post('/api/admin/update-header', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 8. Update Footer Detail
 app.post('/api/admin/update-footer', async (req, res) => {
     try {
         await Settings.findOneAndUpdate({}, { footer: req.body }, { upsert: true });
@@ -179,9 +188,57 @@ app.post('/api/admin/update-footer', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// --- END NEW ROUTES ---
+// --- CLASS MANAGEMENT ROUTES ---
 
-// 9. Communications History (Existing)
+// A. Save or Update Class Data
+app.post('/api/admin/save-class', async (req, res) => {
+    try {
+        const { className } = req.body;
+        const updatedClass = await ClassSet.findOneAndUpdate(
+            { className: className }, 
+            req.body, 
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ success: true, message: "Class settings updated!", data: updatedClass });
+    } catch (err) { 
+        res.status(500).json({ success: false, message: "Server error while saving class" }); 
+    }
+});
+
+// B. NEW: Get Single Class Info (Used by View All / class-details.html)
+app.get('/api/admin/class-info', async (req, res) => {
+    try {
+        const { name } = req.query;
+        const classData = await ClassSet.findOne({ className: name });
+        if (classData) {
+            res.json(classData);
+        } else {
+            res.status(404).json({ message: "Class not found" });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
+});
+
+// C. Get Class Data by Name (Search function)
+app.get('/api/admin/get-class/:className', async (req, res) => {
+    try {
+        const classData = await ClassSet.findOne({ className: req.params.className });
+        if (classData) res.json(classData);
+        else res.status(404).json({ message: "No data found" });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// D. Get All Classes
+app.get('/api/admin/all-classes', async (req, res) => {
+    try {
+        const classes = await ClassSet.find({});
+        res.json(classes);
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// --- COMMS & SERVER ---
+
 app.get('/api/admin/comms-history', async (req, res) => {
     try {
         const history = await Comms.find().sort({ date: -1 }).limit(30);
@@ -189,7 +246,6 @@ app.get('/api/admin/comms-history', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 10. Delete Communication Message (Existing)
 app.delete('/api/admin/comms/:id', async (req, res) => {
     try {
         await Comms.findByIdAndDelete(req.params.id);
@@ -197,7 +253,6 @@ app.delete('/api/admin/comms/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 11. Send & Broadcast Message (Existing)
 app.post('/api/admin/send-comms', async (req, res) => {
     try {
         const { message, target, type } = req.body;
@@ -208,71 +263,8 @@ app.post('/api/admin/send-comms', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// --- HTML ROUTES ---
+// HTML Routes
 app.get('/', (req, res) => { res.sendFile(path.join(publicPath, 'html/login.html')); });
 app.get('/html/:page', (req, res) => { res.sendFile(path.join(publicPath, 'html', req.params.page)); });
-// --- 1. NEW CLASS SETUP SCHEMA ---
-const classSetSchema = new mongoose.Schema({
-    className: { type: String, unique: true, required: true }, // e.g., "10th"
-    banner: { type: String, default: "" }, // Base64 Image string
-    classTeacher: { type: String, default: "" }, // Teacher's username
-    classYT: { type: String, default: "" }, // Global YT Link
-    subjects: [{
-        name: String,
-        teacher: String,
-        videos: [String] // Array for multiple YouTube links
-    }]
-});
-const ClassSet = mongoose.model('ClassSet', classSetSchema);
 
-// --- 2. NEW CLASS MANAGEMENT ROUTES ---
-
-// A. Save or Update Class Data
-app.post('/api/admin/save-class', async (req, res) => {
-    try {
-        const { className } = req.body;
-        // findOneAndUpdate with upsert: true helps in "Search & Update" logic
-        const updatedClass = await ClassSet.findOneAndUpdate(
-            { className: className }, 
-            req.body, 
-            { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-        res.json({ success: true, message: "Class settings updated!", data: updatedClass });
-    } catch (err) { 
-        console.error("Save Class Error:", err);
-        res.status(500).json({ success: false, message: "Server error while saving class" }); 
-    }
-});
-
-// B. Get Class Data by Name (Used for the "Search/Load" function)
-app.get('/api/admin/get-class/:className', async (req, res) => {
-    try {
-        const classData = await ClassSet.findOne({ className: req.params.className });
-        if (classData) {
-            res.json(classData);
-        } else {
-            res.status(404).json({ message: "No data found for this class" });
-        }
-    } catch (err) { 
-        res.status(500).json({ success: false, message: "Error fetching class data" }); 
-    }
-});
-
-// C. Get All Classes (Optional: If you want to list them somewhere)
-app.get('/api/admin/all-classes', async (req, res) => {
-    try {
-        const classes = await ClassSet.find({});
-        res.json(classes);
-    } catch (err) { res.status(500).json({ success: false }); }
-});
-
-// --- END CLASS MANAGEMENT ROUTES ---
-app.get('/api/admin/all-classes', async (req, res) => {
-    const classes = await ClassModel.find(); // Aapka MongoDB model
-    res.json(classes);
-});
-
-// --- SERVER START ---
 server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server Live: ${PORT}`));
-
-
