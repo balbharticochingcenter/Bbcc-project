@@ -3,182 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balbharti Coaching Center</title>
+    <title id="pageTitle">Balbharti Coaching Center</title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Extra CSS for dynamic layout */
+        .enroll-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .enroll-btn:hover { background: #b91c1c; transform: scale(1.05); }
+        .box-back p { font-size: 0.85rem; margin-bottom: 10px; }
+        .brand-info { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+        .powered-by { font-size: 0.9rem; color: var(--primary); opacity: 0.8; }
+    </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div class="nav-left">
             <div class="logo-ring">
-                <img src="/assets/logo.png" alt="Logo" class="logo">
+                <img src="/assets/logo.png" alt="Logo" class="logo" id="siteLogo">
             </div>
         </div>
         
         <div class="nav-center">
             <div class="brand-info">
-                <h1 class="glow-text rainbow-header">Bal Bharti Coaching Center</h1>
-                <span class="powered-by">Powered by PTCC</span>
+                <h1 class="glow-text rainbow-header" id="siteTitle">Loading...</h1>
+                <span class="powered-by" id="siteSubTitle"></span>
             </div>
         </div>
-<div class="nav-right">
-    <button class="dropbtn" onclick="openPopup()">
-        <i class="fa-solid fa-user-shield"></i> Portal Login
-    </button>
-</div>
-        <div id="loginPopup" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closePopup()">&times;</span>
-            <i class="fa-solid fa-circle-user" style="font-size: 50px; color: #38bdf8; margin-bottom: 10px;"></i>
-            <h2>Student Login</h2>
-            
-            <div class="input-group">
-                <input type="text" id="username" placeholder="Enter Your ID">
-            </div>
-            
-            <div class="input-group">
-                <input type="password" id="password" placeholder="Enter Password">
-            </div>
-            
-            <button class="btn-go" onclick="login()">
-                Unlock Dashboard <i class="fa-solid fa-arrow-right"></i>
+
+        <div class="nav-right">
+            <button class="dropbtn" onclick="openPopup()">
+                <i class="fa-solid fa-user-shield"></i> Portal Login
             </button>
-            
-            <p style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8;">
-                Forget Password? Contact Admin
-            </p>
         </div>
-    </div>
+
+        <div id="loginPopup" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <i class="fa-solid fa-circle-user" style="font-size: 50px; color: #38bdf8; margin-bottom: 10px;"></i>
+                <h2>Student Login</h2>
+                <div class="input-group">
+                    <input type="text" id="username" placeholder="Enter Your ID">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Enter Password">
+                </div>
+                <button class="btn-go" onclick="login()">
+                    Unlock Dashboard <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <p style="margin-top: 20px; font-size: 0.8rem; color: #94a3b8;">
+                    Forget Password? Contact Admin
+                </p>
+            </div>
+        </div>
     </nav>
 
-    <section class="slider-container">
+    <section class="slider-container" id="mainSlider">
         <img src="/slider/img1.jpg" class="slide active" alt="Banner 1">
         <img src="/slider/img2.jpg" class="slide" alt="Banner 2">
         <img src="/slider/img3.jpg" class="slide" alt="Banner 3">
     </section>
 
     <section class="stats-container">
-        <div class="stat-box">
-            <img src="/assets/course-icon.png" alt="Courses">
-            <h2>50+</h2>
-            <p>Courses</p>
-        </div>
-        <div class="stat-box">
-            <img src="/assets/learners-icon.png" alt="Learners">
-            <h2>100k+</h2>
-            <p>Learners</p>
-        </div>
-        <div class="stat-box">
-            <img src="/assets/doubts-icon.png" alt="Doubts">
-            <h2>100k+</h2>
-            <p>Doubts Solved</p>
-        </div>
-        <div class="stat-box">
-            <img src="/assets/projects-icon.png" alt="Projects">
-            <h2>10k+</h2>
-            <p>Student Projects</p>
-        </div>
+        <div class="stat-box"><h2>50+</h2><p>Courses</p></div>
+        <div class="stat-box"><h2>100k+</h2><p>Learners</p></div>
+        <div class="stat-box"><h2>100k+</h2><p>Doubts Solved</p></div>
+        <div class="stat-box"><h2>10k+</h2><p>Projects</p></div>
     </section>
 
     <div class="magical-title-container">
-        <h1 class="magical-text">Browse our Courses</h1>
+        <h1 class="magical-text">Explore Our Dynamic Classes</h1>
     </div>
 
-    <section class="courses-grid">
-        <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class5.jpg" alt="Class 5">
-                <h3>📘 CLASS 5</h3>
-            </div>
-            <div class="box-back">
-                <p>English, Hindi, Maths, EVS, Computer, GK, Sanskrit</p>
-                <button class="view-btn" onclick="checkAndRedirect('class5.html', 'Class 5')">View Now</button>
-            </div>
-        </div>
-
-        <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class6.jpg" alt="Class 6">
-                <h3>📗 CLASS 6</h3>
-            </div>
-            <div class="box-back">
-                <p>Maths, Science, SST (History, Geo, Civics), Computer</p>
-                <button class="view-btn" onclick="checkAndRedirect('class6.html', 'Class 6')">View Now</button>
-            </div>
-        </div>
-
-        <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class7.jpg" alt="Class 7">
-                <h3>📙 CLASS 7</h3>
-            </div>
-            <div class="box-back">
-                <p>Science, Maths, English, SST, Regional Language</p>
-                <button class="view-btn" onclick="checkAndRedirect('class7.html', 'Class 7')">View Now</button>
-            </div>
-        </div>
-
-        <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class8.jpg" alt="Class 8">
-                <h3>📕 CLASS 8</h3>
-            </div>
-            <div class="box-back">
-                <p>Full Syllabus (CBSE/ICSE/BSEB), Computer, Science</p>
-                <button class="view-btn" onclick="checkAndRedirect('class8.html', 'Class 8')">View Now</button>
-            </div>
-        </div>
-
-        <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class9.jpg" alt="Class 9">
-                <h3>📘 CLASS 9</h3>
-            </div>
-            <div class="box-back">
-                <p>Physics, Chemistry, Bio, Maths, Economics, IT</p>
-                <button class="view-btn" onclick="checkAndRedirect('class9.html', 'Class 9')">View Now</button>
-            </div>
-        </div>
-
-        <div class="course-box">
-            <div class="box-front">
-                <img src="/assets/class10.jpg" alt="Class 10">
-                <h3>🔹 CLASS 10</h3>
-            </div>
-            <div class="box-back">
-                <p>Board Exam Special: All Subjects</p>
-                <button class="view-btn" onclick="checkAndRedirect('class10.html', 'Class 10')">View Now</button>
-            </div>
-        </div>
-    </section>
+    <section class="courses-grid" id="dynamicCoursesGrid">
+        </section>
 
     <footer class="modern-footer">
         <div class="footer-container">
             <div class="footer-row">
                 <div class="footer-col">
-                    <h3>BBCC Portal</h3>
-                    <p>Shaping the future of students through digital excellence and quality education.</p>
-                    <div class="social-icons">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                    </div>
+                    <h3 id="footerTitle">BBCC Portal</h3>
+                    <p id="footerAbout">Shaping the future of students...</p>
+                    <div class="social-icons" id="footerSocials">
+                        </div>
                 </div>
                 <div class="footer-col">
                     <h3>Quick Links</h3>
                     <ul>
                         <li><a href="/">Home</a></li>
-                        <li><a href="#courses">Our Classes</a></li>
                         <li><a href="#" onclick="openPopup()">Portal Login</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
                     <h3>Get In Touch</h3>
-                    <p><i class="fab fa-whatsapp"></i> +91 9868698696</p>
-                    <p><i class="far fa-envelope"></i> bszbj@gmail.com</p>
-                    <p><i class="fas fa-map-marker-alt"></i> Bihar, India</p>
+                    <p id="footerWA"><i class="fab fa-whatsapp"></i> +91 0000000000</p>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -188,81 +116,101 @@
         </div>
     </footer>
 
-    
-
-    <script src="/js/client.js"></script>
     <script>
-    async function login() {
-    // Trim() se extra space hat jayegi
-    const userID = document.getElementById('username').value.trim();
-    const userPass = document.getElementById('password').value.trim();
+        // --- 1. INITIAL DATA LOAD (Header, Footer, Classes) ---
+        document.addEventListener('DOMContentLoaded', loadPageData);
 
-    if (!userID || !userPass) {
-        alert("🚨 Please enter both ID and Password!");
-        return;
-    }
+        async function loadPageData() {
+            try {
+                // Fetch Settings (Logo, Title, Footer)
+                const settingsRes = await fetch('/api/admin/hp-settings');
+                if (settingsRes.ok) {
+                    const data = await settingsRes.json();
+                    if (data.header) {
+                        document.getElementById('siteLogo').src = data.header.logo || '/assets/logo.png';
+                        document.getElementById('siteTitle').innerText = data.header.title;
+                        document.getElementById('siteSubTitle').innerText = data.header.subTitle;
+                        document.getElementById('pageTitle').innerText = data.header.title;
+                    }
+                    if (data.footer) {
+                        document.getElementById('footerAbout').innerText = data.footer.about;
+                        document.getElementById('footerWA').innerHTML = `<i class="fab fa-whatsapp"></i> ${data.footer.whatsapp}`;
+                    }
+                }
 
-    try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: userID, password: userPass })
-        });
+                // Fetch Classes for Grid
+                const classRes = await fetch('/api/admin/all-classes');
+                const classes = await classRes.json();
+                const grid = document.getElementById('dynamicCoursesGrid');
+                grid.innerHTML = ''; // Clear old data
 
-        const data = await response.json();
-
-        if (data.success) {
-            // Check karein ki backend kya bhej raha hai
-            console.log("User Role:", data.user.role);
-            console.log("Redirecting to:", data.redirect);
-
-            localStorage.setItem('userData', JSON.stringify(data.user));
-            
-            alert(`✅ Login Successful! Welcome ${data.user.fname}`);
-            
-            // Seedha redirect
-            window.location.href = data.redirect; 
-        } else {
-            alert("❌ " + data.message);
+                classes.forEach(cls => {
+                    const subjectsList = cls.subjects.map(s => s.name).join(", ");
+                    const box = document.createElement('div');
+                    box.className = 'course-box';
+                    box.innerHTML = `
+                        <div class="box-front">
+                            <img src="${cls.banner || '/assets/default-class.jpg'}" alt="${cls.className}">
+                            <h3>${cls.className}</h3>
+                        </div>
+                        <div class="box-back">
+                            <p><strong>Subjects:</strong> ${subjectsList || 'Updating Soon...'}</p>
+                            <button class="view-btn" onclick="goToDetails('${cls.className}')">View All Details</button>
+                            <button class="enroll-btn" onclick="openPopup()">Enroll Now</button>
+                        </div>
+                    `;
+                    grid.appendChild(box);
+                });
+            } catch (err) {
+                console.error("Error loading page data:", err);
+            }
         }
-    } catch (error) {
-        console.error("Login Error:", error);
-        alert("🔌 Server Connection Error!");
-    }
-}
+
+        function goToDetails(className) {
+            window.location.href = `/html/class-details.html?class=${encodeURIComponent(className)}`;
+        }
+
+        // --- 2. LOGIN LOGIC ---
+        async function login() {
+            const userID = document.getElementById('username').value.trim();
+            const userPass = document.getElementById('password').value.trim();
+
+            if (!userID || !userPass) {
+                alert("🚨 Please enter ID and Password!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: userID, password: userPass })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    alert(`✅ Welcome ${data.user.fname}`);
+                    window.location.href = data.redirect; 
+                } else {
+                    alert("❌ " + data.message);
+                }
+            } catch (error) {
+                alert("🔌 Server Connection Error!");
+            }
+        }
+
         // Slider Logic
-        let slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
-        function nextSlide() {
+        setInterval(() => {
+            let slides = document.querySelectorAll('.slide');
+            if(slides.length === 0) return;
             slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
-        }
-        setInterval(nextSlide, 3000);
+        }, 3000);
 
         function openPopup() { document.getElementById('loginPopup').style.display = "block"; }
         function closePopup() { document.getElementById('loginPopup').style.display = "none"; }
-
-        // Smart Redirect Logic
-        function checkAndRedirect(fileName, className) {
-            const url = "/html/" + fileName;
-            fetch(url, { method: 'HEAD' })
-            .then(res => {
-                if (res.ok) { window.location.href = url; } 
-                else { showMsg(className); }
-            })
-            .catch(() => showMsg(className));
-        }
-
-        function showMsg(className) {
-            alert("📢 Notification:\n\n" + className + " ka page abhi under development hai.\n- Bal Bharti Coaching Center");
-        }
     </script>
 </body>
 </html>
-
-
-
-
-
-
