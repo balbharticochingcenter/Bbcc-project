@@ -144,7 +144,15 @@ app.post('/api/update-teacher-data', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
-
+// --- DELETE TEACHER API ---
+app.delete('/api/delete-teacher', async (req, res) => {
+    try {
+        await Teacher.findOneAndDelete({ teacher_id: req.body.teacher_id });
+        res.status(200).json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // --- SERVER INITIALIZATION ---
 // Render will provide the PORT automatically via environment variables
 const PORT = process.env.PORT || 5000;
