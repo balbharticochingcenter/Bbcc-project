@@ -19,6 +19,8 @@ mongoose.connect(MONGO_URI)
     .catch(err => console.error("❌ DB Error:", err));
 
 // --- SCHEMAS ---
+
+// 1. User Schema (Existing)
 const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
@@ -28,12 +30,10 @@ const userSchema = new mongoose.Schema({
     lname: String,
     mobile: String,
     email: String,
-    // --- Nayi Fields Add Ki Gayi Hain ---
-    studentClass: { type: String }, // Class save karne ke liye
+    studentClass: { type: String }, 
     marksObtained: { type: Number, default: 0 },
     totalMarks: { type: Number, default: 500 },
     division: { type: String, default: "-" },
-    // ----------------------------------
     financeAmount: Number,
     paymentStatus: { type: String, default: "Unpaid" },
     joinDate: { type: Date, default: Date.now },
@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
+// 2. Comms Schema (Existing)
 const commsSchema = new mongoose.Schema({
     message: String,
     type: String, 
@@ -48,6 +49,23 @@ const commsSchema = new mongoose.Schema({
     date: { type: Date, default: Date.now }
 });
 const Comms = mongoose.model('Comms', commsSchema);
+
+// 3. NEW: Settings Schema (For Header & Footer)
+const settingsSchema = new mongoose.Schema({
+    header: {
+        title: { type: String, default: "BBCC Portal" },
+        subTitle: { type: String, default: "Education Excellence" },
+        logo: { type: String, default: "/assets/logo.png" }
+    },
+    footer: {
+        about: { type: String, default: "Short about your academy..." },
+        facebook: String,
+        instagram: String,
+        youtube: String,
+        whatsapp: String
+    }
+});
+const Settings = mongoose.model('Settings', settingsSchema);
 
 // --- MIDDLEWARES ---
 app.use(cors());
@@ -58,7 +76,7 @@ app.use(express.static(publicPath));
 
 // --- API ROUTES ---
 
-// 1. Login
+// 1. Login (Existing)
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -76,7 +94,7 @@ app.post('/login', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 2. Create User (Ab studentClass bhi save karega)
+// 2. Create User (Existing)
 app.post('/api/admin/create-user', async (req, res) => {
     try {
         const newUser = new User(req.body);
@@ -88,7 +106,7 @@ app.post('/api/admin/create-user', async (req, res) => {
     }
 });
 
-// 3. Get All Users
+// 3. Get All Users (Existing)
 app.get('/api/admin/users', async (req, res) => {
     try {
         const users = await User.find({ role: { $ne: 'admin' } });
@@ -96,7 +114,7 @@ app.get('/api/admin/users', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 4. Update User Detail (ID ke basis par)
+// 4. Update User Detail (Existing)
 app.put('/api/admin/users/:username', async (req, res) => {
     try {
         const updatedUser = await User.findOneAndUpdate(
@@ -109,7 +127,7 @@ app.put('/api/admin/users/:username', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 5. Batch Update Results (Result Modal ke liye)
+// 5. Batch Update Results (Existing)
 app.post('/api/admin/update-batch-results', async (req, res) => {
     try {
         const { results } = req.body;
@@ -130,7 +148,40 @@ app.post('/api/admin/update-batch-results', async (req, res) => {
     }
 });
 
-// 6. Communications History
+// --- NEW HP SETTINGS ROUTES ---
+
+// 6. Get HP Settings (HP Button click karne pe ye data load hoga)
+app.get('/api/admin/hp-settings', async (req, res) => {
+    try {
+        let settings = await Settings.findOne();
+        if (!settings) {
+            // Agar pehli baar hai toh default settings bana lo
+            settings = new Settings({});
+            await settings.save();
+        }
+        res.json(settings);
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 7. Update Header Detail
+app.post('/api/admin/update-header', async (req, res) => {
+    try {
+        await Settings.findOneAndUpdate({}, { header: req.body }, { upsert: true });
+        res.json({ success: true, message: "Header Updated!" });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// 8. Update Footer Detail
+app.post('/api/admin/update-footer', async (req, res) => {
+    try {
+        await Settings.findOneAndUpdate({}, { footer: req.body }, { upsert: true });
+        res.json({ success: true, message: "Footer Updated!" });
+    } catch (err) { res.status(500).json({ success: false }); }
+});
+
+// --- END NEW ROUTES ---
+
+// 9. Communications History (Existing)
 app.get('/api/admin/comms-history', async (req, res) => {
     try {
         const history = await Comms.find().sort({ date: -1 }).limit(30);
@@ -138,7 +189,7 @@ app.get('/api/admin/comms-history', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 7. Delete Communication Message
+// 10. Delete Communication Message (Existing)
 app.delete('/api/admin/comms/:id', async (req, res) => {
     try {
         await Comms.findByIdAndDelete(req.params.id);
@@ -146,7 +197,7 @@ app.delete('/api/admin/comms/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false }); }
 });
 
-// 8. Send & Broadcast Message
+// 11. Send & Broadcast Message (Existing)
 app.post('/api/admin/send-comms', async (req, res) => {
     try {
         const { message, target, type } = req.body;
