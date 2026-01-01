@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - BBCC</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="admin.css"> </head>
+    <link rel="stylesheet" href="admin.css">
+</head>
 <body onload="initDashboard()">
 
     <header class="magical-header">
@@ -17,25 +19,30 @@
         </div>
     </header>
 
-    <div class="dashboard" style="text-align:center; padding: 20px;">
-        <button id="openModalBtn" class="btn-primary">System Settings</button>
-        <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;">Teacher Reg</button>
-        <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;">Salary/Data</button>
-        <button id="openUpdateBtn" class="btn-primary" style="background: #fdcb6e; color: #000;">Update/Delete</button>
+    <div class="dashboard">
+        <button id="openModalBtn" class="btn-primary"><i class="fas fa-cogs"></i> System Settings</button>
+        <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;"><i class="fas fa-user-plus"></i> Teacher Reg</button>
+        <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;"><i class="fas fa-file-invoice-dollar"></i> Salary/Data</button>
+        <button id="openUpdateBtn" class="btn-primary" style="background: #fdcb6e; color: #000;"><i class="fas fa-edit"></i> Update/Delete</button>
     </div>
 
     <div id="systemModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <form id="adminForm">
-                <h3>System Settings</h3>
+                <h3 style="border-bottom: 2px solid #6c5ce7;">Header Branding</h3>
                 <input type="file" id="logoInput" accept="image/*">
-                <input type="text" name="title" id="form-title" placeholder="Site Title">
-                <input type="text" name="sub_title" id="form-subtitle" placeholder="Sub Title">
-                <input type="text" name="contact" id="form-contact" placeholder="Contact">
-                <input type="email" name="gmail" id="form-gmail" placeholder="Email">
+                <input type="text" name="title" id="form-title" placeholder="Coaching Name (Title)">
+                <input type="text" name="sub_title" id="form-subtitle" placeholder="Sub Title (Slogan)">
+                
+                <h3 style="border-bottom: 2px solid #e84393; margin-top: 20px;">Footer Details</h3>
+                <input type="text" name="contact" id="form-contact" placeholder="WhatsApp Number">
+                <input type="text" name="call_no" id="form-call" placeholder="Calling Number">
+                <input type="email" name="gmail" id="form-gmail" placeholder="Official Email">
                 <input type="url" name="facebook" id="form-facebook" placeholder="Facebook URL">
-                <button type="submit" class="btn-update">Save Settings</button>
+                <input type="text" name="help" id="form-help" placeholder="Help Line / Address">
+                
+                <button type="submit" class="btn-update">Save All Settings</button>
             </form>
         </div>
     </div>
@@ -46,11 +53,13 @@
             <form id="teacherForm">
                 <h3>New Teacher Registration</h3>
                 <input type="text" name="teacher_name" id="t_name" placeholder="Full Name" required>
-                <input type="text" name="teacher_id" id="t_id" placeholder="Auto-ID" readonly>
-                <input type="text" name="pass" id="t_pass" placeholder="Auto-Password" readonly>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" name="teacher_id" id="t_id" placeholder="ID" readonly style="flex:1;">
+                    <input type="text" name="pass" id="t_pass" placeholder="Password" readonly style="flex:1;">
+                </div>
                 <input type="text" name="mobile" placeholder="Mobile Number">
                 <input type="file" id="t_photo" accept="image/*">
-                <input type="number" name="salary" placeholder="Monthly Salary">
+                <input type="number" name="salary" placeholder="Monthly Salary (Amount)">
                 <input type="date" name="joining_date">
                 <button type="submit" class="btn-update">Register Teacher</button>
             </form>
@@ -58,69 +67,85 @@
     </div>
 
     <div id="dataModal" class="modal">
-        <div class="modal-content" style="width: 95%;">
+        <div class="modal-content" style="width: 95%; max-width: 1200px;">
             <span class="close">&times;</span>
-            <h3>Teacher Salary Management</h3>
-            <table class="magical-table" border="1" style="width:100%; text-align:left;">
-                <thead>
-                    <tr>
-                        <th>Photo</th>
-                        <th>Name</th>
-                        <th>Joining</th>
-                        <th>Salary Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="teacherTableBody"></tbody>
-            </table>
+            <h3>Teacher Salary & Records</h3>
+            <div id="teacherTableBody">
+                </div>
         </div>
     </div>
 
     <div id="updateModal" class="modal">
-    <div class="modal-content" style="max-width: 800px; border-color: #fdcb6e;">
-        <span class="close">&times;</span>
-        <h3><i class="fas fa-edit"></i> Search & Update Teacher</h3>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px; background:#f8f9fa; padding:15px; border-radius:15px;">
-            <input type="text" id="search_tid" placeholder="Enter Teacher ID (e.g. SAN1234)" style="margin:0;">
-            <button type="button" onclick="searchTeacher()" class="btn-primary" style="margin:0; width:150px; background:#6c5ce7;">Search</button>
-        </div>
-
-        <form id="updateForm">
-            <input type="hidden" name="teacher_id" id="up_id">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close">&times;</span>
+            <h3>Search, Update or Delete</h3>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="search_tid" placeholder="Enter Teacher ID">
+                <button type="button" onclick="searchTeacher()" class="btn-primary" style="margin:0;">Search</button>
+            </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div><label>Full Name:</label><input type="text" name="teacher_name" id="up_name"></div>
-                <div><label>Mobile:</label><input type="text" name="mobile" id="up_mobile"></div>
-                <div><label>Password:</label><input type="text" name="pass" id="up_pass"></div>
-                <div><label>Monthly Salary:</label><input type="number" name="salary" id="up_salary"></div>
-                <div><label>Joining Date:</label><input type="date" name="joining_date" id="up_joining"></div>
-                <div><label>Update Photo:</label><input type="file" id="up_photo" accept="image/*"></div>
-            </div>
+            <form id="updateForm">
+                <input type="hidden" name="teacher_id" id="up_id">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="text" name="teacher_name" id="up_name" placeholder="Name">
+                    <input type="text" name="mobile" id="up_mobile" placeholder="Mobile">
+                    <input type="text" name="pass" id="up_pass" placeholder="Password">
+                    <input type="number" name="salary" id="up_salary" placeholder="Salary Amount">
+                </div>
 
-            <label><b>Update Classes:</b></label>
-            <div class="checkbox-group" id="up_classes_div" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom:10px; background: #fff1f1; padding: 10px; border-radius: 10px;">
-                <label><input type="checkbox" name="classes" value="1st"> 1st</label>
-                <label><input type="checkbox" name="classes" value="2nd"> 2nd</label>
-                <label><input type="checkbox" name="classes" value="10th"> 10th</label>
-                <label><input type="checkbox" name="classes" value="12th"> 12th</label>
-            </div>
+                <p><b>Assign Classes:</b></p>
+                <div class="checkbox-container" id="up_classes_div">
+                    <label><input type="checkbox" name="classes" value="1st"> 1st</label>
+                    <label><input type="checkbox" name="classes" value="2nd"> 2nd</label>
+                    <label><input type="checkbox" name="classes" value="3rd"> 3rd</label>
+                    <label><input type="checkbox" name="classes" value="4th"> 4th</label>
+                    <label><input type="checkbox" name="classes" value="5th"> 5th</label>
+                    <label><input type="checkbox" name="classes" value="6th"> 6th</label>
+                    <label><input type="checkbox" name="classes" value="7th"> 7th</label>
+                    <label><input type="checkbox" name="classes" value="8th"> 8th</label>
+                    <label><input type="checkbox" name="classes" value="9th"> 9th</label>
+                    <label><input type="checkbox" name="classes" value="10th"> 10th</label>
+                    <label><input type="checkbox" name="classes" value="I.A."> I.A.</label>
+                    <label><input type="checkbox" name="classes" value="I.Sc."> I.Sc.</label>
+                    <label><input type="checkbox" name="classes" value="I.Com."> I.Com.</label>
+                    <label><input type="checkbox" name="classes" value="B.A."> B.A.</label>
+                    <label><input type="checkbox" name="classes" value="B.Sc."> B.Sc.</label>
+                    <label><input type="checkbox" name="classes" value="B.Com."> B.Com.</label>
+                </div>
 
-            <label><b>Update Subjects:</b></label>
-            <div class="checkbox-group" id="up_subjects_div" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom:15px; background: #f1faff; padding: 10px; border-radius: 10px;">
-                <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
-                <label><input type="checkbox" name="subjects" value="English"> English</label>
-                <label><input type="checkbox" name="subjects" value="Maths"> Maths</label>
-                <label><input type="checkbox" name="subjects" value="Science"> Science</label>
-            </div>
+                <p><b>Assign Subjects:</b></p>
+                <div class="checkbox-container" id="up_subjects_div">
+                    <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
+                    <label><input type="checkbox" name="subjects" value="English"> English</label>
+                    <label><input type="checkbox" name="subjects" value="Maths"> Maths</label>
+                    <label><input type="checkbox" name="subjects" value="Sanskrit"> Sanskrit</label>
+                    <label><input type="checkbox" name="subjects" value="Science"> Science</label>
+                    <label><input type="checkbox" name="subjects" value="Social Science"> Social Science</label>
+                    <label><input type="checkbox" name="subjects" value="Physics"> Physics</label>
+                    <label><input type="checkbox" name="subjects" value="Chemistry"> Chemistry</label>
+                    <label><input type="checkbox" name="subjects" value="Biology"> Biology</label>
+                    <label><input type="checkbox" name="subjects" value="History"> History</label>
+                    <label><input type="checkbox" name="subjects" value="Geography"> Geography</label>
+                    <label><input type="checkbox" name="subjects" value="Economics"> Economics</label>
+                    <label><input type="checkbox" name="subjects" value="Accountancy"> Accountancy</label>
+                    <label><input type="checkbox" name="subjects" value="Business Studies"> Business Studies</label>
+                    <label><input type="checkbox" name="subjects" value="Philosophy"> Philosophy</label>
+                </div>
 
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" class="btn-update" style="background: #2ecc71; flex: 2;">Save Changes</button>
-                <button type="button" onclick="deleteTeacher()" class="btn-update" style="background: #ff7675; flex: 1;">Delete</button>
-            </div>
-        </form>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button type="submit" class="btn-update" style="background:#2ecc71;">Save Changes</button>
+                    <button type="button" onclick="deleteTeacher()" class="btn-update" style="background:#e74c3c;">Delete Account</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <span class="close" onclick="document.getElementById('profileModal').style.display='none'">&times;</span>
+            <div id="profileData"></div>
+        </div>
+    </div>
 
     <script src="adminscript.js"></script>
 </body>
