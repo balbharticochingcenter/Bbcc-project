@@ -1,225 +1,134 @@
-/* --- Magical Google Fonts --- */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
-
+/* --- Root Variables & Animations --- */
 :root {
     --primary: #6c5ce7;
     --secondary: #00cec9;
     --accent: #e84393;
-    --dark: #1e272e;
+    --dark: #2d3436;
+    --success: #2ecc71;
     --magic-gradient: linear-gradient(45deg, #6c5ce7, #00cec9, #e84393, #fdcb6e);
 }
 
-* {
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    min-height: 100vh;
-    color: #2d3436;
-}
-
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* --- Header & Navigation --- */
-.magical-header {
-    display: flex;
-    align-items: center;
-    padding: 15px 5% ;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
-    border-bottom: 3px solid var(--secondary);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.ring-logo {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    padding: 3px;
-    background: var(--magic-gradient);
-    animation: ringRotate 3s linear infinite;
-    object-fit: cover;
-}
-
-@keyframes ringRotate {
-    100% { transform: rotate(360deg); }
-}
-
-.glow-text {
-    margin: 0;
-    font-size: 1.8rem;
-    color: #fff;
-    text-transform: uppercase;
-    text-shadow: 0 0 10px var(--secondary);
-}
-
-/* --- Dashboard Section --- */
-.dashboard {
-    padding: 50px 20px;
-    text-align: center;
-}
-
-.btn-primary {
-    padding: 15px 30px;
-    border: none;
-    border-radius: 50px;
-    font-weight: 600;
-    cursor: pointer;
-    margin: 10px;
-    transition: 0.4s;
-    background: var(--magic-gradient);
-    background-size: 200%;
-    color: white;
-}
-
-.btn-primary:hover {
-    transform: translateY(-5px) scale(1.05);
-    background-position: right;
-}
-
-/* --- MODAL POPUP (The Fix) --- */
-.modal {
-    display: none; /* JS control */
-    position: fixed;
-    z-index: 9999; /* Sabse upar */
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    overflow-y: auto;
-}
-
-.modal-content {
-    background: #fff;
-    margin: 40px auto;
-    padding: 30px;
-    width: 90%;
-    max-width: 600px;
-    border-radius: 20px;
-    position: relative;
-    animation: modalOpen 0.5s ease;
-}
-
-@keyframes modalOpen {
-    from { opacity: 0; transform: translateY(-50px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- Bada Close Button --- */
-.close {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 40px;
-    font-weight: 800;
-    color: #ff7675;
-    cursor: pointer;
-    line-height: 1;
-    transition: 0.3s;
-    z-index: 10;
-}
-
-.close:hover {
-    color: #d63031;
-    transform: rotate(90deg);
-}
-
-/* --- Teacher Cards Styling --- */
-.magical-table thead { display: none; } /* Table head chhupa di */
-
+/* --- Teacher Cards Styling (Salary/Data Modal) --- */
 #teacherTableBody {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 20px;
-    padding: 20px;
+    padding: 10px;
 }
 
-#teacherTableBody tr {
-    display: flex;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+.teacher-card {
+    transition: all 0.3s ease;
+    border: none !important;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.teacher-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(108, 92, 231, 0.2) !important;
+}
+
+.teacher-card img {
+    border: 3px solid var(--primary);
     transition: 0.3s;
-    border-top: 5px solid var(--primary);
 }
 
-#teacherTableBody tr:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+.teacher-card img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary);
 }
 
-#teacherTableBody td {
-    border: none;
-    padding: 8px 0;
-    text-align: center;
-}
-
-/* Photo Styling inside Card */
-#teacherTableBody td:first-child img {
-    width: 90px;
-    height: 90px;
+/* --- Action Icons (WhatsApp, Call, SMS) --- */
+.teacher-card a {
+    text-decoration: none;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    border: 4px solid var(--secondary);
-    object-fit: cover;
+    background: #f1f2f6;
 }
 
-/* Label Helpers */
-#teacherTableBody td::before {
-    content: attr(data-label); /* Iske liye HTML mein data-label add karna hoga */
-    display: block;
-    font-size: 0.75rem;
-    color: #636e72;
-    font-weight: bold;
-    text-transform: uppercase;
+.teacher-card a:hover {
+    transform: scale(1.2);
+    filter: brightness(1.1);
 }
 
-/* --- Forms Inside Modals --- */
-input, select, textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #eee;
+/* --- Checkbox Group for Classes & Subjects --- */
+.checkbox-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.checkbox-container label {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    background: white;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+/* --- Profile Modal Styling --- */
+#profileData img {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+#profileData h3 {
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+
+#profileData p {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #444;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 5px;
+}
+
+/* --- Custom Scrollbar for Modals & Lists --- */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
     border-radius: 10px;
 }
 
-.btn-update {
-    background: #2ecc71;
-    color: white;
-    padding: 15px;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-}
-
-/* --- Footer --- */
-.magical-footer {
-    background: rgba(0,0,0,0.9);
-    color: white;
-    padding: 30px;
-    text-align: center;
-    margin-top: 50px;
-}
-
-.magic-name {
-    font-weight: 800;
-    background: linear-gradient(90deg, #00cec9, #e84393);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+/* --- Responsive Layout Fixes --- */
+@media (max-width: 600px) {
+    .modal-content {
+        width: 95%;
+        margin: 20px auto;
+        padding: 15px;
+    }
+    
+    #teacherTableBody {
+        grid-template-columns: 1fr;
+    }
 }
