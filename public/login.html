@@ -1,34 +1,96 @@
-<header class="main-header">
-    <div class="header-left">
-        <img id="db-logo" src="" alt="Logo">
-    </div>
-    <div class="header-center">
-        <h1 id="db-title">Loading...</h1>
-        <p id="db-subtitle"></p>
-    </div>
-    <div class="header-right" style="display: flex; gap: 15px;">
-        <button class="result-trigger-3d" onclick="openModal('resultCheckModal')">
-            <i class="fas fa-poll"></i> Result
-        </button>
-        <button class="login-trigger-3d" onclick="openModal('login3DModal')">
-            <i class="fas fa-sign-in-alt"></i> Login
-        </button>
-    </div>
-</header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBCC - Login Portal</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body class="magical-bg">
 
-<div id="login3DModal" class="modal-3d">
-    <div class="cube-container">
-        <div class="cube-card">
-            <span class="close-3d" onclick="closeModal('login3DModal')">&times;</span>
-            <div class="cube-front">
-                <h3><i class="fas fa-lock"></i> SECURE LOGIN</h3>
-                <p style="font-size: 10px; color: #6c5ce7;">Admin / Teacher / Student</p>
-                <div class="input-group">
-                    <input type="text" id="login_id" placeholder="User ID (e.g. ADM01, STU123)">
-                    <input type="password" id="login_pass" placeholder="Password">
+    <header class="main-header">
+        <div class="header-left">
+            <img id="db-logo" src="" alt="Logo" onerror="this.src='https://via.placeholder.com/60'">
+        </div>
+        <div class="header-center">
+            <h1 id="db-title">Loading School...</h1>
+            <p id="db-subtitle"></p>
+        </div>
+        <div class="header-right">
+            <button class="result-trigger-3d" onclick="openModal('resultCheckModal')">
+                <i class="fas fa-poll"></i> Result
+            </button>
+            <button class="login-trigger-3d" onclick="openModal('login3DModal')">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </div>
+    </header>
+
+    <main class="hero-section">
+        <div class="welcome-box">
+            <h2 class="glow-text">Digital Campus Portal</h2>
+            <p>Admin, Teacher & Student Unified Access</p>
+        </div>
+    </main>
+
+    <div id="login3DModal" class="modal-3d">
+        <div class="cube-container">
+            <div class="cube-card">
+                <span class="close-3d" onclick="closeModal('login3DModal')">&times;</span>
+                <div class="cube-front">
+                    <h3><i class="fas fa-lock"></i> SECURE LOGIN</h3>
+                    <p style="font-size: 11px; color: #6c5ce7; margin-bottom: 15px;">Enter your credentials to access portal</p>
+                    <div class="input-group">
+                        <input type="text" id="login_id" placeholder="User ID (e.g. ADMIN, STU101)">
+                        <input type="password" id="login_pass" placeholder="Password">
+                    </div>
+                    <button onclick="universalLogin()" class="btn-3d-glow">ENTER PORTAL</button>
                 </div>
-                <button onclick="universalLogin()" class="btn-3d-glow">Enter Portal</button>
             </div>
         </div>
     </div>
-</div>
+
+    <div id="resultCheckModal" class="modal-3d">
+        <div class="cube-container">
+            <div class="cube-card">
+                <span class="close-3d" onclick="closeModal('resultCheckModal')">&times;</span>
+                <h3><i class="fas fa-poll-h"></i> CHECK RESULT</h3>
+                <div class="input-group">
+                    <input type="text" id="stu_roll_id" placeholder="Enter Student ID">
+                </div>
+                <button onclick="checkResult()" class="btn-3d-glow" style="background: #f39c12;">SEARCH</button>
+                <div id="resultDisplayArea" style="margin-top: 15px; text-align: left; color: #333;"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div id="db-contact"></div>
+        <p>&copy; 2026 <span id="db-admin"></span> | All Rights Reserved</p>
+    </footer>
+
+    <script src="adminscript.js"></script>
+    <script>
+        // Load Settings on Start
+        window.onload = loadSettings;
+
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Close modal when clicking outside the box
+        window.onclick = function(event) {
+            if (event.target.className === 'modal-3d') {
+                event.target.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
