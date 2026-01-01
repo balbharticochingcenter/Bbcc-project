@@ -395,3 +395,69 @@ document.getElementById("studentForm").onsubmit = async (e) => {
         alert("Server se connection nahi ho pa raha hai.");
     }
 };
+// --- 1. OPEN STUDENT UPDATE MODAL ---
+document.getElementById("openStudentUpdateBtn").onclick = () => {
+    document.getElementById("studentUpdateModal").style.display = "block";
+};
+
+// --- 2. SEARCH STUDENT BY ID ---
+async function searchStudent() {
+    const id = document.getElementById('search_sid').value.trim().toUpperCase();
+    const res = await fetch('/api/get-students');
+    const students = await res.json();
+    const s = students.find(x => x.student_id === id);
+
+    if(s) {
+        document.getElementById('up_sid').value = s.student_id;
+        document.getElementById('up_sname').value = s.student_name || "";
+        document.getElementById('up_spass').value = s.pass || "";
+        document.getElementById('up_smobile').value = s.mobile || "";
+        document.getElementById('up_pname').value = s.parent_name || "";
+        document.getElementById('up_pmobile').value = s.parent_mobile || "";
+        document.getElementById('up_sfees').value = s.fees || "";
+        document.getElementById('up_sclass').value = s.student_class || "";
+        document.getElementById('up_sdoj').value = s.joining_date || "";
+        alert("Student data loaded!");
+    } else { 
+        alert("Student ID not found!"); 
+    }
+}
+
+// --- 3. UPDATE STUDENT DATA ---
+document.getElementById("studentUpdateForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    const res = await fetch('/api/update-student-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+
+    if(res.ok) { 
+        alert("Student Data Updated Successfully! ✅"); 
+        document.getElementById("studentUpdateModal").style.display="none"; 
+        loadStudentData(); // Refresh diary cards
+    }
+};
+
+// --- 4. DELETE STUDENT ACCOUNT ---
+async function deleteStudent() {
+    const id = document.getElementById('up_sid').value;
+    if(!id) return alert("Search a student first!");
+    
+    if(!confirm("Are you sure? This will delete all student records!")) return;
+    
+    const res = await fetch('/api/delete-student', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: id })
+    });
+    
+    if(res.ok) {
+        alert("Student Account Deleted!"); 
+        document.getElementById("studentUpdateModal").style.display="none"; 
+        loadStudentData(); 
+    }
+}
