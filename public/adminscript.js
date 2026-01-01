@@ -45,9 +45,7 @@ async function loadSettings() {
     } catch (err) { 
         console.error("Database connection failed:", err); 
     }
-}
-    } catch (err) { console.error("Error loading settings:", err); }
-}
+
 
 // --- 2. MODAL CONTROLS ---
 const modals = {
