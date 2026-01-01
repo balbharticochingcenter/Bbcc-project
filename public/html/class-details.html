@@ -3,87 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Details - BBCC</title>
+    <title>Class Details | BBCC</title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Specific tweaks for Details Page */
-        .details-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 30px 8%;
-            align-items: start;
-        }
-        
-        .subjects-column h2 { color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
-        
+        .details-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px 8%; align-items: start; }
+        .subjects-column h2 { color: var(--primary); margin-bottom: 25px; font-size: 2rem; }
         .subject-item-box {
-            background: rgba(30, 41, 59, 0.5);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .video-column { position: sticky; top: 100px; }
-        
-        .video-container {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-        }
-
-        /* Teacher Slider Section */
-        .teacher-slider-wrap {
-            grid-column: 1 / -1;
-            margin-top: 40px;
-            text-align: center;
-        }
-        
-        .t-card-container {
-            display: flex;
-            overflow: hidden;
-            gap: 20px;
-            padding: 20px;
-            justify-content: center;
-        }
-
-        .t-card {
-            min-width: 200px;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
+            background: rgba(30, 41, 59, 0.6);
+            padding: 20px; border-radius: 15px; margin-bottom: 15px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            display: flex; justify-content: space-between; align-items: center;
             transition: 0.3s;
         }
-        
-        .t-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--success); }
-
+        .subject-item-box:hover { transform: translateX(10px); background: rgba(56, 189, 248, 0.1); }
+        .video-column { position: sticky; top: 120px; }
+        .video-container {
+            width: 100%; aspect-ratio: 16/9; background: #000;
+            border-radius: 20px; overflow: hidden; border: 3px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
         .enroll-now-btn {
-            width: 100%;
-            padding: 15px;
-            margin-top: 15px;
-            background: linear-gradient(90deg, #ef4444, #b91c1c);
-            color: white;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            text-transform: uppercase;
+            width: 100%; padding: 18px; margin-top: 20px;
+            background: linear-gradient(135deg, #ef4444, #991b1b);
+            color: white; font-weight: bold; border: none; border-radius: 12px;
+            cursor: pointer; font-size: 1.2rem; transition: 0.3s;
         }
-
-        @media (max-width: 850px) {
-            .details-wrapper { grid-template-columns: 1fr; }
-            .video-column { position: static; }
+        .enroll-now-btn:hover { letter-spacing: 1px; filter: brightness(1.2); }
+        .teacher-slider-wrap { grid-column: 1 / -1; margin-top: 60px; }
+        .t-card-container { display: flex; overflow-x: auto; gap: 25px; padding: 20px 0; scrollbar-width: none; }
+        .t-card {
+            min-width: 220px; background: #1e293b; padding: 25px;
+            border-radius: 20px; text-align: center; border: 1px solid #334155;
         }
+        .t-card img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 15px; }
+        @media (max-width: 900px) { .details-wrapper { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -97,13 +51,13 @@
             </div>
         </div>
         <div class="nav-right">
-            <button class="dropbtn" onclick="window.location.href='/'"><i class="fa fa-home"></i> Home</button>
+            <button class="dropbtn" onclick="window.location.href='/'"><i class="fa fa-arrow-left"></i> Back</button>
         </div>
     </nav>
 
     <div class="details-wrapper">
         <div class="subjects-column">
-            <h2 id="classNameHeading">Class Details</h2>
+            <h2 id="classNameHeading">Loading Details...</h2>
             <div id="subjectListContainer">
                 </div>
         </div>
@@ -112,13 +66,13 @@
             <div class="video-container">
                 <iframe id="mainYtPlayer" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
             </div>
-            <button class="enroll-now-btn" onclick="window.location.href='/?action=login'">
-                <i class="fa fa-user-plus"></i> Enroll Now (Login First)
+            <button class="enroll-now-btn" onclick="window.location.href='/?login=true'">
+                <i class="fa fa-lock-open"></i> ENROLL NOW & START LEARNING
             </button>
         </div>
 
         <div class="teacher-slider-wrap">
-            <h2 class="magical-text">Meet Our Teachers</h2>
+            <h2 class="magical-text" style="text-align: center;">Our Specialized Teachers</h2>
             <div class="t-card-container" id="teacherDisplay">
                 </div>
         </div>
@@ -128,7 +82,7 @@
         <div class="footer-container">
             <div class="footer-bottom">
                 <p id="footerAbout" style="text-align: center; color: #94a3b8;"></p>
-                <hr style="margin: 15px 0; border: 0.5px solid #334155;">
+                <hr style="margin: 20px 0; border: 0.1px solid #334155;">
                 <p class="dev-credit" style="text-align: center;">Website Developed by <span>Santosh Sir "Ethical Hacker"</span></p>
             </div>
         </div>
@@ -136,63 +90,79 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const params = new URLSearchParams(window.location.search);
-            const targetClass = params.get('class');
+            const urlParams = new URLSearchParams(window.location.search);
+            const className = urlParams.get('class');
 
-            // 1. Load Global Settings (Header/Footer)
-            const settingsRes = await fetch('/api/admin/hp-settings');
-            const settings = await settingsRes.json();
-            document.getElementById('siteLogo').src = settings.header.logo;
-            document.getElementById('siteTitle').innerText = settings.header.title;
-            document.getElementById('siteSubTitle').innerText = settings.header.subTitle;
-            document.getElementById('footerAbout').innerText = settings.footer.about;
+            if (!className) {
+                alert("Class not selected!");
+                window.location.href = '/';
+                return;
+            }
 
-            // 2. Load Class Details
-            const classRes = await fetch('/api/admin/all-classes');
-            const allClasses = await classRes.json();
-            const clsData = allClasses.find(c => c.className === targetClass);
+            try {
+                // 1. Load Navbar/Footer Settings
+                const setRes = await fetch('/api/admin/hp-settings');
+                const settings = await setRes.json();
+                document.getElementById('siteLogo').src = settings.header?.logo || '';
+                document.getElementById('siteTitle').innerText = settings.header?.title || 'BBCC';
+                document.getElementById('siteSubTitle').innerText = settings.header?.subTitle || '';
+                document.getElementById('footerAbout').innerText = settings.footer?.about || '';
 
-            if (clsData) {
-                document.getElementById('classNameHeading').innerText = `Subjects for ${clsData.className}`;
+                // 2. Load Class Data
+                const classRes = await fetch('/api/admin/all-classes');
+                const allClasses = await classRes.json();
                 
-                // Show Intro Video from first subject
-                if (clsData.subjects[0]?.ytLinks[0]) {
-                    const videoId = extractID(clsData.subjects[0].ytLinks[0]);
-                    document.getElementById('mainYtPlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
+                // Match class from database
+                const cls = allClasses.find(c => c.className === className);
+
+                if (cls) {
+                    document.getElementById('classNameHeading').innerText = `Class: ${cls.className}`;
+                    
+                    const subList = document.getElementById('subjectListContainer');
+                    const teachList = document.getElementById('teacherDisplay');
+                    subList.innerHTML = '';
+                    teachList.innerHTML = '';
+
+                    // Load Video (First subject's first link)
+                    if (cls.subjects[0]?.ytLinks[0]) {
+                        const vidId = getID(cls.subjects[0].ytLinks[0]);
+                        document.getElementById('mainYtPlayer').src = `https://www.youtube.com/embed/${vidId}`;
+                    }
+
+                    cls.subjects.forEach(sub => {
+                        // Subject Entry
+                        subList.innerHTML += `
+                            <div class="subject-item-box">
+                                <div>
+                                    <b style="color:white; font-size:1.2rem;">${sub.name}</b><br>
+                                    <span style="color:var(--primary)">Prof. ${sub.teacher}</span>
+                                </div>
+                                <i class="fa fa-graduation-cap" style="color:#334155"></i>
+                            </div>
+                        `;
+
+                        // Teacher Slider Entry
+                        teachList.innerHTML += `
+                            <div class="t-card">
+                                <img src="/assets/teacher-default.png" alt="Teacher">
+                                <h3 style="color:white; font-size:1.1rem;">${sub.teacher}</h3>
+                                <p style="color:var(--primary); font-size:0.9rem;">${sub.name} Expert</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    document.getElementById('classNameHeading').innerText = "Class Data Not Found!";
                 }
 
-                // Render Subjects Left
-                const subContainer = document.getElementById('subjectListContainer');
-                const teacherContainer = document.getElementById('teacherDisplay');
-                
-                clsData.subjects.forEach(sub => {
-                    // Subject Row
-                    subContainer.innerHTML += `
-                        <div class="subject-item-box">
-                            <div>
-                                <b style="font-size:1.1rem; color:white;">${sub.name}</b><br>
-                                <small style="color:var(--primary)">Expert: ${sub.teacher}</small>
-                            </div>
-                            <i class="fa fa-book-open" style="color: #444;"></i>
-                        </div>
-                    `;
-
-                    // Teacher Card Bottom
-                    teacherContainer.innerHTML += `
-                        <div class="t-card">
-                            <img src="/assets/teacher-default.png" alt="Teacher">
-                            <h4 style="margin-top:10px;">${sub.teacher}</h4>
-                            <p style="font-size:0.8rem; color:var(--primary);">${sub.name} Specialist</p>
-                        </div>
-                    `;
-                });
+            } catch (err) {
+                console.error("Data Load Error:", err);
             }
         });
 
-        function extractID(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+        function getID(url) {
+            const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const m = url.match(reg);
+            return (m && m[2].length === 11) ? m[2] : null;
         }
     </script>
 </body>
