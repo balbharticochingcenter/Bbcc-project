@@ -263,6 +263,59 @@
         </div>
     </div>
 
+<button class="menu-btn" onclick="openClassSetupModal()" style="border-color: #3b82f6;"><i class="fa fa-graduation-cap"></i> <span>Class Setup</span></button>
+
+<div id="classSetupModal" class="modal wide-modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('classSetupModal')">&times;</span>
+        <h2 class="glow-text"><i class="fa fa-university"></i> Class & Subject Management</h2>
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: flex-end;">
+            <div style="flex: 1;">
+                <label>Search & Select Class</label>
+                <select id="setupClassSelect">
+                    <option value="5th">5th Standard</option>
+                    <option value="6th">6th Standard</option>
+                    <option value="7th">7th Standard</option>
+                    <option value="8th">8th Standard</option>
+                    <option value="9th">9th Standard</option>
+                    <option value="10th">10th Standard</option>
+                    <option value="11th">11th Standard</option>
+                    <option value="12th">12th Standard</option>
+                </select>
+            </div>
+            <button onclick="loadClassData()" class="btn-s" style="height: 40px; background: #3b82f6;">Load Data / Search</button>
+        </div>
+
+        <div class="hp-grid">
+            <div class="hp-section">
+                <h3>Class Identity</h3>
+                <label>Class Banner (Image)</label>
+                <input type="file" id="classBannerFile" accept="image/*">
+                <img id="classBannerPreview" style="width:100%; height:100px; object-fit:cover; margin-top:10px; border-radius:5px; background:#222; border:1px solid #444;">
+                
+                <label style="margin-top:15px; display:block;">Class Teacher</label>
+                <select id="setupClassTeacher"></select>
+
+                <label style="margin-top:15px; display:block;">Class YT Intro</label>
+                <input type="text" id="classYTLink" placeholder="Global Intro Video URL">
+            </div>
+
+            <div class="hp-section">
+                <h3>Subject & Multiple Videos</h3>
+                <div id="subjectList" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                    </div>
+            </div>
+        </div>
+        
+        <button onclick="saveClassSetup()" class="save-btn" style="margin-top:20px; width:100%; background:#10b981;">
+            <i class="fa fa-sync-alt"></i> Update & Save Class Data
+        </button>
+    </div>
+</div>
+
+
+    
     <script src="/socket.io/socket.io.js"></script>
     <script>
         // --- SESSION SECURITY CHECK ---
@@ -544,6 +597,126 @@
         }
         async function deleteHistory(id) { if(confirm("Delete?")) { await fetch(`/api/admin/comms/${id}`, { method: 'DELETE' }); loadHistory(); } }
         function logout() { localStorage.clear(); window.location.href="/"; }
+        const ALL_SUBJECTS = ["Maths", "Science", "English", "Hindi", "Sanskrit", "Social Science", "Physics", "Chemistry", "Biology"];
+
+function openClassSetupModal() {
+    openModal('classSetupModal');
+    renderSubjectList();
+    // Fill Teacher Dropdown
+    const teachers = mainData.filter(u => u.role === 'teacher');
+    document.getElementById('setupClassTeacher').innerHTML = teachers.map(t => `<option value="${t.username}">${t.fname} ${t.lname}</option>`).join('');
+}
+
+// Subject list render karne ka function (Multiple videos ke saath)
+function renderSubjectList(existingData = null) {
+    const list = document.getElementById('subjectList');
+    list.innerHTML = "";
+    const teachers = mainData.filter(u => u.role === 'teacher');
+
+    ALL_SUBJECTS.forEach(sub => {
+        const subData = existingData ? existingData.subjects.find(s => s.name === sub) : null;
+        const isChecked = subData ? "checked" : "";
+        
+        list.innerHTML += `
+            <div class="subject-item" style="border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 8px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" class="sub-check" value="${sub}" ${isChecked}>
+                    <b style="color:var(--primary)">${sub}</b>
+                </div>
+                <div class="sub-inputs" style="margin-top:10px; display: grid; gap: 5px;">
+                    <select class="sub-teacher" style="width:100%">
+                        <option value="">Select Teacher</option>
+                        ${teachers.map(t => `<option value="${t.username}" ${subData?.teacher === t.username ? 'selected':''}>${t.fname}</option>`).join('')}
+                    </select>
+                    <div class="video-container">
+                        <label style="font-size:11px;">YouTube Links:</label>
+                        <div class="yt-inputs-list">
+                            ${subData && subData.videos.length > 0 ? 
+                                subData.videos.map(v => `<input type="text" class="sub-yt-link" value="${v}" placeholder="Link" style="margin-bottom:5px;">`).join('') 
+                                : '<input type="text" class="sub-yt-link" placeholder="YouTube Link" style="margin-bottom:5px;">'}
+                        </div>
+                        <button type="button" onclick="addMoreYT(this)" style="background:#444; color:#fff; border:none; padding:3px 8px; font-size:11px; cursor:pointer;">+ Add More Video</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+// Naya Video Input field add karne ke liye
+function addMoreYT(btn) {
+    const container = btn.previousElementSibling;
+    const input = document.createElement('input');
+    input.type = "text";
+    input.className = "sub-yt-link";
+    input.placeholder = "Another YouTube Link";
+    input.style.marginBottom = "5px";
+    container.appendChild(input);
+}
+
+// Database se data load/search karne ke liye
+async function loadClassData() {
+    const className = document.getElementById('setupClassSelect').value;
+    try {
+        const res = await fetch(`/api/admin/get-class/${className}`);
+        if(res.ok) {
+            const data = await res.json();
+            document.getElementById('setupClassTeacher').value = data.classTeacher || "";
+            document.getElementById('classYTLink').value = data.classYT || "";
+            document.getElementById('classBannerPreview').src = data.banner || "";
+            renderSubjectList(data);
+            alert("Data Loaded Successfully!");
+        } else {
+            alert("No existing data found for this class. You can create new.");
+            renderSubjectList();
+        }
+    } catch (err) { alert("Error connecting to server"); }
+}
+
+// Final Save/Update Function
+async function saveClassSetup() {
+    const selectedClass = document.getElementById('setupClassSelect').value;
+    const subjects = [];
+    
+    document.querySelectorAll('.subject-item').forEach(item => {
+        if(item.querySelector('.sub-check').checked) {
+            const videoLinks = Array.from(item.querySelectorAll('.sub-yt-link'))
+                                    .map(input => input.value)
+                                    .filter(val => val.trim() !== "");
+            subjects.push({
+                name: item.querySelector('.sub-check').value,
+                teacher: item.querySelector('.sub-teacher').value,
+                videos: videoLinks
+            });
+        }
+    });
+
+    const payload = {
+        className: selectedClass,
+        banner: document.getElementById('classBannerPreview').src,
+        classTeacher: document.getElementById('setupClassTeacher').value,
+        classYT: document.getElementById('classYTLink').value,
+        subjects: subjects
+    };
+
+    const res = await fetch('/api/admin/save-class', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+
+    if(res.ok) alert("Class Database Updated!");
+}
+
+// Banner Preview Logic
+document.getElementById('classBannerFile').onchange = async function(e) {
+    const file = e.target.files[0];
+    if(file) {
+        const base64 = await convertImage(file);
+        document.getElementById('classBannerPreview').src = base64;
+    }
+};
     </script>
 </body>
 </html>
+
