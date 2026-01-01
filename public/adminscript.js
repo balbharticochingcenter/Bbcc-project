@@ -148,66 +148,90 @@ function showProfile(t) {
 
 // --- 5. ADVANCED UPDATE & DELETE LOGIC ---
 
-// Teacher Search
+// 1. Search & Load ALL Data
 async function searchTeacher() {
     const id = document.getElementById('search_tid').value.trim();
-    if(!id) return alert("Please enter ID");
+    if(!id) return alert("Pehle ID enter karein!");
 
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
     const t = teachers.find(teacher => teacher.teacher_id === id);
 
     if(t) {
-        document.getElementById('up_id').value = t.teacher_id;
-        document.getElementById('up_name').value = t.teacher_name;
-        document.getElementById('up_mobile').value = t.mobile;
-        document.getElementById('up_salary').value = t.salary;
-        document.getElementById('up_joining').value = t.joining_date;
+        // Text Fields Fill
+        document.getElementById('up_id').value = t.teacher_id || "";
+        document.getElementById('up_name').value = t.teacher_name || "";
+        document.getElementById('up_mobile').value = t.mobile || "";
+        document.getElementById('up_pass').value = t.pass || "";
+        document.getElementById('up_salary').value = t.salary || "";
+        document.getElementById('up_joining').value = t.joining_date || "";
 
-        // Reset & Fill Checkboxes
+        // Checkboxes Reset
         document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
+        
+        // Classes Fill
         if(t.classes) t.classes.forEach(c => {
             const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
             if(cb) cb.checked = true;
         });
+        
+        // Subjects Fill
         if(t.subjects) t.subjects.forEach(s => {
             const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
             if(cb) cb.checked = true;
         });
-        alert("Teacher Data Loaded!");
-    } else { alert("Teacher Not Found!"); }
+
+        alert("Database se saara data load ho gaya hai!");
+    } else { alert("Is ID ka koi teacher nahi mila!"); }
 }
 
-// Save Changes
+// 2. Update & Clear Fields
 document.getElementById("updateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+    
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
 
     const photoInput = document.getElementById('up_photo');
-    if (photoInput.files[0]) data.photo = await toBase64(photoInput.files[0]);
+    if (photoInput.files[0]) {
+        data.photo = await toBase64(photoInput.files[0]);
+    }
 
     const res = await fetch('/api/update-teacher-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { alert("Updated! ✨"); uModal.style.display = "none"; loadTeacherData(); }
+
+    if(res.ok) {
+        alert("Success! Teacher data database mein update ho gaya.");
+        e.target.reset(); // Saari fields clear ho jayengi
+        document.getElementById('search_tid').value = ""; // Search box clear
+        uModal.style.display = "none"; 
+        loadTeacherData(); // Main table refresh
+    }
 };
 
-// Delete Teacher
+// 3. Delete & Clear
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
-    if(!id) return alert("Search a teacher first!");
-    if(confirm("Permanently Delete this teacher?")) {
+    if(!id) return alert("Pehle teacher search karein!");
+
+    if(confirm("Kya aap sach mein is teacher ka saara data delete karna chahte hain?")) {
         const res = await fetch('/api/delete-teacher', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teacher_id: id })
         });
-        if(res.ok) { alert("Deleted!"); uModal.style.display = "none"; loadTeacherData(); }
+        if(res.ok) {
+            alert("Teacher delete ho gaya!");
+            document.getElementById("updateForm").reset();
+            document.getElementById('search_tid').value = "";
+            uModal.style.display = "none";
+            loadTeacherData();
+        }
     }
 }
 
