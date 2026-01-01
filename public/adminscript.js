@@ -21,7 +21,6 @@ async function loadSettings() {
             document.getElementById('db-subtitle').innerText = data.sub_title || "";
             if(data.logo) document.getElementById('db-logo').src = data.logo;
             
-            // Fill System Form
             document.getElementById('form-title').value = data.title;
             document.getElementById('form-subtitle').value = data.sub_title;
             document.getElementById('form-contact').value = data.contact || "";
@@ -75,7 +74,7 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
     if(res.ok) { alert("Teacher Registered!"); e.target.reset(); modals.teacher.style.display="none"; }
 };
 
-// --- 4. LOAD TEACHER TABLE (Salary Logic) ---
+// --- 4. LOAD TEACHER CARDS (Updated for your CSS) ---
 async function loadTeacherData() {
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
@@ -90,16 +89,25 @@ async function loadTeacherData() {
         let checks = "";
         for(let i=1; i<=totalMonths; i++) {
             const checked = t.paid_months?.includes(i) ? "checked" : "";
-            checks += `<label><input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}</label> `;
+            checks += `<label style="font-size:10px; margin-right:5px;"><input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}</label> `;
         }
 
+        // Yahan data-label add kiya gaya hai taaki CSS Cards sahi dikhein
         tbody.innerHTML += `
             <tr>
-                <td><img src="${t.photo || ''}" width="40" height="40" style="border-radius:50%"></td>
-                <td>${t.teacher_name} (ID: ${t.teacher_id})</td>
-                <td>${t.joining_date}</td>
-                <td><div style="font-size:11px">${checks}</div></td>
-                <td><a href="https://wa.me/${t.mobile}" target="_blank">WhatsApp</a></td>
+                <td><img src="${t.photo || 'https://via.placeholder.com/100'}" alt="Teacher"></td>
+                <td data-label="Name"><b>${t.teacher_name}</b><br><small>ID: ${t.teacher_id}</small></td>
+                <td data-label="Joining Date">${t.joining_date}</td>
+                <td data-label="Salary Status">
+                    <div style="background:#f1f2f6; padding:10px; border-radius:10px; max-height:80px; overflow-y:auto;">
+                        ${checks}
+                    </div>
+                </td>
+                <td data-label="Action">
+                    <a href="https://wa.me/${t.mobile}" target="_blank" style="color:#25D366; font-size:24px;">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </td>
             </tr>`;
     });
 }
@@ -115,6 +123,8 @@ async function updatePaidStatus(tId, month, status) {
 // --- 5. SEARCH, UPDATE & DELETE ---
 async function searchTeacher() {
     const id = document.getElementById('search_tid').value.trim();
+    if(!id) return alert("Please enter ID");
+    
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
     const t = teachers.find(x => x.teacher_id === id);
@@ -126,8 +136,8 @@ async function searchTeacher() {
         document.getElementById('up_pass').value = t.pass;
         document.getElementById('up_salary').value = t.salary;
         document.getElementById('up_joining').value = t.joining_date;
-        alert("Data Found!");
-    } else { alert("Not Found!"); }
+        alert("Teacher Data Loaded!");
+    } else { alert("Teacher Not Found!"); }
 }
 
 document.getElementById("updateForm").onsubmit = async (e) => {
@@ -142,19 +152,23 @@ document.getElementById("updateForm").onsubmit = async (e) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { alert("Updated!"); modals.update.style.display="none"; }
+    if(res.ok) { alert("Teacher Data Updated!"); modals.update.style.display="none"; }
 };
 
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
-    if(!id || !confirm("Delete this teacher?")) return;
+    if(!id || !confirm("Are you sure you want to delete this teacher?")) return;
 
     const res = await fetch('/api/delete-teacher', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teacher_id: id })
     });
-    if(res.ok) { alert("Deleted!"); modals.update.style.display="none"; }
+    if(res.ok) { 
+        alert("Teacher Deleted!"); 
+        document.getElementById("updateForm").reset();
+        modals.update.style.display="none"; 
+    }
 }
 
 // --- 6. SYSTEM SETTINGS UPDATE ---
@@ -170,5 +184,5 @@ document.getElementById("adminForm").onsubmit = async (e) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { alert("Settings Saved!"); loadSettings(); modals.sys.style.display="none"; }
+    if(res.ok) { alert("System Settings Saved!"); loadSettings(); modals.sys.style.display="none"; }
 };
