@@ -54,8 +54,35 @@ const TeacherSchema = new mongoose.Schema({
 });
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 
-// --- API ROUTES ---
+// --- API ROUTES ----------------------------------------------------------
+const StudentSchema = new mongoose.Schema({
+    student_name: String,
+    student_id: { type: String, unique: true },
+    pass: String,
+    parent_name: String,
+    mobile: String,
+    parent_mobile: String,
+    student_class: String,
+    fees: String,
+    paid_months: { type: [Number], default: [] }
+});
+const Student = mongoose.model('Student', StudentSchema);
 
+// API for Student Registration
+app.post('/api/student-reg', async (req, res) => {
+    try {
+        const newStudent = new Student(req.body);
+        await newStudent.save();
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// API to Get Students
+app.get('/api/get-students', async (req, res) => {
+    const students = await Student.find().sort({ _id: -1 });
+    res.json(students);
+});
+//-------------------------------------------------------------------------------------
 // 1. Settings APIs (Header/Footer/Social)
 app.get('/api/get-settings', async (req, res) => {
     try {
