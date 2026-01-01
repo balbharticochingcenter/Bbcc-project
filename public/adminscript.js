@@ -185,3 +185,12 @@ function showProfile(t) {
     `;
     pModal.style.display = "block";
 }
+// MODAL CONTROLS mein ye line jodein
+const dModal = document.getElementById("dataModal");
+const pModal = document.getElementById("profileModal");
+
+// Button click par table load karne ke liye
+document.getElementById("openTeacherDataBtn").onclick = () => {
+    dModal.style.display = "block";
+    loadTeacherData(); // Ye function table bharega
+};
