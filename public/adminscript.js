@@ -230,5 +230,87 @@ document.getElementById("updateForm").onsubmit = async (e) => {
         alert("Update Failed!");
     }
 };
+// --- ADVANCED UPDATE & DELETE LOGIC ---
+const uModal = document.getElementById("updateModal");
+document.getElementById("openUpdateBtn").onclick = () => uModal.style.display = "block";
+
+// 1. Search Teacher and Fill All Data
+async function searchTeacher() {
+    const id = document.getElementById('search_tid').value.trim();
+    if(!id) return alert("Please enter ID");
+
+    const res = await fetch('/api/get-teachers');
+    const teachers = await res.json();
+    const t = teachers.find(teacher => teacher.teacher_id === id);
+
+    if(t) {
+        document.getElementById('up_id').value = t.teacher_id;
+        document.getElementById('up_name').value = t.teacher_name;
+        document.getElementById('up_mobile').value = t.mobile;
+        document.getElementById('up_salary').value = t.salary;
+        document.getElementById('up_joining').value = t.joining_date;
+
+        // Checkboxes reset aur fill karna
+        document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
+        if(t.classes) t.classes.forEach(c => {
+            const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
+            if(cb) cb.checked = true;
+        });
+        if(t.subjects) t.subjects.forEach(s => {
+            const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
+            if(cb) cb.checked = true;
+        });
+
+        alert("Data Loaded! Now you can edit photo and other details.");
+    } else { alert("Teacher Not Found!"); }
+}
+
+// 2. Update Submit (with Photo & Arrays)
+document.getElementById("updateForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Arrays handle karein
+    data.classes = formData.getAll('classes');
+    data.subjects = formData.getAll('subjects');
+
+    // Photo handle karein
+    const photoInput = document.getElementById('up_photo');
+    if (photoInput.files[0]) {
+        data.photo = await toBase64(photoInput.files[0]);
+    }
+
+    const res = await fetch('/api/update-teacher-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+
+    if(res.ok) {
+        alert("Teacher Updated! ✨");
+        uModal.style.display = "none";
+        loadTeacherData(); 
+    }
+};
+
+// 3. Delete Teacher Function
+async function deleteTeacher() {
+    const id = document.getElementById('up_id').value;
+    if(!id) return alert("Search a teacher first!");
+
+    if(confirm("Are you sure? This teacher will be deleted permanently!")) {
+        const res = await fetch('/api/delete-teacher', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teacher_id: id })
+        });
+        if(res.ok) {
+            alert("Teacher Deleted!");
+            uModal.style.display = "none";
+            loadTeacherData();
+        }
+    }
+}
 // --- NAYE FEATURES YA CODE YAHAN ADD KAREIN (Future Use) ---
 // Yahan aap Search bar ya Delete function ka code add kar sakte hain.
