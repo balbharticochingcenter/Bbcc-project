@@ -267,6 +267,12 @@ app.get('/api/admin/all-classes', async (req, res) => {
 });
 
 // --- END CLASS MANAGEMENT ROUTES ---
+app.get('/api/admin/all-classes', async (req, res) => {
+    const classes = await ClassModel.find(); // Aapka MongoDB model
+    res.json(classes);
+});
+
 // --- SERVER START ---
 server.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server Live: ${PORT}`));
+
 
