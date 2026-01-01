@@ -157,46 +157,37 @@
         <div id="profileDetails"></div>
     </div>
 </div>
-    <div id="updateModal" class="modal">
-    <div class="modal-content" style="border-color: #fdcb6e; width: 80%;">
-        <span class="close" onclick="document.getElementById('updateModal').style.display='none'">&times;</span>
-        <h3><i class="fas fa-edit"></i> Update Teacher Full Profile</h3>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px; background:#f9f9f9; padding:15px; border-radius:15px;">
-            <input type="text" id="search_tid" placeholder="Enter Teacher ID (e.g. SAN1234)" style="margin:0;">
-            <button type="button" onclick="searchTeacher()" class="btn-primary" style="padding:10px; margin:0; width:150px; background:#6c5ce7;">Search</button>
-        </div>
+    <form id="updateForm">
+    <input type="hidden" name="teacher_id" id="up_id">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div><label>Name:</label><input type="text" name="teacher_name" id="up_name"></div>
+        <div><label>Mobile:</label><input type="text" name="mobile" id="up_mobile"></div>
+        <div><label>Password:</label><input type="text" name="pass" id="up_pass"></div>
+        <div><label>Salary (Monthly):</label><input type="number" name="salary" id="up_salary"></div>
+        <div><label>Joining Date:</label><input type="date" name="joining_date" id="up_joining"></div>
+    </div>
 
-        <form id="updateForm">
-            <input type="hidden" name="teacher_id" id="up_id">
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <input type="text" name="teacher_name" id="up_name" placeholder="Full Name">
-                <input type="text" name="mobile" id="up_mobile" placeholder="Mobile">
-                <input type="number" name="salary" id="up_salary" placeholder="Salary">
-                <input type="date" name="joining_date" id="up_joining">
-            </div>
+    <label>Teacher Photo:</label>
+    <input type="file" id="up_photo" accept="image/*">
 
-            <label>Update Photo:</label>
-            <input type="file" id="up_photo" accept="image/*">
+    <label><b>Classes:</b></label>
+    <div class="checkbox-group" id="up_classes_div">
+        <label><input type="checkbox" name="classes" value="1st"> 1st</label>
+        <label><input type="checkbox" name="classes" value="12th"> 12th</label>
+    </div>
 
-            <label><b>Update Classes:</b></label>
-            <div class="checkbox-group" id="up_classes_div">
-                <label><input type="checkbox" name="classes" value="1st"> 1st</label>
-                <label><input type="checkbox" name="classes" value="10th"> 10th</label>
-                </div>
+    <label><b>Subjects:</b></label>
+    <div class="checkbox-group" id="up_subjects_div">
+        <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
+        <label><input type="checkbox" name="subjects" value="Computer"> Computer</label>
+    </div>
 
-            <label><b>Update Subjects:</b></label>
-            <div class="checkbox-group" id="up_subjects_div">
-                <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
-                <label><input type="checkbox" name="subjects" value="English"> English</label>
-                </div>
-
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" class="btn-update" style="background: #2ecc71; flex: 2;">Save Changes</button>
-                <button type="button" onclick="deleteTeacher()" class="btn-update" style="background: #ff7675; flex: 1;">Delete Teacher</button>
-            </div>
-        </form>
+    <div style="display: flex; gap: 10px; margin-top:15px;">
+        <button type="submit" class="btn-update" style="background: #2ecc71; flex: 2;">Update Record</button>
+        <button type="button" onclick="deleteTeacher()" class="btn-update" style="background: #ff7675; flex: 1;">Delete</button>
+    </div>
+</form>
     </div>
 </div>
     <script src="adminscript.js"></script>
