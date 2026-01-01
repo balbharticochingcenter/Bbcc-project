@@ -235,5 +235,31 @@ input:focus {
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
 ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-.checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; background: #eee; padding: 10px; border-radius: 10px; margin: 10px 0; }
-.checkbox-group input { width: auto; margin: 0; }
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 15px;
+    border-radius: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    max-height: 200px; /* Scrollable if too many items */
+    overflow-y: auto;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: #fff;
+    padding: 5px 10px;
+    border-radius: 20px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+
+.checkbox-group input {
+    width: auto !important;
+    margin-right: 8px !important;
+}
