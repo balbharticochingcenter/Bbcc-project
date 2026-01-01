@@ -260,6 +260,7 @@ document.getElementById("openStudentDataBtn").onclick = () => {
 
 // Load Student Cards with Parent SMS Option
 // --- LOAD STUDENT CARDS WITH DYNAMIC SMS & WHATSAPP ---
+// --- LOAD STUDENT CARDS WITH MONTHLY FEES TRACKER ---
 async function loadStudentData() {
     const res = await fetch('/api/get-students');
     const students = await res.json();
@@ -273,44 +274,63 @@ async function loadStudentData() {
     container.innerHTML = ""; 
 
     students.forEach(s => {
-        // Message Templates
+        // --- MONTH CALCULATION LOGIC ---
+        const joinDate = s.joining_date ? new Date(s.joining_date) : new Date();
+        const today = new Date();
+        const diff = (today.getFullYear() - joinDate.getFullYear()) * 12 + (today.getMonth() - joinDate.getMonth());
+        const totalMonths = diff < 0 ? 1 : diff + 1; // Kam se kam 1 mahina dikhayega
+
+        // --- CHECKBOX GENERATION ---
+        let checks = "";
+        for(let i = 1; i <= totalMonths; i++) {
+            const isPaid = s.paid_months?.includes(i) ? "checked" : "";
+            checks += `
+                <label style="background:#e1f5fe; padding:2px 6px; border-radius:5px; font-size:11px; cursor:pointer; border:1px solid #b3e5fc; display:flex; align-items:center; gap:3px;">
+                    <input type="checkbox" ${isPaid} onchange="updateFeesStatus('${s.student_id}', ${i}, this.checked)"> M${i}
+                </label>`;
+        }
+
+        // --- MESSAGE TEMPLATES ---
         const p_msg = `Dear Parent, your child ${s.student_name} CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
         const s_msg = `Dear STUDENT, your CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
 
         container.innerHTML += `
             <div class="teacher-card" style="background:white; padding:18px; border-radius:15px; color:#333; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
-                    <h4 style="margin:0; color:var(--primary-glow);">${s.student_name} <span style="font-size:12px; color:#777;">(${s.student_id})</span></h4>
-                    <small><b>DOJ:</b> ${s.joining_date || 'N/A'} | <b>Class:</b> ${s.student_class}</small>
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px;">
+                    <h4 style="margin:0; color:#6c5ce7;">${s.student_name} <span style="font-size:11px; color:#777;">ID: ${s.student_id}</span></h4>
+                    <p style="font-size:11px; color:#555; margin:0;"><b>Joined:</b> ${s.joining_date} | <b>Class:</b> ${s.student_class}</p>
                 </div>
-                
-                <p style="font-size:13px; margin:5px 0;"><b>Parent:</b> ${s.parent_name}</p>
-                <p style="font-size:13px; margin:5px 0;"><b>Fees:</b> <span style="color:green; font-weight:bold;">₹${s.fees}</span></p>
 
-                <div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-top:10px;">
-                    <p style="font-size:11px; font-weight:bold; margin-bottom:8px; color:#555;">SEND FEE REMINDER:</p>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        
-                        <div style="display:flex; flex-direction:column; gap:5px; border-right:1px solid #ddd; padding-right:5px;">
-                            <span style="font-size:10px; font-weight:bold;">PARENT:</span>
-                            <div style="display:flex; gap:12px;">
-                                <a href="sms:${s.parent_mobile}?body=${encodeURIComponent(p_msg)}" title="SMS Parent" style="color:#e84393;"><i class="fas fa-comment-alt"></i> SMS</a>
-                                <a href="https://wa.me/${s.parent_mobile}?text=${encodeURIComponent(p_msg)}" target="_blank" title="WhatsApp Parent" style="color:#25D366;"><i class="fab fa-whatsapp"></i> WA</a>
-                            </div>
-                        </div>
-
-                        <div style="display:flex; flex-direction:column; gap:5px; padding-left:5px;">
-                            <span style="font-size:10px; font-weight:bold;">STUDENT:</span>
-                            <div style="display:flex; gap:12px;">
-                                <a href="sms:${s.mobile}?body=${encodeURIComponent(s_msg)}" title="SMS Student" style="color:#6c5ce7;"><i class="fas fa-comment-alt"></i> SMS</a>
-                                <a href="https://wa.me/${s.mobile}?text=${encodeURIComponent(s_msg)}" target="_blank" title="WhatsApp Student" style="color:#25D366;"><i class="fab fa-whatsapp"></i> WA</a>
-                            </div>
-                        </div>
-
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-size:13px;"><b>Fees:</b> <span style="color:green; font-weight:bold;">₹${s.fees}</span></span>
+                    <div style="display:flex; gap:8px;">
+                        <a href="sms:${s.parent_mobile}?body=${encodeURIComponent(p_msg)}" title="SMS Parent" style="color:#e84393; font-size:14px;"><i class="fas fa-comment-alt"></i> P</a>
+                        <a href="https://wa.me/${s.parent_mobile}?text=${encodeURIComponent(p_msg)}" target="_blank" style="color:#25D366; font-size:14px;"><i class="fab fa-whatsapp"></i> P</a>
+                        <span style="border-left:1px solid #ccc; margin:0 2px;"></span>
+                        <a href="sms:${s.mobile}?body=${encodeURIComponent(s_msg)}" title="SMS Student" style="color:#6c5ce7; font-size:14px;"><i class="fas fa-comment-alt"></i> S</a>
                     </div>
+                </div>
+
+                <div style="background:#f1f2f6; padding:8px; border-radius:10px;">
+                    <p style="font-size:10px; font-weight:bold; margin-bottom:5px; color:#2d3436; text-transform:uppercase;">Fees Tracker (Months):</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:4px;">${checks}</div>
                 </div>
             </div>`;
     });
+}
+
+// --- UPDATE FEES STATUS IN DATABASE ---
+async function updateFeesStatus(stuId, month, status) {
+    try {
+        await fetch('/api/update-fees-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ student_id: stuId, month, status })
+        });
+        console.log(`Fees updated for ${stuId} - Month ${month}`);
+    } catch (err) {
+        console.error("Fees update failed:", err);
+    }
 }
 //---------------------------------------------------------------------------
 // --- STUDENT FORM SUBMISSION ---
