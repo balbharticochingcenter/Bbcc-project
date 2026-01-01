@@ -89,7 +89,9 @@
             <h3>Search, Update or Delete</h3>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
                 <input type="text" id="search_tid" placeholder="Enter Teacher ID">
-                <button type="button" onclick="searchTeacher()" class="btn-primary" style="margin:0;">Search</button>
+               <button type="button" onclick="searchTeacher()" class="btn-primary" style="margin:0; background: linear-gradient(135deg, #0984e3, #00cec9); box-shadow: 0 4px 15px rgba(9, 132, 227, 0.4); border: none;">
+    <i class="fas fa-search"></i> Search
+</button>
             </div>
             
             <form id="updateForm">
@@ -308,7 +310,9 @@
                 <label>Exam Date</label>
                 <input type="date" id="bulk_exam_date">
             </div>
-            <button onclick="filterClassForResults()" class="btn-primary" style="margin:0;">Search & Load Class</button>
+            <button onclick="filterClassForResults()" class="btn-primary" style="margin:0; background: linear-gradient(135deg, #0984e3, #00cec9); box-shadow: 0 0 15px rgba(9, 132, 227, 0.5); border: none; color: white;">
+    <i class="fas fa-search"></i> Search & Load Class
+</button>
         </div>
 
         <div style="overflow-x:auto;">
