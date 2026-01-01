@@ -82,19 +82,21 @@ app.get('/api/get-teachers', async (req, res) => {
 });
 
 // Update Teacher Full Data
+// Full Profile Update API
 app.post('/api/update-teacher-data', async (req, res) => {
     try {
         const { teacher_id, ...updateData } = req.body;
+        // findOneAndUpdate pura data replace kar dega
         await Teacher.findOneAndUpdate({ teacher_id: teacher_id }, updateData);
-        res.json({ success: true });
+        res.status(200).json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Delete Teacher
+// Delete API
 app.delete('/api/delete-teacher', async (req, res) => {
     try {
         await Teacher.findOneAndDelete({ teacher_id: req.body.teacher_id });
-        res.json({ success: true });
+        res.status(200).json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
