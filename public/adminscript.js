@@ -10,29 +10,42 @@ const toBase64 = file => new Promise((resolve, reject) => {
 function initDashboard() {
     loadSettings();
 }
-
 // --- 1. LOAD SETTINGS (Header & Footer Sync) ---
 async function loadSettings() {
     try {
         const response = await fetch('/api/get-settings');
         const data = await response.json();
-        if(data.title) {
-            // Header Branding
-            document.getElementById('db-title').innerText = data.title;
-            document.getElementById('db-subtitle').innerText = data.sub_title || "";
-            if(data.logo) document.getElementById('db-logo').src = data.logo;
+        
+        if(data) {
+            // A. Branding (Ye Login aur Admin dono ke liye hai)
+            const dbTitle = document.getElementById('db-title');
+            const dbSub = document.getElementById('db-subtitle');
+            const dbLogo = document.getElementById('db-logo');
+
+            if(dbTitle) dbTitle.innerText = data.title || "BBCC Portal";
+            if(dbSub) dbSub.innerText = data.sub_title || "";
+            if(dbLogo && data.logo) dbLogo.src = data.logo;
             
-            // Fill Form Fields (Header)
-            document.getElementById('form-title').value = data.title;
-            document.getElementById('form-subtitle').value = data.sub_title;
-            
-            // Fill Form Fields (Footer)
-            document.getElementById('form-contact').value = data.contact || "";
-            document.getElementById('form-call').value = data.call_no || "";
-            document.getElementById('form-gmail').value = data.gmail || "";
-            document.getElementById('form-facebook').value = data.facebook || "";
-            document.getElementById('form-help').value = data.help || "";
+            // B. Admin Form (Ye sirf Admin page par kaam karega, login par error nahi dega)
+            const formTitle = document.getElementById('form-title');
+            if(formTitle) {
+                formTitle.value = data.title || "";
+                document.getElementById('form-subtitle').value = data.sub_title || "";
+                document.getElementById('form-contact').value = data.contact || "";
+                document.getElementById('form-call').value = data.call_no || "";
+                document.getElementById('form-gmail').value = data.gmail || "";
+                document.getElementById('form-facebook').value = data.facebook || "";
+                document.getElementById('form-help').value = data.help || "";
+            }
+
+            // C. Footer (Login page ke liye)
+            const footHelp = document.getElementById('foot-help');
+            if(footHelp) footHelp.innerText = data.help || "";
         }
+    } catch (err) { 
+        console.error("Database connection failed:", err); 
+    }
+}
     } catch (err) { console.error("Error loading settings:", err); }
 }
 
