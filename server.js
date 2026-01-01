@@ -86,11 +86,14 @@ const TeacherSchema = new mongoose.Schema({
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 
 // 2. GET: Sabhi teachers ka data mangwane ke liye
+// --- IS CODE KO PURANE GET-TEACHERS KI JAGAH UPDATE KAREIN ---
 app.get('/api/get-teachers', async (req, res) => {
     try {
         const teachers = await Teacher.find().sort({ _id: -1 });
         res.status(200).json(teachers);
-    } catch (err) { res.status(500).send(err); }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 // 3. POST: Salary Status (Paid/Unpaid) Save karne ke liye
@@ -131,15 +134,7 @@ app.post('/api/teacher-reg', async (req, res) => {
     }
 });
 
-// 3. API to Get All Teachers (FETCH DATA)
-app.get('/api/get-teachers', async (req, res) => {
-    try {
-        const teachers = await Teacher.find().sort({ createdAt: -1 });
-        res.status(200).json(teachers);
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
+
 // --- SERVER INITIALIZATION ---
 // Render will provide the PORT automatically via environment variables
 const PORT = process.env.PORT || 5000;
