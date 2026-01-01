@@ -5,6 +5,11 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
+// --- HOME ROUTE ---
+// This tells the server to serve login.html when someone visits the main URL "/"
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 
 // --- MIDDLEWARE ---
 app.use(cors());
