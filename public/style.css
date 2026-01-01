@@ -1,73 +1,77 @@
-/* 3D Modal Overlay */
-.modal-3d {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    perspective: 1000px; /* 3D Depth */
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Educational Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="magical-bg">
 
-/* Cube Animation */
-.cube-container {
-    width: 350px;
-    animation: entrance 0.6s ease-out;
-}
+    <header class="main-header">
+        <div class="header-left">
+            <img id="db-logo" src="" alt="Logo">
+        </div>
+        <div class="header-center">
+            <h1 id="db-title">Loading School...</h1>
+            <p id="db-subtitle"></p>
+        </div>
+        <div class="header-right">
+            <button class="result-trigger-3d" onclick="openModal('resultCheckModal')">
+                <i class="fas fa-poll"></i> Result
+            </button>
+            <button class="login-trigger-3d" onclick="openModal('login3DModal')">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </div>
+    </header>
 
-@keyframes entrance {
-    from { transform: rotateX(-90deg) scale(0.5); opacity: 0; }
-    to { transform: rotateX(0deg) scale(1); opacity: 1; }
-}
+    <main class="hero-section">
+        <div class="welcome-box">
+            <h2 class="glow-text">Welcome to Digital Campus</h2>
+            <p>Admin, Teacher & Student Unified Portal</p>
+        </div>
+    </main>
 
-.cube-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    padding: 40px;
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.3);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.1);
-    transform-style: preserve-3d;
-    position: relative;
-}
+    <footer class="main-footer">
+        <div id="db-contact"></div>
+        <p>&copy; 2026 <span id="db-admin"></span> | Powered by Gemini 3 Flash</p>
+    </footer>
 
-/* 3D Glow Buttons */
-.login-trigger-3d, .result-trigger-3d {
-    border: none;
-    padding: 10px 25px;
-    border-radius: 30px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
+    <div id="login3DModal" class="modal-3d">
+        <div class="cube-container">
+            <div class="cube-card">
+                <span class="close-3d" onclick="closeModal('login3DModal')">&times;</span>
+                <h3><i class="fas fa-shield-alt"></i> PORTAL LOGIN</h3>
+                <div class="input-group">
+                    <input type="text" id="login_id" placeholder="Enter ID (Admin/STU/TCH)">
+                    <input type="password" id="login_pass" placeholder="Enter Password">
+                </div>
+                <button onclick="universalLogin()" class="btn-3d-glow">LOGIN NOW</button>
+            </div>
+        </div>
+    </div>
 
-.login-trigger-3d { background: linear-gradient(45deg, #6c5ce7, #a29bfe); }
-.result-trigger-3d { background: linear-gradient(45deg, #f39c12, #e67e22); }
+    <div id="resultCheckModal" class="modal-3d">
+        <div class="cube-container">
+            <div class="cube-card" style="width: 450px;">
+                <span class="close-3d" onclick="closeModal('resultCheckModal')">&times;</span>
+                <h3><i class="fas fa-search"></i> SEARCH RESULT</h3>
+                <div class="input-group" style="display:flex; gap:5px;">
+                    <input type="text" id="stu_roll_id" placeholder="Student ID (e.g. STU123)">
+                    <button onclick="checkResult()" style="width:60px; height:45px; margin-top:10px; border-radius:8px; background:#f39c12; color:white; border:none; cursor:pointer;"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="resultDisplayArea" class="result-view"></div>
+            </div>
+        </div>
+    </div>
 
-.login-trigger-3d:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 0 20px #6c5ce7; }
-
-.btn-3d-glow {
-    width: 100%;
-    padding: 12px;
-    margin-top: 20px;
-    background: #6c5ce7;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
-}
-
-.input-group input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    background: rgba(255,255,255,0.9);
-    border: none;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
+    <script src="adminscript.js"></script>
+    <script>
+        window.onload = loadSettings;
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    </script>
+</body>
+</html>
