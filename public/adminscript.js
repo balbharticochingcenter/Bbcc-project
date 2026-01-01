@@ -88,9 +88,16 @@ async function loadTeacherData() {
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
     const container = document.getElementById("teacherTableBody");
-    container.innerHTML = "";
+    
+    if (teachers.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#666;'>Koi teacher nahi mila!</p>";
+        return;
+    }
+
+    container.innerHTML = ""; // Purana data saaf karein
 
     teachers.forEach(t => {
+        // Salary Months Calculation
         const joinDate = t.joining_date ? new Date(t.joining_date) : new Date();
         const diff = (new Date().getFullYear() - joinDate.getFullYear()) * 12 + (new Date().getMonth() - joinDate.getMonth());
         const totalMonths = diff < 0 ? 1 : diff + 1;
@@ -98,30 +105,40 @@ async function loadTeacherData() {
         let checks = "";
         for(let i=1; i<=totalMonths; i++) {
             const checked = t.paid_months?.includes(i) ? "checked" : "";
-            checks += `<label style="font-size:10px; margin-right:5px;"><input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}</label> `;
+            checks += `
+                <label style="background:#eee; padding:2px 5px; border-radius:4px; font-size:11px; cursor:pointer;">
+                    <input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}
+                </label>`;
         }
 
+        // Card Design Injecting
         container.innerHTML += `
-            <div class="teacher-card" style="border: 1px solid #ddd; padding: 15px; border-radius: 15px; margin-bottom: 10px; background: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.1);">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <img src="${t.photo || 'https://via.placeholder.com/80'}" onclick="showFullProfile('${t.teacher_id}')" style="width: 60px; height: 60px; border-radius: 50%; cursor: pointer; border: 2px solid #6c5ce7;">
-                    <div style="flex: 1;">
-                        <h4 style="margin:0;">${t.teacher_name} <small style="color:#666;">(${t.teacher_id})</small></h4>
-                        <p style="margin:0; color:#2ecc71; font-weight: bold;">Salary: ₹${t.salary || '0'}</p>
-                    </div>
-                    <div style="display: flex; gap: 10px; font-size: 20px;">
-                        <a href="https://wa.me/${t.mobile}" target="_blank" style="color: #25D366;"><i class="fab fa-whatsapp"></i></a>
-                        <a href="tel:${t.mobile}" style="color: #0984e3;"><i class="fas fa-phone-alt"></i></a>
-                        <a href="sms:${t.mobile}" style="color: #e84393;"><i class="fas fa-comment-dots"></i></a>
+            <div class="teacher-card" style="background:white; padding:15px; border-radius:15px; color:#333; display:flex; flex-direction:column; gap:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="${t.photo || 'https://via.placeholder.com/80'}" onclick="showFullProfile('${t.teacher_id}')" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary-glow); cursor:pointer;">
+                    <div>
+                        <h4 style="margin:0;">${t.teacher_name}</h4>
+                        <small style="color:#6c5ce7; font-weight:bold;">ID: ${t.teacher_id}</small>
                     </div>
                 </div>
-                <div style="margin-top: 10px; background: #f9f9f9; padding: 8px; border-radius: 8px; max-height: 60px; overflow-y: auto;">
-                    <span style="font-size: 12px; font-weight: bold;">Salary Tracker:</span><br>${checks}
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:8px; border-radius:10px;">
+                    <span style="font-weight:bold; color:#2ecc71;">Salary: ₹${t.salary || '0'}</span>
+                    <div style="display:flex; gap:10px;">
+                        <a href="tel:${t.mobile}" style="color:#0984e3;"><i class="fas fa-phone-alt"></i></a>
+                        <a href="sms:${t.mobile}" style="color:#e84393;"><i class="fas fa-comment-dots"></i></a>
+                        <a href="https://wa.me/${t.mobile}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <div style="font-size:12px;">
+                    <p style="margin-bottom:5px; font-weight:bold;">Salary Tracker (Months):</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:5px;">${checks}</div>
                 </div>
             </div>`;
     });
 }
-
+//--------------------------------------------------------//
 // --- 5. SHOW FULL PROFILE POPUP ---
 async function showFullProfile(tId) {
     const res = await fetch('/api/get-teachers');
