@@ -2,32 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome - Login</title>
-    <link rel="stylesheet" href="admin.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Portal - Home</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <header id="dynamic-header">
-        <img id="db-logo" src="" alt="Logo" style="width:50px; display:none;">
-        <h1 id="db-title">Loading Title...</h1>
-        <p id="db-subtitle"></p>
+<body class="magical-bg">
+
+    <header class="main-header">
+        <div class="header-left">
+            <img id="db-logo" src="" alt="Logo">
+        </div>
+        <div class="header-center">
+            <h1 id="db-title">Loading...</h1>
+            <p id="db-subtitle"></p>
+        </div>
+        <div class="header-right">
+            <button class="login-trigger" onclick="openModal('adminLoginModal')">
+                <i class="fas fa-user-shield"></i> Admin Login
+            </button>
+        </div>
     </header>
 
-    <main class="login-container">
-        <h2>Admin Login</h2>
-        <button onclick="location.href='admin.html'" class="btn-primary">Go to Admin Page</button>
+    <main class="hero-section">
+        <div class="welcome-text">
+            <h2>Welcome to our Educational Portal</h2>
+            <p>Select an option from the header or footer to proceed.</p>
+        </div>
     </main>
 
-    <footer id="dynamic-footer">
-        <p id="db-contact"></p>
-        <div id="social-links">
-            </div>
-        <p>&copy; <span id="db-admin"></span></p>
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div id="db-contact"></div>
+            <button class="result-btn" onclick="openModal('resultCheckModal')">
+                <i class="fas fa-poll"></i> Check Student Result
+            </button>
+        </div>
+        <p class="copy-text">&copy; 2026 <span id="db-admin"></span> | All Rights Reserved</p>
     </footer>
+
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('adminLoginModal')">&times;</span>
+            <h3>Admin Authentication</h3>
+            <input type="text" id="admin_user" placeholder="Admin ID">
+            <input type="password" id="admin_pass" placeholder="Password">
+            <button onclick="adminLogin()" class="btn-auth">Login to Dashboard</button>
+        </div>
+    </div>
+
+    <div id="resultCheckModal" class="modal">
+        <div class="modal-content result-popup">
+            <span class="close" onclick="closeModal('resultCheckModal')">&times;</span>
+            <h3>Check Your Result</h3>
+            <div class="search-box">
+                <input type="text" id="stu_roll_id" placeholder="Enter Roll Number / ID">
+                <button onclick="checkResult()"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="resultDisplayArea" class="result-card" style="display:none;">
+                </div>
+        </div>
+    </div>
 
     <script src="adminscript.js"></script>
     <script>
-        // Load settings immediately when page opens
-        window.onload = loadSettings;
+        window.onload = loadSettings; // Loads title, logo, footer from DB
+        
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
 </body>
 </html>
