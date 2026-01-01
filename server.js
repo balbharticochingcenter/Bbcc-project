@@ -58,6 +58,7 @@ app.get('/api/get-settings', async (req, res) => {
     }
 });
 
+
 // POST: Save or Update settings from the Admin page
 app.post('/api/update-settings', async (req, res) => {
     try {
