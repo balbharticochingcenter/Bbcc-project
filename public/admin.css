@@ -263,3 +263,92 @@ input:focus {
     width: auto !important;
     margin-right: 8px !important;
 }
+/* --- Teacher Data Cards Styling --- */
+
+/* Table ke layout ko cards mein badalne ke liye */
+#teacherTableBody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Har Teacher ka alag Box (Card) */
+#teacherTableBody tr {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 2px solid transparent;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+#teacherTableBody tr:hover {
+    transform: translateY(-10px);
+    border-color: var(--secondary);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+/* Photo aur Name ko upar set karne ke liye */
+#teacherTableBody td {
+    display: block;
+    padding: 5px 0;
+    border: none;
+    text-align: center;
+}
+
+/* Photo Circle */
+#teacherTableBody td:first-child img {
+    width: 80px;
+    height: 80px;
+    border: 3px solid var(--primary);
+    margin-bottom: 10px;
+}
+
+/* Teacher Name */
+#teacherTableBody td:nth-child(2) b {
+    font-size: 1.3rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Baaki details ke liye label jaisa look */
+#teacherTableBody td::before {
+    font-weight: 600;
+    color: var(--primary);
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+/* Details Labels (Heading) */
+#teacherTableBody td:nth-child(3)::before { content: "📅 Joining Date"; }
+#teacherTableBody td:nth-child(4)::before { content: "⏳ Experience"; }
+#teacherTableBody td:nth-child(5)::before { content: "💳 Salary Status (Monthly)"; }
+#teacherTableBody td:nth-child(6)::before { content: "💬 Contact Now"; }
+
+/* Hide Table Header (Kyunki ab cards hain) */
+.magical-table thead {
+    display: none;
+}
+
+/* Salary Checkboxes container */
+#teacherTableBody td:nth-child(5) div {
+    justify-content: center;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 5px;
+}
+
+/* WhatsApp & SMS Icons */
+#teacherTableBody td:last-child {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 15px !important;
+}
