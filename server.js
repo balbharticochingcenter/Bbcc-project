@@ -8,28 +8,38 @@ const app = express();
 
 // --- MIDDLEWARE ---
 app.use(cors());
-// Limit badha di gayi hai kyunki Base64 images badi hoti hain
-app.use(bodyParser.json({ limit: '15mb' })); 
+// Base64 images aur heavy data ke liye limit 20mb rakhi gayi hai
+app.use(bodyParser.json({ limit: '20mb' })); 
 app.use(express.static('public')); 
 
 // --- MONGODB CONNECTION ---
+// Yahan maine aapka connection string daal diya hai
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://balbharticochingcenter_db_user:6mPWwKglys8ii8O2@cluster0.g0w0fgn.mongodb.net/BBCC_Portal?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("MongoDB Connected Successfully"))
-    .catch(err => console.log("DB Connection Error:", err));
+    .then(() => console.log("✅ BBCC Database Connected Successfully!"))
+    .catch(err => console.error("❌ DB Connection Error:", err));
 
 // --- DATABASE SCHEMAS ---
 
-// 1. System Settings Schema
+// 1. System Settings Schema (Merge of both versions)
 const SystemSchema = new mongoose.Schema({
-    logo: String, title: String, sub_title: String, contact: String,
-    help: String, gmail: String, youtube_link: String, facebook: String,
-    instagram: String, twitter: String, add_more: String, admin_name: String
+    logo: String,           // Header
+    title: String,          // Header
+    sub_title: String,      // Header
+    contact: String,        // Footer (WhatsApp)
+    call_no: String,        // Footer (Calling)
+    gmail: String,          // Footer
+    facebook: String,       // Social
+    youtube_link: String,   // Social
+    instagram: String,      // Social
+    twitter: String,        // Social
+    help: String,           // Footer (Address/Line)
+    admin_name: String      // Optional
 });
 const SystemConfig = mongoose.model('SystemConfig', SystemSchema);
 
-// 2. Teacher Schema
+// 2. Teacher Schema (Advanced Version)
 const TeacherSchema = new mongoose.Schema({
     teacher_name: String,
     mobile: String,
@@ -38,15 +48,15 @@ const TeacherSchema = new mongoose.Schema({
     photo: String,
     salary: String,
     joining_date: String,
-    classes: [String],
-    subjects: [String],
+    classes: [String],      // Multiple classes support
+    subjects: [String],     // Multiple subjects support
     paid_months: { type: [Number], default: [] } 
 });
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 
 // --- API ROUTES ---
 
-// Settings APIs (Get & Update)
+// 1. Settings APIs (Header/Footer/Social)
 app.get('/api/get-settings', async (req, res) => {
     try {
         const data = await SystemConfig.findOne();
@@ -57,11 +67,11 @@ app.get('/api/get-settings', async (req, res) => {
 app.post('/api/update-settings', async (req, res) => {
     try {
         const data = await SystemConfig.findOneAndUpdate({}, req.body, { upsert: true, new: true });
-        res.json({ message: "Settings Updated!", data });
+        res.json({ message: "Settings Saved Successfully!", data });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Teacher Registration
+// 2. Teacher Registration
 app.post('/api/teacher-reg', async (req, res) => {
     try {
         const newTeacher = new Teacher(req.body);
@@ -73,7 +83,7 @@ app.post('/api/teacher-reg', async (req, res) => {
     }
 });
 
-// Get All Teachers
+// 3. Get All Teachers (Sorted by Newest)
 app.get('/api/get-teachers', async (req, res) => {
     try {
         const teachers = await Teacher.find().sort({ _id: -1 });
@@ -81,30 +91,35 @@ app.get('/api/get-teachers', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Update Teacher Full Data
-// Full Profile Update API
+// 4. Update Teacher Full Profile (Edit Mode)
 app.post('/api/update-teacher-data', async (req, res) => {
     try {
         const { teacher_id, ...updateData } = req.body;
-        // findOneAndUpdate pura data replace kar dega
-        await Teacher.findOneAndUpdate({ teacher_id: teacher_id }, updateData);
-        res.status(200).json({ success: true });
+        const result = await Teacher.findOneAndUpdate({ teacher_id }, updateData, { new: true });
+        if (result) {
+            res.status(200).json({ success: true, message: "Profile Updated!" });
+        } else {
+            res.status(404).json({ success: false, message: "Teacher not found" });
+        }
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Delete API
+// 5. Delete Teacher
 app.delete('/api/delete-teacher', async (req, res) => {
     try {
-        await Teacher.findOneAndDelete({ teacher_id: req.body.teacher_id });
-        res.status(200).json({ success: true });
+        const { teacher_id } = req.body;
+        await Teacher.findOneAndDelete({ teacher_id });
+        res.status(200).json({ success: true, message: "Teacher Removed" });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Salary Status Update
+// 6. Salary Status Toggle (Check/Uncheck M1, M2...)
 app.post('/api/update-salary-status', async (req, res) => {
     try {
         const { teacher_id, month, status } = req.body;
         const teacher = await Teacher.findOne({ teacher_id });
+        if (!teacher) return res.status(404).json({ error: "Teacher not found" });
+
         if (status) {
             if (!teacher.paid_months.includes(month)) teacher.paid_months.push(month);
         } else {
@@ -115,5 +130,8 @@ app.post('/api/update-salary-status', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// --- SERVER START ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Server is flying on http://localhost:${PORT}`);
+});
