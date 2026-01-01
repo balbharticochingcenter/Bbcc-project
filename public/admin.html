@@ -22,6 +22,7 @@
         <h1>Admin Control Panel</h1>
         <button id="openModalBtn" class="btn-primary">System</button>
         <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;">Teacher Reg</button>
+        <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;">Teacher Data</button>
         <button onclick="location.href='login.html'" class="btn-secondary">Back to Home</button>
     </div>
 
@@ -127,7 +128,34 @@
             Developed by <span class="magic-name">Santosh Sir</span>
         </div>
     </footer>
+<div id="dataModal" class="modal">
+    <div class="modal-content" style="width: 95%; max-width: 1200px; border-color: #00cec9;">
+        <span class="close" onclick="document.getElementById('dataModal').style.display='none'">&times;</span>
+        <h3><i class="fas fa-database"></i> Teacher Salary & Data Management</h3>
+        <div style="overflow-x: auto;">
+            <table class="magical-table">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>Name (Click to View)</th>
+                        <th>Joining</th>
+                        <th>Total Months</th>
+                        <th>Salary Status (Tick = Paid)</th>
+                        <th>Contact</th>
+                    </tr>
+                </thead>
+                <tbody id="teacherTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
+<div id="profileModal" class="modal">
+    <div class="modal-content" style="border-color: #6c5ce7; width: 400px; text-align: center;">
+        <span class="close" onclick="document.getElementById('profileModal').style.display='none'">&times;</span>
+        <div id="profileDetails"></div>
+    </div>
+</div>
     <script src="adminscript.js"></script>
 </body>
 </html>
