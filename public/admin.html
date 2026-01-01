@@ -21,6 +21,7 @@
     <div class="dashboard">
         <h1>Admin Control Panel</h1>
         <button id="openModalBtn" class="btn-primary">System</button>
+        <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;">Teacher Reg</button>
         <button onclick="location.href='login.html'" class="btn-secondary">Back to Home</button>
     </div>
 
@@ -51,6 +52,33 @@
         </div>
     </div>
 
+    
+
+<div id="teacherModal" class="modal">
+    <div class="modal-content" style="border-color: #e84393;">
+        <span class="close" id="closeTeacher">&times;</span>
+        <form id="teacherForm">
+            <h3><i class="fas fa-user-graduate"></i> Teacher Registration</h3>
+            <input type="text" name="teacher_name" id="t_name" placeholder="Full Name" required>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" name="teacher_id" id="t_id" placeholder="ID (Auto)" readonly>
+                <input type="text" name="pass" id="t_pass" placeholder="Password (Auto)" readonly>
+            </div>
+            <input type="text" name="mobile" placeholder="Mobile Number">
+            <input type="file" id="t_photo" accept="image/*">
+            <input type="number" name="salary" placeholder="Salary">
+            <input type="date" name="joining_date">
+            
+            <label><b>Classes:</b></label>
+            <div class="checkbox-group">
+                <input type="checkbox" name="classes" value="1st to 10th"> 1st-10th
+                <input type="checkbox" name="classes" value="B.A"> B.A
+                <input type="checkbox" name="classes" value="B.Sc"> B.Sc
+            </div>
+            <button type="submit" class="btn-update" style="background: #e84393;">Register Now</button>
+        </form>
+    </div>
+</div>
     <footer class="magical-footer">
         <div class="footer-icons" id="db-socials">
             </div>
