@@ -1,5 +1,3 @@
-// --- Function to convert Image to Base64 String ---
-// This is necessary because MongoDB stores images as long text strings in this setup
 const toBase64 = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -7,110 +5,76 @@ const toBase64 = file => new Promise((resolve, reject) => {
     reader.onerror = error => reject(error);
 });
 
-// --- Modal Logic (Open/Close Pop-up) ---
-const modal = document.getElementById("systemModal");
-const btn = document.getElementById("openModalBtn");
-const closeBtn = document.querySelector(".close");
-
-if(btn) {
-    btn.onclick = () => {
-        modal.style.display = "block";
-        console.log("System modal opened"); // English Comment: Log for debugging
-    };
-}
-
-if(closeBtn) {
-    closeBtn.onclick = () => {
-        modal.style.display = "none";
-    };
-}
-
-// Close modal if user clicks outside of the box
-window.onclick = (event) => {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-};
-
-// --- SAVE DATA TO DATABASE ---
-const adminForm = document.getElementById("adminForm");
-if(adminForm) {
-    adminForm.onsubmit = async (e) => {
-        e.preventDefault(); // Prevent page refresh
-        console.log("Submit initiated..."); 
-
-        const formData = new FormData(adminForm);
-        const data = Object.fromEntries(formData.entries());
-
-        // Handle Logo file upload and conversion
-        const logoInput = document.getElementById('logoInput');
-        if (logoInput && logoInput.files[0]) {
-            const logoFile = logoInput.files[0];
-            // Safety check for file size (Max 2MB recommended for Base64)
-            if (logoFile.size > 2 * 1024 * 1024) {
-                alert("Logo is too large. Please select a file under 2MB.");
-                return;
-            }
-            data.logo = await toBase64(logoFile);
-        }
-
-        try {
-            // Sending data to server via POST request
-            const response = await fetch('/api/update-settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if(response.ok) {
-                console.log("Database updated successfully:", result);
-                alert("Settings saved to MongoDB Atlas!");
-                modal.style.display = "none"; // Close modal after success
-                
-                // If on login.html or home page, refresh to show new data
-                if (typeof loadSettings === "function") {
-                    loadSettings();
-                } else {
-                    location.reload(); 
-                }
-            } else {
-                throw new Error(result.error || "Server responded with an error");
-            }
-        } catch (err) {
-            console.error("Failed to save data:", err);
-            alert("Error: Data could not be saved. Check console for details.");
-        }
-    };
-}
-
-// --- LOAD DATA FROM DATABASE ---
-// This function fetches data from MongoDB to display in Header/Footer
+// Load Settings and Auto-Fill Form
 async function loadSettings() {
-    console.log("Fetching settings from database...");
     try {
         const response = await fetch('/api/get-settings');
-        if (!response.ok) throw new Error("Could not fetch settings");
-        
         const data = await response.json();
 
-        // Check if data exists before updating UI
-        if(data && data.title) {
-            if(document.getElementById('db-title')) document.getElementById('db-title').innerText = data.title;
-            if(document.getElementById('db-subtitle')) document.getElementById('db-subtitle').innerText = data.sub_title;
-            if(document.getElementById('db-contact')) document.getElementById('db-contact').innerText = "Contact: " + (data.contact || "");
-            if(document.getElementById('db-admin')) document.getElementById('db-admin').innerText = data.admin_name || "Admin";
-            
-            // Render logo if available
-            if(data.logo && document.getElementById('db-logo')) {
-                const logoImg = document.getElementById('db-logo');
-                logoImg.src = data.logo;
-                logoImg.style.display = 'inline-block';
-            }
-            console.log("UI updated with Database data");
+        if(data) {
+            // Update Header/Footer
+            document.getElementById('db-title').innerText = data.title || "My Site";
+            document.getElementById('db-subtitle').innerText = data.sub_title || "";
+            if(data.logo) document.getElementById('db-logo').src = data.logo;
+
+            // Update Social Icons in Footer
+            const socialDiv = document.getElementById('db-socials');
+            socialDiv.innerHTML = `
+                ${data.facebook ? `<a href="${data.facebook}"><i class="fab fa-facebook"></i></a>` : ''}
+                ${data.youtube_link ? `<a href="${data.youtube_link}"><i class="fab fa-youtube"></i></a>` : ''}
+                ${data.instagram ? `<a href="${data.instagram}"><i class="fab fa-instagram"></i></a>` : ''}
+                ${data.twitter ? `<a href="${data.twitter}"><i class="fab fa-twitter"></i></a>` : ''}
+                ${data.gmail ? `<a href="mailto:${data.gmail}"><i class="fas fa-envelope"></i></a>` : ''}
+            `;
+
+            // Auto-fill form fields when system button is clicked
+            document.getElementById('form-title').value = data.title || "";
+            document.getElementById('form-subtitle').value = data.sub_title || "";
+            document.getElementById('form-contact').value = data.contact || "";
+            document.getElementById('form-help').value = data.help || "";
+            document.getElementById('form-gmail').value = data.gmail || "";
+            document.getElementById('form-youtube').value = data.youtube_link || "";
+            document.getElementById('form-facebook').value = data.facebook || "";
+            document.getElementById('form-instagram').value = data.instagram || "";
+            document.getElementById('form-twitter').value = data.twitter || "";
+            document.getElementById('form-addmore').value = data.add_more || "";
+            document.getElementById('form-adminname').value = data.admin_name || "";
         }
-    } catch (err) {
-        console.error("Error loading settings:", err);
-    }
+    } catch (err) { console.error("Load Error:", err); }
 }
+
+const adminForm = document.getElementById("adminForm");
+adminForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(adminForm);
+    const data = Object.fromEntries(formData.entries());
+
+    const logoInput = document.getElementById('logoInput');
+    if (logoInput.files[0]) {
+        data.logo = await toBase64(logoInput.files[0]);
+    } else {
+        // Keep existing logo if new one isn't uploaded
+        data.logo = document.getElementById('db-logo').src;
+    }
+
+    try {
+        const response = await fetch('/api/update-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if(response.ok) {
+            alert("✨ Magic! Data Saved Successfully ✨");
+            location.reload();
+        }
+    } catch (err) { alert("Save Failed!"); }
+};
+
+// Modal Open/Close
+const modal = document.getElementById("systemModal");
+document.getElementById("openModalBtn").onclick = () => {
+    loadSettings(); // Fetch latest data before opening
+    modal.style.display = "block";
+};
+document.querySelector(".close").onclick = () => modal.style.display = "none";
