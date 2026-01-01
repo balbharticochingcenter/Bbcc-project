@@ -281,3 +281,30 @@ async function loadStudentData() {
             </div>`;
     });
 }
+// --- STUDENT FORM SUBMISSION ---
+document.getElementById("studentForm").onsubmit = async (e) => {
+    e.preventDefault();
+    
+    // Form se saara data nikalna
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const res = await fetch('/api/student-reg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert("Student Registered in Database! 🎉");
+            e.target.reset(); // Form khali karein
+            document.getElementById("studentModal").style.display = "none"; // Modal band karein
+        } else {
+            alert("Database Error: Data save nahi hua.");
+        }
+    } catch (err) {
+        console.error("Connection Error:", err);
+        alert("Server se connection nahi ho pa raha hai.");
+    }
+};
