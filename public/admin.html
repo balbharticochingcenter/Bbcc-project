@@ -2,10 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+    <title>Magical Admin Dashboard</title>
     <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+<body onload="loadSettings()">
+
+    <header class="magical-header">
+        <div class="logo-container">
+            <img id="db-logo" src="" alt="Logo" class="ring-logo">
+        </div>
+        <div class="title-container">
+            <h1 id="db-title" class="glow-text">Loading...</h1>
+            <span id="db-subtitle" class="sub-text"></span>
+        </div>
+    </header>
+
     <div class="dashboard">
         <h1>Admin Control Panel</h1>
         <button id="openModalBtn" class="btn-primary">System</button>
@@ -16,28 +28,37 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <form id="adminForm">
-                <h3>Header Settings</h3>
+                <h3><i class="fas fa-heading"></i> Header Settings</h3>
                 <input type="file" id="logoInput" accept="image/*">
-                <input type="text" name="title" placeholder="Site Title">
-                <input type="text" name="sub_title" placeholder="Sub Title">
+                <input type="text" name="title" id="form-title" placeholder="Site Title">
+                <input type="text" name="sub_title" id="form-subtitle" placeholder="Sub Title">
 
-                <h3>Footer Settings</h3>
-                <input type="text" name="contact" placeholder="Contact Number">
-                <input type="text" name="help" placeholder="Help Link">
-                <input type="email" name="gmail" placeholder="Gmail Address">
-                <input type="url" name="youtube_link" placeholder="YouTube URL">
-                <input type="url" name="facebook" placeholder="Facebook URL">
-                <input type="url" name="instagram" placeholder="Instagram URL">
-                <input type="url" name="twitter" placeholder="Twitter URL">
-                <textarea name="add_more" placeholder="Additional Details"></textarea>
+                <h3><i class="fas fa-shoe-prints"></i> Footer Settings</h3>
+                <input type="text" name="contact" id="form-contact" placeholder="Contact Number">
+                <input type="text" name="help" id="form-help" placeholder="Help Link">
+                <input type="email" name="gmail" id="form-gmail" placeholder="Gmail Address">
+                <input type="url" name="youtube_link" id="form-youtube" placeholder="YouTube URL">
+                <input type="url" name="facebook" id="form-facebook" placeholder="Facebook URL">
+                <input type="url" name="instagram" id="form-instagram" placeholder="Instagram URL">
+                <input type="url" name="twitter" id="form-twitter" placeholder="Twitter URL">
+                <textarea name="add_more" id="form-addmore" placeholder="Additional Details"></textarea>
 
-                <h3>Admin Info</h3>
-                <input type="text" name="admin_name" placeholder="Admin Name">
+                <h3><i class="fas fa-user-shield"></i> Admin Info</h3>
+                <input type="text" name="admin_name" id="form-adminname" placeholder="Admin Name">
 
                 <button type="submit" class="btn-update">Update & Save</button>
             </form>
         </div>
     </div>
+
+    <footer class="magical-footer">
+        <div class="footer-icons" id="db-socials">
+            </div>
+        <p id="footer-info"></p>
+        <div class="developer-tag">
+            Developed by <span class="magic-name">Santosh Sir</span>
+        </div>
+    </footer>
 
     <script src="adminscript.js"></script>
 </body>
