@@ -185,6 +185,50 @@ function showProfile(t) {
     `;
     pModal.style.display = "block";
 }
+// --- UPDATE FEATURE LOGIC ---
+const uModal = document.getElementById("updateModal");
+document.getElementById("openUpdateBtn").onclick = () => uModal.style.display = "block";
 
+// Teacher Search Function
+async function searchTeacher() {
+    const id = document.getElementById('search_tid').value.trim();
+    if(!id) return alert("Please enter ID");
+
+    const res = await fetch('/api/get-teachers');
+    const teachers = await res.json();
+    const teacher = teachers.find(t => t.teacher_id === id);
+
+    if(teacher) {
+        document.getElementById('up_id').value = teacher.teacher_id;
+        document.getElementById('up_name').value = teacher.teacher_name;
+        document.getElementById('up_mobile').value = teacher.mobile;
+        document.getElementById('up_salary').value = teacher.salary;
+        document.getElementById('up_joining').value = teacher.joining_date;
+        alert("Teacher Found! Edit and Save.");
+    } else {
+        alert("Teacher Not Found!");
+    }
+}
+
+// Update Form Submit
+document.getElementById("updateForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    const res = await fetch('/api/update-teacher-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+
+    if(res.ok) {
+        alert("Teacher Updated Successfully! ✨");
+        uModal.style.display = "none";
+        if(dModal.style.display === "block") loadTeacherData(); // Refresh table if open
+    } else {
+        alert("Update Failed!");
+    }
+};
 // --- NAYE FEATURES YA CODE YAHAN ADD KAREIN (Future Use) ---
 // Yahan aap Search bar ya Delete function ka code add kar sakte hain.
