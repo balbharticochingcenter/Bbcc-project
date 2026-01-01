@@ -8,28 +8,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #38bdf8; --glass: rgba(15, 23, 42, 0.8); }
-        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; }
+        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
         .details-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px 8%; align-items: start; }
         
-        /* Left Column: Subjects */
         .subjects-column h2 { color: var(--primary); margin-bottom: 25px; font-size: 2rem; text-transform: uppercase; letter-spacing: 2px; }
         .subject-item-box {
             background: rgba(30, 41, 59, 0.6);
             padding: 20px; border-radius: 15px; margin-bottom: 15px;
             border: 1px solid rgba(56, 189, 248, 0.2);
             display: flex; justify-content: space-between; align-items: center;
-            cursor: pointer; transition: 0.3s ease;
+            transition: 0.3s ease;
         }
-        .subject-item-box:hover {
-            transform: translateX(10px);
-            background: rgba(56, 189, 248, 0.15);
-            border-color: var(--primary);
-        }
-        .subject-item-box.active { background: var(--primary); border-color: white; }
-        .subject-item-box.active b, .subject-item-box.active span { color: #000 !important; }
 
-        /* Right Column: Video & Enroll */
         .video-column { position: sticky; top: 120px; }
         .video-container {
             width: 100%; aspect-ratio: 16/9; background: #000;
@@ -41,11 +32,8 @@
             background: linear-gradient(135deg, #ef4444, #b91c1c);
             color: white; font-weight: bold; border: none; border-radius: 12px;
             cursor: pointer; font-size: 1.2rem; transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
-        .enroll-now-btn:hover { transform: scale(1.02); filter: brightness(1.2); }
 
-        /* Teachers Slider */
         .teacher-slider-wrap { grid-column: 1 / -1; margin-top: 60px; padding-bottom: 50px; }
         .t-card-container { display: flex; overflow-x: auto; gap: 25px; padding: 20px 5px; scrollbar-width: none; }
         .t-card-container::-webkit-scrollbar { display: none; }
@@ -67,56 +55,42 @@
         </div>
         <div class="nav-center">
             <div class="brand-info">
-                <h1 class="glow-text rainbow-header" id="siteTitle">BBCC</h1>
+                <h1 class="glow-text rainbow-header" id="siteTitle">Loading...</h1>
                 <span class="powered-by" id="siteSubTitle"></span>
             </div>
         </div>
         <div class="nav-right">
-            <button class="dropbtn" onclick="history.back()"><i class="fa fa-arrow-left"></i> Go Back</button>
+            <button class="dropbtn" onclick="history.back()"><i class="fa fa-arrow-left"></i> Back</button>
         </div>
     </nav>
 
     <div class="details-wrapper">
         <div class="subjects-column">
-            <h2 id="classNameHeading">Course Content</h2>
-            <div id="subjectListContainer">
-                <p style="color: #94a3b8;">Loading subjects...</p>
-            </div>
+            <h2 id="classNameHeading">Loading...</h2>
+            <div id="subjectListContainer"></div>
         </div>
 
         <div class="video-column">
             <div class="video-container">
-                <iframe id="mainYtPlayer" width="100%" height="100%" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <iframe id="mainYtPlayer" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
             </div>
             <button class="enroll-now-btn" onclick="window.location.href='/?login=true'">
-                <i class="fa fa-graduation-cap"></i> ENROLL NOW TO UNLOCK ALL
+                <i class="fa fa-graduation-cap"></i> ENROLL NOW TO START
             </button>
         </div>
 
         <div class="teacher-slider-wrap">
-            <h2 class="magical-text" style="text-align: center; margin-bottom: 30px;">Meet Your Teachers</h2>
-            <div class="t-card-container" id="teacherDisplay">
-                </div>
+            <h2 class="magical-text" style="text-align: center; margin-bottom: 30px;">Our Specialized Teachers</h2>
+            <div class="t-card-container" id="teacherDisplay"></div>
         </div>
     </div>
 
     <script>
-        // YouTube ID nikalne ka logic
         function getID(url) {
             if(!url) return null;
             const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const m = url.match(reg);
             return (m && m[2].length === 11) ? m[2] : null;
-        }
-
-        // Video badalne ke liye
-        function changeVideo(url, element) {
-            const vidId = getID(url);
-            if (vidId) {
-                document.getElementById('mainYtPlayer').src = `https://www.youtube.com/embed/${vidId}?autoplay=1`;
-                document.querySelectorAll('.subject-item-box').forEach(el => el.classList.remove('active'));
-                element.classList.add('active');
-            }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -129,79 +103,71 @@
             }
 
             try {
-                // Ek saath teeno data fetch karenge: Settings, Class Setup aur Users (for teacher photo)
                 const [setRes, classRes, userRes] = await Promise.all([
                     fetch('/api/admin/hp-settings'),
                     fetch(`/api/admin/class-info?name=${encodeURIComponent(className)}`),
-                    fetch('/api/admin/users') // Jahan saare teachers ki photo hai
+                    fetch('/api/admin/users')
                 ]);
 
                 const settings = await setRes.json();
                 const classData = await classRes.json();
                 const allUsers = await userRes.json();
 
-                // 1. Update Header
-                if(settings.header) {
-                    document.getElementById('siteLogo').src = settings.header.logo || '/assets/logo.png';
-                    document.getElementById('siteTitle').innerText = settings.header.title;
-                    document.getElementById('siteSubTitle').innerText = settings.header.subTitle;
-                    document.title = `${className} Details | ${settings.header.title}`;
+                // 1. Navbar Setup
+                document.getElementById('siteLogo').src = settings.header?.logo || '';
+                document.getElementById('siteTitle').innerText = settings.header?.title || 'BBCC';
+                document.getElementById('siteSubTitle').innerText = settings.header?.subTitle || '';
+
+                // 2. Class Setup & Main Intro Video
+                document.getElementById('classNameHeading').innerText = `Class: ${classData.className}`;
+                if (classData.classYT) {
+                    const vidId = getID(classData.classYT);
+                    if(vidId) document.getElementById('mainYtPlayer').src = `https://www.youtube.com/embed/${vidId}`;
                 }
 
-                // 2. Class Specific Details
-                document.getElementById('classNameHeading').innerText = `Class ${className}`;
-                
-                // Set Initial Intro Video
-                if (classData.ytLink) {
-                    const introId = getID(classData.ytLink);
-                    if(introId) document.getElementById('mainYtPlayer').src = `https://www.youtube.com/embed/${introId}`;
-                }
-
-                // 3. Process Subjects & Teachers
                 const subContainer = document.getElementById('subjectListContainer');
                 const teacherContainer = document.getElementById('teacherDisplay');
                 subContainer.innerHTML = '';
                 teacherContainer.innerHTML = '';
 
+                // 3. Loop through subjects to show Name (by resolving ID)
                 if(classData.subjects && classData.subjects.length > 0) {
                     classData.subjects.forEach(sub => {
-                        // Create Subject Box (Left Side)
-                        // Note: Agar subject ke andar koi video nahi hai, to class intro video use hoga
-                        const videoToPlay = (sub.videos && sub.videos.length > 0) ? sub.videos[0].url : classData.ytLink;
-                        
+                        // Find Teacher Name and Photo from ID
+                        const teacherObj = allUsers.find(u => u.username === sub.teacher || u._id === sub.teacher);
+                        const displayName = teacherObj ? `${teacherObj.fname} ${teacherObj.lname}` : (sub.teacher || 'TBA');
+                        const displayPhoto = teacherObj?.profilePhoto || '/assets/default-user.png';
+
+                        // Subject List (No click function as per your request)
                         subContainer.innerHTML += `
-                            <div class="subject-item-box" onclick="changeVideo('${videoToPlay}', this)">
+                            <div class="subject-item-box">
                                 <div>
                                     <b style="color:white; font-size:1.1rem;">${sub.name}</b><br>
                                     <span style="color:var(--primary); font-size:0.9rem;">
-                                        <i class="fa fa-user-tie"></i> ${sub.teacher || 'Assigned Soon'}
+                                        <i class="fa fa-user-tie"></i> Prof. ${displayName}
                                     </span>
                                 </div>
-                                <i class="fa fa-play-circle" style="color:var(--primary); font-size: 1.5rem;"></i>
+                                <i class="fa fa-check-circle" style="color:var(--primary); font-size: 1.2rem;"></i>
                             </div>
                         `;
 
-                        // Create Teacher Card (Bottom Slider)
-                        // User data se teacher ki photo dhoondhein
-                        const teacherInfo = allUsers.find(u => u.username === sub.teacher || `${u.fname} ${u.lname}` === sub.teacher);
-                        const photo = teacherInfo?.profilePhoto || '/assets/default-user.png';
-
+                        // Teacher Slider (Using Name and Photo)
                         if(sub.teacher) {
                             teacherContainer.innerHTML += `
                                 <div class="t-card">
-                                    <img src="${photo}" onerror="this.src='/assets/default-user.png'">
-                                    <h3 style="color:white; margin-bottom:5px;">${sub.teacher}</h3>
-                                    <p style="color:var(--primary); font-weight:bold;">${sub.name} Expert</p>
+                                    <img src="${displayPhoto}" onerror="this.src='/assets/default-user.png'">
+                                    <h3 style="color:white; margin-bottom:5px;">${displayName}</h3>
+                                    <p style="color:var(--primary); font-size:0.9rem;">${sub.name} Expert</p>
                                 </div>
                             `;
                         }
                     });
                 } else {
-                    subContainer.innerHTML = "<p>No subjects updated yet for this class.</p>";
+                    subContainer.innerHTML = "<p>Coming Soon...</p>";
                 }
 
             } catch (err) {
-                console.error("Error loading class details:", err);
+                console.error("Error:", err);
             }
         });
     </script>
