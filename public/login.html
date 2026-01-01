@@ -10,15 +10,15 @@
     
     <link rel="stylesheet" href="style.css"> 
 </head>
-<body class="magical-bg">
+<body class="magical-bg" onload="loadSettings()">
 
     <header class="main-header">
         <div class="header-left">
-            <img id="db-logo" src="" alt="Logo" onerror="this.src='https://via.placeholder.com/60'">
+            <img id="db-logo" src="" alt="Logo" class="ring-logo" onerror="this.src='https://via.placeholder.com/60'">
         </div>
         <div class="header-center">
-            <h1 id="db-title">Loading School...</h1>
-            <p id="db-subtitle"></p>
+            <h1 id="db-title" class="glow-text">Loading...</h1>
+            <p id="db-subtitle" class="sub-text"></p>
         </div>
         <div class="header-right">
             <button class="result-trigger-3d" onclick="openModal('resultCheckModal')">
@@ -43,7 +43,7 @@
                 <span class="close-3d" onclick="closeModal('login3DModal')">&times;</span>
                 <div class="cube-front">
                     <h3><i class="fas fa-lock"></i> SECURE LOGIN</h3>
-                    <p style="font-size: 11px; color: #6c5ce7; margin-bottom: 15px;">Enter your credentials to access portal</p>
+                    <p style="font-size: 11px; color: #6c5ce7; margin-bottom: 15px;">Enter credentials to access portal</p>
                     <div class="input-group">
                         <input type="text" id="login_id" placeholder="User ID (e.g. ADMIN, STU101)">
                         <input type="password" id="login_pass" placeholder="Password">
@@ -68,24 +68,25 @@
         </div>
     </div>
 
-    <footer class="main-footer">
-        <div id="db-contact"></div>
-        <p>&copy; 2026 <span id="db-admin"></span> | All Rights Reserved</p>
+    <footer class="magical-footer">
+        <div class="social-icons">
+            <a id="foot-whatsapp" href="#" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a id="foot-facebook" href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a id="foot-gmail" href="#"><i class="fas fa-envelope"></i></a>
+            <a id="foot-call" href="#"><i class="fas fa-phone-alt"></i></a>
+        </div>
+        <p id="foot-help" style="font-size: 14px; color: #a29bfe; margin-top:10px;"></p>
+        <p style="margin-top: 10px; font-size: 12px; opacity: 0.6;">
+            &copy; 2026 <span id="db-admin"></span> | BBCC Portal
+        </p>
     </footer>
 
     <script src="adminscript.js"></script>
     <script>
-        // Load Settings on Start
-        window.onload = loadSettings;
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        function openModal(id) {
-            document.getElementById(id).style.display = 'flex';
-        }
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        // Close modal when clicking outside the box
+        // Modal ke bahar click karne par band hona
         window.onclick = function(event) {
             if (event.target.className === 'modal-3d') {
                 event.target.style.display = "none";
