@@ -6,18 +6,24 @@ const path = require('path');
 
 const app = express();
 
-// Middleware
+// --- MIDDLEWARE ---
 app.use(cors());
-app.use(bodyParser.json({ limit: '10mb' })); // Increased limit for Base64 Logo strings
-app.use(express.static('public')); // Serve frontend files from public folder
+// Increased limit to 10mb to handle Base64 Logo strings (images as text)
+app.use(bodyParser.json({ limit: '10mb' })); 
+// Serving static files (html, css, js) from the 'public' folder
+app.use(express.static('public')); 
 
-// MongoDB Connection (Replace with your actual MongoDB Atlas URI)
-const MONGO_URI = "YOUR_MONGODB_ATLAS_CONNECTION_STRING";
+// --- MONGODB CONNECTION ---
+// Using your provided MongoDB Atlas Connection String
+// 'process.env.MONGO_URI' allows Render to keep your key secure
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://balbharticochingcenter_db_user:6mPWwKglys8ii8O2@cluster0.g0w0fgn.mongodb.net/BBCC_Portal?retryWrites=true&w=majority&appName=Cluster0";
+
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("MongoDB Connected Successfully"))
+    .then(() => console.log("MongoDB Connected Successfully to BBCC_Portal"))
     .catch(err => console.log("DB Connection Error:", err));
 
-// Database Schema
+// --- DATABASE SCHEMA ---
+// Defining the structure for Header, Footer, and Admin data
 const SystemSchema = new mongoose.Schema({
     logo: String,
     title: String,
@@ -35,19 +41,23 @@ const SystemSchema = new mongoose.Schema({
 
 const SystemConfig = mongoose.model('SystemConfig', SystemSchema);
 
-// API to Get Data (For Header/Footer loading)
+// --- API ROUTES ---
+
+// GET: Fetch settings to display on login.html (Header/Footer)
 app.get('/api/get-settings', async (req, res) => {
     try {
-        const data = await SystemConfig.findOne(); // Fetch the first config record
+        const data = await SystemConfig.findOne(); // Retrieve the setup data
         res.json(data || {});
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// API to Update/Save Data
+// POST: Save or Update settings from the Admin page
 app.post('/api/update-settings', async (req, res) => {
     try {
+        // 'findOneAndUpdate' with empty {} updates the first document it finds
+        // 'upsert: true' creates a new document if none exists
         const data = await SystemConfig.findOneAndUpdate({}, req.body, { upsert: true, new: true });
         res.json({ message: "Settings Updated Successfully!", data });
     } catch (err) {
@@ -55,6 +65,7 @@ app.post('/api/update-settings', async (req, res) => {
     }
 });
 
-// Start Server
+// --- SERVER INITIALIZATION ---
+// Render will provide the PORT automatically via environment variables
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
