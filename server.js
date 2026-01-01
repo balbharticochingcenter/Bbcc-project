@@ -70,21 +70,46 @@ app.post('/api/update-settings', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-// 1. Database Model (Structure)
+// 1. Updated Schema (paid_months field joda gaya)
 const TeacherSchema = new mongoose.Schema({
-    teacher_name: { type: String, required: true },
+    teacher_name: String,
     mobile: String,
-    teacher_id: { type: String, unique: true, required: true },
-    pass: { type: String, required: true },
-    photo: String, 
+    teacher_id: { type: String, unique: true },
+    pass: String,
+    photo: String,
     salary: String,
     joining_date: String,
-    classes: [String], 
+    classes: [String],
     subjects: [String],
-    createdAt: { type: Date, default: Date.now }
+    paid_months: { type: [Number], default: [] } 
+});
+const Teacher = mongoose.model('Teacher', TeacherSchema);
+
+// 2. GET: Sabhi teachers ka data mangwane ke liye
+app.get('/api/get-teachers', async (req, res) => {
+    try {
+        const teachers = await Teacher.find().sort({ _id: -1 });
+        res.status(200).json(teachers);
+    } catch (err) { res.status(500).send(err); }
 });
 
-const Teacher = mongoose.model('Teacher', TeacherSchema);
+// 3. POST: Salary Status (Paid/Unpaid) Save karne ke liye
+app.post('/api/update-salary-status', async (req, res) => {
+    try {
+        const { teacher_id, month, status } = req.body;
+        const teacher = await Teacher.findOne({ teacher_id });
+        
+        if (status) {
+            if (!teacher.paid_months.includes(month)) teacher.paid_months.push(month);
+        } else {
+            teacher.paid_months = teacher.paid_months.filter(m => m !== month);
+        }
+        
+        await teacher.save();
+        res.status(200).json({ success: true });
+    } catch (err) { res.status(500).send(err); }
+});
+
 
 // 2. Teacher Registration Route (SAVE DATA)
 app.post('/api/teacher-reg', async (req, res) => {
