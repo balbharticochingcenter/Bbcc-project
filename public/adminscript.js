@@ -470,60 +470,69 @@ async function deleteStudent() {
     }
 }
 //---------------------------------------------------------------------------------------
-// Open Modal
-document.getElementById("openResultBtn").onclick = () => document.getElementById("resultModal").style.display = "block";
+// --- 1. RESULT MODAL CONTROL ---
+document.getElementById("openResultBtn").onclick = () => {
+    document.getElementById("resultModal").style.display = "block";
+};
 
-// --- FILTER & LOAD CLASS STUDENTS ---
+// --- 2. CLASS FILTER & SEARCH LOGIC ---
 async function filterClassForResults() {
     const selectedClass = document.getElementById('res_class_filter').value;
     const res = await fetch('/api/get-students');
     const students = await res.json();
     
-    // Sirf us class ke students ko filter karein
+    // Sirf wahi students dikhayega jo selected class ke hain
     const classStudents = students.filter(s => s.student_class === selectedClass);
     const container = document.getElementById("resultTableBody");
     container.innerHTML = "";
 
     if(classStudents.length === 0) {
-        container.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>Is class mein koi student nahi hai.</td></tr>";
+        container.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px; color:red;'>Is class mein koi student nahi mila!</td></tr>";
         return;
     }
 
     classStudents.forEach(s => {
+        // Marks aur Division ka calculation
+        const obt = s.obtained_marks || "";
+        const tot = s.total_marks || "";
+        
         container.innerHTML += `
-            <tr style="border-bottom:1px solid #eee;">
-                <td style="padding:10px;"><b>${s.student_id}</b></td>
+            <tr style="border-bottom:1px solid #ddd; text-align:center;">
+                <td style="padding:12px;"><b>${s.student_id}</b></td>
                 <td>${s.student_name}</td>
                 <td>
-                    <input type="number" id="obt_${s.student_id}" value="${s.obtained_marks || ''}" placeholder="Enter Marks" style="width:100px; padding:5px;">
-                    / ${document.getElementById('bulk_total_marks').value || '---'}
+                    <input type="number" id="obt_${s.student_id}" value="${obt}" placeholder="Marks" style="width:70px; padding:5px; border:1px solid #ccc; border-radius:4px;">
                 </td>
-                <td id="div_${s.student_id}">${calculateDivision(s.obtained_marks, document.getElementById('bulk_total_marks').value)}</td>
+                <td id="div_${s.student_id}" style="font-weight:bold;">
+                    ${calculateDivision(obt, tot)}
+                </td>
                 <td>
-                    <button onclick="saveIndividualResult('${s.student_id}')" style="background:#2ecc71; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Update</button>
+                    <button onclick="saveIndividualResult('${s.student_id}')" style="background:#6c5ce7; color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer;">
+                        <i class="fas fa-save"></i> Save
+                    </button>
                 </td>
             </tr>`;
     });
 }
 
-// --- CALCULATION LOGIC ---
+// --- 3. DIVISION CALCULATION ---
 function calculateDivision(obt, total) {
-    if(!obt || !total) return "---";
-    const per = (obt / total) * 100;
-    if(per >= 60) return "<span style='color:green; font-weight:bold;'>1st Div</span>";
+    if(!obt || !total || total == 0) return "---";
+    const per = (parseInt(obt) / parseInt(total)) * 100;
+    if(per >= 60) return "<span style='color:green;'>1st Div</span>";
     if(per >= 45) return "<span style='color:blue;'>2nd Div</span>";
     if(per >= 33) return "<span style='color:orange;'>3rd Div</span>";
     return "<span style='color:red;'>Fail</span>";
 }
 
-// --- SAVE MARKS TO DATABASE ---
+// --- 4. INDIVIDUAL SAVE LOGIC ---
 async function saveIndividualResult(sid) {
     const obt = document.getElementById(`obt_${sid}`).value;
     const total = document.getElementById('bulk_total_marks').value;
     const exDate = document.getElementById('bulk_exam_date').value;
 
     if(!total || !exDate) {
-        alert("Pahle Total Marks aur Exam Date upar bharein!");
+        alert("Please enter Total Marks and Exam Date first!");
         return;
     }
 
@@ -539,7 +548,8 @@ async function saveIndividualResult(sid) {
     });
 
     if(res.ok) {
-        alert("Result Saved for " + sid);
-        filterClassForResults(); // Refresh table
+        // Live update division on the screen
+        document.getElementById(`div_${sid}`).innerHTML = calculateDivision(obt, total);
+        console.log("Result updated for: " + sid);
     }
 }
