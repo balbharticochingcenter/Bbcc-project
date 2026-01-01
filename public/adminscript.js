@@ -78,16 +78,12 @@ document.getElementById("openModalBtn").onclick = () => {
     modal.style.display = "block";
 };
 document.querySelector(".close").onclick = () => modal.style.display = "none";
-// TEACHER MODAL CONTROLS
-const tModal = document.getElementById("teacherModal");
-document.getElementById("openTeacherBtn").onclick = () => tModal.style.display = "block";
-document.getElementById("closeTeacher").onclick = () => tModal.style.display = "none";
-
-// AUTO GEN ID & PASS (Name ke pehle 3 letters + Random Number)
+// AUTO GEN ID & PASS (Lekin user change bhi kar sakta hai)
 document.getElementById('t_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
     if(name.length >= 3) {
         const rand = Math.floor(1000 + Math.random() * 9000);
+        // Pehle generate karega, par manual change allowed hai
         document.getElementById('t_id').value = name.substring(0, 3) + rand;
         document.getElementById('t_pass').value = name.substring(0, 3) + "@" + rand;
     }
@@ -98,15 +94,24 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    data.classes = formData.getAll('classes'); // Collect all checked classes
+    
+    // Get all checked values for classes and subjects
+    data.classes = formData.getAll('classes');
+    data.subjects = formData.getAll('subjects');
 
     const photoInput = document.getElementById('t_photo');
     if (photoInput.files[0]) data.photo = await toBase64(photoInput.files[0]);
 
-    const res = await fetch('/api/teacher-reg', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    if(res.ok) { alert("Teacher Added!"); tModal.style.display = "none"; e.target.reset(); }
+    try {
+        const res = await fetch('/api/teacher-reg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if(res.ok) { 
+            alert("Teacher Registered Successfully! 🎓"); 
+            tModal.style.display = "none"; 
+            e.target.reset(); 
+        }
+    } catch (err) { alert("Registration Failed!"); }
 };
