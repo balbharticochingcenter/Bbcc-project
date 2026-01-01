@@ -1,3 +1,4 @@
+// --- UTILITY: Image ko text (Base64) mein badalne ke liye ---
 const toBase64 = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -5,7 +6,7 @@ const toBase64 = file => new Promise((resolve, reject) => {
     reader.onerror = error => reject(error);
 });
 
-// --- LOAD SETTINGS (SYSTEM) ---
+// --- 1. SETTINGS LOAD KARNA (Header/Logo etc.) ---
 async function loadSettings() {
     try {
         const response = await fetch('/api/get-settings');
@@ -24,7 +25,7 @@ async function loadSettings() {
                 ${data.gmail ? `<a href="mailto:${data.gmail}"><i class="fas fa-envelope"></i></a>` : ''}
             `;
 
-            // System Form Fill
+            // Form fill up for editing
             document.getElementById('form-title').value = data.title || "";
             document.getElementById('form-subtitle').value = data.sub_title || "";
             document.getElementById('form-contact').value = data.contact || "";
@@ -33,35 +34,41 @@ async function loadSettings() {
     } catch (err) { console.error("Load Error:", err); }
 }
 
-// --- MODAL CONTROLS (Open/Close) ---
+// --- 2. MODAL CONTROLS (Open/Close System) ---
 const sysModal = document.getElementById("systemModal");
 const tModal = document.getElementById("teacherModal");
+const dModal = document.getElementById("dataModal");   // Teacher Data Modal
+const pModal = document.getElementById("profileModal"); // Teacher Profile Popup
 
-// System Modal Open
-document.getElementById("openModalBtn").onclick = () => {
-    loadSettings();
-    sysModal.style.display = "block";
+// Buttons Click Events
+document.getElementById("openModalBtn").onclick = () => { loadSettings(); sysModal.style.display = "block"; };
+document.getElementById("openTeacherBtn").onclick = () => { tModal.style.display = "block"; };
+
+// Teacher Data Button (Isse Table Load Hogi)
+document.getElementById("openTeacherDataBtn").onclick = () => {
+    dModal.style.display = "block";
+    loadTeacherData(); 
 };
 
-// Teacher Modal Open (Isse popup khulega)
-document.getElementById("openTeacherBtn").onclick = () => {
-    tModal.style.display = "block";
-};
-
-// Close Buttons
+// Sabhi Close Buttons (X) ko handle karna
 document.querySelectorAll(".close").forEach(btn => {
     btn.onclick = () => {
         sysModal.style.display = "none";
         tModal.style.display = "none";
+        dModal.style.display = "none";
+        pModal.style.display = "none";
     };
 });
 
+// Modal ke bahar click karne par band hona
 window.onclick = (event) => {
     if (event.target == sysModal) sysModal.style.display = "none";
     if (event.target == tModal) tModal.style.display = "none";
+    if (event.target == dModal) dModal.style.display = "none";
+    if (event.target == pModal) pModal.style.display = "none";
 };
 
-// --- SYSTEM FORM SUBMIT ---
+// --- 3. SYSTEM SETTINGS SUBMIT ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -78,7 +85,8 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     if(res.ok) { alert("Settings Saved! ✨"); location.reload(); }
 };
 
-// --- TEACHER AUTO GEN ID/PASS ---
+// --- 4. TEACHER REGISTRATION LOGIC ---
+// Auto ID aur Password Generate karna
 document.getElementById('t_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
     if(name.length >= 3) {
@@ -88,7 +96,7 @@ document.getElementById('t_name').oninput = (e) => {
     }
 };
 
-// --- TEACHER FORM SUBMIT ---
+// Teacher Form Submit
 document.getElementById("teacherForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -107,17 +115,8 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
     if(res.ok) { alert("Teacher Added! 🎓"); tModal.style.display = "none"; e.target.reset(); }
     else { alert("Error saving teacher!"); }
 };
-// --- TEACHER DATA & SALARY LOGIC ---
-const dModal = document.getElementById("dataModal");
-const pModal = document.getElementById("profileModal");
 
-// Open Modal Button
-document.getElementById("openTeacherDataBtn").onclick = () => {
-    dModal.style.display = "block";
-    loadTeacherData();
-};
-
-// Load Table and Calculate Months
+// --- 5. TEACHER DATA TABLE & SALARY LOGIC ---
 async function loadTeacherData() {
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
@@ -125,17 +124,18 @@ async function loadTeacherData() {
     tbody.innerHTML = "";
 
     teachers.forEach(t => {
-        const joinDate = new Date(t.joining_date);
+        // Joining Date check aur Month calculation
+        const joinDate = t.joining_date ? new Date(t.joining_date) : new Date();
         const now = new Date();
         const diff = (now.getFullYear() - joinDate.getFullYear()) * 12 + (now.getMonth() - joinDate.getMonth());
         const totalMonths = diff < 0 ? 1 : diff + 1;
 
-        // Checkboxes with 'Checked' status from Database
+        // Checkboxes for Paid/Unpaid Status
         let checks = "";
         for(let i=1; i<=totalMonths; i++) {
             const isChecked = t.paid_months && t.paid_months.includes(i) ? "checked" : "";
             checks += `
-                <label style="font-size:10px; margin-right:5px; background:#f1f1f1; padding:2px; border-radius:3px;">
+                <label style="font-size:10px; margin-right:5px; background:#f1f1f1; padding:2px; border-radius:3px; display:inline-block; margin-bottom:2px;">
                     <input type="checkbox" ${isChecked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}
                 </label>`;
         }
@@ -146,7 +146,7 @@ async function loadTeacherData() {
             <tr>
                 <td><img src="${t.photo || ''}" width="40" height="40" style="border-radius:50%; object-fit:cover;"></td>
                 <td><b style="color:#e84393; cursor:pointer;" onclick='showProfile(${JSON.stringify(t)})'>${t.teacher_name}</b></td>
-                <td>${t.joining_date}</td>
+                <td>${t.joining_date || 'N/A'}</td>
                 <td><span style="background:#6c5ce7; color:white; padding:2px 8px; border-radius:10px;">${totalMonths} Months</span></td>
                 <td><div style="display:flex; flex-wrap:wrap; max-width:220px;">${checks}</div></td>
                 <td>
@@ -158,7 +158,7 @@ async function loadTeacherData() {
     });
 }
 
-// Function to Save Paid/Unpaid Status to DB
+// Database mein Paid/Unpaid Status update karna
 async function updatePaidStatus(tId, monthNum, isChecked) {
     try {
         await fetch('/api/update-salary-status', {
@@ -166,31 +166,25 @@ async function updatePaidStatus(tId, monthNum, isChecked) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teacher_id: tId, month: monthNum, status: isChecked })
         });
-    } catch (err) { alert("Status Update Failed!"); }
+    } catch (err) { console.error("Update Error:", err); }
 }
 
-// Function to Show Full Profile Popup
+// Teacher Profile Popup Dikhaana
 function showProfile(t) {
     document.getElementById("profileDetails").innerHTML = `
-        <img src="${t.photo || ''}" style="width:100px; height:100px; border-radius:50%; border:3px solid #6c5ce7; margin-bottom:10px;">
+        <img src="${t.photo || ''}" style="width:100px; height:100px; border-radius:50%; border:3px solid #6c5ce7; margin-bottom:10px; object-fit:cover;">
         <h2 style="margin:0;">${t.teacher_name}</h2>
         <p style="font-size:12px; color:#666;">ID: ${t.teacher_id} | Pass: ${t.pass}</p>
         <hr>
-        <div style="text-align:left; padding:10px; line-height:1.6;">
-            <p><b>Mobile:</b> ${t.mobile}</p>
-            <p><b>Salary:</b> ₹${t.salary}</p>
-            <p><b>Classes:</b> ${t.classes ? t.classes.join(", ") : 'None'}</p>
-            <p><b>Subjects:</b> ${t.subjects ? t.subjects.join(", ") : 'None'}</p>
+        <div style="text-align:left; padding:10px; line-height:1.6; font-size:14px;">
+            <p><b><i class="fas fa-phone"></i> Mobile:</b> ${t.mobile}</p>
+            <p><b><i class="fas fa-wallet"></i> Salary:</b> ₹${t.salary}</p>
+            <p><b><i class="fas fa-school"></i> Classes:</b> ${t.classes ? t.classes.join(", ") : 'None'}</p>
+            <p><b><i class="fas fa-book"></i> Subjects:</b> ${t.subjects ? t.subjects.join(", ") : 'None'}</p>
         </div>
     `;
     pModal.style.display = "block";
 }
-// MODAL CONTROLS mein ye line jodein
-const dModal = document.getElementById("dataModal");
-const pModal = document.getElementById("profileModal");
 
-// Button click par table load karne ke liye
-document.getElementById("openTeacherDataBtn").onclick = () => {
-    dModal.style.display = "block";
-    loadTeacherData(); // Ye function table bharega
-};
+// --- NAYE FEATURES YA CODE YAHAN ADD KAREIN (Future Use) ---
+// Yahan aap Search bar ya Delete function ka code add kar sakte hain.
