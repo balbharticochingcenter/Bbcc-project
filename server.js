@@ -69,26 +69,49 @@ app.post('/api/update-settings', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-// --- NEW TEACHER SCHEMA ---
+// --- TEACHER SCHEMA (Updated for Multiple Checkboxes) ---
 const TeacherSchema = new mongoose.Schema({
-    teacher_name: String,
+    teacher_name: { type: String, required: true },
     mobile: String,
-    teacher_id: String,
+    teacher_id: { type: String, unique: true }, // ID unique honi chahiye
     pass: String,
-    photo: String, 
+    photo: String, // Base64 string for image
     salary: String,
     joining_date: String,
-    classes: [String],
-    subjects: [String]
+    // [String] ka matlab hai ki ye multiple selections (Array) save karega
+    classes: [String], 
+    subjects: [String],
+    createdAt: { type: Date, default: Date.now }
 });
+
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 
 // --- TEACHER REGISTRATION API ---
 app.post('/api/teacher-reg', async (req, res) => {
     try {
+        console.log("Teacher Data Received:", req.body); // For debugging in Render logs
+        
         const newTeacher = new Teacher(req.body);
         await newTeacher.save();
-        res.json({ message: "Teacher Registered Successfully!" });
+        
+        res.status(200).json({ 
+            success: true, 
+            message: "Teacher Registered Successfully in BBCC Portal!" 
+        });
+    } catch (err) {
+        console.error("Teacher Save Error:", err);
+        res.status(500).json({ 
+            success: false, 
+            error: "Database Error: " + err.message 
+        });
+    }
+});
+
+// API to Get All Teachers (Future use ke liye agar list dikhani ho)
+app.get('/api/get-teachers', async (req, res) => {
+    try {
+        const teachers = await Teacher.find().sort({ createdAt: -1 });
+        res.json(teachers);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
