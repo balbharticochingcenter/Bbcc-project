@@ -133,7 +133,17 @@ app.post('/api/teacher-reg', async (req, res) => {
         res.status(500).json({ success: false, error: errorMsg });
     }
 });
-
+// --- UPDATE TEACHER DATA API ---
+app.post('/api/update-teacher-data', async (req, res) => {
+    try {
+        const { teacher_id, ...updateData } = req.body;
+        // findOneAndUpdate ID ke hisaab se data badal dega
+        await Teacher.findOneAndUpdate({ teacher_id: teacher_id }, updateData);
+        res.status(200).json({ success: true, message: "Teacher Updated!" });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // --- SERVER INITIALIZATION ---
 // Render will provide the PORT automatically via environment variables
