@@ -11,7 +11,7 @@ function initDashboard() {
     loadSettings();
 }
 
-// --- 1. LOAD SETTINGS ---
+// --- 1. LOAD SETTINGS (Header/Logo) ---
 async function loadSettings() {
     try {
         const response = await fetch('/api/get-settings');
@@ -49,7 +49,7 @@ document.querySelectorAll(".close").forEach(btn => {
     btn.onclick = () => { btn.closest('.modal').style.display = "none"; };
 });
 
-// --- 3. TEACHER REGISTRATION ---
+// --- 3. TEACHER REGISTRATION (Auto ID & Save) ---
 document.getElementById('t_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
     if(name.length >= 3) {
@@ -71,10 +71,14 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { alert("Teacher Registered!"); e.target.reset(); modals.teacher.style.display="none"; }
+    if(res.ok) { 
+        alert("Teacher Registered Successfully! 🎉"); 
+        e.target.reset(); 
+        modals.teacher.style.display="none"; 
+    }
 };
 
-// --- 4. LOAD TEACHER CARDS (Updated for your CSS) ---
+// --- 4. SALARY MANAGEMENT TABLE (Load Data) ---
 async function loadTeacherData() {
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
@@ -92,7 +96,6 @@ async function loadTeacherData() {
             checks += `<label style="font-size:10px; margin-right:5px;"><input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}</label> `;
         }
 
-        // Yahan data-label add kiya gaya hai taaki CSS Cards sahi dikhein
         tbody.innerHTML += `
             <tr>
                 <td><img src="${t.photo || 'https://via.placeholder.com/100'}" alt="Teacher"></td>
@@ -120,10 +123,10 @@ async function updatePaidStatus(tId, month, status) {
     });
 }
 
-// --- 5. SEARCH, UPDATE & DELETE ---
+// --- 5. SEARCH & UPDATE LOGIC ---
 async function searchTeacher() {
     const id = document.getElementById('search_tid').value.trim();
-    if(!id) return alert("Please enter ID");
+    if(!id) return alert("Pehle ID bhariye!");
     
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
@@ -131,19 +134,35 @@ async function searchTeacher() {
 
     if(t) {
         document.getElementById('up_id').value = t.teacher_id;
-        document.getElementById('up_name').value = t.teacher_name;
-        document.getElementById('up_mobile').value = t.mobile;
-        document.getElementById('up_pass').value = t.pass;
-        document.getElementById('up_salary').value = t.salary;
-        document.getElementById('up_joining').value = t.joining_date;
-        alert("Teacher Data Loaded!");
-    } else { alert("Teacher Not Found!"); }
+        document.getElementById('up_name').value = t.teacher_name || "";
+        document.getElementById('up_mobile').value = t.mobile || "";
+        document.getElementById('up_pass').value = t.pass || "";
+        document.getElementById('up_salary').value = t.salary || "";
+        document.getElementById('up_joining').value = t.joining_date || "";
+
+        // Checkboxes reset aur fill karna
+        document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
+        if(t.classes) t.classes.forEach(c => {
+            const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
+            if(cb) cb.checked = true;
+        });
+        if(t.subjects) t.subjects.forEach(s => {
+            const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
+            if(cb) cb.checked = true;
+        });
+        alert("Teacher data loaded! Ab aap edit kar sakte hain.");
+    } else { alert("ID galat hai, koi teacher nahi mila!"); }
 }
 
 document.getElementById("updateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+    
+    // Arrays for classes and subjects
+    data.classes = formData.getAll('classes');
+    data.subjects = formData.getAll('subjects');
+
     const photo = document.getElementById('up_photo').files[0];
     if (photo) data.photo = await toBase64(photo);
 
@@ -152,9 +171,17 @@ document.getElementById("updateForm").onsubmit = async (e) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { alert("Teacher Data Updated!"); modals.update.style.display="none"; }
+    
+    if(res.ok) { 
+        alert("Success! Profile update ho gayi. ✨");
+        e.target.reset(); 
+        document.getElementById('search_tid').value = ""; 
+        modals.update.style.display="none"; 
+        loadTeacherData(); 
+    }
 };
 
+// --- 6. DELETE TEACHER ---
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
     if(!id || !confirm("Are you sure you want to delete this teacher?")) return;
@@ -168,10 +195,11 @@ async function deleteTeacher() {
         alert("Teacher Deleted!"); 
         document.getElementById("updateForm").reset();
         modals.update.style.display="none"; 
+        loadTeacherData();
     }
 }
 
-// --- 6. SYSTEM SETTINGS UPDATE ---
+// --- 7. SYSTEM SETTINGS UPDATE ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -184,5 +212,9 @@ document.getElementById("adminForm").onsubmit = async (e) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { alert("System Settings Saved!"); loadSettings(); modals.sys.style.display="none"; }
+    if(res.ok) { 
+        alert("System Settings Saved!"); 
+        loadSettings(); 
+        modals.sys.style.display="none"; 
+    }
 };
