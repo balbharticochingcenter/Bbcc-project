@@ -11,19 +11,27 @@ function initDashboard() {
     loadSettings();
 }
 
-// --- 1. LOAD SETTINGS (Header/Logo) ---
+// --- 1. LOAD SETTINGS (Header & Footer Sync) ---
 async function loadSettings() {
     try {
         const response = await fetch('/api/get-settings');
         const data = await response.json();
         if(data.title) {
+            // Header Branding
             document.getElementById('db-title').innerText = data.title;
             document.getElementById('db-subtitle').innerText = data.sub_title || "";
             if(data.logo) document.getElementById('db-logo').src = data.logo;
             
+            // Fill Form Fields (Header)
             document.getElementById('form-title').value = data.title;
             document.getElementById('form-subtitle').value = data.sub_title;
+            
+            // Fill Form Fields (Footer)
             document.getElementById('form-contact').value = data.contact || "";
+            document.getElementById('form-call').value = data.call_no || "";
+            document.getElementById('form-gmail').value = data.gmail || "";
+            document.getElementById('form-facebook').value = data.facebook || "";
+            document.getElementById('form-help').value = data.help || "";
         }
     } catch (err) { console.error("Error loading settings:", err); }
 }
@@ -33,7 +41,8 @@ const modals = {
     sys: document.getElementById("systemModal"),
     teacher: document.getElementById("teacherModal"),
     data: document.getElementById("dataModal"),
-    update: document.getElementById("updateModal")
+    update: document.getElementById("updateModal"),
+    profile: document.getElementById("profileModal")
 };
 
 document.getElementById("openModalBtn").onclick = () => modals.sys.style.display = "block";
@@ -49,7 +58,7 @@ document.querySelectorAll(".close").forEach(btn => {
     btn.onclick = () => { btn.closest('.modal').style.display = "none"; };
 });
 
-// --- 3. TEACHER REGISTRATION (Auto ID & Save) ---
+// --- 3. TEACHER REGISTRATION ---
 document.getElementById('t_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
     if(name.length >= 3) {
@@ -71,19 +80,15 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { 
-        alert("Teacher Registered Successfully! 🎉"); 
-        e.target.reset(); 
-        modals.teacher.style.display="none"; 
-    }
+    if(res.ok) { alert("Teacher Registered! 🎉"); e.target.reset(); modals.teacher.style.display="none"; }
 };
 
-// --- 4. SALARY MANAGEMENT TABLE (Load Data) ---
+// --- 4. LOAD TEACHER CARDS (Salary, Call, SMS, Profile) ---
 async function loadTeacherData() {
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
-    const tbody = document.getElementById("teacherTableBody");
-    tbody.innerHTML = "";
+    const container = document.getElementById("teacherTableBody");
+    container.innerHTML = "";
 
     teachers.forEach(t => {
         const joinDate = t.joining_date ? new Date(t.joining_date) : new Date();
@@ -96,25 +101,51 @@ async function loadTeacherData() {
             checks += `<label style="font-size:10px; margin-right:5px;"><input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}</label> `;
         }
 
-        tbody.innerHTML += `
-            <tr>
-                <td><img src="${t.photo || 'https://via.placeholder.com/100'}" alt="Teacher"></td>
-                <td data-label="Name"><b>${t.teacher_name}</b><br><small>ID: ${t.teacher_id}</small></td>
-                <td data-label="Joining Date">${t.joining_date}</td>
-                <td data-label="Salary Status">
-                    <div style="background:#f1f2f6; padding:10px; border-radius:10px; max-height:80px; overflow-y:auto;">
-                        ${checks}
+        container.innerHTML += `
+            <div class="teacher-card" style="border: 1px solid #ddd; padding: 15px; border-radius: 15px; margin-bottom: 10px; background: #fff; box-shadow: 2px 2px 10px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <img src="${t.photo || 'https://via.placeholder.com/80'}" onclick="showFullProfile('${t.teacher_id}')" style="width: 60px; height: 60px; border-radius: 50%; cursor: pointer; border: 2px solid #6c5ce7;">
+                    <div style="flex: 1;">
+                        <h4 style="margin:0;">${t.teacher_name} <small style="color:#666;">(${t.teacher_id})</small></h4>
+                        <p style="margin:0; color:#2ecc71; font-weight: bold;">Salary: ₹${t.salary || '0'}</p>
                     </div>
-                </td>
-                <td data-label="Action">
-                    <a href="https://wa.me/${t.mobile}" target="_blank" style="color:#25D366; font-size:24px;">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
-                </td>
-            </tr>`;
+                    <div style="display: flex; gap: 10px; font-size: 20px;">
+                        <a href="https://wa.me/${t.mobile}" target="_blank" style="color: #25D366;"><i class="fab fa-whatsapp"></i></a>
+                        <a href="tel:${t.mobile}" style="color: #0984e3;"><i class="fas fa-phone-alt"></i></a>
+                        <a href="sms:${t.mobile}" style="color: #e84393;"><i class="fas fa-comment-dots"></i></a>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; background: #f9f9f9; padding: 8px; border-radius: 8px; max-height: 60px; overflow-y: auto;">
+                    <span style="font-size: 12px; font-weight: bold;">Salary Tracker:</span><br>${checks}
+                </div>
+            </div>`;
     });
 }
 
+// --- 5. SHOW FULL PROFILE POPUP ---
+async function showFullProfile(tId) {
+    const res = await fetch('/api/get-teachers');
+    const teachers = await res.json();
+    const t = teachers.find(x => x.teacher_id === tId);
+
+    if(t) {
+        const profileDiv = document.getElementById('profileData');
+        profileDiv.innerHTML = `
+            <img src="${t.photo || 'https://via.placeholder.com/150'}" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #6c5ce7; margin-bottom: 15px;">
+            <h3>${t.teacher_name}</h3>
+            <p><b>Teacher ID:</b> ${t.teacher_id}</p>
+            <p><b>Mobile:</b> ${t.mobile}</p>
+            <p><b>Password:</b> ${t.pass}</p>
+            <p><b>Salary:</b> ₹${t.salary}</p>
+            <p><b>Joining Date:</b> ${t.joining_date}</p>
+            <p><b>Classes:</b> ${t.classes?.join(", ") || "None"}</p>
+            <p><b>Subjects:</b> ${t.subjects?.join(", ") || "None"}</p>
+        `;
+        modals.profile.style.display = "block";
+    }
+}
+
+// --- 6. UPDATE PAID STATUS ---
 async function updatePaidStatus(tId, month, status) {
     await fetch('/api/update-salary-status', {
         method: 'POST',
@@ -123,11 +154,9 @@ async function updatePaidStatus(tId, month, status) {
     });
 }
 
-// --- 5. SEARCH & UPDATE LOGIC ---
+// --- 7. SEARCH & UPDATE LOGIC (Updated Classes/Subjects) ---
 async function searchTeacher() {
     const id = document.getElementById('search_tid').value.trim();
-    if(!id) return alert("Pehle ID bhariye!");
-    
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
     const t = teachers.find(x => x.teacher_id === id);
@@ -138,68 +167,49 @@ async function searchTeacher() {
         document.getElementById('up_mobile').value = t.mobile || "";
         document.getElementById('up_pass').value = t.pass || "";
         document.getElementById('up_salary').value = t.salary || "";
-        document.getElementById('up_joining').value = t.joining_date || "";
-
-        // Checkboxes reset aur fill karna
+        
+        // Reset and Check Checkboxes
         document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
-        if(t.classes) t.classes.forEach(c => {
+        t.classes?.forEach(c => {
             const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
             if(cb) cb.checked = true;
         });
-        if(t.subjects) t.subjects.forEach(s => {
+        t.subjects?.forEach(s => {
             const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
             if(cb) cb.checked = true;
         });
-        alert("Teacher data loaded! Ab aap edit kar sakte hain.");
-    } else { alert("ID galat hai, koi teacher nahi mila!"); }
+        alert("Teacher data loaded!");
+    } else { alert("Not found!"); }
 }
 
 document.getElementById("updateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
-    // Arrays for classes and subjects
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
-
-    const photo = document.getElementById('up_photo').files[0];
-    if (photo) data.photo = await toBase64(photo);
 
     const res = await fetch('/api/update-teacher-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    
-    if(res.ok) { 
-        alert("Success! Profile update ho gayi. ✨");
-        e.target.reset(); 
-        document.getElementById('search_tid').value = ""; 
-        modals.update.style.display="none"; 
-        loadTeacherData(); 
-    }
+    if(res.ok) { alert("Updated!"); modals.update.style.display="none"; loadTeacherData(); }
 };
 
-// --- 6. DELETE TEACHER ---
+// --- 8. DELETE TEACHER ---
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
-    if(!id || !confirm("Are you sure you want to delete this teacher?")) return;
-
-    const res = await fetch('/api/delete-teacher', {
+    if(!confirm("Are you sure?")) return;
+    await fetch('/api/delete-teacher', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teacher_id: id })
     });
-    if(res.ok) { 
-        alert("Teacher Deleted!"); 
-        document.getElementById("updateForm").reset();
-        modals.update.style.display="none"; 
-        loadTeacherData();
-    }
+    alert("Deleted!"); modals.update.style.display="none"; loadTeacherData();
 }
 
-// --- 7. SYSTEM SETTINGS UPDATE ---
+// --- 9. SAVE SYSTEM SETTINGS ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -207,14 +217,10 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     const logo = document.getElementById('logoInput').files[0];
     if (logo) data.logo = await toBase64(logo);
 
-    const res = await fetch('/api/update-settings', {
+    await fetch('/api/update-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { 
-        alert("System Settings Saved!"); 
-        loadSettings(); 
-        modals.sys.style.display="none"; 
-    }
+    alert("Settings Saved!"); loadSettings(); modals.sys.style.display="none";
 };
