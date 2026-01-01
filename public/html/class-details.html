@@ -3,174 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Details - BBCC Portal</title>
+    <title>Class Details - BBCC</title>
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .details-container {
-            display: flex;
+        /* Specific tweaks for Details Page */
+        .details-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 30px;
-            padding: 40px 8%;
-            min-height: 80vh;
-            flex-wrap: wrap;
+            padding: 30px 8%;
+            align-items: start;
         }
-        .details-left { flex: 1.5; min-width: 300px; }
-        .video-right { 
-            flex: 1; 
-            min-width: 300px; 
-            background: rgba(255,255,255,0.05); 
-            padding: 20px; 
-            border-radius: 20px;
-            border: 1px solid var(--primary);
-            height: fit-content;
+        
+        .subjects-column h2 { color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+        
+        .subject-item-box {
+            background: rgba(30, 41, 59, 0.5);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .subject-card {
+
+        .video-column { position: sticky; top: 100px; }
+        
+        .video-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+
+        /* Teacher Slider Section */
+        .teacher-slider-wrap {
+            grid-column: 1 / -1;
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .t-card-container {
+            display: flex;
+            overflow: hidden;
+            gap: 20px;
+            padding: 20px;
+            justify-content: center;
+        }
+
+        .t-card {
+            min-width: 200px;
             background: var(--card-bg);
             padding: 20px;
             border-radius: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid var(--primary);
+            transition: 0.3s;
         }
-        .teacher-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px dashed #444;
-        }
-        .teacher-img {
-            width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
-            border: 2px solid var(--success);
-        }
-        .video-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 10px;
-        }
-        .video-wrapper iframe {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        }
-        .enroll-sticky {
-            margin-top: 20px;
+        
+        .t-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--success); }
+
+        .enroll-now-btn {
             width: 100%;
             padding: 15px;
-            background: var(--danger);
+            margin-top: 15px;
+            background: linear-gradient(90deg, #ef4444, #b91c1c);
             color: white;
             font-weight: bold;
             border: none;
             border-radius: 10px;
             cursor: pointer;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 850px) {
+            .details-wrapper { grid-template-columns: 1fr; }
+            .video-column { position: static; }
         }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="nav-left">
-            <img src="" alt="Logo" class="logo" id="siteLogo">
-        </div>
+        <div class="nav-left"><div class="logo-ring"><img src="" id="siteLogo" class="logo"></div></div>
         <div class="nav-center">
             <div class="brand-info">
-                <h1 class="glow-text" id="siteTitle">Loading...</h1>
+                <h1 class="glow-text rainbow-header" id="siteTitle">Loading...</h1>
                 <span class="powered-by" id="siteSubTitle"></span>
             </div>
         </div>
         <div class="nav-right">
-            <button class="dropbtn" onclick="window.location.href='/'">Home</button>
+            <button class="dropbtn" onclick="window.location.href='/'"><i class="fa fa-home"></i> Home</button>
         </div>
     </nav>
 
-    <div class="details-container">
-        <div class="details-left">
-            <h1 id="displayClassName" style="font-size: 2.5rem; margin-bottom: 10px;" class="glow-text">Class Name</h1>
-            <p id="classMoto" style="color: #94a3b8; margin-bottom: 30px;">Explore the subjects and specialized teachers for this class.</p>
-            
-            <div id="subjectsListArea">
+    <div class="details-wrapper">
+        <div class="subjects-column">
+            <h2 id="classNameHeading">Class Details</h2>
+            <div id="subjectListContainer">
                 </div>
         </div>
 
-        <div class="video-right">
-            <h3 style="margin-bottom: 15px; color: var(--primary);">Class Introduction</h3>
-            <div class="video-wrapper">
-                <iframe id="introVideo" src="" frameborder="0" allowfullscreen></iframe>
+        <div class="video-column">
+            <div class="video-container">
+                <iframe id="mainYtPlayer" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
             </div>
-            <button class="enroll-sticky" onclick="alert('Please Login to Enroll!')">Enroll Now in This Class</button>
+            <button class="enroll-now-btn" onclick="window.location.href='/?action=login'">
+                <i class="fa fa-user-plus"></i> Enroll Now (Login First)
+            </button>
+        </div>
+
+        <div class="teacher-slider-wrap">
+            <h2 class="magical-text">Meet Our Teachers</h2>
+            <div class="t-card-container" id="teacherDisplay">
+                </div>
         </div>
     </div>
 
     <footer class="modern-footer">
         <div class="footer-container">
             <div class="footer-bottom">
-                <p id="footerAbout" style="text-align: center; margin-bottom: 10px;"></p>
-                <hr>
-                <p class="dev-credit" style="text-align: center;">Developed by Santosh Sir</p>
+                <p id="footerAbout" style="text-align: center; color: #94a3b8;"></p>
+                <hr style="margin: 15px 0; border: 0.5px solid #334155;">
+                <p class="dev-credit" style="text-align: center;">Website Developed by <span>Santosh Sir "Ethical Hacker"</span></p>
             </div>
         </div>
     </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const className = urlParams.get('class');
+            const params = new URLSearchParams(window.location.search);
+            const targetClass = params.get('class');
 
-            if (!className) {
-                window.location.href = '/';
-                return;
-            }
-
-            // 1. Load Header/Footer Settings
+            // 1. Load Global Settings (Header/Footer)
             const settingsRes = await fetch('/api/admin/hp-settings');
-            if (settingsRes.ok) {
-                const data = await settingsRes.json();
-                document.getElementById('siteLogo').src = data.header.logo;
-                document.getElementById('siteTitle').innerText = data.header.title;
-                document.getElementById('siteSubTitle').innerText = data.header.subTitle;
-                document.getElementById('footerAbout').innerText = data.footer.about;
-            }
+            const settings = await settingsRes.json();
+            document.getElementById('siteLogo').src = settings.header.logo;
+            document.getElementById('siteTitle').innerText = settings.header.title;
+            document.getElementById('siteSubTitle').innerText = settings.header.subTitle;
+            document.getElementById('footerAbout').innerText = settings.footer.about;
 
-            // 2. Load Class Details from DB
-            try {
-                const classRes = await fetch('/api/admin/all-classes');
-                const classes = await classRes.json();
-                const cls = classes.find(c => c.className === className);
+            // 2. Load Class Details
+            const classRes = await fetch('/api/admin/all-classes');
+            const allClasses = await classRes.json();
+            const clsData = allClasses.find(c => c.className === targetClass);
 
-                if (cls) {
-                    document.getElementById('displayClassName').innerText = cls.className;
-                    
-                    // Set Intro Video (First Video of First Subject as default or manual)
-                    if(cls.subjects[0] && cls.subjects[0].ytLinks[0]) {
-                        const vidId = extractYtId(cls.subjects[0].ytLinks[0]);
-                        document.getElementById('introVideo').src = `https://www.youtube.com/embed/${vidId}`;
-                    }
-
-                    // Render Subjects & Teachers
-                    const listArea = document.getElementById('subjectsListArea');
-                    cls.subjects.forEach(sub => {
-                        const card = document.createElement('div');
-                        card.className = 'subject-card';
-                        card.innerHTML = `
-                            <h3>📘 ${sub.name}</h3>
-                            <p style="font-size:0.9rem; color:#ccc;">Total Videos Available: ${sub.ytLinks.length}</p>
-                            <div class="teacher-info">
-                                <img src="/assets/teacher-default.png" class="teacher-img">
-                                <div>
-                                    <p style="font-weight:bold; color:var(--success);">${sub.teacher || 'Assigning...'}</p>
-                                    <p style="font-size:0.8rem;">Subject Expert</p>
-                                </div>
-                            </div>
-                        `;
-                        listArea.appendChild(card);
-                    });
+            if (clsData) {
+                document.getElementById('classNameHeading').innerText = `Subjects for ${clsData.className}`;
+                
+                // Show Intro Video from first subject
+                if (clsData.subjects[0]?.ytLinks[0]) {
+                    const videoId = extractID(clsData.subjects[0].ytLinks[0]);
+                    document.getElementById('mainYtPlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
                 }
-            } catch (err) {
-                console.error("Error:", err);
+
+                // Render Subjects Left
+                const subContainer = document.getElementById('subjectListContainer');
+                const teacherContainer = document.getElementById('teacherDisplay');
+                
+                clsData.subjects.forEach(sub => {
+                    // Subject Row
+                    subContainer.innerHTML += `
+                        <div class="subject-item-box">
+                            <div>
+                                <b style="font-size:1.1rem; color:white;">${sub.name}</b><br>
+                                <small style="color:var(--primary)">Expert: ${sub.teacher}</small>
+                            </div>
+                            <i class="fa fa-book-open" style="color: #444;"></i>
+                        </div>
+                    `;
+
+                    // Teacher Card Bottom
+                    teacherContainer.innerHTML += `
+                        <div class="t-card">
+                            <img src="/assets/teacher-default.png" alt="Teacher">
+                            <h4 style="margin-top:10px;">${sub.teacher}</h4>
+                            <p style="font-size:0.8rem; color:var(--primary);">${sub.name} Specialist</p>
+                        </div>
+                    `;
+                });
             }
         });
 
-        function extractYtId(url) {
+        function extractID(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
