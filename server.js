@@ -177,7 +177,25 @@ app.post('/api/update-salary-status', async (req, res) => {
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
+// --- UPDATE STUDENT DATA ---
+app.post('/api/update-student-data', async (req, res) => {
+    try {
+        await Student.findOneAndUpdate({ student_id: req.body.student_id }, req.body);
+        res.status(200).json({ message: "Updated!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
+// --- DELETE STUDENT ---
+app.delete('/api/delete-student', async (req, res) => {
+    try {
+        await Student.findOneAndDelete({ student_id: req.body.student_id });
+        res.status(200).json({ message: "Deleted!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
