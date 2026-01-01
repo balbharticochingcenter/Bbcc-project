@@ -15,13 +15,18 @@
         .div-fail { background: #ef4444; }
         .obtained-marks { width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #444; background: #000; color: #fff; }
         .class-badge { background: #555; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        
+        /* New Style for HP Modal */
+        .hp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .hp-section { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid #444; }
+        .hp-section h3 { margin-top: 0; border-bottom: 1px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="nav-left"><img src="/assets/logo.png" alt="Logo" class="logo"></div>
-        <div class="nav-center"><h1 class="glow-text">BBCC Portal Control</h1></div>
+        <div class="nav-left"><img src="/assets/logo.png" alt="Logo" class="logo" id="mainHeaderLogo"></div>
+        <div class="nav-center"><h1 class="glow-text" id="mainHeaderTitle">BBCC Portal Control</h1></div>
         <div class="nav-right">
             <span id="adminDisplayName">Admin</span>
             <button class="logout-mini" onclick="logout()"><i class="fa fa-sign-out-alt"></i></button>
@@ -35,44 +40,80 @@
         <button class="menu-btn" onclick="openModal('teacherModal')"><i class="fa fa-chalkboard-teacher"></i> <span>Teacher Mgmt</span></button>
         <button class="menu-btn" onclick="openModal('studentModal')"><i class="fa fa-user-graduate"></i> <span>Student Mgmt</span></button>
         <button class="menu-btn" onclick="openModal('resultModal')"><i class="fa fa-file-invoice"></i> <span>Update Result</span></button>
+        <button class="menu-btn" onclick="openHPModal()" style="border-color: var(--primary);"><i class="fa fa-cogs"></i> <span>HP Settings</span></button>
     </div>
 
-<div id="resultModal" class="modal wide-modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('resultModal')">&times;</span>
-        <h2><i class="fa fa-file-invoice"></i> Update Student Results</h2>
-        <div class="batch-config">
-            <div>
-                <label>Select Class: </label>
-                <select id="resClassSelect">
-                    <option value="">-- Loading Classes --</option>
-                </select>
+    <div id="hpModal" class="modal wide-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('hpModal')">&times;</span>
+            <h2 class="glow-text"><i class="fa fa-layer-group"></i> Header & Footer Manager</h2>
+            <div class="hp-grid">
+                <div class="hp-section">
+                    <h3>Header Control</h3>
+                    <label>Logo</label>
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <img id="hpLogoPreview" src="/assets/logo.png" style="width:50px; height:50px; border-radius:5px;">
+                        <input type="file" id="hpLogoFile" accept="image/*">
+                    </div>
+                    <label>Website Title</label>
+                    <input type="text" id="hpTitle" placeholder="Enter Site Title">
+                    <label>Header Subtitle</label>
+                    <input type="text" id="hpSubTitle" placeholder="Enter Subtitle">
+                    <button onclick="updateHeader()" class="save-btn" style="margin-top:15px; background:var(--primary);">Update Header</button>
+                </div>
+
+                <div class="hp-section">
+                    <h3>Footer Control</h3>
+                    <label>Short About Us</label>
+                    <textarea id="fAbout" placeholder="Brief description..."></textarea>
+                    <div class="modal-grid" style="grid-template-columns: 1fr 1fr;">
+                        <input type="text" id="fFB" placeholder="Facebook Link">
+                        <input type="text" id="fInsta" placeholder="Instagram Link">
+                        <input type="text" id="fYT" placeholder="YouTube Link">
+                        <input type="text" id="fWA" placeholder="WhatsApp Number">
+                    </div>
+                    <button onclick="updateFooter()" class="save-btn" style="margin-top:15px; background:#10b981;">Update Footer</button>
+                </div>
             </div>
-            <div>
-                <label>Total Marks (All Students): </label>
-                <input type="number" id="globalTotalMarks" value="500" oninput="updateAllDivisions()">
-            </div>
-            <button onclick="loadStudentsForResult()" class="btn-s">Go / Load Students</button>
         </div>
-        <div class="table-scroll">
-            <table class="result-table">
-                <thead>
-                    <tr>
-                        <th>Photo</th>
-                        <th>Roll No (ID)</th>
-                        <th>Name</th>
-                        <th>Mobile</th>
-                        <th>Marks Obtained</th>
-                        <th>Total Marks</th>
-                        <th>Division</th>
-                    </tr>
-                </thead>
-                <tbody id="resultTableBody"></tbody>
-            </table>
-        </div>
-        <button onclick="saveAllResults()" class="save-btn" style="margin-top:20px;">Save All Results to Cloud</button>
     </div>
-</div>
+
+    <div id="resultModal" class="modal wide-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('resultModal')">&times;</span>
+            <h2><i class="fa fa-file-invoice"></i> Update Student Results</h2>
+            <div class="batch-config">
+                <div>
+                    <label>Select Class: </label>
+                    <select id="resClassSelect">
+                        <option value="">-- Loading Classes --</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Total Marks (All Students): </label>
+                    <input type="number" id="globalTotalMarks" value="500" oninput="updateAllDivisions()">
+                </div>
+                <button onclick="loadStudentsForResult()" class="btn-s">Go / Load Students</button>
+            </div>
+            <div class="table-scroll">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Roll No (ID)</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Marks Obtained</th>
+                            <th>Total Marks</th>
+                            <th>Division</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody"></tbody>
+                </table>
+            </div>
+            <button onclick="saveAllResults()" class="save-btn" style="margin-top:20px;">Save All Results to Cloud</button>
+        </div>
+    </div>
 
     <div id="regModal" class="modal">
         <div class="modal-content">
@@ -227,14 +268,11 @@
         // --- SESSION SECURITY CHECK ---
         (function() {
             const userData = JSON.parse(localStorage.getItem('userData'));
-            
-            // Agar data nahi hai ya role 'admin' nahi hai, toh turant bahar phenk do
             if (!userData || userData.role !== 'admin') {
                 alert("⛔ Access Denied! Please login as Admin.");
-                window.location.href = "/"; // Login page par redirect
+                window.location.href = "/";
             }
         })();
-        // ------------------------------
 
         const socket = io();
         let mainData = [];
@@ -249,6 +287,69 @@
             refreshClassList();
         }
 
+        // --- NEW HP SETTINGS LOGIC START ---
+        async function openHPModal() {
+            openModal('hpModal');
+            try {
+                const res = await fetch('/api/admin/hp-settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.header) {
+                        document.getElementById('hpTitle').value = data.header.title || "";
+                        document.getElementById('hpSubTitle').value = data.header.subTitle || "";
+                        if (data.header.logo) document.getElementById('hpLogoPreview').src = data.header.logo;
+                    }
+                    if (data.footer) {
+                        document.getElementById('fAbout').value = data.footer.about || "";
+                        document.getElementById('fFB').value = data.footer.facebook || "";
+                        document.getElementById('fInsta').value = data.footer.instagram || "";
+                        document.getElementById('fYT').value = data.footer.youtube || "";
+                        document.getElementById('fWA').value = data.footer.whatsapp || "";
+                    }
+                }
+            } catch (err) { console.error("Error loading HP data", err); }
+        }
+
+        async function updateHeader() {
+            let logoBase64 = document.getElementById('hpLogoPreview').src;
+            const file = document.getElementById('hpLogoFile').files[0];
+            if (file) logoBase64 = await convertImage(file);
+
+            const headerData = {
+                title: document.getElementById('hpTitle').value,
+                subTitle: document.getElementById('hpSubTitle').value,
+                logo: logoBase64
+            };
+
+            const res = await fetch('/api/admin/update-header', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(headerData)
+            });
+            if (res.ok) { 
+                alert("Header Updated!"); 
+                document.getElementById('mainHeaderLogo').src = logoBase64;
+                document.getElementById('mainHeaderTitle').innerText = headerData.title;
+            }
+        }
+
+        async function updateFooter() {
+            const footerData = {
+                about: document.getElementById('fAbout').value,
+                facebook: document.getElementById('fFB').value,
+                instagram: document.getElementById('fInsta').value,
+                youtube: document.getElementById('fYT').value,
+                whatsapp: document.getElementById('fWA').value
+            };
+            const res = await fetch('/api/admin/update-footer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(footerData)
+            });
+            if (res.ok) alert("Footer Updated!");
+        }
+        // --- NEW HP SETTINGS LOGIC END ---
+
         function openModal(id) { 
             document.getElementById(id).style.display = "block"; 
             if(id === 'resultModal') refreshClassList();
@@ -259,14 +360,9 @@
         function refreshClassList() {
             const classSelect = document.getElementById('resClassSelect');
             if(!classSelect) return;
-            
-            const classes = [...new Set(mainData
-                .filter(u => u.role === 'student' && (u.studentClass || u.class)) 
-                .map(u => u.studentClass || u.class))];
-
+            const classes = [...new Set(mainData.filter(u => u.role === 'student' && (u.studentClass || u.class)).map(u => u.studentClass || u.class))];
             if(classes.length > 0) {
-                classSelect.innerHTML = '<option value="">-- Select Class --</option>' + 
-                    classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                classSelect.innerHTML = '<option value="">-- Select Class --</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
             } else {
                 classSelect.innerHTML = '<option value="">No Students Found</option>';
             }
