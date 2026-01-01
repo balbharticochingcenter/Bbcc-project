@@ -65,6 +65,9 @@ const StudentSchema = new mongoose.Schema({
     student_class: String,
     fees: String,
     joining_date: String,
+    total_marks: String,
+    obtained_marks: String,
+    exam_date: String,
     paid_months: { type: [Number], default: [] }
 });
 const Student = mongoose.model('Student', StudentSchema);
