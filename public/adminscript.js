@@ -553,3 +553,67 @@ async function saveIndividualResult(sid) {
         console.log("Result updated for: " + sid);
     }
 }
+//====================================------===============================-------------------=================
+
+// --- ADMIN LOGIN LOGIC ---
+function adminLogin() {
+    const user = document.getElementById('admin_user').value;
+    const pass = document.getElementById('admin_pass').value;
+
+    if(user === "admin" && pass === "7543") { // Password change as needed
+        location.href = 'admin.html';
+    } else {
+        alert("Invalid Admin Credentials!");
+    }
+}
+
+// --- CHECK STUDENT RESULT LOGIC ---
+async function checkResult() {
+    const rollId = document.getElementById('stu_roll_id').value.trim().toUpperCase();
+    const display = document.getElementById('resultDisplayArea');
+    
+    const res = await fetch('/api/get-students');
+    const students = await res.json();
+    const s = students.find(x => x.student_id === rollId);
+
+    if(!s) {
+        alert("Roll Number/ID not found!");
+        return;
+    }
+
+    // Check if result is available (exam_date check)
+    if(!s.exam_date || s.exam_date === "") {
+        display.style.display = 'block';
+        display.innerHTML = `<h4 style="color:red; text-align:center;">Aapka exam abhi nahi hua hai!</h4>`;
+        return;
+    }
+
+    // Show Result Data
+    display.style.display = 'block';
+    display.innerHTML = `
+        <div style="display:flex; gap:15px; align-items:center;">
+            <img src="${s.photo || 'https://via.placeholder.com/80'}" style="width:70px; height:70px; border-radius:50%; border:2px solid #6c5ce7;">
+            <div>
+                <h3 style="margin:0;">${s.student_name}</h3>
+                <p style="margin:0; font-size:12px;">ID: ${s.student_id} | Class: ${s.student_class}</p>
+            </div>
+        </div>
+        <hr>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <p><b>Exam Date:</b> ${s.exam_date}</p>
+            <p><b>Total Marks:</b> ${s.total_marks}</p>
+            <p><b>Marks Obtained:</b> ${s.obtained_marks}</p>
+            <p><b>Division:</b> ${calculateDivision(s.obtained_marks, s.total_marks)}</p>
+        </div>
+    `;
+}
+
+// Ye helper function marks ke hisab se div dikhayega
+function calculateDivision(obt, total) {
+    if(!obt || !total) return "---";
+    const per = (parseInt(obt) / parseInt(total)) * 100;
+    if(per >= 60) return "1st Division";
+    if(per >= 45) return "2nd Division";
+    if(per >= 33) return "3rd Division";
+    return "Fail";
+}
