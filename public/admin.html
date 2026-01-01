@@ -23,6 +23,7 @@
         <button id="openModalBtn" class="btn-primary">System</button>
         <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;">Teacher Reg</button>
         <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;">Teacher Data</button>
+        <button id="openUpdateBtn" class="btn-primary" style="background: #fdcb6e; color: #000;">Update Teacher</button>
         <button onclick="location.href='login.html'" class="btn-secondary">Back to Home</button>
     </div>
 
@@ -154,6 +155,26 @@
     <div class="modal-content" style="border-color: #6c5ce7; width: 400px; text-align: center;">
         <span class="close" onclick="document.getElementById('profileModal').style.display='none'">&times;</span>
         <div id="profileDetails"></div>
+    </div>
+</div>
+    <div id="updateModal" class="modal">
+    <div class="modal-content" style="border-color: #fdcb6e;">
+        <span class="close" onclick="document.getElementById('updateModal').style.display='none'">&times;</span>
+        <h3><i class="fas fa-edit"></i> Update Teacher Info</h3>
+        
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="search_tid" placeholder="Enter Teacher ID (e.g. SAN1234)">
+            <button type="button" onclick="searchTeacher()" class="btn-primary" style="padding:10px; margin:0; width:150px;">Search</button>
+        </div>
+
+        <form id="updateForm">
+            <input type="hidden" name="teacher_id" id="up_id">
+            <input type="text" name="teacher_name" id="up_name" placeholder="Full Name">
+            <input type="text" name="mobile" id="up_mobile" placeholder="Mobile">
+            <input type="number" name="salary" id="up_salary" placeholder="Salary">
+            <input type="date" name="joining_date" id="up_joining">
+            <button type="submit" class="btn-update" style="background: #fdcb6e; color: #000;">Save Changes</button>
+        </form>
     </div>
 </div>
     <script src="adminscript.js"></script>
