@@ -196,3 +196,77 @@ input, select {
     .form-group-row { grid-template-columns: 1fr; }
     .glow-text { font-size: 1.5rem; }
 }
+/* Diary Container for Student Data */
+#studentTableBody {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 10px;
+    background: #fdfdfd; /* Diary Paper Color */
+    border-left: 5px double #6c5ce7; /* Diary Binding Look */
+    padding-left: 20px;
+}
+
+/* Diary Entry Card */
+.diary-card {
+    background: #fff;
+    border-bottom: 2px solid #eee; /* Rule lines like a notebook */
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.diary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 10px 10px 20px rgba(0,0,0,0.1);
+}
+
+.diary-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: #6c5ce7; /* Left margin line */
+}
+
+/* Action Buttons for SMS/WA */
+.diary-actions {
+    display: flex;
+    justify-content: space-around;
+    background: #f8f9fa;
+    border-radius: 5px;
+    padding: 8px;
+    margin-top: 10px;
+}
+
+.diary-actions a {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Checkbox Styling (Small Chips) */
+.fee-chip {
+    background: #f1f2f6;
+    border: 1px solid #dfe4ea;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.fee-chip input:checked + span {
+    color: #2ecc71;
+    font-weight: bold;
+}
