@@ -344,13 +344,38 @@
         window.onload = loadData;
 
         async function loadData() {
-            const res = await fetch('/api/admin/users');
-            mainData = await res.json();
-            renderTables(mainData);
-            loadHistory();
-            refreshClassList();
-        }
+    // Purana logic
+    const res = await fetch('/api/admin/users');
+    mainData = await res.json();
+    renderTables(mainData);
+    loadHistory();
+    refreshClassList();
 
+    // NAYA LOGIC: Settings apply karne ke liye
+    applySettings(); 
+}
+
+
+        async function applySettings() {
+    try {
+        const res = await fetch('/api/admin/hp-settings');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.header) {
+                // Agar DB mein logo hai toh Navbar ka logo change karein
+                if (data.header.logo) {
+                    document.getElementById('mainHeaderLogo').src = data.header.logo;
+                }
+                // Agar DB mein title hai toh Navbar ka title change karein
+                if (data.header.title) {
+                    document.getElementById('mainHeaderTitle').innerText = data.header.title;
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Settings load karne mein fail:", err);
+    }
+}
         // --- NEW HP SETTINGS LOGIC START ---
         async function openHPModal() {
             openModal('hpModal');
@@ -730,6 +755,7 @@ document.getElementById('classBannerFile').onchange = async function(e) {
     </script>
 </body>
 </html>
+
 
 
 
