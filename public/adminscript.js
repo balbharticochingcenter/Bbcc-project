@@ -1,4 +1,4 @@
-// --- UTILITY: Image ko text (Base64) mein badalne ke liye ---
+// --- UTILITY: Image ko Base64 text mein badalne ke liye ---
 const toBase64 = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -37,56 +37,36 @@ async function loadSettings() {
 // --- 2. MODAL CONTROLS (Open/Close System) ---
 const sysModal = document.getElementById("systemModal");
 const tModal = document.getElementById("teacherModal");
-const dModal = document.getElementById("dataModal");   // Teacher Data Modal
-const pModal = document.getElementById("profileModal"); // Teacher Profile Popup
+const dModal = document.getElementById("dataModal");
+const pModal = document.getElementById("profileModal");
+const uModal = document.getElementById("updateModal"); // Sirf ek baar declare kiya
 
 // Buttons Click Events
 document.getElementById("openModalBtn").onclick = () => { loadSettings(); sysModal.style.display = "block"; };
 document.getElementById("openTeacherBtn").onclick = () => { tModal.style.display = "block"; };
+document.getElementById("openTeacherDataBtn").onclick = () => { dModal.style.display = "block"; loadTeacherData(); };
+document.getElementById("openUpdateBtn").onclick = () => { uModal.style.display = "block"; };
 
-// Teacher Data Button (Isse Table Load Hogi)
-document.getElementById("openTeacherDataBtn").onclick = () => {
-    dModal.style.display = "block";
-    loadTeacherData(); 
-};
-
-// Sabhi Close Buttons (X) ko handle karna
+// Sabhi Close Buttons (X) handle karna
 document.querySelectorAll(".close").forEach(btn => {
     btn.onclick = () => {
         sysModal.style.display = "none";
         tModal.style.display = "none";
         dModal.style.display = "none";
         pModal.style.display = "none";
+        uModal.style.display = "none";
     };
 });
 
-// Modal ke bahar click karne par band hona
 window.onclick = (event) => {
     if (event.target == sysModal) sysModal.style.display = "none";
     if (event.target == tModal) tModal.style.display = "none";
     if (event.target == dModal) dModal.style.display = "none";
     if (event.target == pModal) pModal.style.display = "none";
+    if (event.target == uModal) uModal.style.display = "none";
 };
 
-// --- 3. SYSTEM SETTINGS SUBMIT ---
-document.getElementById("adminForm").onsubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-    const logoInput = document.getElementById('logoInput');
-    if (logoInput.files[0]) data.logo = await toBase64(logoInput.files[0]);
-    else data.logo = document.getElementById('db-logo').src;
-
-    const res = await fetch('/api/update-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    if(res.ok) { alert("Settings Saved! ✨"); location.reload(); }
-};
-
-// --- 4. TEACHER REGISTRATION LOGIC ---
-// Auto ID aur Password Generate karna
+// --- 3. TEACHER REGISTRATION LOGIC ---
 document.getElementById('t_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
     if(name.length >= 3) {
@@ -96,14 +76,12 @@ document.getElementById('t_name').oninput = (e) => {
     }
 };
 
-// Teacher Form Submit
 document.getElementById("teacherForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
-
     const photoInput = document.getElementById('t_photo');
     if (photoInput.files[0]) data.photo = await toBase64(photoInput.files[0]);
 
@@ -113,10 +91,9 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
         body: JSON.stringify(data)
     });
     if(res.ok) { alert("Teacher Added! 🎓"); tModal.style.display = "none"; e.target.reset(); }
-    else { alert("Error saving teacher!"); }
 };
 
-// --- 5. TEACHER DATA TABLE & SALARY LOGIC ---
+// --- 4. TEACHER DATA TABLE & SALARY LOGIC ---
 async function loadTeacherData() {
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
@@ -124,117 +101,54 @@ async function loadTeacherData() {
     tbody.innerHTML = "";
 
     teachers.forEach(t => {
-        // Joining Date check aur Month calculation
         const joinDate = t.joining_date ? new Date(t.joining_date) : new Date();
         const now = new Date();
         const diff = (now.getFullYear() - joinDate.getFullYear()) * 12 + (now.getMonth() - joinDate.getMonth());
         const totalMonths = diff < 0 ? 1 : diff + 1;
 
-        // Checkboxes for Paid/Unpaid Status
         let checks = "";
         for(let i=1; i<=totalMonths; i++) {
             const isChecked = t.paid_months && t.paid_months.includes(i) ? "checked" : "";
-            checks += `
-                <label style="font-size:10px; margin-right:5px; background:#f1f1f1; padding:2px; border-radius:3px; display:inline-block; margin-bottom:2px;">
-                    <input type="checkbox" ${isChecked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}
-                </label>`;
+            checks += `<label style="font-size:10px; margin-right:5px; background:#f1f1f1; padding:2px; border-radius:3px;">
+                <input type="checkbox" ${isChecked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}
+            </label>`;
         }
-
-        const msg = `Hello ${t.teacher_name}, your salary for ${totalMonths} months is pending.`;
 
         tbody.innerHTML += `
             <tr>
                 <td><img src="${t.photo || ''}" width="40" height="40" style="border-radius:50%; object-fit:cover;"></td>
                 <td><b style="color:#e84393; cursor:pointer;" onclick='showProfile(${JSON.stringify(t)})'>${t.teacher_name}</b></td>
                 <td>${t.joining_date || 'N/A'}</td>
-                <td><span style="background:#6c5ce7; color:white; padding:2px 8px; border-radius:10px;">${totalMonths} Months</span></td>
-                <td><div style="display:flex; flex-wrap:wrap; max-width:220px;">${checks}</div></td>
-                <td>
-                    <a href="https://wa.me/${t.mobile}?text=${encodeURIComponent(msg)}" target="_blank" style="color:#25D366; font-size:20px;"><i class="fab fa-whatsapp"></i></a>
-                    <a href="sms:${t.mobile}?body=${encodeURIComponent(msg)}" style="color:#3498db; font-size:20px; margin-left:10px;"><i class="fas fa-sms"></i></a>
-                </td>
-            </tr>
-        `;
+                <td>${totalMonths} Months</td>
+                <td><div style="display:flex; flex-wrap:wrap;">${checks}</div></td>
+                <td><a href="https://wa.me/${t.mobile}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a></td>
+            </tr>`;
     });
 }
 
-// Database mein Paid/Unpaid Status update karna
+// Salary status update
 async function updatePaidStatus(tId, monthNum, isChecked) {
-    try {
-        await fetch('/api/update-salary-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ teacher_id: tId, month: monthNum, status: isChecked })
-        });
-    } catch (err) { console.error("Update Error:", err); }
+    await fetch('/api/update-salary-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: tId, month: monthNum, status: isChecked })
+    });
 }
 
-// Teacher Profile Popup Dikhaana
+// Profile popup
 function showProfile(t) {
     document.getElementById("profileDetails").innerHTML = `
-        <img src="${t.photo || ''}" style="width:100px; height:100px; border-radius:50%; border:3px solid #6c5ce7; margin-bottom:10px; object-fit:cover;">
-        <h2 style="margin:0;">${t.teacher_name}</h2>
-        <p style="font-size:12px; color:#666;">ID: ${t.teacher_id} | Pass: ${t.pass}</p>
-        <hr>
-        <div style="text-align:left; padding:10px; line-height:1.6; font-size:14px;">
-            <p><b><i class="fas fa-phone"></i> Mobile:</b> ${t.mobile}</p>
-            <p><b><i class="fas fa-wallet"></i> Salary:</b> ₹${t.salary}</p>
-            <p><b><i class="fas fa-school"></i> Classes:</b> ${t.classes ? t.classes.join(", ") : 'None'}</p>
-            <p><b><i class="fas fa-book"></i> Subjects:</b> ${t.subjects ? t.subjects.join(", ") : 'None'}</p>
-        </div>
+        <img src="${t.photo || ''}" style="width:100px; height:100px; border-radius:50%; object-fit:cover;">
+        <h2>${t.teacher_name}</h2>
+        <p>ID: ${t.teacher_id} | Mobile: ${t.mobile}</p>
+        <p>Classes: ${t.classes ? t.classes.join(", ") : 'None'}</p>
     `;
     pModal.style.display = "block";
 }
-// --- UPDATE FEATURE LOGIC ---
-const uModal = document.getElementById("updateModal");
-document.getElementById("openUpdateBtn").onclick = () => uModal.style.display = "block";
 
-// Teacher Search Function
-async function searchTeacher() {
-    const id = document.getElementById('search_tid').value.trim();
-    if(!id) return alert("Please enter ID");
+// --- 5. ADVANCED UPDATE & DELETE LOGIC ---
 
-    const res = await fetch('/api/get-teachers');
-    const teachers = await res.json();
-    const teacher = teachers.find(t => t.teacher_id === id);
-
-    if(teacher) {
-        document.getElementById('up_id').value = teacher.teacher_id;
-        document.getElementById('up_name').value = teacher.teacher_name;
-        document.getElementById('up_mobile').value = teacher.mobile;
-        document.getElementById('up_salary').value = teacher.salary;
-        document.getElementById('up_joining').value = teacher.joining_date;
-        alert("Teacher Found! Edit and Save.");
-    } else {
-        alert("Teacher Not Found!");
-    }
-}
-
-// Update Form Submit
-document.getElementById("updateForm").onsubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-
-    const res = await fetch('/api/update-teacher-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-
-    if(res.ok) {
-        alert("Teacher Updated Successfully! ✨");
-        uModal.style.display = "none";
-        if(dModal.style.display === "block") loadTeacherData(); // Refresh table if open
-    } else {
-        alert("Update Failed!");
-    }
-};
-// --- ADVANCED UPDATE & DELETE LOGIC ---
-const uModal = document.getElementById("updateModal");
-document.getElementById("openUpdateBtn").onclick = () => uModal.style.display = "block";
-
-// 1. Search Teacher and Fill All Data
+// Teacher Search
 async function searchTeacher() {
     const id = document.getElementById('search_tid').value.trim();
     if(!id) return alert("Please enter ID");
@@ -250,7 +164,7 @@ async function searchTeacher() {
         document.getElementById('up_salary').value = t.salary;
         document.getElementById('up_joining').value = t.joining_date;
 
-        // Checkboxes reset aur fill karna
+        // Reset & Fill Checkboxes
         document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
         if(t.classes) t.classes.forEach(c => {
             const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
@@ -260,57 +174,41 @@ async function searchTeacher() {
             const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
             if(cb) cb.checked = true;
         });
-
-        alert("Data Loaded! Now you can edit photo and other details.");
+        alert("Teacher Data Loaded!");
     } else { alert("Teacher Not Found!"); }
 }
 
-// 2. Update Submit (with Photo & Arrays)
+// Save Changes
 document.getElementById("updateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
-    // Arrays handle karein
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
 
-    // Photo handle karein
     const photoInput = document.getElementById('up_photo');
-    if (photoInput.files[0]) {
-        data.photo = await toBase64(photoInput.files[0]);
-    }
+    if (photoInput.files[0]) data.photo = await toBase64(photoInput.files[0]);
 
     const res = await fetch('/api/update-teacher-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-
-    if(res.ok) {
-        alert("Teacher Updated! ✨");
-        uModal.style.display = "none";
-        loadTeacherData(); 
-    }
+    if(res.ok) { alert("Updated! ✨"); uModal.style.display = "none"; loadTeacherData(); }
 };
 
-// 3. Delete Teacher Function
+// Delete Teacher
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
     if(!id) return alert("Search a teacher first!");
-
-    if(confirm("Are you sure? This teacher will be deleted permanently!")) {
+    if(confirm("Permanently Delete this teacher?")) {
         const res = await fetch('/api/delete-teacher', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teacher_id: id })
         });
-        if(res.ok) {
-            alert("Teacher Deleted!");
-            uModal.style.display = "none";
-            loadTeacherData();
-        }
+        if(res.ok) { alert("Deleted!"); uModal.style.display = "none"; loadTeacherData(); }
     }
 }
-// --- NAYE FEATURES YA CODE YAHAN ADD KAREIN (Future Use) ---
-// Yahan aap Search bar ya Delete function ka code add kar sakte hain.
+
+// --- NAYE FEATURES YAHAN ADD KAREIN ---
