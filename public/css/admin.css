@@ -274,3 +274,169 @@ td { padding: 15px; border-bottom: 1px solid #334155; }
     margin-bottom: 20px;
     align-items: center;
 }
+/* =========================================
+   CLASS SETUP & MULTI-VIDEO MODAL STYLES 
+   ========================================= */
+
+/* Modal Content Width for Management View */
+.wide-modal .modal-content {
+    max-width: 1100px;
+    width: 95%;
+}
+
+/* Search Box Area (Top Section) */
+.search-load-section {
+    background: rgba(15, 23, 42, 0.6);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    margin-bottom: 25px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.search-load-section select {
+    background: #0f172a;
+    border: 1px solid var(--primary);
+    color: white;
+    cursor: pointer;
+}
+
+/* Subject Card Item */
+.subject-item {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.subject-item:hover {
+    border-color: var(--primary);
+    transform: translateX(5px);
+    background: rgba(56, 189, 248, 0.05);
+}
+
+/* Subject Header (Checkbox + Title) */
+.sub-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-header b {
+    font-size: 1.1rem;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.sub-check {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Metadata Grid (Teacher + Textarea) */
+.sub-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Video Section (Multi-input) */
+.video-links-area {
+    grid-column: 1 / -1; /* Full width inside grid */
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 10px;
+}
+
+.video-inputs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.sub-yt-link {
+    background: #0f172a !important;
+    border: 1px solid #334155 !important;
+    transition: 0.2s;
+}
+
+.sub-yt-link:focus {
+    border-color: var(--success) !important;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Add More Video Button */
+.add-vid-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    color: var(--success);
+    border: 1px dashed var(--success);
+    padding: 6px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.add-vid-btn:hover {
+    background: var(--success);
+    color: white;
+}
+
+/* Banner Styling */
+#classBannerPreview {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 10px 0;
+    border: 2px solid #334155;
+    background: #000;
+}
+
+/* Max Height for Subject Container */
+#subjectList {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Update/Save Button Customization */
+.save-btn i {
+    margin-right: 8px;
+}
+
+/* Success Glow for Update */
+.btn-update {
+    background: var(--success);
+    color: white;
+}
+.btn-update:hover {
+    background: #059669;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sub-meta {
+        grid-template-columns: 1fr;
+    }
+    .search-load-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
