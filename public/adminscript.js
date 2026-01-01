@@ -400,7 +400,7 @@ document.getElementById("openStudentUpdateBtn").onclick = () => {
     document.getElementById("studentUpdateModal").style.display = "block";
 };
 
-// --- 2. SEARCH STUDENT BY ID ---
+// --- 2. SEARCH STUDENT BY ID (FIXED FOR DATE) ---
 async function searchStudent() {
     const id = document.getElementById('search_sid').value.trim().toUpperCase();
     const res = await fetch('/api/get-students');
@@ -416,18 +416,25 @@ async function searchStudent() {
         document.getElementById('up_pmobile').value = s.parent_mobile || "";
         document.getElementById('up_sfees').value = s.fees || "";
         document.getElementById('up_sclass').value = s.student_class || "";
-        document.getElementById('up_sdoj').value = s.joining_date || "";
+        
+        // --- DATE LOAD FIX ---
+        document.getElementById('up_sdoj').value = s.joining_date || ""; 
+        
         alert("Student data loaded!");
     } else { 
         alert("Student ID not found!"); 
     }
 }
 
-// --- 3. UPDATE STUDENT DATA ---
+// --- 3. UPDATE STUDENT DATA (FIXED FOR DATE) ---
 document.getElementById("studentUpdateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+
+    // --- MANUAL DATE INJECTION ---
+    // Ye line ensure karegi ki Joining Date database mein jaye
+    data.joining_date = document.getElementById('up_sdoj').value;
 
     const res = await fetch('/api/update-student-data', {
         method: 'POST',
@@ -439,9 +446,10 @@ document.getElementById("studentUpdateForm").onsubmit = async (e) => {
         alert("Student Data Updated Successfully! ✅"); 
         document.getElementById("studentUpdateModal").style.display="none"; 
         loadStudentData(); // Refresh diary cards
+    } else {
+        alert("Update failed! Server error.");
     }
 };
-
 // --- 4. DELETE STUDENT ACCOUNT ---
 async function deleteStudent() {
     const id = document.getElementById('up_sid').value;
