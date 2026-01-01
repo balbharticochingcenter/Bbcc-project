@@ -3,345 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - BBCC</title>
+    <title>BBCC - Login Portal</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css"> 
 </head>
-<body onload="initDashboard()">
+<body class="magical-bg" onload="loadSettings()">
 
-    <header class="magical-header">
-        <div class="logo-container">
-            <img id="db-logo" src="" alt="Logo" class="ring-logo">
+    <header class="main-header">
+        <div class="header-left">
+            <img id="db-logo" src="" alt="Logo" class="ring-logo" onerror="this.src='https://via.placeholder.com/60'">
         </div>
-        <div class="title-container">
+        <div class="header-center">
             <h1 id="db-title" class="glow-text">Loading...</h1>
-            <span id="db-subtitle" class="sub-text"></span>
+            <p id="db-subtitle" class="sub-text"></p>
+        </div>
+        <div class="header-right">
+            <button class="result-trigger-3d" onclick="openModal('resultCheckModal')">
+                <i class="fas fa-poll"></i> Result
+            </button>
+            <button class="login-trigger-3d" onclick="openModal('login3DModal')">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
         </div>
     </header>
 
-    <div class="dashboard">
-        <button id="openModalBtn" class="btn-primary"><i class="fas fa-cogs"></i> System Settings</button>
-        <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;"><i class="fas fa-user-plus"></i> Teacher Reg</button>
-        <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;"><i class="fas fa-file-invoice-dollar"></i> Salary/Data</button>
-        <button id="openUpdateBtn" class="btn-primary" style="background: #fdcb6e; color: #000;"><i class="fas fa-edit"></i> Update/Delete</button>
-        <div class="dashboard" style="margin-top: 20px;">
-    <button id="openStudentBtn" class="btn-primary" style="background: #6c5ce7;"><i class="fas fa-graduation-cap"></i> Student Reg</button>
-    <button id="openStudentDataBtn" class="btn-primary" style="background: #2ecc71;"><i class="fas fa-user-graduate"></i> Fees/Data</button>
-    <button id="openStudentUpdateBtn" class="btn-primary" style="background: #f1c40f; color: #000;"><i class="fas fa-user-edit"></i> Stu. Update</button>
-     <button id="openResultBtn" class="btn-primary" style="background:#f39c12;"><i class="fas fa-poll-h"></i> Class Result</button>       
-</div>
-    </div>
+    <main class="hero-section">
+        <div class="welcome-box">
+            <h2 class="glow-text">Digital Campus Portal</h2>
+            <p>Admin, Teacher & Student Unified Access</p>
+        </div>
+    </main>
 
-    <div id="systemModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <form id="adminForm">
-                <h3 style="border-bottom: 2px solid #6c5ce7;">Header Branding</h3>
-                <input type="file" id="logoInput" accept="image/*">
-                <input type="text" name="title" id="form-title" placeholder="Coaching Name (Title)">
-                <input type="text" name="sub_title" id="form-subtitle" placeholder="Sub Title (Slogan)">
-                
-                <h3 style="border-bottom: 2px solid #e84393; margin-top: 20px;">Footer Details</h3>
-                <input type="text" name="contact" id="form-contact" placeholder="WhatsApp Number">
-                <input type="text" name="call_no" id="form-call" placeholder="Calling Number">
-                <input type="email" name="gmail" id="form-gmail" placeholder="Official Email">
-                <input type="url" name="facebook" id="form-facebook" placeholder="Facebook URL">
-                <input type="text" name="help" id="form-help" placeholder="Help Line / Address">
-                
-                <button type="submit" class="btn-update">Save All Settings</button>
-            </form>
+    <div id="login3DModal" class="modal-3d">
+        <div class="cube-container">
+            <div class="cube-card">
+                <span class="close-3d" onclick="closeModal('login3DModal')">&times;</span>
+                <div class="cube-front">
+                    <h3><i class="fas fa-lock"></i> SECURE LOGIN</h3>
+                    <p style="font-size: 11px; color: #6c5ce7; margin-bottom: 15px;">Enter credentials to access portal</p>
+                    <div class="input-group">
+                        <input type="text" id="login_id" placeholder="User ID (e.g. ADMIN, STU101)">
+                        <input type="password" id="login_pass" placeholder="Password">
+                    </div>
+                    <button onclick="universalLogin()" class="btn-3d-glow">ENTER PORTAL</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="teacherModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <form id="teacherForm">
-                <h3>New Teacher Registration</h3>
-                <input type="text" name="teacher_name" id="t_name" placeholder="Full Name" required>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" name="teacher_id" id="t_id" placeholder="ID" readonly style="flex:1;">
-                    <input type="text" name="pass" id="t_pass" placeholder="Password" readonly style="flex:1;">
+    <div id="resultCheckModal" class="modal-3d">
+        <div class="cube-container">
+            <div class="cube-card">
+                <span class="close-3d" onclick="closeModal('resultCheckModal')">&times;</span>
+                <h3><i class="fas fa-poll-h"></i> CHECK RESULT</h3>
+                <div class="input-group">
+                    <input type="text" id="stu_roll_id" placeholder="Enter Student ID">
                 </div>
-                <input type="text" name="mobile" placeholder="Mobile Number">
-                <input type="file" id="t_photo" accept="image/*">
-                <input type="number" name="salary" placeholder="Monthly Salary (Amount)">
-                <input type="date" name="joining_date">
-                <button type="submit" class="btn-update">Register Teacher</button>
-            </form>
+                <button onclick="checkResult()" class="btn-3d-glow" style="background: #f39c12;">SEARCH</button>
+                <div id="resultDisplayArea" style="margin-top: 15px; text-align: left; color: #333;"></div>
+            </div>
         </div>
     </div>
 
-    <div id="dataModal" class="modal">
-    <div class="modal-content" style="max-width: 1100px; width: 95%;">
-        <span class="close">&times;</span>
-        <h3 style="color: var(--primary-glow); margin-bottom: 20px;">
-            <i class="fas fa-file-invoice-dollar"></i> Teacher Salary & Records
-        </h3>
-        
-        <div id="teacherTableBody"></div> 
-    </div>
-</div>
-
-    <div id="updateModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <span class="close">&times;</span>
-            <h3>Search, Update or Delete</h3>
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <input type="text" id="search_tid" placeholder="Enter Teacher ID">
-               <button type="button" onclick="searchTeacher()" class="btn-primary" style="margin:0; background: linear-gradient(135deg, #0984e3, #00cec9); box-shadow: 0 4px 15px rgba(9, 132, 227, 0.4); border: none;">
-    <i class="fas fa-search"></i> Search
-</button>
-            </div>
-            
-            <form id="updateForm">
-                <input type="hidden" name="teacher_id" id="up_id">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <input type="text" name="teacher_name" id="up_name" placeholder="Name">
-                    <input type="text" name="mobile" id="up_mobile" placeholder="Mobile">
-                    <input type="text" name="pass" id="up_pass" placeholder="Password">
-                    <input type="number" name="salary" id="up_salary" placeholder="Salary Amount">
-                </div>
-
-                <p><b>Assign Classes:</b></p>
-                <div class="checkbox-container" id="up_classes_div">
-                    <label><input type="checkbox" name="classes" value="1st"> 1st</label>
-                    <label><input type="checkbox" name="classes" value="2nd"> 2nd</label>
-                    <label><input type="checkbox" name="classes" value="3rd"> 3rd</label>
-                    <label><input type="checkbox" name="classes" value="4th"> 4th</label>
-                    <label><input type="checkbox" name="classes" value="5th"> 5th</label>
-                    <label><input type="checkbox" name="classes" value="6th"> 6th</label>
-                    <label><input type="checkbox" name="classes" value="7th"> 7th</label>
-                    <label><input type="checkbox" name="classes" value="8th"> 8th</label>
-                    <label><input type="checkbox" name="classes" value="9th"> 9th</label>
-                    <label><input type="checkbox" name="classes" value="10th"> 10th</label>
-                    <label><input type="checkbox" name="classes" value="I.A."> I.A.</label>
-                    <label><input type="checkbox" name="classes" value="I.Sc."> I.Sc.</label>
-                    <label><input type="checkbox" name="classes" value="I.Com."> I.Com.</label>
-                    <label><input type="checkbox" name="classes" value="B.A."> B.A.</label>
-                    <label><input type="checkbox" name="classes" value="B.Sc."> B.Sc.</label>
-                    <label><input type="checkbox" name="classes" value="B.Com."> B.Com.</label>
-                </div>
-
-                <p><b>Assign Subjects:</b></p>
-                <div class="checkbox-container" id="up_subjects_div">
-                    <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
-                    <label><input type="checkbox" name="subjects" value="English"> English</label>
-                    <label><input type="checkbox" name="subjects" value="Maths"> Maths</label>
-                    <label><input type="checkbox" name="subjects" value="Sanskrit"> Sanskrit</label>
-                    <label><input type="checkbox" name="subjects" value="Science"> Science</label>
-                    <label><input type="checkbox" name="subjects" value="Social Science"> Social Science</label>
-                    <label><input type="checkbox" name="subjects" value="Physics"> Physics</label>
-                    <label><input type="checkbox" name="subjects" value="Chemistry"> Chemistry</label>
-                    <label><input type="checkbox" name="subjects" value="Biology"> Biology</label>
-                    <label><input type="checkbox" name="subjects" value="History"> History</label>
-                    <label><input type="checkbox" name="subjects" value="Geography"> Geography</label>
-                    <label><input type="checkbox" name="subjects" value="Economics"> Economics</label>
-                    <label><input type="checkbox" name="subjects" value="Accountancy"> Accountancy</label>
-                    <label><input type="checkbox" name="subjects" value="Business Studies"> Business Studies</label>
-                    <label><input type="checkbox" name="subjects" value="Philosophy"> Philosophy</label>
-                </div>
-
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    <button type="submit" class="btn-update" style="background:#2ecc71;">Save Changes</button>
-                    <button type="button" onclick="deleteTeacher()" class="btn-update" style="background:#e74c3c;">Delete Account</button>
-                </div>
-            </form>
+    <footer class="magical-footer">
+        <div class="social-icons">
+            <a id="foot-whatsapp" href="#" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a id="foot-facebook" href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+            <a id="foot-gmail" href="#"><i class="fas fa-envelope"></i></a>
+            <a id="foot-call" href="#"><i class="fas fa-phone-alt"></i></a>
         </div>
-    </div>
+        <p id="foot-help" style="font-size: 14px; color: #a29bfe; margin-top:10px;"></p>
+        <p style="margin-top: 10px; font-size: 12px; opacity: 0.6;">
+            &copy; 2026 <span id="db-admin"></span> | BBCC Portal
+        </p>
+    </footer>
 
-    <div id="profileModal" class="modal">
-        <div class="modal-content" style="text-align: center; max-width: 400px;">
-            <span class="close" onclick="document.getElementById('profileModal').style.display='none'">&times;</span>
-            <div id="profileData"></div>
-        </div>
-    </div>
-    <div id="studentModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('studentModal')">&times;</span>
-        <form id="studentForm">
-            <h3>New Student Registration</h3>
-            <input type="text" name="student_name" id="s_name" placeholder="Student Full Name" required>
-            <div style="display:flex; gap:10px;">
-                <input type="text" name="student_id" id="s_id" placeholder="Student ID" readonly style="flex:1;">
-                <input type="text" name="pass" id="s_pass" placeholder="Password" readonly style="flex:1;">
-            </div>
-            <input type="text" name="parent_name" placeholder="Parent Name">
-            <input type="text" name="mobile" placeholder="Student Mobile">
-            <input type="text" name="parent_mobile" placeholder="Parent Mobile">
-            <select name="student_class">
-                <option value="">Select Class</option>
-                <option value="1st">1st</option>
-    <option value="2nd">2nd</option>
-    <option value="3rd">3rd</option>
-    <option value="4th">4th</option>
-    <option value="5th">5th</option>
-    <option value="6th">6th</option>
-    <option value="7th">7th</option>
-    <option value="8th">8th</option>
-    <option value="9th">9th</option>
-    <option value="10th">10th</option>
-                        <option value="I.Sc">I.Sc</option>
-                        <option value="I.A">I.A</option>
-                        <option value="I.COM">I.COM</option>
-                        <option value="B.Sc">I.Sc</option>
-                        <option value="B.A">I.A</option>
-                        <option value="B.COM">I.COM</option>
-                </select>
-            <input type="number" name="fees" placeholder="Monthly Fees Amount">
-            <button type="submit" class="btn-update">Register Student</button>
-            <label style="font-size: 12px; color: #666; margin-top: 10px; display: block;">Date of Joining:</label>
-<input type="date" name="joining_date" required>
-        </form>
-    </div>
-</div>
-
-<div id="studentDataModal" class="modal">
-    <div class="modal-content" style="max-width: 1100px; width: 95%;">
-        <span class="close" onclick="closeModal('studentDataModal')">&times;</span>
-        <h3 style="color: var(--primary-glow);"><i class="fas fa-coins"></i> Student Fees Records</h3>
-        <div id="studentTableBody" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top:20px;"></div>
-    </div>
-</div>
-    <div id="studentUpdateModal" class="modal">
-    <div class="modal-content" style="max-width: 900px;">
-        <span class="close" onclick="closeModal('studentUpdateModal')">&times;</span>
-        <h3><i class="fas fa-user-edit"></i> Student Search, Update or Delete</h3>
-        
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="search_sid" placeholder="Enter Student ID (e.g. STU1234)">
-            <button type="button" onclick="searchStudent()" class="btn-primary" style="margin:0; background:#6c5ce7;">Search Student</button>
-        </div>
-        
-        <form id="studentUpdateForm">
-            <input type="hidden" name="student_id" id="up_sid">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <div>
-                    <label>Student Name</label>
-                    <input type="text" name="student_name" id="up_sname" placeholder="Name">
-                </div>
-                <div>
-                    <label>Password</label>
-                    <input type="text" name="pass" id="up_spass" placeholder="Password">
-                </div>
-                <div>
-                    <label>Student Mobile</label>
-                    <input type="text" name="mobile" id="up_smobile" placeholder="Mobile">
-                </div>
-                <div>
-                    <label>Parent Name</label>
-                    <input type="text" name="parent_name" id="up_pname" placeholder="Parent Name">
-                </div>
-                <div>
-                    <label>Parent Mobile</label>
-                    <input type="text" name="parent_mobile" id="up_pmobile" placeholder="Parent Mobile">
-                </div>
-                <div>
-                    <label>Monthly Fees</label>
-                    <input type="number" name="fees" id="up_sfees" placeholder="Fees Amount">
-                </div>
-                <div>
-                    <label>Joining Date</label>
-                    <input type="date" name="joining_date" id="up_sdoj">
-                </div>
-                <div>
-                    <label>Class</label>
-                    <select name="student_class" id="up_sclass">
-                        <option value="1st">1st</option>
-    <option value="2nd">2nd</option>
-    <option value="3rd">3rd</option>
-    <option value="4th">4th</option>
-    <option value="5th">5th</option>
-    <option value="6th">6th</option>
-    <option value="7th">7th</option>
-    <option value="8th">8th</option>
-    <option value="9th">9th</option>
-    <option value="10th">10th</option>
-                        <option value="I.Sc">I.Sc</option>
-                        <option value="I.A">I.A</option>
-                        <option value="I.COM">I.COM</option>
-                        <option value="B.Sc">I.Sc</option>
-                        <option value="B.A">I.A</option>
-                        <option value="B.COM">I.COM</option>
-                    </select>
-                </div>
-                
-            </div>
-
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button type="submit" class="btn-update" style="background:#2ecc71; flex:1;">Save Changes</button>
-                <button type="button" onclick="deleteStudent()" class="btn-update" style="background:#e74c3c; flex:1;">Delete Student</button>
-            </div>
-        </form>
-    </div>
-</div>
-    <div id="resultModal" class="modal">
-    <div class="modal-content" style="max-width: 95%;">
-        <span class="close" onclick="closeModal('resultModal')">&times;</span>
-        <h3><i class="fas fa-graduation-cap"></i> Class-wise Result Manager</h3>
-        
-        <div style="background:#f8f9fa; padding:15px; border-radius:10px; display:flex; gap:15px; align-items:flex-end; margin-bottom:20px;">
-            <div>
-                <label>Select Class</label>
-                <select id="res_class_filter" style="width:150px;">
-                   <option value="1st">1st</option>
-    <option value="2nd">2nd</option>
-    <option value="3rd">3rd</option>
-    <option value="4th">4th</option>
-    <option value="5th">5th</option>
-    <option value="6th">6th</option>
-    <option value="7th">7th</option>
-    <option value="8th">8th</option>
-    <option value="9th">9th</option>
-    <option value="10th">10th</option>
-                        <option value="I.Sc">I.Sc</option>
-                        <option value="I.A">I.A</option>
-                        <option value="I.COM">I.COM</option>
-                        <option value="B.Sc">I.Sc</option>
-                        <option value="B.A">I.A</option>
-                        <option value="B.COM">I.COM</option>
-                </select>
-            </div>
-            <div>
-                <label>Total Marks (Full)</label>
-                <input type="number" id="bulk_total_marks" placeholder="e.g. 500" style="width:100px;">
-            </div>
-            <div>
-                <label>Exam Date</label>
-                <input type="date" id="bulk_exam_date">
-            </div>
-            <button onclick="filterClassForResults()" class="btn-primary" style="margin:0; background: linear-gradient(135deg, #0984e3, #00cec9); box-shadow: 0 0 15px rgba(9, 132, 227, 0.5); border: none; color: white;">
-    <i class="fas fa-search"></i> Search & Load Class
-</button>
-        </div>
-
-        <div style="overflow-x:auto;">
-            <table class="diary-table" style="width:100%; border-collapse: collapse;">
-                <thead style="background:#6c5ce7; color:white;">
-                    <tr>
-                        <th style="padding:10px;">ID/Roll</th>
-                        <th>Student Name</th>
-                        <th>Obtained Marks</th>
-                        <th>Division</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="resultTableBody">
-                    </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<footer class="magical-footer">
-    <div class="social-icons">
-        <a id="foot-whatsapp" href="#"><i class="fab fa-whatsapp"></i></a>
-        <a id="foot-facebook" href="#"><i class="fab fa-facebook"></i></a>
-        <a id="foot-gmail" href="#"><i class="fas fa-envelope"></i></a>
-        <a id="foot-call" href="#"><i class="fas fa-phone-alt"></i></a>
-    </div>
-    <p id="foot-help" style="font-size: 14px; color: #a29bfe;"></p>
-    <p style="margin-top: 10px; font-size: 12px; opacity: 0.6;">&copy; 2024 BBCC Portal | Designed for Excellence</p>
-</footer>
     <script src="adminscript.js"></script>
+    <script>
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // Modal ke bahar click karne par band hona
+        window.onclick = function(event) {
+            if (event.target.className === 'modal-3d') {
+                event.target.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
