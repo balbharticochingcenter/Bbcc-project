@@ -20,6 +20,9 @@
     </header>
 
     <div class="dashboard">
+        <button id="openAdminProfileBtn" class="btn-primary" style="background: #34495e;">
+    <i class="fas fa-user-shield"></i> Admin Profile
+</button>
         <button id="openModalBtn" class="btn-primary"><i class="fas fa-cogs"></i> System Settings</button>
         <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;"><i class="fas fa-user-plus"></i> Teacher Reg</button>
         <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;"><i class="fas fa-file-invoice-dollar"></i> Salary/Data</button>
@@ -330,6 +333,34 @@
                     </tbody>
             </table>
         </div>
+    </div>
+</div>
+    <div id="adminProfileModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close" onclick="closeModal('adminProfileModal')">&times;</span>
+        <form id="adminProfileForm">
+            <h3 style="border-bottom: 2px solid #34495e; margin-bottom: 15px;">
+                <i class="fas fa-user-circle"></i> Admin Profile Settings
+            </h3>
+            
+            <label>Admin Name</label>
+            <input type="text" name="admin_name" id="adm_name" placeholder="Full Name" required>
+            
+            <label>User ID</label>
+            <input type="text" name="admin_userid" id="adm_userid" placeholder="User ID" required>
+            
+            <label>Password</label>
+            <input type="text" name="admin_pass" id="adm_pass" placeholder="Password" required>
+            
+            <label>Mobile Number</label>
+            <input type="text" name="admin_mobile" id="adm_mobile" placeholder="Mobile Number">
+            
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn-update" style="background: #27ae60; width: 100%;">
+                    Update Admin Profile
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 <footer class="magical-footer">
