@@ -754,82 +754,190 @@ button:disabled {
 #teacher-ring:hover {
     animation-play-state: paused;
 }
-/* Class Section Styling */
-.class-config-section { padding: 50px 20px; text-align: center; background: #f9f9f9; }
-.class-cards-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-    gap: 25px; max-width: 1200px; margin: 0 auto; 
+/* --- 1. Container & Grid Layout --- */
+.class-config-section {
+    padding: 60px 20px;
+    background: #111; /* Dark background taaki neon colors chamke */
+    text-align: center;
 }
 
-/* Magical Bubble Animation Card */
+.section-title {
+    color: #fff;
+    margin-bottom: 40px;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: bold;
+}
+
+.class-cards-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 35px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* --- 2. Magical Animated Card (The Bubble Border Effect) --- */
 .class-card {
     position: relative;
-    background: #fff;
-    border-radius: 15px;
-    padding: 20px;
+    width: 290px;
+    height: 380px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
-    transition: transform 0.3s;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: transform 0.4s ease;
 }
 
+.class-card:hover {
+    transform: translateY(-10px) scale(1.02);
+}
+
+/* Rotating Magical Colors */
 .class-card::before {
     content: '';
     position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle, #ff0080, #7928ca, #0070f3, #28a745);
-    animation: rotateBubble 6s linear infinite;
-    z-index: 0;
-    opacity: 0.3;
+    width: 180px;
+    height: 150%;
+    background: linear-gradient(#00ccff, #d400ff); /* Blue to Purple gradient */
+    animation: rotateMagic 4s linear infinite;
 }
 
-@keyframes rotateBubble {
+/* Inner Background to Create Border Look */
+.class-card::after {
+    content: '';
+    position: absolute;
+    inset: 4px; /* Border Thickness */
+    background: #1a1a1a;
+    border-radius: 16px;
+}
+
+@keyframes rotateMagic {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
+/* --- 3. Card Content --- */
 .card-inner {
     position: relative;
-    z-index: 1;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 15px;
-    border-radius: 10px;
+    z-index: 10;
+    color: #fff;
+    padding: 20px;
+    width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.class-banner-img { width: 100%; height: 150px; border-radius: 10px; object-fit: cover; }
+.class-banner-img {
+    width: 100%;
+    height: 150px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+}
 
-/* Glowing View Now Button */
+.card-inner h3 {
+    font-size: 1.5rem;
+    margin: 10px 0;
+    color: #00ccff;
+}
+
+.card-inner p {
+    font-size: 0.9rem;
+    color: #bbb;
+    margin-bottom: 15px;
+}
+
+/* --- 4. Glowing View Now Button --- */
 .view-now-btn {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background: #007bff;
-    color: white;
+    margin-top: auto;
+    padding: 12px 30px;
+    background: #00ccff;
+    color: #000;
     border: none;
-    border-radius: 5px;
+    border-radius: 30px;
     font-weight: bold;
-    box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
-    animation: glowBtn 1.5s infinite alternate;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 204, 255, 0.5);
+    transition: 0.3s;
+    text-transform: uppercase;
 }
 
-@keyframes glowBtn {
-    from { box-shadow: 0 0 5px #007bff; }
-    to { box-shadow: 0 0 20px #00d4ff; transform: scale(1.05); }
+.view-now-btn:hover {
+    box-shadow: 0 0 25px #d400ff;
+    background: #d400ff;
+    color: #fff;
 }
 
-/* Modal Layout */
-.class-modal-content { max-width: 900px; width: 95%; padding: 0; overflow: hidden; }
+/* --- 5. Modal / Popup Styling (Merged) --- */
+.class-modal-content {
+    max-width: 900px;
+    width: 95%;
+    padding: 0;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 20px;
+}
+
 .class-modal-body { display: flex; flex-wrap: wrap; }
-.class-modal-left { flex: 1; min-width: 300px; padding: 20px; background: #000; color: #fff; }
-.class-modal-right { flex: 1.2; min-width: 300px; padding: 20px; background: #fff; }
 
-.mini-teacher-flex { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
-.mini-t-card { text-align: center; font-size: 12px; min-width: 70px; }
-.mini-t-card img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #28a745; }
+.class-modal-left { 
+    flex: 1; 
+    min-width: 300px; 
+    padding: 25px; 
+    background: #000; 
+    color: #fff; 
+}
 
-#video-container iframe { width: 100%; aspect-ratio: 16/9; border-radius: 8px; }
+.class-modal-right { 
+    flex: 1.2; 
+    min-width: 300px; 
+    padding: 25px; 
+    background: #fff; 
+    color: #333;
+}
+
+/* Video & Teachers in Modal */
+#video-container iframe { 
+    width: 100%; 
+    aspect-ratio: 16/9; 
+    border-radius: 12px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.mini-teacher-flex { 
+    display: flex; 
+    gap: 15px; 
+    overflow-x: auto; 
+    padding: 15px 0; 
+}
+
+.mini-t-card { text-align: center; min-width: 80px; }
+
+.mini-t-card img { 
+    width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    border: 2px solid #00ccff; 
+    object-fit: cover;
+}
+
+/* Subjects Chips */
 .subject-chip { 
-    display: inline-block; background: #eee; padding: 5px 12px; 
-    border-radius: 20px; margin: 5px; font-size: 14px; border-left: 3px solid #007bff;
+    display: inline-block; 
+    background: #f0f0f0; 
+    padding: 8px 15px; 
+    border-radius: 25px; 
+    margin: 6px; 
+    font-size: 14px; 
+    font-weight: 500;
+    border-left: 4px solid #d400ff;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
 }
