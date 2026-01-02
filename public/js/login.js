@@ -285,15 +285,22 @@ async function loadClasses() {
     if (!container) return;
 
     container.innerHTML = classList.map(className => `
-        <div class="class-card 3d-card" onclick="openClassModal('${className}')">
-            <div class="class-card-icon"><i class="fas fa-book-open"></i></div>
-            <h3>Class ${className}</h3>
-            <p>Tap to view subjects and resources</p>
-            <button class="btn">Explore</button>
+        <div class="class-card" onclick="openClassModal('${className}')">
+            <div class="card-inner">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_mU7Pnd7-W-YgB1gX9N_o4y5z5z5z5z5z5z" 
+                     class="class-banner-img" alt="Class Banner">
+                
+                <div class="class-card-icon"><i class="fas fa-university"></i></div>
+                
+                <h3 class="class-name-text">Class ${className}</h3>
+                
+                <p>Click to explore subjects and video lessons.</p>
+                
+                <button class="view-now-btn">View Now</button>
+            </div>
         </div>
     `).join('');
 }
-
 async function openClassModal(className) {
     const modal = document.getElementById('classDetailModal');
     const videoContainer = document.getElementById('video-container');
