@@ -411,3 +411,45 @@ if (closeBtn) {
 window.addEventListener('load', () => {
     loadClassCards();
 });
+// --- MODAL CLOSE LOGIC (FIXED) ---
+
+// Function jo modal ko band karega
+function closeMyClassModal() {
+    const modal = document.getElementById('classDetailModal');
+    const videoContainer = document.getElementById('video-container');
+    
+    if (modal) {
+        modal.style.display = "none"; // Modal chupao
+        videoContainer.innerHTML = ''; // Video stop karo (Memory se delete)
+    }
+}
+
+// 1. Close Button (X) par click karne se band ho
+const closeBtn = document.getElementById('closeClassModal');
+if (closeBtn) {
+    closeBtn.onclick = function() {
+        closeMyClassModal();
+    };
+}
+
+// 2. Modal ke BAHAR (Background area) click karne se band ho
+window.onclick = function(event) {
+    const modal = document.getElementById('classDetailModal');
+    const regModal = document.getElementById('regModal'); // Agar registration modal bhi hai
+    const resultModal = document.getElementById('resultModal');
+
+    if (event.target == modal) {
+        closeMyClassModal();
+    }
+    
+    // Baaki modals ke liye bhi safety check
+    if (event.target == regModal) regModal.style.display = "none";
+    if (event.target == resultModal) resultModal.style.display = "none";
+};
+
+// 3. Escape key dabane se band ho (Extra feature)
+document.addEventListener('keydown', (event) => {
+    if (event.key === "Escape") {
+        closeMyClassModal();
+    }
+});
