@@ -596,3 +596,45 @@ async function saveIndividualResult(sid) {
         console.log("Result updated for: " + sid);
     }
 }
+//-----------------------------------------------
+// Admin Profile Modal Control
+const adminProfileModal = document.getElementById('adminProfileModal');
+document.getElementById('openAdminProfileBtn').onclick = async () => {
+    adminProfileModal.style.display = "block";
+    
+    // Server se data load karna
+    const response = await fetch('/api/get-admin-profile');
+    const data = await response.json();
+    
+    if(data.admin_userid) {
+        document.getElementById('adm_name').value = data.admin_name || "";
+        document.getElementById('adm_userid').value = data.admin_userid || "";
+        document.getElementById('adm_pass').value = data.admin_pass || "";
+        document.getElementById('adm_mobile').value = data.admin_mobile || "";
+    }
+};
+
+// Form Save Karne ka logic
+document.getElementById('adminProfileForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = {
+        admin_name: document.getElementById('adm_name').value,
+        admin_userid: document.getElementById('adm_userid').value,
+        admin_pass: document.getElementById('adm_pass').value,
+        admin_mobile: document.getElementById('adm_mobile').value
+    };
+
+    const response = await fetch('/api/update-admin-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    });
+
+    const result = await response.json();
+    if(result.success) {
+        alert("Admin Profile Updated Successfully!");
+        adminProfileModal.style.display = "none";
+    } else {
+        alert("Error updating profile.");
+    }
+};
