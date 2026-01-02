@@ -1,3 +1,22 @@
+
+
+// 1. Security Guard: Check if Admin is logged in
+(function checkAuth() {
+    const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
+    if (isAdminLoggedIn !== 'true') {
+        // Agar login nahi hai toh seedha login page (index.html) par bhej dega
+        window.location.href = 'index.html'; 
+    }
+})();
+
+// 2. Logout Function
+function logoutAdmin() {
+    if(confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem('isAdminLoggedIn'); // Login status delete karein
+        window.location.href = 'index.html'; // First page par bhejein
+    }
+}
+
 // --- UTILITY: Image to Base64 ---
 const toBase64 = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
