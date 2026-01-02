@@ -26,70 +26,69 @@
                 <h2 id="header-subtitle" class="magical-text"></h2>
             </div>
             <div class="header-right">
-                <button id="studentResultBtn" class="result-button">Student Result</button>
+                <button id="loginBtn" class="result-button" style="background: #007bff; margin-right: 10px;">Login</button>
                 <button id="studentRegBtn" class="result-button" style="background: #28a745; margin-right: 10px;">Student Registration</button>
+                <button id="studentResultBtn" class="result-button">Student Result</button>
             </div>
         </div>
     </header>
-<div class="slider-container">
-    <div id="dynamic-slider" class="slider-wrapper">
-        <div class="slide-placeholder">Loading Slider Photos...</div>
+
+    <div class="slider-container">
+        <div id="dynamic-slider" class="slider-wrapper">
+            <div class="slide-placeholder">Loading Slider Photos...</div>
+        </div>
+        <button class="slider-btn prev" onclick="moveSlider(-1)">&#10094;</button>
+        <button class="slider-btn next" onclick="moveSlider(1)">&#10095;</button>
     </div>
-    <button class="slider-btn prev" onclick="moveSlider(-1)">&#10094;</button>
-    <button class="slider-btn next" onclick="moveSlider(1)">&#10095;</button>
-</div>
-    <main class="login-main">
-        <div class="login-container">
-            <div class="login-box card 3d-card">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <label for="userId">User ID:</label>
-                        <input type="text" id="userId" name="userId" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="password">Password:</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn 3d-button">Login</button>
-                    <p id="loginMessage" class="error-message"></p>
-                </form>
-            </div>
-        </div>
-    </main>
 
-<section class="class-config-section">
-    <h2 class="section-title">Explore Our Classes</h2>
-    <div id="class-cards-container" class="class-cards-grid">
+    <div id="loginModal" class="modal">
+        <div class="modal-content 3d-card" style="max-width: 400px; padding: 25px; border-radius: 15px; position: relative;">
+            <span class="close-button" id="closeLogin" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer;">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">Login</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="userId">User ID:</label>
+                    <input type="text" id="userId" name="userId" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn 3d-button" style="width: 100%;">Login</button>
+                <p id="loginMessage" class="error-message"></p>
+            </form>
         </div>
-</section>
+    </div>
 
-<div id="classDetailModal" class="modal">
-    <div class="modal-content class-modal-content">
-        <span class="close-button" id="closeClassModal">&times;</span>
-        <div class="class-modal-body">
-            <div class="class-modal-left">
-                <div id="video-container">
+    <section class="class-config-section">
+        <h2 class="section-title">Explore Our Classes</h2>
+        <div id="class-cards-container" class="class-cards-grid"></div>
+    </section>
+
+    <div id="classDetailModal" class="modal">
+        <div class="modal-content class-modal-content">
+            <span class="close-button" id="closeClassModal">&times;</span>
+            <div class="class-modal-body">
+                <div class="class-modal-left">
+                    <div id="video-container"></div>
+                    <div class="teacher-list-mini">
+                        <h4>Class Teachers</h4>
+                        <div id="class-teachers-display" class="mini-teacher-flex"></div>
                     </div>
-                <div class="teacher-list-mini">
-                    <h4>Class Teachers</h4>
-                    <div id="class-teachers-display" class="mini-teacher-flex"></div>
+                </div>
+                <div class="class-modal-right">
+                    <h3 id="modal-class-title"></h3>
+                    <h4>Subjects</h4> <div id="subject-list-container"></div>
                 </div>
             </div>
-            <div class="class-modal-right">
-                <h3 id="modal-class-title"></h3>
-                <h4>Subjects & Resources</h4>
-                <div id="subject-list-container"></div>
-            </div>
         </div>
     </div>
-</div>
-    
-<section class="teacher-ring-section">
-    <h2 class="section-title">Our Expert Teachers</h2>
-    <div class="ring-container" id="teacher-ring">
-        </div>
-</section>
+
+    <section class="teacher-ring-section">
+        <h2 class="section-title">Our Expert Teachers</h2>
+        <div class="ring-container" id="teacher-ring"></div>
+    </section>
+
     <footer class="main-footer">
         <div class="footer-content">
             <p>Contact: <span id="footer-contact"></span> | Call: <span id="footer-call"></span> | Email: <span id="footer-gmail"></span></p>
@@ -141,65 +140,49 @@
         </div>
     </div>
 
-    <div id="detailedResultModal" class="modal">
-        <div class="modal-content detailed-result-content 3d-card">
-            <span class="close-button close-detailed-modal">&times;</span>
-            <div id="detailedResultContent">
+    <div id="regModal" class="modal">
+        <div class="modal-content 3d-card" style="max-width: 500px; padding: 25px; border-radius: 15px; position: relative;">
+            <span class="close-button" id="closeReg" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer;">&times;</span>
+            <h3 style="text-align: center; color: #28a745; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <i class="fas fa-user-plus"></i> Student Registration
+            </h3>
+            <form id="studentRegForm">
+                <div class="form-container-box" style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #eee;">
+                    <label>Student Details</label>
+                    <input type="text" id="regName" placeholder="Enter Student Name" required>
+                    <input type="text" id="regParent" placeholder="Enter Parent Name" required>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="regMobile" placeholder="Student Mobile" required>
+                        <input type="text" id="regParentMobile" placeholder="Parent Mobile" required>
+                    </div>
+                    <p style="margin: 10px 0 5px; font-weight: bold; font-size: 14px;">Select Class:</p>
+                    <div class="class-checkboxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 12px; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 5px; max-height: 120px; overflow-y: auto;">
+                        <label><input type="checkbox" name="regClass" value="1st"> 1st</label>
+                        <label><input type="checkbox" name="regClass" value="2nd"> 2nd</label>
+                        <label><input type="checkbox" name="regClass" value="3rd"> 3rd</label>
+                        <label><input type="checkbox" name="regClass" value="4th"> 4th</label>
+                        <label><input type="checkbox" name="regClass" value="5th"> 5th</label>
+                        <label><input type="checkbox" name="regClass" value="6th"> 6th</label>
+                        <label><input type="checkbox" name="regClass" value="7th"> 7th</label>
+                        <label><input type="checkbox" name="regClass" value="8th"> 8th</label>
+                        <label><input type="checkbox" name="regClass" value="9th"> 9th</label>
+                        <label><input type="checkbox" name="regClass" value="10th"> 10th</label>
+                        <label><input type="checkbox" name="regClass" value="I.A."> I.A.</label>
+                        <label><input type="checkbox" name="regClass" value="I.Sc."> I.Sc.</label>
+                        <label><input type="checkbox" name="regClass" value="I.Com."> I.Com.</label>
+                    </div>
+                    <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Joining Date:</label>
+                    <input type="date" id="regDate" required>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="regId" placeholder="ID/Roll (Optional)">
+                        <input type="password" id="regPass" placeholder="Set Password" required>
+                    </div>
+                    <button type="submit" class="btn 3d-button" style="margin-top:15px; width:100%; background: #28a745; color: white;">Register Now</button>
                 </div>
+            </form>
         </div>
     </div>
-<div id="regModal" class="modal">
-    <div class="modal-content 3d-card" style="max-width: 500px; padding: 25px; border-radius: 15px; position: relative;">
-        <span class="close-button" id="closeReg" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-        
-        <h3 style="text-align: center; color: #28a745; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-            <i class="fas fa-user-plus"></i> Student Registration
-        </h3>
 
-        <form id="studentRegForm">
-            <div class="form-container-box" style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #eee;">
-                <label>Student Details</label>
-                <input type="text" id="regName" placeholder="Enter Student Name" required>
-                <input type="text" id="regParent" placeholder="Enter Parent Name" required>
-                
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="regMobile" placeholder="Student Mobile" required>
-                    <input type="text" id="regParentMobile" placeholder="Parent Mobile" required>
-                </div>
-
-                <p style="margin: 10px 0 5px; font-weight: bold; font-size: 14px;">Select Class:</p>
-                <div class="class-checkboxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 12px; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 5px; max-height: 120px; overflow-y: auto;">
-                    <label><input type="checkbox" name="regClass" value="1st"> 1st</label>
-                    <label><input type="checkbox" name="regClass" value="2nd"> 2nd</label>
-                    <label><input type="checkbox" name="regClass" value="3rd"> 3rd</label>
-                    <label><input type="checkbox" name="regClass" value="4th"> 4th</label>
-                    <label><input type="checkbox" name="regClass" value="5th"> 5th</label>
-                    <label><input type="checkbox" name="regClass" value="6th"> 6th</label>
-                    <label><input type="checkbox" name="regClass" value="7th"> 7th</label>
-                    <label><input type="checkbox" name="regClass" value="8th"> 8th</label>
-                    <label><input type="checkbox" name="regClass" value="9th"> 9th</label>
-                    <label><input type="checkbox" name="regClass" value="10th"> 10th</label>
-                    <label><input type="checkbox" name="regClass" value="I.A."> I.A.</label>
-                    <label><input type="checkbox" name="regClass" value="I.Sc."> I.Sc.</label>
-                    <label><input type="checkbox" name="regClass" value="I.Com."> I.Com.</label>
-                    <label><input type="checkbox" name="regClass" value="B.A."> B.A.</label>
-                    <label><input type="checkbox" name="regClass" value="B.Sc."> B.Sc.</label>
-                    <label><input type="checkbox" name="regClass" value="B.Com."> B.Com.</label>
-                </div>
-
-                <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Joining Date:</label>
-                <input type="date" id="regDate" required>
-                
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="regId" placeholder="ID/Roll (Optional)">
-                    <input type="password" id="regPass" placeholder="Set Password" required>
-                </div>
-                
-                <button type="submit" class="btn 3d-button" style="margin-top:15px; width:100%; background: #28a745; color: white;">Register Now</button>
-            </div>
-        </form>
-    </div>
-</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="/js/login.js"></script>
