@@ -219,6 +219,20 @@ app.get('/api/get-class-config/:className', async (req, res) => {
         res.status(500).json({ error: err.message }); 
     }
 });
+// 3. Sabhi classes ka configuration ek saath fetch karne ke liye (Banners ke liye)
+app.get('/api/get-all-class-configs', async (req, res) => {
+    try {
+        const configs = await ClassConfig.find();
+        // Isse hum array ko ek object mein badal denge taaki frontend par access karna aasaan ho
+        const configMap = {};
+        configs.forEach(conf => {
+            configMap[conf.class_name] = conf;
+        });
+        res.json(configMap);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // --- C. SETTINGS API ---
 app.get('/api/get-settings', async (req, res) => {
     try {
