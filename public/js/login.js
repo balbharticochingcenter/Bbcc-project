@@ -241,6 +241,7 @@ async function fetchSliderPhotos() {
 
 function moveSlider(direction) {
     const wrapper = document.getElementById('dynamic-slider');
+    if (!wrapper || totalSlides === 0) return;
     currentSlide += direction;
     if (currentSlide >= totalSlides) currentSlide = 0;
     if (currentSlide < 0) currentSlide = totalSlides - 1;
@@ -275,15 +276,13 @@ async function loadClasses() {
     const container = document.getElementById('class-cards-container');
     if (!container) return;
 
-    // Banners fetch karne ke liye (Sabhi class ka banner ek sath check karne ke liye)
     let classConfigs = {};
     try {
-        const res = await fetch('/api/get-all-class-configs'); // API jo saari configurations bhejti ho
+        const res = await fetch('/api/get-all-class-configs');
         classConfigs = await res.json();
     } catch (e) { console.log("Class configs not available yet"); }
 
     container.innerHTML = classList.map(className => {
-        // Agar Admin ne banner set kiya hai toh wo, warna default image
         const bannerImg = (classConfigs[className] && classConfigs[className].banner) 
                           ? classConfigs[className].banner 
                           : "https://via.placeholder.com/300x150?text=Class+" + className;
@@ -318,14 +317,34 @@ async function openClassModal(className) {
         const config = await response.json();
 
         if (response.ok && config) {
-            // Video display logic
+            // --- VIDEO AUTO-CONVERTER & AUTOPLAY LOGIC ---
             if (config.intro_video) {
-                videoContainer.innerHTML = `<iframe width="100%" height="200" src="${config.intro_video}" frameborder="0" allowfullscreen></iframe>`;
+                let videoUrl = config.intro_video;
+                
+                // Convert normal YouTube link to Embed link
+                if (videoUrl.includes("watch?v=")) {
+                    videoUrl = videoUrl.replace("watch?v=", "embed/");
+                } else if (videoUrl.includes("youtu.be/")) {
+                    videoUrl = videoUrl.replace("youtu.be/", "www.youtube.com/embed/");
+                }
+
+                // Add Autoplay and Mute parameters
+                let separator = videoUrl.includes('?') ? '&' : '?';
+                let finalSrc = `${videoUrl}${separator}autoplay=1&mute=1&rel=0&enablejsapi=1`;
+
+                videoContainer.innerHTML = `
+                    <iframe 
+                        width="100%" 
+                        height="200" 
+                        src="${finalSrc}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>`;
             } else {
                 videoContainer.innerHTML = `<div class="no-data">No Intro Video Available</div>`;
             }
 
-            // Subject display logic (LATEST UPDATE: Removed 'View Resource' links)
             if (config.subjects && Object.keys(config.subjects).length > 0) {
                 let html = '<ul class="subject-list" style="list-style: none; padding: 0;">';
                 for (const [subject, detail] of Object.entries(config.subjects)) {
@@ -344,7 +363,6 @@ async function openClassModal(className) {
             subjectListContainer.innerHTML = "Admin update pending for " + className;
         }
 
-        // Teachers filter logic
         const tRes = await fetch('/api/get-teachers');
         const teachers = await tRes.json();
         const filteredTeachers = teachers.filter(t => t.classes && t.classes.includes(className));
@@ -361,6 +379,7 @@ async function openClassModal(className) {
         }
     } catch (err) {
         subjectListContainer.innerHTML = "Error loading data.";
+        videoContainer.innerHTML = "Error loading video.";
     }
 }
 
