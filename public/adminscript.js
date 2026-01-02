@@ -644,6 +644,12 @@ async function openClassForm(cls) {
     document.getElementById('config_target_class').value = cls;
     document.getElementById('current_editing_class').innerText = "Managing Class: " + cls;
     
+    // Banner Input aur Previous Preview reset karein
+    const bannerInput = document.getElementById('cls_banner');
+    if(bannerInput) bannerInput.value = ""; 
+    const oldPreview = document.getElementById('banner-preview');
+    if(oldPreview) oldPreview.remove();
+
     // Fetch Teachers to auto-detect names
     const tRes = await fetch('/api/get-teachers');
     const teachers = await tRes.json();
@@ -661,7 +667,7 @@ async function openClassForm(cls) {
         row.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <label style="font-weight:bold; cursor:pointer;">
-                    <input type="checkbox" onchange="toggleSubjectInputs('${sub}', this.checked)"> ${sub}
+                    <input type="checkbox" id="check_${sub}" onchange="toggleSubjectInputs('${sub}', this.checked)"> ${sub}
                 </label>
                 <span style="font-size:11px; color:#2980b9;"><b>Teacher:</b> ${teacherName}</span>
             </div>
@@ -682,7 +688,7 @@ async function openClassForm(cls) {
 // 3. UI Helpers
 function toggleSubjectInputs(sub, isChecked) {
     const box = document.getElementById(`link_box_${sub}`);
-    box.style.display = isChecked ? "block" : "none";
+    if(box) box.style.display = isChecked ? "block" : "none";
 }
 
 function addLinkInput(sub) {
@@ -695,23 +701,41 @@ function addLinkInput(sub) {
     cont.appendChild(input);
 }
 
-// 4. Save Logic
+// 4. Save Logic (Integrated with Photo/Base64)
 document.getElementById('classDetailsForm').onsubmit = async (e) => {
     e.preventDefault();
     const cls = document.getElementById('config_target_class').value;
-    const banner = document.getElementById('cls_banner').value;
     const intro = document.getElementById('cls_intro').value;
+    const bannerFile = document.getElementById('cls_banner').files[0];
+    
+    let bannerBase64 = "";
+
+    // Agar nayi photo select ki hai to use Base64 mein badlein
+    if (bannerFile) {
+        bannerBase64 = await toBase64(bannerFile);
+    } else {
+        // Agar nayi photo nahi hai, to preview wali purani photo hi rehne dein
+        const preview = document.getElementById('banner-preview');
+        bannerBase64 = preview ? preview.src : "";
+    }
 
     let subjectData = {};
     subjectsArray.forEach(sub => {
-        const checkbox = document.querySelector(`input[type="checkbox"][onchange*="'${sub}'"]`);
-        if(checkbox.checked) {
-            const links = Array.from(document.getElementsByName(`${sub}_links[]`)).map(i => i.value).filter(v => v !== "");
+        const checkbox = document.getElementById(`check_${sub}`);
+        if(checkbox && checkbox.checked) {
+            const links = Array.from(document.getElementsByName(`${sub}_links[]`))
+                               .map(i => i.value)
+                               .filter(v => v.trim() !== "");
             subjectData[sub] = links;
         }
     });
 
-    const finalData = { class_name: cls, banner, intro_video: intro, subjects: subjectData };
+    const finalData = { 
+        class_name: cls, 
+        banner: bannerBase64, 
+        intro_video: intro, 
+        subjects: subjectData 
+    };
 
     const res = await fetch('/api/save-class-config', {
         method: 'POST',
@@ -722,11 +746,59 @@ document.getElementById('classDetailsForm').onsubmit = async (e) => {
     if(res.ok) {
         alert("Class Content Saved Successfully! ✅");
         document.getElementById('classConfigModal').style.display = "none";
+    } else {
+        alert("Error saving data! ❌");
     }
 };
 
-// 5. Load Previous Data
+// 5. Load Previous Data (Full Implementation)
 async function loadExistingClassData(cls) {
-    // API call karke data laayein aur fields fill karein (Intro, Banner, Links)
-    // Same logic as loading teacher data
+    try {
+        const res = await fetch(`/api/get-class-config/${cls}`);
+        const data = await res.json();
+        
+        if(data) {
+            // Intro Video fill karein
+            document.getElementById('cls_intro').value = data.intro_video || "";
+
+            // Banner Preview logic
+            if(data.banner) {
+                const bannerInput = document.getElementById('cls_banner');
+                let preview = document.getElementById('banner-preview');
+                if(!preview) {
+                    preview = document.createElement('img');
+                    preview.id = 'banner-preview';
+                    preview.style = "width:100px; height:60px; object-fit:cover; margin-top:10px; display:block; border-radius:5px; border:1px solid #ddd;";
+                    bannerInput.after(preview);
+                }
+                preview.src = data.banner;
+            }
+
+            // Subjects aur Links fill karein
+            if(data.subjects) {
+                for (const sub in data.subjects) {
+                    const cb = document.getElementById(`check_${sub}`);
+                    if(cb) {
+                        cb.checked = true;
+                        toggleSubjectInputs(sub, true); // Link box kholne ke liye
+                        
+                        const cont = document.getElementById(`inputs_container_${sub}`);
+                        if(cont) {
+                            cont.innerHTML = ""; // Purane empty inputs saaf karein
+                            data.subjects[sub].forEach(link => {
+                                const input = document.createElement('input');
+                                input.type = "text";
+                                input.name = `${sub}_links[]`;
+                                input.value = link;
+                                input.style = "width:80%; margin-bottom:5px; display:block;";
+                                cont.appendChild(input);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error loading existing class data:", err);
+    }
 }
