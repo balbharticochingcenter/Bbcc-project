@@ -284,80 +284,130 @@ async function loadTeacherRing() {
 document.addEventListener('DOMContentLoaded', () => {
     loadTeacherRing();
 });
-// 1. Class Config Load Karna aur Cards Banana
+// --- CLASS CARDS SYSTEM ---
+
+// 1. Class Cards Load karne wala function
 async function loadClassCards() {
-    const classes = ["10th", "I.Sc.", "I.A.", "9th"]; // Aap apni list yahan de sakte hain
     const container = document.getElementById('class-cards-container');
-    container.innerHTML = '';
+    // In classes ki list aap badal sakte hain
+    const classes = ["10th", "I.Sc.", "I.A.", "9th", "8th"]; 
+    
+    container.innerHTML = '<p style="color:white; grid-column: 1/-1;">Loading Classes...</p>';
+
+    let htmlContent = '';
 
     for (let cls of classes) {
         try {
             const res = await fetch(`/api/get-class-config/${cls}`);
-            const config = await res.json();
             
             if (res.ok) {
-                const card = document.createElement('div');
-                card.className = 'class-card';
-                card.innerHTML = `
-                    <div class="card-inner">
-                        <img src="${config.banner || 'default-banner.jpg'}" class="class-banner-img">
-                        <h3>Class ${cls}</h3>
-                        <button class="view-now-btn" onclick="openClassDetail('${cls}')">VIEW NOW</button>
-                    </div>
-                `;
-                container.appendChild(card);
+                const config = await res.json();
+                // Agar DB mein configuration mil gayi
+                htmlContent += createCardHTML(config.class_name, config.banner);
+            } else {
+                // Agar configuration nahi mili (404), toh placeholder dikhao
+                htmlContent += createCardHTML(cls, "https://via.placeholder.com/280x150?text=Class+" + cls);
             }
-        } catch (err) { console.log("Class load error:", err); }
+        } catch (err) {
+            console.error(`Error loading class ${cls}:`, err);
+            // Error ke case mein bhi placeholder dikhao taaki UI kharab na ho
+            htmlContent += createCardHTML(cls, "https://via.placeholder.com/280x150?text=Error+Loading");
+        }
     }
+    container.innerHTML = htmlContent;
 }
 
-// 2. Popup Open Karna
+// 2. Card ka HTML structure banane wala function
+function createCardHTML(name, banner) {
+    // Default banner agar link khali ho
+    const displayBanner = banner || "https://via.placeholder.com/280x150?text=Set+Banner+in+Admin";
+    
+    return `
+        <div class="class-card">
+            <div class="card-inner">
+                <img src="${displayBanner}" class="class-banner-img" alt="${name}">
+                <h3>Class ${name}</h3>
+                <p>Learn with expert teachers</p>
+                <button class="view-now-btn" onclick="openClassDetail('${name}')">VIEW NOW</button>
+            </div>
+        </div>
+    `;
+}
+
+// 3. Popup (Modal) Open karne ka logic
 async function openClassDetail(className) {
     const modal = document.getElementById('classDetailModal');
-    const res = await fetch(`/api/get-class-config/${className}`);
-    const config = await res.json();
-
-    // Set Title & Video
-    document.getElementById('modal-class-title').innerText = "Class: " + className;
-    const videoId = config.intro_video.split('v=')[1] || config.intro_video.split('/').pop();
-    document.getElementById('video-container').innerHTML = `
-        <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
-    `;
-
-    // Set Subjects
-    const subContainer = document.getElementById('subject-list-container');
-    subContainer.innerHTML = '';
-    if (config.subjects) {
-        Object.keys(config.subjects).forEach(sub => {
-            subContainer.innerHTML += `<div class="subject-chip"><i class="fas fa-book"></i> ${sub}</div>`;
-        });
-    }
-
-    // Load Class Teachers
-    const tRes = await fetch('/api/get-teachers');
-    const teachers = await tRes.json();
-    const tContainer = document.getElementById('class-teachers-display');
-    tContainer.innerHTML = '';
     
-    teachers.filter(t => t.classes.includes(className)).forEach(t => {
-        tContainer.innerHTML += `
-            <div class="mini-t-card">
-                <img src="${t.photo || 'default-avatar.png'}">
-                <p>${t.teacher_name}</p>
-            </div>
-        `;
-    });
+    try {
+        const res = await fetch(`/api/get-class-config/${className}`);
+        const config = await res.json();
 
-    modal.style.display = "block";
+        // 1. Title set karein
+        document.getElementById('modal-class-title').innerText = "Class: " + className;
+
+        // 2. Video set karein (YouTube ID nikalne ke liye logic)
+        const videoContainer = document.getElementById('video-container');
+        if (config.intro_video) {
+            const videoId = config.intro_video.split('v=')[1]?.split('&')[0] || config.intro_video.split('/').pop();
+            videoContainer.innerHTML = `
+                <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1" 
+                        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            `;
+        } else {
+            videoContainer.innerHTML = '<p style="padding:20px; color:#666;">No intro video available</p>';
+        }
+
+        // 3. Subjects set karein
+        const subContainer = document.getElementById('subject-list-container');
+        subContainer.innerHTML = '';
+        if (config.subjects) {
+            // config.subjects ek Map/Object hai
+            Object.keys(config.subjects).forEach(sub => {
+                subContainer.innerHTML += `<div class="subject-chip"><i class="fas fa-book"></i> ${sub}</div>`;
+            });
+        } else {
+            subContainer.innerHTML = '<p>No subjects listed.</p>';
+        }
+
+        // 4. Teachers filter karke dikhayein
+        const tRes = await fetch('/api/get-teachers');
+        const teachers = await tRes.json();
+        const tContainer = document.getElementById('class-teachers-display');
+        tContainer.innerHTML = '';
+        
+        const classTeachers = teachers.filter(t => t.classes && t.classes.includes(className));
+        
+        if (classTeachers.length > 0) {
+            classTeachers.forEach(t => {
+                tContainer.innerHTML += `
+                    <div class="mini-t-card">
+                        <img src="${t.photo || 'https://via.placeholder.com/60'}" onerror="this.src='https://via.placeholder.com/60'">
+                        <p>${t.teacher_name}</p>
+                    </div>
+                `;
+            });
+        } else {
+            tContainer.innerHTML = '<p style="font-size:12px; color:#999;">No teachers assigned.</p>';
+        }
+
+        modal.style.display = "block";
+        
+    } catch (err) {
+        alert("Could not load class details. Please try again later.");
+        console.error(err);
+    }
 }
 
-// Modal Close logic
-document.getElementById('closeClassModal').onclick = () => {
-    document.getElementById('classDetailModal').style.display = "none";
-    document.getElementById('video-container').innerHTML = ''; // Stop video
-};
+// 4. Modal Close karne ka logic
+const closeBtn = document.getElementById('closeClassModal');
+if (closeBtn) {
+    closeBtn.onclick = () => {
+        document.getElementById('classDetailModal').style.display = "none";
+        document.getElementById('video-container').innerHTML = ''; // Video stop karne ke liye
+    };
+}
 
-// Page load hone par cards load karein
-window.addEventListener('DOMContentLoaded', () => {
+// 5. Page load hone par sab execute karein
+window.addEventListener('load', () => {
     loadClassCards();
 });
