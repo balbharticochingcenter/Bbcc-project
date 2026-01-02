@@ -171,61 +171,104 @@ async function updatePaidStatus(tId, month, status) {
     });
 }
 
-// --- 7. SEARCH & UPDATE LOGIC (Updated Classes/Subjects) ---
+// --- 7. SEARCH & UPDATE LOGIC (Fixed for Teacher ID & Case Sensitivity) ---
 async function searchTeacher() {
-    const id = document.getElementById('search_tid').value.trim();
+    // ID ko search karte waqt Capital kar diya taaki mismatch na ho
+    const id = document.getElementById('search_tid').value.trim().toUpperCase();
+    
+    if(!id) return alert("Pehle Teacher ID likhein!");
+
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
     const t = teachers.find(x => x.teacher_id === id);
 
     if(t) {
+        // Hidden field aur form fields mein data bharna
         document.getElementById('up_id').value = t.teacher_id;
         document.getElementById('up_name').value = t.teacher_name || "";
         document.getElementById('up_mobile').value = t.mobile || "";
         document.getElementById('up_pass').value = t.pass || "";
         document.getElementById('up_salary').value = t.salary || "";
         
-        // Reset and Check Checkboxes
+        // Reset and Check Checkboxes (Classes & Subjects)
         document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
+        
         t.classes?.forEach(c => {
             const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
             if(cb) cb.checked = true;
         });
+        
         t.subjects?.forEach(s => {
             const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
             if(cb) cb.checked = true;
         });
-        alert("Teacher data loaded!");
-    } else { alert("Not found!"); }
+        
+        alert("Teacher data mil gaya aur load ho gaya! ✅");
+    } else { 
+        alert("Teacher ID '" + id + "' nahi mili!"); 
+    }
 }
 
+// Update Form Submission Logic
 document.getElementById("updateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+    
+    // Zaroori Fix: Hidden field se teacher_id confirm karein
+    data.teacher_id = document.getElementById('up_id').value; 
+    
+    // Checkboxes ka data extract karein
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
 
-    const res = await fetch('/api/update-teacher-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    if(res.ok) { alert("Updated!"); modals.update.style.display="none"; loadTeacherData(); }
-};
+    if(!data.teacher_id) {
+        alert("Pehle kisi teacher ko search karke load karein!");
+        return;
+    }
 
-// --- 8. DELETE TEACHER ---
+    try {
+        const res = await fetch('/api/update-teacher-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if(res.ok) { 
+            alert("Teacher Data Updated Successfully! ✅"); 
+            modals.update.style.display = "none"; 
+            loadTeacherData(); // List ko refresh karein
+        } else {
+            alert("Update failed! Server check karein.");
+        }
+    } catch (err) {
+        console.error("Error during update:", err);
+        alert("Server connection error!");
+    }
+};
+// --- 8. DELETE TEACHER (Improved) ---
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
-    if(!confirm("Are you sure?")) return;
-    await fetch('/api/delete-teacher', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teacher_id: id })
-    });
-    alert("Deleted!"); modals.update.style.display="none"; loadTeacherData();
+    if(!id) return alert("Pehle kisi Teacher ko Search karein!");
+    
+    if(!confirm("Kya aap sach mein is account ko delete karna chahte hain?")) return;
+    
+    try {
+        const res = await fetch('/api/delete-teacher', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teacher_id: id })
+        });
+        
+        if(res.ok) {
+            alert("Teacher Account Deleted! 🗑️"); 
+            modals.update.style.display="none"; 
+            loadTeacherData(); 
+        }
+    } catch (err) {
+        alert("Delete error! Connection check karein.");
+    }
 }
-
 // --- 9. SAVE SYSTEM SETTINGS ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
