@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' })); 
 
-// Sabhi static files (CSS, JS, Images) ko serve karne ke liye
+// Static files serve karne ke liye
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- MONGODB CONNECTION ---
@@ -37,7 +37,7 @@ const Teacher = mongoose.model('Teacher', new mongoose.Schema({
     classes: [String], subjects: [String], paid_months: { type: [Number], default: [] }
 }));
 
-// 3. Student Schema (Added Result Fields)
+// 3. Student Schema
 const Student = mongoose.model('Student', new mongoose.Schema({
     student_name: String, student_id: { type: String, unique: true },
     pass: String, parent_name: String, mobile: String,
@@ -48,28 +48,29 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     paid_months: { type: [Number], default: [] }
 }));
 
-// --- HTML ROUTES (Yeh update kiya gaya hai) ---
+// --- HTML ROUTES ---
 
-// Jab koi website khole, toh login.html dikhao
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
-// Admin page route
+
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // --- API ROUTES ---
 
-// Student API
+// --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
     try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
     catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.get('/api/get-students', async (req, res) => {
-    const students = await Student.find().sort({ _id: -1 });
-    res.json(students);
+    try {
+        const students = await Student.find().sort({ _id: -1 });
+        res.json(students);
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.post('/api/update-student-data', async (req, res) => {
@@ -79,21 +80,75 @@ app.post('/api/update-student-data', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Teacher API
-app.get('/api/get-teachers', async (req, res) => {
-    const teachers = await Teacher.find().sort({ _id: -1 });
-    res.json(teachers);
+// Naya logic: Student fees checkbox ke liye (Agar front-end use kar raha hai)
+app.post('/api/update-fees-status', async (req, res) => {
+    try {
+        const { student_id, month, status } = req.body;
+        const operator = status ? "$addToSet" : "$pull";
+        await Student.findOneAndUpdate(
+            { student_id: student_id },
+            { [operator]: { paid_months: month } }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Settings API
+// --- B. TEACHER API (Fixed & Merged) ---
+app.post('/api/teacher-reg', async (req, res) => {
+    try { 
+        const t = new Teacher(req.body); 
+        await t.save(); 
+        res.json({ success: true }); 
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/get-teachers', async (req, res) => {
+    try {
+        const teachers = await Teacher.find().sort({ _id: -1 });
+        res.json(teachers);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/update-teacher-data', async (req, res) => {
+    try {
+        const { teacher_id, ...updateData } = req.body;
+        await Teacher.findOneAndUpdate({ teacher_id: teacher_id }, { $set: updateData });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/delete-teacher', async (req, res) => {
+    try {
+        await Teacher.findOneAndDelete({ teacher_id: req.body.teacher_id });
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/update-salary-status', async (req, res) => {
+    try {
+        const { teacher_id, month, status } = req.body;
+        const operator = status ? "$addToSet" : "$pull";
+        await Teacher.findOneAndUpdate(
+            { teacher_id: teacher_id },
+            { [operator]: { paid_months: month } }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- C. SETTINGS API ---
 app.get('/api/get-settings', async (req, res) => {
-    const data = await SystemConfig.findOne();
-    res.json(data || {});
+    try {
+        const data = await SystemConfig.findOne();
+        res.json(data || {});
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.post('/api/update-settings', async (req, res) => {
-    const data = await SystemConfig.findOneAndUpdate({}, req.body, { upsert: true, new: true });
-    res.json({ success: true, data });
+    try {
+        const data = await SystemConfig.findOneAndUpdate({}, req.body, { upsert: true, new: true });
+        res.json({ success: true, data });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // --- SERVER START ---
