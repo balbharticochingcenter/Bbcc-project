@@ -675,3 +675,82 @@ button:disabled {
     background: #f0f0f0;
     color: #666;
 }
+.teacher-ring-section {
+    padding: 50px 0;
+    background: #0f0f0f; /* Dark background taaki magic color dikhe */
+    overflow: hidden;
+    text-align: center;
+}
+
+.section-title {
+    color: white;
+    margin-bottom: 30px;
+    font-family: sans-serif;
+}
+
+.ring-container {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    overflow-x: auto;
+    scrollbar-width: none; /* Hide scrollbar */
+    justify-content: center;
+    align-items: center;
+}
+
+.teacher-card {
+    min-width: 150px;
+    text-align: center;
+    position: relative;
+}
+
+.ring-wrapper {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Magical Gradient Animation */
+    background: linear-gradient(45deg, #ff00ea, #00d4ff, #ffcc00, #00ff6a);
+    background-size: 300% 300%;
+    animation: magic-ring 4s linear infinite;
+}
+
+.teacher-card img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: white;
+    border: 3px solid #000;
+}
+
+.teacher-card p {
+    color: white;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@keyframes magic-ring {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Automatic Scrolling Animation */
+#teacher-ring {
+    display: flex;
+    animation: scroll-left 20s linear infinite;
+}
+
+@keyframes scroll-left {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+#teacher-ring:hover {
+    animation-play-state: paused;
+}
