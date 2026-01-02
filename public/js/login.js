@@ -86,10 +86,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         finally { loader.style.display = 'none'; }
     });
 
-    // --- 3. Result Modal Logic ---
+    // --- 3. Result Modal & Search Logic ---
     studentResultBtn.onclick = () => resultModal.style.display = 'flex';
     
-    // Close any modal on clicking its close button
     document.querySelectorAll('.close-button').forEach(btn => {
         btn.onclick = () => {
             resultModal.style.display = 'none';
@@ -127,14 +126,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { searchMessage.textContent = "❌ Search failed!"; }
     };
 
-    // --- 4. Registration Logic ---
-    regBtn.onclick = () => regModal.style.display = "block";
-    closeReg.onclick = () => regModal.style.display = "none";
+    // --- 4. Registration Logic (Optimized) ---
+    if(regBtn) regBtn.onclick = () => regModal.style.display = "block";
+    if(closeReg) closeReg.onclick = () => regModal.style.display = "none";
 
     studentRegForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerText;
+        submitBtn.innerText = "Processing..."; 
+        submitBtn.disabled = true;
+
         const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked')).map(cb => cb.value);
-        const studentId = document.getElementById('regId').value || "STU" + Math.floor(1000 + Math.random() * 9000);
+        const studentId = document.getElementById('regId').value.trim() || "STU" + Math.floor(1000 + Math.random() * 9000);
 
         const formData = {
             student_name: document.getElementById('regName').value,
@@ -154,13 +159,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
+
             const result = await response.json();
+
             if (result.success) {
-                alert('✅ Registered! ID: ' + studentId);
+                alert('✅ Success! Student ID: ' + studentId);
                 regModal.style.display = "none";
                 studentRegForm.reset();
-            } else { alert('❌ Error: ' + result.error); }
-        } catch (err) { alert('Server Error!'); }
+            } else {
+                alert('❌ Error: ' + (result.error || "Registration failed"));
+            }
+        } catch (err) {
+            console.error("Reg Error:", err);
+            alert('❌ Network Error!');
+        } finally {
+            submitBtn.innerText = originalBtnText;
+            submitBtn.disabled = false;
+        }
     });
 
     // Close on outside click
@@ -169,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event.target == resultModal) resultModal.style.display = "none";
     };
 
-    // --- 5. Download Logic (PDF/JPG) ---
+    // --- 5. Download Logic ---
     async function getCaptureElement() {
         const clone = studentResultDisplay.cloneNode(true);
         clone.style.padding = "20px"; clone.style.background = "white"; clone.style.color = "black";
