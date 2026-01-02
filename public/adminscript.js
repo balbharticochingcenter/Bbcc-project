@@ -512,3 +512,69 @@ document.getElementById('adminProfileForm').onsubmit = async (e) => {
     const result = await response.json();
     if(result.success) { alert("Profile Updated!"); adminProfileModal.style.display = "none"; }
 };
+// 1. Modal Open/Close Logic
+const sliderModal = document.getElementById('sliderModal');
+const openSliderBtn = document.getElementById('openSliderBtn');
+
+openSliderBtn.onclick = () => {
+    sliderModal.style.display = "block";
+    loadSliderPhotos(); // Modal khulte hi photos load karega
+}
+
+// 2. Photo Upload Function (Base64 format mein local storage ya DB ke liye)
+function uploadSliderPhoto() {
+    const fileInput = document.getElementById('sliderInput');
+    const file = fileInput.files[0];
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const photoData = e.target.result;
+            
+            // Database/LocalStorage logic
+            let sliderPhotos = JSON.parse(localStorage.getItem('slider_photos')) || [];
+            sliderPhotos.push({
+                id: Date.now(),
+                src: photoData
+            });
+            
+            localStorage.setItem('slider_photos', JSON.stringify(sliderPhotos));
+            fileInput.value = ""; // Clear input
+            loadSliderPhotos(); // Refresh list
+            alert("Photo added to Slider!");
+        }
+        reader.readAsDataURL(file);
+    } else {
+        alert("Please select a photo first.");
+    }
+}
+
+// 3. Photos Load karne ka function
+function loadSliderPhotos() {
+    const container = document.getElementById('sliderPreviewContainer');
+    let sliderPhotos = JSON.parse(localStorage.getItem('slider_photos')) || [];
+    
+    if (sliderPhotos.length === 0) {
+        container.innerHTML = "<p>No photos added yet.</p>";
+        return;
+    }
+
+    container.innerHTML = sliderPhotos.map(photo => `
+        <div style="position: relative; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
+            <img src="${photo.src}" style="width: 100%; height: 80px; object-fit: cover;">
+            <button onclick="deleteSliderPhoto(${photo.id})" style="position: absolute; top: 0; right: 0; background: red; color: white; border: none; cursor: pointer; padding: 2px 5px; font-size: 10px;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// 4. Photo Delete karne ka function
+function deleteSliderPhoto(id) {
+    if(confirm("Delete this photo?")) {
+        let sliderPhotos = JSON.parse(localStorage.getItem('slider_photos')) || [];
+        sliderPhotos = sliderPhotos.filter(p => p.id !== id);
+        localStorage.setItem('slider_photos', JSON.stringify(sliderPhotos));
+        loadSliderPhotos();
+    }
+}
