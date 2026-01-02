@@ -512,69 +512,115 @@ document.getElementById('adminProfileForm').onsubmit = async (e) => {
     const result = await response.json();
     if(result.success) { alert("Profile Updated!"); adminProfileModal.style.display = "none"; }
 };
-// 1. Modal Open/Close Logic
+// ==========================================
+// HOME SLIDER MANAGEMENT (MONGODB VERSION)
+// ==========================================
+
+// 1. Modal Control
 const sliderModal = document.getElementById('sliderModal');
 const openSliderBtn = document.getElementById('openSliderBtn');
 
-openSliderBtn.onclick = () => {
-    sliderModal.style.display = "block";
-    loadSliderPhotos(); // Modal khulte hi photos load karega
+// Slider Button Click hone par modal khulega aur photos load hongi
+if (openSliderBtn) {
+    openSliderBtn.onclick = () => {
+        sliderModal.style.display = "block";
+        loadSliderPhotos(); // Database se photos fetch karega
+    }
 }
 
-// 2. Photo Upload Function (Base64 format mein local storage ya DB ke liye)
-function uploadSliderPhoto() {
+// 2. Photo Upload aur Database mein Save karna
+async function uploadSliderPhoto() {
     const fileInput = document.getElementById('sliderInput');
     const file = fileInput.files[0];
     
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const photoData = e.target.result;
-            
-            // Database/LocalStorage logic
-            let sliderPhotos = JSON.parse(localStorage.getItem('slider_photos')) || [];
-            sliderPhotos.push({
-                id: Date.now(),
-                src: photoData
+    if (!file) return alert("Please select a photo first!");
+
+    // Loading indicator (optional)
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const base64Photo = e.target.result;
+
+        try {
+            const response = await fetch('/api/add-slider', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photo: base64Photo })
             });
-            
-            localStorage.setItem('slider_photos', JSON.stringify(sliderPhotos));
-            fileInput.value = ""; // Clear input
-            loadSliderPhotos(); // Refresh list
-            alert("Photo added to Slider!");
+
+            const result = await response.json();
+            if(result.success) {
+                alert("✅ Photo saved to MongoDB!");
+                fileInput.value = ""; // Input clear karein
+                loadSliderPhotos(); // List refresh karein
+            } else {
+                alert("❌ Upload failed: " + result.error);
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            alert("Server connection error!");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
-        reader.readAsDataURL(file);
-    } else {
-        alert("Please select a photo first.");
-    }
+    };
+    reader.readAsDataURL(file);
 }
 
-// 3. Photos Load karne ka function
-function loadSliderPhotos() {
+// 3. Database se Photos load karke Dashboard par dikhana
+async function loadSliderPhotos() {
     const container = document.getElementById('sliderPreviewContainer');
-    let sliderPhotos = JSON.parse(localStorage.getItem('slider_photos')) || [];
     
-    if (sliderPhotos.length === 0) {
-        container.innerHTML = "<p>No photos added yet.</p>";
-        return;
-    }
+    try {
+        container.innerHTML = '<p style="color: #6c5ce7;"><i class="fas fa-sync fa-spin"></i> Loading photos...</p>';
+        
+        const response = await fetch('/api/get-sliders');
+        const photos = await response.json();
 
-    container.innerHTML = sliderPhotos.map(photo => `
-        <div style="position: relative; border: 1px solid #ddd; border-radius: 5px; overflow: hidden;">
-            <img src="${photo.src}" style="width: 100%; height: 80px; object-fit: cover;">
-            <button onclick="deleteSliderPhoto(${photo.id})" style="position: absolute; top: 0; right: 0; background: red; color: white; border: none; cursor: pointer; padding: 2px 5px; font-size: 10px;">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-    `).join('');
+        if (!photos || photos.length === 0) {
+            container.innerHTML = "<p style='color:#888;'>No photos added to slider yet.</p>";
+            return;
+        }
+
+        // Photos ko grid layout mein dikhana
+        container.innerHTML = photos.map(p => `
+            <div style="position: relative; border: 2px solid #6c5ce7; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <img src="${p.photo}" style="width: 100%; height: 100px; object-fit: cover; display: block;">
+                <button onclick="deleteSliderPhoto('${p._id}')" 
+                        style="position: absolute; top: 5px; right: 5px; background: rgba(231, 76, 60, 0.9); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 5px 8px; font-size: 12px; transition: 0.3s;"
+                        onmouseover="this.style.background='#c0392b'" 
+                        onmouseout="this.style.background='rgba(231, 76, 60, 0.9)'">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error("Error loading photos:", err);
+        container.innerHTML = "<p style='color:red;'>Error loading data from server.</p>";
+    }
 }
 
-// 4. Photo Delete karne ka function
-function deleteSliderPhoto(id) {
-    if(confirm("Delete this photo?")) {
-        let sliderPhotos = JSON.parse(localStorage.getItem('slider_photos')) || [];
-        sliderPhotos = sliderPhotos.filter(p => p.id !== id);
-        localStorage.setItem('slider_photos', JSON.stringify(sliderPhotos));
-        loadSliderPhotos();
+// 4. Database se Photo delete karna
+async function deleteSliderPhoto(id) {
+    if(!confirm("Are you sure? This photo will be removed from the Home Slider.")) return;
+
+    try {
+        const response = await fetch(`/api/delete-slider/${id}`, { 
+            method: 'DELETE' 
+        });
+        const result = await response.json();
+        
+        if(result.success) {
+            loadSliderPhotos(); // List refresh karein
+        } else {
+            alert("Delete failed!");
+        }
+    } catch (err) {
+        console.error("Delete error:", err);
+        alert("Server error while deleting.");
     }
 }
