@@ -24,12 +24,16 @@
         <button id="openAdminProfileBtn" class="btn-primary" style="background: #34495e;">
             <i class="fas fa-user-shield"></i> Admin Profile
         </button>
+        
         <button id="openModalBtn" class="btn-primary">
             <i class="fas fa-cogs"></i> System Settings
         </button>
         <button id="openSliderBtn" class="btn-primary" style="background: #6c5ce7;">
         <i class="fas fa-images"></i> Home Slider
     </button>
+        <button id="openClassSystemBtn" class="btn-primary" style="background: #e67e22;">
+    <i class="fas fa-th-large"></i> Class System
+</button>
     </div>
 
     <div class="button-group" data-label="Teacher Management">
@@ -304,6 +308,50 @@
         </form>
     </div>
 </div>
+
+
+<div id="classSystemModal" class="modal">
+    <div class="modal-content" style="max-width: 800px; text-align: center;">
+        <span class="close" onclick="closeModal('classSystemModal')">&times;</span>
+        <h3 style="color: #6c5ce7; margin-bottom: 20px;"><i class="fas fa-layer-group"></i> Select Class to Manage</h3>
+        <div id="class_button_grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
+            </div>
+    </div>
+</div>
+
+<div id="classConfigModal" class="modal">
+    <div class="modal-content" style="max-width: 900px;">
+        <span class="close" onclick="closeModal('classConfigModal')">&times;</span>
+        <h3 id="current_editing_class" style="border-bottom: 2px solid #e67e22; padding-bottom: 10px;">Class: ---</h3>
+        
+        <form id="classDetailsForm">
+            <input type="hidden" id="config_target_class">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div>
+                    <label><b>Class Banner (URL):</b></label>
+                    <input type="text" id="cls_banner" placeholder="Banner Image URL" style="width: 100%;">
+                </div>
+                <div>
+                    <label><b>Intro Video (YouTube Link):</b></label>
+                    <input type="text" id="cls_intro" placeholder="YouTube Link" style="width: 100%;">
+                </div>
+            </div>
+
+            <h4 style="margin-top: 25px; color: #34495e;">Subjects & Video Links</h4>
+            <p style="font-size: 12px; color: #666;">Check the subject to add YouTube links and see assigned teacher.</p>
+            
+            <div id="subject_config_container" style="margin-top: 15px;">
+                </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" class="btn-update" style="background:#2ecc71; flex:1;">Save Everything</button>
+                <button type="button" onclick="deleteClassConfig()" class="btn-update" style="background:#e74c3c; flex:1;">Clear Data</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    
     <div id="resultModal" class="modal">
     <div class="modal-content" style="max-width: 95%;">
         <span class="close" onclick="closeModal('resultModal')">&times;</span>
