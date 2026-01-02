@@ -216,3 +216,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     loadSystemSettings();
 });
+let currentSlide = 0;
+let totalSlides = 0;
+
+// Page load hote hi photos fetch karein
+document.addEventListener('DOMContentLoaded', () => {
+    fetchSliderPhotos();
+});
+
+async function fetchSliderPhotos() {
+    try {
+        const response = await fetch('/api/get-sliders');
+        const photos = await response.json();
+        const wrapper = document.getElementById('dynamic-slider');
+
+        if (photos.length > 0) {
+            totalSlides = photos.length;
+            wrapper.innerHTML = photos.map(p => `<img src="${p.photo}" alt="Slider">`).join('');
+            
+            // Auto Slide start karein (har 4 second mein)
+            setInterval(() => moveSlider(1), 4000);
+        } else {
+            wrapper.innerHTML = '<div class="slide-placeholder">Welcome to BBCC Portal</div>';
+        }
+    } catch (err) {
+        console.error("Slider Load Error:", err);
+    }
+}
+
+function moveSlider(direction) {
+    const wrapper = document.getElementById('dynamic-slider');
+    currentSlide += direction;
+
+    if (currentSlide >= totalSlides) currentSlide = 0;
+    if (currentSlide < 0) currentSlide = totalSlides - 1;
+
+    wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+}
