@@ -126,13 +126,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { searchMessage.textContent = "❌ Search failed!"; }
     };
 
-    // --- 4. Registration Logic (Optimized) ---
+    // --- 4. Registration Logic ---
     if(regBtn) regBtn.onclick = () => regModal.style.display = "block";
     if(closeReg) closeReg.onclick = () => regModal.style.display = "none";
 
     studentRegForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const submitBtn = e.target.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerText;
         submitBtn.innerText = "Processing..."; 
@@ -159,9 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-
             const result = await response.json();
-
             if (result.success) {
                 alert('✅ Success! Student ID: ' + studentId);
                 regModal.style.display = "none";
@@ -169,20 +166,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 alert('❌ Error: ' + (result.error || "Registration failed"));
             }
-        } catch (err) {
-            console.error("Reg Error:", err);
-            alert('❌ Network Error!');
-        } finally {
+        } catch (err) { alert('❌ Network Error!'); }
+        finally {
             submitBtn.innerText = originalBtnText;
             submitBtn.disabled = false;
         }
     });
 
-    // Close on outside click
+    // Outside click
     window.onclick = (event) => {
         if (event.target == regModal) regModal.style.display = "none";
         if (event.target == resultModal) resultModal.style.display = "none";
-        // Class Modal close on outside click
         if (event.target == document.getElementById('classDetailModal')) {
             document.getElementById('classDetailModal').style.display = "none";
         }
@@ -222,10 +216,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadSystemSettings();
     fetchSliderPhotos();
     loadTeacherRing();
-    loadClasses(); // ✅ Added: Explore Our Classes initialize
+    loadClasses(); 
 });
 
-// --- GLOBAL FUNCTIONS (Slider & Teachers) ---
+// --- GLOBAL FUNCTIONS ---
 
 let currentSlide = 0;
 let totalSlides = 0;
@@ -235,7 +229,6 @@ async function fetchSliderPhotos() {
         const response = await fetch('/api/get-sliders');
         const photos = await response.json();
         const wrapper = document.getElementById('dynamic-slider');
-
         if (photos.length > 0) {
             totalSlides = photos.length;
             wrapper.innerHTML = photos.map(p => `<img src="${p.photo}" alt="Slider">`).join('');
@@ -259,7 +252,6 @@ async function loadTeacherRing() {
         const response = await fetch('/api/get-teachers');
         const teachers = await response.json();
         const ringContainer = document.getElementById('teacher-ring');
-
         if (teachers.length > 0) {
             ringContainer.innerHTML = teachers.map(t => `
                 <div class="teacher-card">
@@ -276,31 +268,39 @@ async function loadTeacherRing() {
     } catch (err) { console.error("Teacher Ring Error:", err); }
 }
 
-// --- EXPLORE OUR CLASSES LOGIC ---
+// --- UPDATED: EXPLORE OUR CLASSES LOGIC ---
 
 async function loadClasses() {
     const classList = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "I.Sc.", "I.A.", "I.Com."];
     const container = document.getElementById('class-cards-container');
-    
     if (!container) return;
 
-    container.innerHTML = classList.map(className => `
+    // Banners fetch karne ke liye (Sabhi class ka banner ek sath check karne ke liye)
+    let classConfigs = {};
+    try {
+        const res = await fetch('/api/get-all-class-configs'); // API jo saari configurations bhejti ho
+        classConfigs = await res.json();
+    } catch (e) { console.log("Class configs not available yet"); }
+
+    container.innerHTML = classList.map(className => {
+        // Agar Admin ne banner set kiya hai toh wo, warna default image
+        const bannerImg = (classConfigs[className] && classConfigs[className].banner) 
+                          ? classConfigs[className].banner 
+                          : "https://via.placeholder.com/300x150?text=Class+" + className;
+
+        return `
         <div class="class-card" onclick="openClassModal('${className}')">
             <div class="card-inner">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_mU7Pnd7-W-YgB1gX9N_o4y5z5z5z5z5z5z" 
-                     class="class-banner-img" alt="Class Banner">
-                
+                <img src="${bannerImg}" class="class-banner-img" alt="Class Banner">
                 <div class="class-card-icon"><i class="fas fa-university"></i></div>
-                
                 <h3 class="class-name-text">Class ${className}</h3>
-                
-                <p>Click to explore subjects and video lessons.</p>
-                
+                <p>Click to explore subjects and details.</p>
                 <button class="view-now-btn">View Now</button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
+
 async function openClassModal(className) {
     const modal = document.getElementById('classDetailModal');
     const videoContainer = document.getElementById('video-container');
@@ -310,7 +310,6 @@ async function openClassModal(className) {
 
     modalTitle.innerText = "Class: " + className;
     modal.style.display = 'flex';
-    
     videoContainer.innerHTML = "Loading...";
     subjectListContainer.innerHTML = "Loading...";
 
@@ -319,27 +318,33 @@ async function openClassModal(className) {
         const config = await response.json();
 
         if (response.ok && config) {
+            // Video display logic
             if (config.intro_video) {
                 videoContainer.innerHTML = `<iframe width="100%" height="200" src="${config.intro_video}" frameborder="0" allowfullscreen></iframe>`;
             } else {
                 videoContainer.innerHTML = `<div class="no-data">No Intro Video Available</div>`;
             }
 
+            // Subject display logic (LATEST UPDATE: Removed 'View Resource' links)
             if (config.subjects && Object.keys(config.subjects).length > 0) {
-                let html = '<ul class="subject-list">';
-                for (const [subject, links] of Object.entries(config.subjects)) {
-                    html += `<li><strong>${subject}:</strong> ${links.map(link => `<a href="${link}" target="_blank">View Resource</a>`).join(', ')}</li>`;
+                let html = '<ul class="subject-list" style="list-style: none; padding: 0;">';
+                for (const [subject, detail] of Object.entries(config.subjects)) {
+                    html += `<li style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                                <i class="fas fa-book-open" style="color: #28a745; margin-right: 8px;"></i>
+                                <strong>${subject}:</strong> ${detail}
+                             </li>`;
                 }
                 html += '</ul>';
                 subjectListContainer.innerHTML = html;
             } else {
-                subjectListContainer.innerHTML = "<p>No resources added yet.</p>";
+                subjectListContainer.innerHTML = "<p>No subject info added yet.</p>";
             }
         } else {
             videoContainer.innerHTML = "No configuration found.";
-            subjectListContainer.innerHTML = "Ask admin to update resources for " + className;
+            subjectListContainer.innerHTML = "Admin update pending for " + className;
         }
 
+        // Teachers filter logic
         const tRes = await fetch('/api/get-teachers');
         const teachers = await tRes.json();
         const filteredTeachers = teachers.filter(t => t.classes && t.classes.includes(className));
@@ -355,16 +360,14 @@ async function openClassModal(className) {
             teacherDisplay.innerHTML = "Not assigned";
         }
     } catch (err) {
-        console.error("Modal Error:", err);
         subjectListContainer.innerHTML = "Error loading data.";
     }
 }
 
-// Close Class Modal Logic
 const closeClassBtn = document.getElementById('closeClassModal');
 if(closeClassBtn) {
     closeClassBtn.onclick = () => {
         document.getElementById('classDetailModal').style.display = 'none';
-        document.getElementById('video-container').innerHTML = ''; // Stop video on close
+        document.getElementById('video-container').innerHTML = ''; 
     };
 }
