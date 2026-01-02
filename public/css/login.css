@@ -233,12 +233,7 @@ body {
 
 /* --- Teacher Ring Section --- */
 /* Container ko pura wide rakhein */
-.teacher-ring-section {
-    width: 100%;
-    overflow: hidden; /* Bahar nikle hue cards chhupane ke liye */
-    background: #0f0f0f;
-    padding: 60px 0;
-}
+.teacher-ring-section { padding: 50px 0; background: #0f0f0f; text-align: center; }
 
 /* Ye main container hai jo screen ke hisab se rahega */
 .ring-container {
