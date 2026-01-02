@@ -614,3 +614,13 @@ body {
 .result-button:hover {
     transform: scale(1.05);
 }
+.3d-button:active {
+    transform: scale(0.95);
+    box-shadow: none;
+}
+
+/* Processing state style */
+button:disabled {
+    background-color: #6c757d !important;
+    cursor: not-allowed;
+}
