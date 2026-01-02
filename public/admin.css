@@ -61,16 +61,18 @@ body {
 
 /* --- Dashboard Grid --- */
 .dashboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    max-width: 1100px;
-    margin: 0 auto 50px auto;
+    display: flex; /* Grid ki jagah Flex use karein */
+    flex-wrap: wrap; /* Taki mobile par auto-adjust ho jaye */
+    justify-content: center;
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 .btn-primary {
     border: none;
-    padding: 25px 15px;
+    padding: 20px 10px; /* Thoda chota padding taki group mein fit ho */
     border-radius: 20px;
     color: white;
     font-weight: 600;
@@ -83,6 +85,8 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    flex: 1; /* Group ke andar barabar jagah lega */
+    min-width: 120px; /* Mobile par buttons bahut chote na ho jayein */
 }
 
 .btn-primary:hover {
@@ -313,32 +317,32 @@ input, select {
 }
 
 /* --- Group Box Styling --- */
-.dashboard {
-    display: flex;
-    flex-direction: column;
-    gap: 30px; /* Space between boxes */
-}
 
 .button-group {
     background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
-    padding: 20px;
+    padding: 30px 20px 20px 20px; /* Top padding zyada taki label fit ho */
     border-radius: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    display: flex; /* Buttons ko row mein lane ke liye */
     gap: 15px;
     position: relative;
+    flex: 1; 
+    min-width: 320px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-/* Group Label (Optional) */
 .button-group::before {
     content: attr(data-label);
     position: absolute;
     top: -12px;
     left: 20px;
-    background: #302b63;
-    padding: 0 10px;
-    font-size: 12px;
+    background: #302b63; /* Background se match karta hua rang */
+    padding: 2px 12px;
+    font-size: 13px;
     color: var(--accent-glow);
     font-weight: bold;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    z-index: 5;
 }
