@@ -63,7 +63,38 @@ app.get('/', (req, res) => {
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
+// --- 5. Slider Schema (Naya Schema) ---
+const SliderPhoto = mongoose.model('SliderPhoto', new mongoose.Schema({
+    photo: String, // Base64 image data yahan save hoga
+    upload_date: { type: Date, default: Date.now }
+}));
 
+// --- E. SLIDER API (Naya Routes) ---
+
+// Photo Save karne ke liye
+app.post('/api/add-slider', async (req, res) => {
+    try {
+        const newPhoto = new SliderPhoto({ photo: req.body.photo });
+        await newPhoto.save();
+        res.json({ success: true, message: "Photo saved to DB!" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Saari Photos Get karne ke liye
+app.get('/api/get-sliders', async (req, res) => {
+    try {
+        const photos = await SliderPhoto.find().sort({ upload_date: -1 });
+        res.json(photos);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Photo Delete karne ke liye
+app.delete('/api/delete-slider/:id', async (req, res) => {
+    try {
+        await SliderPhoto.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
 // --- API ROUTES ---
 
 // --- A. STUDENT API ---
