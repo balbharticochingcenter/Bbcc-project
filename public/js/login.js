@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // DOM Elements
+    // --- DOM Elements ---
     const loader = document.getElementById('loader');
     const headerLogo = document.getElementById('header-logo');
     const headerTitle = document.getElementById('header-title');
@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const studentResultBtn = document.getElementById('studentResultBtn');
     const resultModal = document.getElementById('resultModal');
-    const closeButtons = document.querySelectorAll('.close-button');
     const searchStudentBtn = document.getElementById('searchStudentBtn');
     const searchStudentIdInput = document.getElementById('searchStudentId');
     const searchMessage = document.getElementById('searchMessage');
@@ -27,107 +26,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
     const downloadJpgBtn = document.getElementById('downloadJpgBtn');
 
+    // Registration Elements
+    const regModal = document.getElementById('regModal');
+    const regBtn = document.getElementById('studentRegBtn');
+    const closeReg = document.getElementById('closeReg');
+    const studentRegForm = document.getElementById('studentRegForm');
+
     // Show loader initially
     loader.style.display = 'flex';
 
-    // --- 1. Load System Settings (Header/Footer) ---
+    // --- 1. Load System Settings ---
     async function loadSystemSettings() {
         try {
             const response = await fetch('/api/get-settings');
             const settings = await response.json();
-
             if (settings) {
-                if (settings.logo) {
-                    headerLogo.src = settings.logo;
-                    headerLogo.style.display = 'block';
-                }
+                if (settings.logo) { headerLogo.src = settings.logo; headerLogo.style.display = 'block'; }
                 headerTitle.textContent = settings.title || 'BBCC Portal';
                 headerSubtitle.textContent = settings.sub_title || 'Education for All';
                 footerContact.textContent = settings.contact || 'N/A';
                 footerCall.textContent = settings.call_no || 'N/A';
                 footerGmail.textContent = settings.gmail || 'N/A';
                 footerHelp.textContent = settings.help || '';
-
                 footerFacebook.href = settings.facebook || '#';
                 footerYoutube.href = settings.youtube_link || '#';
                 footerInstagram.href = settings.instagram || '#';
                 footerTwitter.href = settings.twitter || '#';
             }
-        } catch (error) {
-            console.error('Settings load error:', error);
-        } finally {
-            loader.style.display = 'none';
-        }
+        } catch (error) { console.error('Settings load error:', error); }
+        finally { loader.style.display = 'none'; }
     }
 
-    // --- 2. Multi-Role Login Logic ---
+    // --- 2. Login Logic ---
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         loader.style.display = 'flex';
-        loginMessage.textContent = "";
-
         const userId = document.getElementById('userId').value;
         const password = document.getElementById('password').value;
         let loginType = '';
 
         try {
-            // A. Check Admin
             const adminRes = await fetch('/api/get-admin-profile');
             const admin = await adminRes.json();
             if (admin && admin.admin_userid === userId && admin.admin_pass === password) {
                 loginType = 'admin';
             }
-
             if (!loginType) {
-                // B. Check Teacher & Student simultaneously
-                const [tRes, sRes] = await Promise.all([
-                    fetch('/api/get-teachers'),
-                    fetch('/api/get-students')
-                ]);
+                const [tRes, sRes] = await Promise.all([fetch('/api/get-teachers'), fetch('/api/get-students')]);
                 const teachers = await tRes.json();
                 const students = await sRes.json();
-
-                const teacher = teachers.find(t => t.teacher_id === userId && t.pass === password);
-                const student = students.find(s => s.student_id === userId && s.pass === password);
-
-                if (teacher) loginType = 'teacher';
-                else if (student) loginType = 'student';
+                if (teachers.find(t => t.teacher_id === userId && t.pass === password)) loginType = 'teacher';
+                else if (students.find(s => s.student_id === userId && s.pass === password)) loginType = 'student';
             }
 
-            if (loginType === 'admin') {
-                window.location.href = '/admin';
-            } else if (loginType) {
-                alert(`Login Successful as ${loginType.toUpperCase()}! Redirecting...`);
-                // window.location.href = `/${loginType}-dashboard`; // Future use
-            } else {
-                loginMessage.textContent = "❌ Invalid ID or Password!";
-            }
-        } catch (err) {
-            loginMessage.textContent = "❌ Server Error!";
-        } finally {
-            loader.style.display = 'none';
-        }
+            if (loginType === 'admin') window.location.href = '/admin';
+            else if (loginType) alert(`Login Successful as ${loginType.toUpperCase()}!`);
+            else loginMessage.textContent = "❌ Invalid ID or Password!";
+        } catch (err) { loginMessage.textContent = "❌ Server Error!"; }
+        finally { loader.style.display = 'none'; }
     });
 
-    // --- 3. Result Search Logic ---
+    // --- 3. Result Modal Logic ---
     studentResultBtn.onclick = () => resultModal.style.display = 'flex';
     
-    closeButtons.forEach(btn => {
+    // Close any modal on clicking its close button
+    document.querySelectorAll('.close-button').forEach(btn => {
         btn.onclick = () => {
             resultModal.style.display = 'none';
+            regModal.style.display = 'none';
         }
     });
 
     searchStudentBtn.onclick = async () => {
         const id = searchStudentIdInput.value;
         if (!id) return;
-
         searchMessage.textContent = "Searching...";
         try {
             const res = await fetch('/api/get-students');
             const students = await res.json();
             const s = students.find(item => item.student_id === id);
-
             if (s && s.exam_date) {
                 searchMessage.textContent = "";
                 studentResultDisplay.style.display = 'block';
@@ -139,27 +116,63 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('result-exam-date').textContent = s.exam_date;
                 document.getElementById('result-total-marks').textContent = s.total_marks;
                 document.getElementById('result-obtained-marks').textContent = s.obtained_marks;
-                
                 if(s.photo) {
                     const img = document.getElementById('result-student-photo');
-                    img.src = s.photo;
-                    img.style.display = 'block';
+                    img.src = s.photo; img.style.display = 'block';
                 }
             } else {
-                searchMessage.textContent = "❌ Result not uploaded for this ID!";
+                searchMessage.textContent = "❌ Result not found!";
                 studentResultDisplay.style.display = 'none';
             }
-        } catch (err) {
-            searchMessage.textContent = "❌ Search failed!";
-        }
+        } catch (err) { searchMessage.textContent = "❌ Search failed!"; }
     };
 
-    // --- 4. Download PDF/JPG Logic ---
+    // --- 4. Registration Logic ---
+    regBtn.onclick = () => regModal.style.display = "block";
+    closeReg.onclick = () => regModal.style.display = "none";
+
+    studentRegForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked')).map(cb => cb.value);
+        const studentId = document.getElementById('regId').value || "STU" + Math.floor(1000 + Math.random() * 9000);
+
+        const formData = {
+            student_name: document.getElementById('regName').value,
+            parent_name: document.getElementById('regParent').value,
+            mobile: document.getElementById('regMobile').value,
+            parent_mobile: document.getElementById('regParentMobile').value,
+            student_class: selectedClasses.join(', '),
+            joining_date: document.getElementById('regDate').value,
+            student_id: studentId,
+            pass: document.getElementById('regPass').value,
+            fees: "0"
+        };
+
+        try {
+            const response = await fetch('/api/student-reg', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('✅ Registered! ID: ' + studentId);
+                regModal.style.display = "none";
+                studentRegForm.reset();
+            } else { alert('❌ Error: ' + result.error); }
+        } catch (err) { alert('Server Error!'); }
+    });
+
+    // Close on outside click
+    window.onclick = (event) => {
+        if (event.target == regModal) regModal.style.display = "none";
+        if (event.target == resultModal) resultModal.style.display = "none";
+    };
+
+    // --- 5. Download Logic (PDF/JPG) ---
     async function getCaptureElement() {
         const clone = studentResultDisplay.cloneNode(true);
-        clone.style.padding = "20px";
-        clone.style.background = "white";
-        clone.style.color = "black";
+        clone.style.padding = "20px"; clone.style.background = "white"; clone.style.color = "black";
         clone.querySelector('.download-buttons').remove();
         detailedResultContent.innerHTML = "";
         detailedResultContent.appendChild(clone);
@@ -181,83 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const el = await getCaptureElement();
         html2canvas(el).then(canvas => {
             const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgData = canvas.toDataURL('image/png');
-            pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, 190, 0);
             pdf.save(`Result_${document.getElementById('result-student-id').innerText}.pdf`);
         });
     };
 
     loadSystemSettings();
-});
-// Modal Open/Close Logic
-const regModal = document.getElementById('regModal');
-const regBtn = document.getElementById('studentRegBtn');
-const closeReg = document.getElementById('closeReg');
-
-regBtn.onclick = () => regModal.style.display = "block";
-closeReg.onclick = () => regModal.style.display = "none";
-
-// Registration Form Submission
-document.getElementById('studentRegForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Checkboxes se classes nikalna
-    const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked'))
-                                 .map(cb => cb.value);
-
-    // Agar ID khali hai to random generate karna (Auto Logic)
-    const studentId = document.getElementById('regId').value || "STU" + Math.floor(1000 + Math.random() * 9000);
-
-    const formData = {
-        student_name: document.getElementById('regName').value,
-        parent_name: document.getElementById('regParent').value,
-        mobile: document.getElementById('regMobile').value,
-        parent_mobile: document.getElementById('regParentMobile').value,
-        student_class: selectedClasses.join(', '), // Database mein string ki tarah save hoga
-        joining_date: document.getElementById('regDate').value,
-        student_id: studentId,
-        pass: document.getElementById('regPass').value,
-        fees: "0" // Default fee
-    };
-
-    try {
-        const response = await fetch('/api/student-reg', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-
-        const result = await response.json();
-        if (result.success) {
-            alert('✅ Student Registered Successfully! ID: ' + studentId);
-            regModal.style.display = "none";
-            e.target.reset();
-        } else {
-            alert('❌ Error: ' + result.error);
-        }
-    } catch (err) {
-        console.error(err);
-        alert('Server Error!');
-    }
-});
-// Modal elements
-const regModal = document.getElementById('regModal');
-const regBtn = document.getElementById('studentRegBtn');
-const closeBtn = document.getElementById('closeReg');
-
-// Open Modal
-regBtn.addEventListener('click', () => {
-    regModal.style.display = "block";
-});
-
-// Close Modal (Cross button click par)
-closeBtn.addEventListener('click', () => {
-    regModal.style.display = "none";
-});
-
-// Close Modal (Bahar click karne par)
-window.addEventListener('click', (event) => {
-    if (event.target == regModal) {
-        regModal.style.display = "none";
-    }
 });
