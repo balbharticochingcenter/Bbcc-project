@@ -298,7 +298,7 @@ async function loadTeacherRing() {
 }
 
 async function loadClasses() {
-    const classList = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "I.Sc.", "I.A.", "I.Com."];
+    const classList = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "I.Sc.", "I.A.", "I.Com.", "I.Sc.", "I.A.", "I.Com."];
     const container = document.getElementById('class-cards-container');
     if (!container) return;
 
