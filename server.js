@@ -47,7 +47,13 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     exam_date: { type: String, default: "" },
     paid_months: { type: [Number], default: [] }
 }));
-
+// 4. Admin Profile Schema (New)
+const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
+    admin_name: String,
+    admin_userid: { type: String, unique: true },
+    admin_pass: String,
+    admin_mobile: String
+}));
 // --- HTML ROUTES ---
 
 app.get('/', (req, res) => {
@@ -156,7 +162,24 @@ app.post('/api/update-settings', async (req, res) => {
         res.json({ success: true, data });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
+// --- D. ADMIN PROFILE API (NEW) ---
 
+// Admin Data Get Karne ke liye
+app.get('/api/get-admin-profile', async (req, res) => {
+    try {
+        const admin = await AdminProfile.findOne(); // Ek hi admin record fetch karega
+        res.json(admin || {});
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Admin Data Save/Update Karne ke liye
+app.post('/api/update-admin-profile', async (req, res) => {
+    try {
+        // upsert: true ka matlab hai agar record nahi hai to naya bana do, hai to update kar do
+        const data = await AdminProfile.findOneAndUpdate({}, req.body, { upsert: true, new: true });
+        res.json({ success: true, message: "Admin Profile Updated!", data });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
