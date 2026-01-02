@@ -31,14 +31,28 @@ body {
 
 /* --- Magical Header --- */
 .magical-header {
-    text-align: center;
-    padding: 30px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    border: 1px solid var(--glass-border);
-    margin-bottom: 30px;
-    box-shadow: 0 8px 32px rgba(108, 92, 231, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    position: relative;
+}
+
+.logout-btn {
+    background: #ff7675;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.logout-btn:hover {
+    background: #d63031;
+    transform: translateY(-2px);
 }
 
 .ring-logo {
