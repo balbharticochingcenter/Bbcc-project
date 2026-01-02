@@ -624,3 +624,109 @@ async function deleteSliderPhoto(id) {
         alert("Server error while deleting.");
     }
 }
+
+// --- CLASS SYSTEM CONFIGURATION ---
+
+const classList = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "I.A.", "I.Sc.", "I.Com.", "B.A.", "B.Sc.", "B.Com."];
+const subjectsArray = ["Hindi", "English", "Maths", "Sanskrit", "Science", "Social Science", "Physics", "Chemistry", "Biology", "History", "Geography", "Economics", "Accountancy", "Business Studies", "Philosophy"];
+
+// 1. Open Main Class Selection Modal
+document.getElementById('openClassSystemBtn').onclick = () => {
+    const grid = document.getElementById('class_button_grid');
+    grid.innerHTML = classList.map(cls => `
+        <button onclick="openClassForm('${cls}')" class="btn-primary" style="margin:0; background:#34495e; font-size:14px;">${cls}</button>
+    `).join('');
+    document.getElementById('classSystemModal').style.display = "block";
+};
+
+// 2. Open Form for Specific Class
+async function openClassForm(cls) {
+    document.getElementById('config_target_class').value = cls;
+    document.getElementById('current_editing_class').innerText = "Managing Class: " + cls;
+    
+    // Fetch Teachers to auto-detect names
+    const tRes = await fetch('/api/get-teachers');
+    const teachers = await tRes.json();
+    
+    const container = document.getElementById('subject_config_container');
+    container.innerHTML = "";
+
+    subjectsArray.forEach(sub => {
+        // Find teacher who teaches this class AND this subject
+        const assignedTeacher = teachers.find(t => t.classes?.includes(cls) && t.subjects?.includes(sub));
+        const teacherName = assignedTeacher ? assignedTeacher.teacher_name : "Not Assigned";
+
+        const row = document.createElement('div');
+        row.style = "background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; border-left:4px solid #ddd;";
+        row.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-weight:bold; cursor:pointer;">
+                    <input type="checkbox" onchange="toggleSubjectInputs('${sub}', this.checked)"> ${sub}
+                </label>
+                <span style="font-size:11px; color:#2980b9;"><b>Teacher:</b> ${teacherName}</span>
+            </div>
+            <div id="link_box_${sub}" style="display:none; margin-top:10px; padding-left:20px;">
+                <div id="inputs_container_${sub}">
+                    <input type="text" name="${sub}_links[]" placeholder="YouTube Link" style="width:80%; margin-bottom:5px;">
+                </div>
+                <button type="button" onclick="addLinkInput('${sub}')" style="font-size:10px; background:#6c5ce7; color:white; border:none; padding:4px 8px; border-radius:4px;">+ Add More Link</button>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+
+    document.getElementById('classConfigModal').style.display = "block";
+    loadExistingClassData(cls); // Puraana data load karne ke liye
+}
+
+// 3. UI Helpers
+function toggleSubjectInputs(sub, isChecked) {
+    const box = document.getElementById(`link_box_${sub}`);
+    box.style.display = isChecked ? "block" : "none";
+}
+
+function addLinkInput(sub) {
+    const cont = document.getElementById(`inputs_container_${sub}`);
+    const input = document.createElement('input');
+    input.type = "text";
+    input.name = `${sub}_links[]`;
+    input.placeholder = "YouTube Link";
+    input.style = "width:80%; margin-bottom:5px; display:block;";
+    cont.appendChild(input);
+}
+
+// 4. Save Logic
+document.getElementById('classDetailsForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const cls = document.getElementById('config_target_class').value;
+    const banner = document.getElementById('cls_banner').value;
+    const intro = document.getElementById('cls_intro').value;
+
+    let subjectData = {};
+    subjectsArray.forEach(sub => {
+        const checkbox = document.querySelector(`input[type="checkbox"][onchange*="'${sub}'"]`);
+        if(checkbox.checked) {
+            const links = Array.from(document.getElementsByName(`${sub}_links[]`)).map(i => i.value).filter(v => v !== "");
+            subjectData[sub] = links;
+        }
+    });
+
+    const finalData = { class_name: cls, banner, intro_video: intro, subjects: subjectData };
+
+    const res = await fetch('/api/save-class-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(finalData)
+    });
+
+    if(res.ok) {
+        alert("Class Content Saved Successfully! ✅");
+        document.getElementById('classConfigModal').style.display = "none";
+    }
+};
+
+// 5. Load Previous Data
+async function loadExistingClassData(cls) {
+    // API call karke data laayein aur fields fill karein (Intro, Banner, Links)
+    // Same logic as loading teacher data
+}
