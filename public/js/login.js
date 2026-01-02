@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (loginType === 'admin') {
                 localStorage.setItem('isAdminLoggedIn', 'true');
-                window.location.href = '/admin';
+                window.location.href = 'admin';
             } else if (loginType) {
                 alert(`✅ Login Successful as ${loginType.toUpperCase()}!`);
                 loginModal.style.display = 'none'; // Login ke baad modal band karein
