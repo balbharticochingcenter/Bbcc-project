@@ -27,6 +27,7 @@
             </div>
             <div class="header-right">
                 <button id="studentResultBtn" class="result-button">Student Result</button>
+                <button id="studentRegBtn" class="result-button" style="background: #28a745; margin-right: 10px;">Student Registration</button>
             </div>
         </div>
     </header>
@@ -109,7 +110,46 @@
                 </div>
         </div>
     </div>
+<div id="regModal" class="modal">
+    <div class="modal-content 3d-card" style="max-width: 500px;">
+        <span class="close-button" id="closeReg">&times;</span>
+        <h3>New Student Registration</h3>
+        <form id="studentRegForm">
+            <div class="search-form-group">
+                <input type="text" id="regName" placeholder="Student Name" required>
+                <input type="text" id="regParent" placeholder="Parent Name" required>
+                <input type="text" id="regMobile" placeholder="Student Mobile" required>
+                <input type="text" id="regParentMobile" placeholder="Parent Mobile" required>
+                
+                <p style="margin-top:10px; font-weight:bold;">Select Class:</p>
+                <div class="class-checkboxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; font-size: 12px; background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                    <label><input type="checkbox" name="regClass" value="1st"> 1st</label>
+                    <label><input type="checkbox" name="regClass" value="2nd"> 2nd</label>
+                    <label><input type="checkbox" name="regClass" value="3rd"> 3rd</label>
+                    <label><input type="checkbox" name="regClass" value="4th"> 4th</label>
+                    <label><input type="checkbox" name="regClass" value="5th"> 5th</label>
+                    <label><input type="checkbox" name="regClass" value="6th"> 6th</label>
+                    <label><input type="checkbox" name="regClass" value="7th"> 7th</label>
+                    <label><input type="checkbox" name="regClass" value="8th"> 8th</label>
+                    <label><input type="checkbox" name="regClass" value="9th"> 9th</label>
+                    <label><input type="checkbox" name="regClass" value="10th"> 10th</label>
+                    <label><input type="checkbox" name="regClass" value="I.A."> I.A.</label>
+                    <label><input type="checkbox" name="regClass" value="I.Sc."> I.Sc.</label>
+                    <label><input type="checkbox" name="regClass" value="I.Com."> I.Com.</label>
+                    <label><input type="checkbox" name="regClass" value="B.A."> B.A.</label>
+                    <label><input type="checkbox" name="regClass" value="B.Sc."> B.Sc.</label>
+                    <label><input type="checkbox" name="regClass" value="B.Com."> B.Com.</label>
+                </div>
 
+                <input type="date" id="regDate" title="Joining Date" required>
+                <input type="text" id="regId" placeholder="Roll No / Student ID (Manual)">
+                <input type="password" id="regPass" placeholder="Password" required>
+                
+                <button type="submit" class="btn 3d-button" style="margin-top:15px; width:100%;">Register Student</button>
+            </div>
+        </form>
+    </div>
+</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="/js/login.js"></script>
