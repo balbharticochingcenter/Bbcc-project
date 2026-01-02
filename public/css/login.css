@@ -562,3 +562,55 @@ body {
         gap: 10px;
     }
 }
+/* Registration Modal Styles */
+.class-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.class-checkboxes label:hover {
+    background: #e9ecef;
+}
+
+.class-checkboxes input[type="checkbox"] {
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+}
+
+#studentRegForm input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+#studentRegForm input:focus {
+    border-color: #28a745;
+    outline: none;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+}
+
+.result-button {
+    cursor: pointer;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+.result-button:hover {
+    transform: scale(1.05);
+}
