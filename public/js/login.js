@@ -189,3 +189,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     loadSystemSettings();
 });
+// Modal Open/Close Logic
+const regModal = document.getElementById('regModal');
+const regBtn = document.getElementById('studentRegBtn');
+const closeReg = document.getElementById('closeReg');
+
+regBtn.onclick = () => regModal.style.display = "block";
+closeReg.onclick = () => regModal.style.display = "none";
+
+// Registration Form Submission
+document.getElementById('studentRegForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Checkboxes se classes nikalna
+    const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked'))
+                                 .map(cb => cb.value);
+
+    // Agar ID khali hai to random generate karna (Auto Logic)
+    const studentId = document.getElementById('regId').value || "STU" + Math.floor(1000 + Math.random() * 9000);
+
+    const formData = {
+        student_name: document.getElementById('regName').value,
+        parent_name: document.getElementById('regParent').value,
+        mobile: document.getElementById('regMobile').value,
+        parent_mobile: document.getElementById('regParentMobile').value,
+        student_class: selectedClasses.join(', '), // Database mein string ki tarah save hoga
+        joining_date: document.getElementById('regDate').value,
+        student_id: studentId,
+        pass: document.getElementById('regPass').value,
+        fees: "0" // Default fee
+    };
+
+    try {
+        const response = await fetch('/api/student-reg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('✅ Student Registered Successfully! ID: ' + studentId);
+            regModal.style.display = "none";
+            e.target.reset();
+        } else {
+            alert('❌ Error: ' + result.error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Server Error!');
+    }
+});
