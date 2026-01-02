@@ -1,38 +1,4 @@
-// --- UTILITY: Image Compressor (New) ---
-// Ye function photo ko resize karega aur quality kam karke size 200KB se niche layega
-async function compressImage(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                // Resolution ko control karne ke liye
-                const MAX_WIDTH = 1000; 
-                let width = img.width;
-                let height = img.height;
-
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-                canvas.width = width;
-                canvas.height = height;
-
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
-                // JPG format aur 0.7 (70%) quality se size optimize ho jata hai
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.7); 
-                resolve(dataUrl);
-            };
-        };
-    });
-}
-
-// --- UTILITY: Image to Base64 (General purpose) ---
+// --- UTILITY: Image to Base64 ---
 const toBase64 = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -43,6 +9,7 @@ const toBase64 = file => new Promise((resolve, reject) => {
 // --- HELPER: Mahine ka naam nikalne ke liye (Jan-24 format) ---
 function getMonthLabel(joiningDateStr, index) {
     const date = joiningDateStr ? new Date(joiningDateStr) : new Date();
+    // Index 1 matlab joining month, isliye (index - 1)
     date.setMonth(date.getMonth() + (index - 1));
     const options = { month: 'short', year: '2-digit' };
     return date.toLocaleString('en-US', options).replace(' ', '-');
@@ -59,12 +26,16 @@ async function loadSettings() {
         const response = await fetch('/api/get-settings');
         const data = await response.json();
         if(data.title) {
+            // Header Branding
             document.getElementById('db-title').innerText = data.title;
             document.getElementById('db-subtitle').innerText = data.sub_title || "";
             if(data.logo) document.getElementById('db-logo').src = data.logo;
             
+            // Fill Form Fields (Header)
             document.getElementById('form-title').value = data.title;
             document.getElementById('form-subtitle').value = data.sub_title;
+            
+            // Fill Form Fields (Footer)
             document.getElementById('form-contact').value = data.contact || "";
             document.getElementById('form-call').value = data.call_no || "";
             document.getElementById('form-gmail').value = data.gmail || "";
@@ -96,7 +67,7 @@ document.querySelectorAll(".close").forEach(btn => {
     btn.onclick = () => { btn.closest('.modal').style.display = "none"; };
 });
 
-// --- 3. TEACHER REGISTRATION (With Compression) ---
+// --- 3. TEACHER REGISTRATION ---
 document.getElementById('t_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
     if(name.length >= 3) {
@@ -111,11 +82,7 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     const photo = document.getElementById('t_photo').files[0];
-    
-    // Photo ko compress karke base64 banayein
-    if (photo) {
-        data.photo = await compressImage(photo);
-    }
+    if (photo) data.photo = await toBase64(photo);
 
     const res = await fetch('/api/teacher-reg', {
         method: 'POST',
@@ -125,7 +92,7 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
     if(res.ok) { alert("Teacher Registered! 🎉"); e.target.reset(); modals.teacher.style.display="none"; }
 };
 
-// --- 4. LOAD TEACHER CARDS ---
+// --- 4. LOAD TEACHER CARDS (Salary, Call, SMS, Profile) ---
 async function loadTeacherData() {
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
@@ -146,7 +113,7 @@ async function loadTeacherData() {
         let checks = "";
         for(let i=1; i<=totalMonths; i++) {
             const checked = t.paid_months?.includes(i) ? "checked" : "";
-            const monthName = getMonthLabel(t.joining_date, i); 
+            const monthName = getMonthLabel(t.joining_date, i); // Updated Label
             checks += `
                 <label style="background:#eee; padding:2px 5px; border-radius:4px; font-size:11px; cursor:pointer; min-width:55px; display:inline-block; text-align:center;">
                     <input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> ${monthName}
@@ -235,7 +202,7 @@ async function searchTeacher() {
             const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
             if(cb) cb.checked = true;
         });
-        alert("Teacher data mil gaya! ✅");
+        alert("Teacher data mil gaya aur load ho gaya! ✅");
     } else { 
         alert("Teacher ID '" + id + "' nahi mili!"); 
     }
@@ -248,43 +215,39 @@ document.getElementById("updateForm").onsubmit = async (e) => {
     data.teacher_id = document.getElementById('up_id').value; 
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
+    if(!data.teacher_id) return alert("Pehle kisi teacher ko search karke load karein!");
     try {
         const res = await fetch('/api/update-teacher-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        if(res.ok) { alert("Updated Successfully! ✅"); modals.update.style.display = "none"; loadTeacherData(); }
-    } catch (err) { alert("Error!"); }
+        if(res.ok) { alert("Teacher Data Updated Successfully! ✅"); modals.update.style.display = "none"; loadTeacherData(); }
+    } catch (err) { alert("Server connection error!"); }
 };
 
 // --- 8. DELETE TEACHER ---
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
-    if(!id) return alert("Search Teacher first!");
-    if(!confirm("Account delete karein?")) return;
+    if(!id) return alert("Pehle kisi Teacher ko Search karein!");
+    if(!confirm("Kya aap sach mein is account ko delete karna chahte hain?")) return;
     try {
         const res = await fetch('/api/delete-teacher', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teacher_id: id })
         });
-        if(res.ok) { alert("Deleted! 🗑️"); modals.update.style.display="none"; loadTeacherData(); }
-    } catch (err) { alert("Error!"); }
+        if(res.ok) { alert("Teacher Account Deleted! 🗑️"); modals.update.style.display="none"; loadTeacherData(); }
+    } catch (err) { alert("Delete error!"); }
 }
 
-// --- 9. SAVE SYSTEM SETTINGS (With Compression) ---
+// --- 9. SAVE SYSTEM SETTINGS ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     const logo = document.getElementById('logoInput').files[0];
-    
-    // Logo ko compress karein
-    if (logo) {
-        data.logo = await compressImage(logo);
-    }
-
+    if (logo) data.logo = await toBase64(logo);
     await fetch('/api/update-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -293,7 +256,7 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     alert("Settings Saved!"); loadSettings(); modals.sys.style.display="none";
 };
 
-// --- STUDENT REGISTRATION & DATA ---
+// Student ID Auto Generation
 document.getElementById('s_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
     if(name.length >= 3) {
@@ -309,181 +272,533 @@ document.getElementById("openStudentDataBtn").onclick = () => {
     loadStudentData(); 
 };
 
+// --- LOAD STUDENT CARDS WITH MONTHLY LABELS ---
 async function loadStudentData() {
     const res = await fetch('/api/get-students');
     const students = await res.json();
     const container = document.getElementById("studentTableBody");
+    
     if (students.length === 0) {
-        container.innerHTML = "<p style='text-align:center;'>Koi student nahi mila!</p>";
+        container.innerHTML = "<p style='text-align:center; color:#666;'>Koi student nahi mila!</p>";
         return;
     }
+
     container.innerHTML = ""; 
+
     students.forEach(s => {
         const joinDate = s.joining_date ? new Date(s.joining_date) : new Date();
-        const diff = (new Date().getFullYear() - joinDate.getFullYear()) * 12 + (new Date().getMonth() - joinDate.getMonth());
+        const today = new Date();
+        const diff = (today.getFullYear() - joinDate.getFullYear()) * 12 + (today.getMonth() - joinDate.getMonth());
         const totalMonths = diff < 0 ? 1 : diff + 1;
+
         let checks = "";
         for(let i = 1; i <= totalMonths; i++) {
             const isPaid = s.paid_months?.includes(i) ? "checked" : "";
-            const monthName = getMonthLabel(s.joining_date, i); 
+            const monthName = getMonthLabel(s.joining_date, i); // Updated Label
             checks += `
-                <label class="fee-chip" style="min-width:65px; display:inline-flex; align-items:center; background:#f1f2f6; padding:3px; border-radius:5px; font-size:11px;">
+                <label class="fee-chip" style="min-width:65px; display:inline-flex; align-items:center; gap:3px; background:#f1f2f6; padding:3px 6px; border-radius:5px; font-size:11px;">
                     <input type="checkbox" ${isPaid} onchange="updateFeesStatus('${s.student_id}', ${i}, this.checked)">
-                    <span>${monthName}</span>
+                    <span style="font-weight:bold;">${monthName}</span>
                 </label>`;
         }
-        container.innerHTML += `<div class="diary-card"><h4>${s.student_name}</h4><small>ID: ${s.student_id}</small><div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">${checks}</div></div>`;
+
+        const p_msg = `Dear Parent, your child ${s.student_name} CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
+        const s_msg = `Dear STUDENT, your CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
+
+        container.innerHTML += `
+            <div class="diary-card">
+                <div style="display:flex; justify-content:space-between; align-items:start; border-bottom:1px dashed #ddd; padding-bottom:10px;">
+                    <div>
+                        <h4 style="margin:0; color:#2d3436; font-size:16px;">${s.student_name}</h4>
+                        <small style="color:#6c5ce7; font-weight:bold;">ID: ${s.student_id} | Class: ${s.student_class}</small>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="display:block; font-size:10px; color:#777;">DOJ: ${s.joining_date}</span>
+                        <span style="font-weight:bold; color:#2ecc71; font-size:15px;">₹${s.fees}/mo</span>
+                    </div>
+                </div>
+
+                <div style="margin:12px 0; display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px;">
+                    <div>
+                        <p style="margin:2px 0;"><b>Parent:</b> ${s.parent_name}</p>
+                        <p style="margin:2px 0;"><b>P. Mob:</b> ${s.parent_mobile}</p>
+                    </div>
+                    <div style="border-left:1px solid #eee; padding-left:10px;">
+                        <p style="margin:2px 0;"><b>Stu. Mob:</b> ${s.mobile}</p>
+                        <p style="margin:2px 0;"><b>Password:</b> <span style="color:#e84393;">${s.pass}</span></p>
+                    </div>
+                </div>
+                
+                <div class="diary-actions">
+                    <div style="text-align:center;">
+                        <small style="display:block; font-size:9px; margin-bottom:3px; color:#999;">PARENT CONTACT</small>
+                        <div style="display:flex; gap:10px;">
+                            <a href="sms:${s.parent_mobile}?body=${encodeURIComponent(p_msg)}" style="color:#e84393;" title="SMS Parent"><i class="fas fa-comment"></i></a>
+                            <a href="https://wa.me/${s.parent_mobile}?text=${encodeURIComponent(p_msg)}" target="_blank" style="color:#25D366;" title="WA Parent"><i class="fab fa-whatsapp"></i></a>
+                            <a href="tel:${s.parent_mobile}" style="color:#0984e3;" title="Call Parent"><i class="fas fa-phone-alt"></i></a>
+                        </div>
+                    </div>
+                    <div style="width:1px; background:#eee;"></div>
+                    <div style="text-align:center;">
+                        <small style="display:block; font-size:9px; margin-bottom:3px; color:#999;">STUDENT CONTACT</small>
+                        <div style="display:flex; gap:10px;">
+                            <a href="sms:${s.mobile}?body=${encodeURIComponent(s_msg)}" style="color:#6c5ce7;" title="SMS Student"><i class="fas fa-comment"></i></a>
+                            <a href="https://wa.me/${s.mobile}?text=${encodeURIComponent(s_msg)}" target="_blank" style="color:#25D366;" title="WA Student"><i class="fab fa-whatsapp"></i></a>
+                            <a href="tel:${s.mobile}" style="color:#0984e3;" title="Call Student"><i class="fas fa-phone-alt"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:15px;">
+                    <p style="font-size:10px; font-weight:bold; color:#747d8c; margin-bottom:8px; display:flex; justify-content:space-between;">
+                        <span>FEES TRACKER</span>
+                        <span style="color:#6c5ce7;">${totalMonths} Months Total</span>
+                    </p>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px;">${checks}</div>
+                </div>
+            </div>`;
     });
 }
 
 async function updateFeesStatus(stuId, month, status) {
-    await fetch('/api/update-fees-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ student_id: stuId, month, status })
-    });
+    try {
+        await fetch('/api/update-fees-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ student_id: stuId, month, status })
+        });
+    } catch (err) { console.error(err); }
 }
 
 document.getElementById("studentForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    const res = await fetch('/api/student-reg', {
+    try {
+        const res = await fetch('/api/student-reg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (res.ok) { alert("Student Registered! 🎉"); e.target.reset(); document.getElementById("studentModal").style.display = "none"; }
+    } catch (err) { alert("Error!"); }
+};
+
+document.getElementById("openStudentUpdateBtn").onclick = () => {
+    document.getElementById("studentUpdateModal").style.display = "block";
+};
+
+async function searchStudent() {
+    const id = document.getElementById('search_sid').value.trim().toUpperCase();
+    const res = await fetch('/api/get-students');
+    const students = await res.json();
+    const s = students.find(x => x.student_id === id);
+    if(s) {
+        document.getElementById('up_sid').value = s.student_id;
+        document.getElementById('up_sname').value = s.student_name || "";
+        document.getElementById('up_spass').value = s.pass || "";
+        document.getElementById('up_smobile').value = s.mobile || "";
+        document.getElementById('up_pname').value = s.parent_name || "";
+        document.getElementById('up_pmobile').value = s.parent_mobile || "";
+        document.getElementById('up_sfees').value = s.fees || "";
+        document.getElementById('up_sclass').value = s.student_class || "";
+        document.getElementById('up_sdoj').value = s.joining_date || ""; 
+        alert("Student data loaded!");
+    } else { alert("Not found!"); }
+}
+
+document.getElementById("studentUpdateForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    data.joining_date = document.getElementById('up_sdoj').value;
+    const res = await fetch('/api/update-student-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if (res.ok) { alert("Student Registered!"); e.target.reset(); document.getElementById("studentModal").style.display = "none"; }
+    if(res.ok) { alert("Updated! ✅"); document.getElementById("studentUpdateModal").style.display="none"; loadStudentData(); }
 };
 
-// --- HOME SLIDER (With Compression) ---
-const sliderModal = document.getElementById('sliderModal');
-const openSliderBtn = document.getElementById('openSliderBtn');
-if (openSliderBtn) {
-    openSliderBtn.onclick = () => { sliderModal.style.display = "block"; loadSliderPhotos(); }
+async function deleteStudent() {
+    const id = document.getElementById('up_sid').value;
+    if(!id) return alert("Search student!");
+    if(!confirm("Delete everything?")) return;
+    const res = await fetch('/api/delete-student', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: id })
+    });
+    if(res.ok) { alert("Deleted!"); document.getElementById("studentUpdateModal").style.display="none"; loadStudentData(); }
 }
 
+document.getElementById("openResultBtn").onclick = () => {
+    document.getElementById("resultModal").style.display = "block";
+};
+
+async function filterClassForResults() {
+    const selectedClass = document.getElementById('res_class_filter').value;
+    const res = await fetch('/api/get-students');
+    const students = await res.json();
+    const classStudents = students.filter(s => s.student_class === selectedClass);
+    const container = document.getElementById("resultTableBody");
+    container.innerHTML = "";
+    if(classStudents.length === 0) {
+        container.innerHTML = "<tr><td colspan='5' style='color:red;'>No students!</td></tr>";
+        return;
+    }
+    classStudents.forEach(s => {
+        const obt = s.obtained_marks || "";
+        const tot = s.total_marks || "";
+        container.innerHTML += `
+            <tr style="border-bottom:1px solid #ddd; text-align:center;">
+                <td style="padding:12px;"><b>${s.student_id}</b></td>
+                <td>${s.student_name}</td>
+                <td><input type="number" id="obt_${s.student_id}" value="${obt}" style="width:70px;"></td>
+                <td id="div_${s.student_id}">${calculateDivision(obt, tot)}</td>
+                <td><button onclick="saveIndividualResult('${s.student_id}')">Save</button></td>
+            </tr>`;
+    });
+}
+
+function calculateDivision(obt, total) {
+    if(!obt || !total || total == 0) return "---";
+    const per = (parseInt(obt) / parseInt(total)) * 100;
+    if(per >= 60) return "<span style='color:green;'>1st Div</span>";
+    if(per >= 45) return "<span style='color:blue;'>2nd Div</span>";
+    if(per >= 33) return "<span style='color:orange;'>3rd Div</span>";
+    return "<span style='color:red;'>Fail</span>";
+}
+
+async function saveIndividualResult(sid) {
+    const obt = document.getElementById(`obt_${sid}`).value;
+    const total = document.getElementById('bulk_total_marks').value;
+    const exDate = document.getElementById('bulk_exam_date').value;
+    if(!total || !exDate) return alert("Total Marks & Date required!");
+    const res = await fetch('/api/update-student-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: sid, obtained_marks: obt, total_marks: total, exam_date: exDate })
+    });
+    if(res.ok) document.getElementById(`div_${sid}`).innerHTML = calculateDivision(obt, total);
+}
+
+const adminProfileModal = document.getElementById('adminProfileModal');
+document.getElementById('openAdminProfileBtn').onclick = async () => {
+    adminProfileModal.style.display = "block";
+    const response = await fetch('/api/get-admin-profile');
+    const data = await response.json();
+    if(data.admin_userid) {
+        document.getElementById('adm_name').value = data.admin_name || "";
+        document.getElementById('adm_userid').value = data.admin_userid || "";
+        document.getElementById('adm_pass').value = data.admin_pass || "";
+        document.getElementById('adm_mobile').value = data.admin_mobile || "";
+    }
+};
+
+document.getElementById('adminProfileForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const formData = {
+        admin_name: document.getElementById('adm_name').value,
+        admin_userid: document.getElementById('adm_userid').value,
+        admin_pass: document.getElementById('adm_pass').value,
+        admin_mobile: document.getElementById('adm_mobile').value
+    };
+    const response = await fetch('/api/update-admin-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    });
+    const result = await response.json();
+    if(result.success) { alert("Profile Updated!"); adminProfileModal.style.display = "none"; }
+};
+// ==========================================
+// HOME SLIDER MANAGEMENT (MONGODB VERSION)
+// ==========================================
+
+// 1. Modal Control
+const sliderModal = document.getElementById('sliderModal');
+const openSliderBtn = document.getElementById('openSliderBtn');
+
+// Slider Button Click hone par modal khulega aur photos load hongi
+if (openSliderBtn) {
+    openSliderBtn.onclick = () => {
+        sliderModal.style.display = "block";
+        loadSliderPhotos(); // Database se photos fetch karega
+    }
+}
+
+// 2. Photo Upload aur Database mein Save karna
 async function uploadSliderPhoto() {
     const fileInput = document.getElementById('sliderInput');
     const file = fileInput.files[0];
-    if (!file) return alert("Select photo!");
+    
+    if (!file) return alert("Please select a photo first!");
 
+    // Loading indicator (optional)
     const btn = event.target;
-    btn.innerHTML = 'Uploading...';
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
     btn.disabled = true;
 
-    try {
-        // Slider Photo ko compress karein
-        const compressedBase64 = await compressImage(file);
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const base64Photo = e.target.result;
 
-        const response = await fetch('/api/add-slider', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ photo: compressedBase64 })
-        });
-        if((await response.json()).success) { alert("Saved!"); loadSliderPhotos(); }
-    } catch (err) { alert("Error!"); } finally { btn.innerHTML = "Upload Photo"; btn.disabled = false; }
+        try {
+            const response = await fetch('/api/add-slider', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photo: base64Photo })
+            });
+
+            const result = await response.json();
+            if(result.success) {
+                alert("✅ Photo saved to MongoDB!");
+                fileInput.value = ""; // Input clear karein
+                loadSliderPhotos(); // List refresh karein
+            } else {
+                alert("❌ Upload failed: " + result.error);
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            alert("Server connection error!");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
+    reader.readAsDataURL(file);
 }
 
+// 3. Database se Photos load karke Dashboard par dikhana
 async function loadSliderPhotos() {
     const container = document.getElementById('sliderPreviewContainer');
-    const response = await fetch('/api/get-sliders');
-    const photos = await response.json();
-    container.innerHTML = photos.map(p => `
-        <div style="position: relative;">
-            <img src="${p.photo}" style="width: 100px; height: 60px; object-fit: cover; border-radius:5px;">
-            <button onclick="deleteSliderPhoto('${p._id}')" style="position:absolute; top:0; right:0; background:red; color:white;">X</button>
-        </div>
-    `).join('');
+    
+    try {
+        container.innerHTML = '<p style="color: #6c5ce7;"><i class="fas fa-sync fa-spin"></i> Loading photos...</p>';
+        
+        const response = await fetch('/api/get-sliders');
+        const photos = await response.json();
+
+        if (!photos || photos.length === 0) {
+            container.innerHTML = "<p style='color:#888;'>No photos added to slider yet.</p>";
+            return;
+        }
+
+        // Photos ko grid layout mein dikhana
+        container.innerHTML = photos.map(p => `
+            <div style="position: relative; border: 2px solid #6c5ce7; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <img src="${p.photo}" style="width: 100%; height: 100px; object-fit: cover; display: block;">
+                <button onclick="deleteSliderPhoto('${p._id}')" 
+                        style="position: absolute; top: 5px; right: 5px; background: rgba(231, 76, 60, 0.9); color: white; border: none; border-radius: 4px; cursor: pointer; padding: 5px 8px; font-size: 12px; transition: 0.3s;"
+                        onmouseover="this.style.background='#c0392b'" 
+                        onmouseout="this.style.background='rgba(231, 76, 60, 0.9)'">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error("Error loading photos:", err);
+        container.innerHTML = "<p style='color:red;'>Error loading data from server.</p>";
+    }
 }
 
+// 4. Database se Photo delete karna
 async function deleteSliderPhoto(id) {
-    if(!confirm("Delete?")) return;
-    await fetch(`/api/delete-slider/${id}`, { method: 'DELETE' });
-    loadSliderPhotos();
+    if(!confirm("Are you sure? This photo will be removed from the Home Slider.")) return;
+
+    try {
+        const response = await fetch(`/api/delete-slider/${id}`, { 
+            method: 'DELETE' 
+        });
+        const result = await response.json();
+        
+        if(result.success) {
+            loadSliderPhotos(); // List refresh karein
+        } else {
+            alert("Delete failed!");
+        }
+    } catch (err) {
+        console.error("Delete error:", err);
+        alert("Server error while deleting.");
+    }
 }
 
-// --- CLASS SYSTEM CONFIGURATION (With Compression) ---
+// --- CLASS SYSTEM CONFIGURATION ---
+
 const classList = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "I.A.", "I.Sc.", "I.Com.", "B.A.", "B.Sc.", "B.Com."];
 const subjectsArray = ["Hindi", "English", "Maths", "Sanskrit", "Science", "Social Science", "Physics", "Chemistry", "Biology", "History", "Geography", "Economics", "Accountancy", "Business Studies", "Philosophy"];
 
+// 1. Open Main Class Selection Modal
 document.getElementById('openClassSystemBtn').onclick = () => {
     const grid = document.getElementById('class_button_grid');
-    grid.innerHTML = classList.map(cls => `<button onclick="openClassForm('${cls}')" class="btn-primary" style="background:#34495e;">${cls}</button>`).join('');
+    grid.innerHTML = classList.map(cls => `
+        <button onclick="openClassForm('${cls}')" class="btn-primary" style="margin:0; background:#34495e; font-size:14px;">${cls}</button>
+    `).join('');
     document.getElementById('classSystemModal').style.display = "block";
 };
 
+// 2. Open Form for Specific Class
 async function openClassForm(cls) {
     document.getElementById('config_target_class').value = cls;
-    document.getElementById('current_editing_class').innerText = "Managing: " + cls;
+    document.getElementById('current_editing_class').innerText = "Managing Class: " + cls;
+    
+    // Banner Input aur Previous Preview reset karein
+    const bannerInput = document.getElementById('cls_banner');
+    if(bannerInput) bannerInput.value = ""; 
+    const oldPreview = document.getElementById('banner-preview');
+    if(oldPreview) oldPreview.remove();
+
+    // Fetch Teachers to auto-detect names
+    const tRes = await fetch('/api/get-teachers');
+    const teachers = await tRes.json();
+    
     const container = document.getElementById('subject_config_container');
-    container.innerHTML = subjectsArray.map(sub => `
-        <div style="margin-bottom:10px;">
-            <label><input type="checkbox" id="check_${sub}" onchange="toggleSubjectInputs('${sub}', this.checked)"> ${sub}</label>
-            <div id="link_box_${sub}" style="display:none; margin-left:20px;">
-                <div id="inputs_container_${sub}"><input type="text" name="${sub}_links[]" placeholder="YT Link"></div>
-                <button type="button" onclick="addLinkInput('${sub}')">+ Add Link</button>
+    container.innerHTML = "";
+
+    subjectsArray.forEach(sub => {
+        // Find teacher who teaches this class AND this subject
+        const assignedTeacher = teachers.find(t => t.classes?.includes(cls) && t.subjects?.includes(sub));
+        const teacherName = assignedTeacher ? assignedTeacher.teacher_name : "Not Assigned";
+
+        const row = document.createElement('div');
+        row.style = "background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:10px; border-left:4px solid #ddd;";
+        row.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-weight:bold; cursor:pointer;">
+                    <input type="checkbox" id="check_${sub}" onchange="toggleSubjectInputs('${sub}', this.checked)"> ${sub}
+                </label>
+                <span style="font-size:11px; color:#2980b9;"><b>Teacher:</b> ${teacherName}</span>
             </div>
-        </div>
-    `).join('');
+            <div id="link_box_${sub}" style="display:none; margin-top:10px; padding-left:20px;">
+                <div id="inputs_container_${sub}">
+                    <input type="text" name="${sub}_links[]" placeholder="YouTube Link" style="width:80%; margin-bottom:5px;">
+                </div>
+                <button type="button" onclick="addLinkInput('${sub}')" style="font-size:10px; background:#6c5ce7; color:white; border:none; padding:4px 8px; border-radius:4px;">+ Add More Link</button>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+
     document.getElementById('classConfigModal').style.display = "block";
-    loadExistingClassData(cls);
+    loadExistingClassData(cls); // Puraana data load karne ke liye
 }
 
+// 3. UI Helpers
 function toggleSubjectInputs(sub, isChecked) {
-    document.getElementById(`link_box_${sub}`).style.display = isChecked ? "block" : "none";
+    const box = document.getElementById(`link_box_${sub}`);
+    if(box) box.style.display = isChecked ? "block" : "none";
 }
+
 function addLinkInput(sub) {
     const cont = document.getElementById(`inputs_container_${sub}`);
     const input = document.createElement('input');
-    input.name = `${sub}_links[]`; input.placeholder = "YT Link";
+    input.type = "text";
+    input.name = `${sub}_links[]`;
+    input.placeholder = "YouTube Link";
+    input.style = "width:80%; margin-bottom:5px; display:block;";
     cont.appendChild(input);
 }
 
+// 4. Save Logic (Integrated with Photo/Base64)
 document.getElementById('classDetailsForm').onsubmit = async (e) => {
     e.preventDefault();
     const cls = document.getElementById('config_target_class').value;
     const intro = document.getElementById('cls_intro').value;
     const bannerFile = document.getElementById('cls_banner').files[0];
+    
     let bannerBase64 = "";
 
-    // Class Banner ko compress karein
+    // Agar nayi photo select ki hai to use Base64 mein badlein
     if (bannerFile) {
-        bannerBase64 = await compressImage(bannerFile);
+        bannerBase64 = await toBase64(bannerFile);
     } else {
+        // Agar nayi photo nahi hai, to preview wali purani photo hi rehne dein
         const preview = document.getElementById('banner-preview');
         bannerBase64 = preview ? preview.src : "";
     }
 
     let subjectData = {};
     subjectsArray.forEach(sub => {
-        const cb = document.getElementById(`check_${sub}`);
-        if(cb && cb.checked) {
-            subjectData[sub] = Array.from(document.getElementsByName(`${sub}_links[]`)).map(i => i.value).filter(v => v.trim() !== "");
+        const checkbox = document.getElementById(`check_${sub}`);
+        if(checkbox && checkbox.checked) {
+            const links = Array.from(document.getElementsByName(`${sub}_links[]`))
+                               .map(i => i.value)
+                               .filter(v => v.trim() !== "");
+            subjectData[sub] = links;
         }
     });
+
+    const finalData = { 
+        class_name: cls, 
+        banner: bannerBase64, 
+        intro_video: intro, 
+        subjects: subjectData 
+    };
 
     const res = await fetch('/api/save-class-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ class_name: cls, banner: bannerBase64, intro_video: intro, subjects: subjectData })
+        body: JSON.stringify(finalData)
     });
-    if(res.ok) { alert("Saved!"); document.getElementById('classConfigModal').style.display = "none"; }
+
+    if(res.ok) {
+        alert("Class Content Saved Successfully! ✅");
+        document.getElementById('classConfigModal').style.display = "none";
+    } else {
+        alert("Error saving data! ❌");
+    }
 };
 
+// 5. Load Previous Data (Full Implementation)
 async function loadExistingClassData(cls) {
-    const res = await fetch(`/api/get-class-config/${cls}`);
-    const data = await res.json();
-    if(data) {
-        document.getElementById('cls_intro').value = data.intro_video || "";
-        if(data.banner) {
-            let preview = document.getElementById('banner-preview');
-            if(!preview) {
-                preview = document.createElement('img'); preview.id = 'banner-preview';
-                preview.style = "width:100px; display:block; margin-top:10px;";
-                document.getElementById('cls_banner').after(preview);
+    try {
+        const res = await fetch(`/api/get-class-config/${cls}`);
+        const data = await res.json();
+        
+        if(data) {
+            // Intro Video fill karein
+            document.getElementById('cls_intro').value = data.intro_video || "";
+
+            // Banner Preview logic
+            if(data.banner) {
+                const bannerInput = document.getElementById('cls_banner');
+                let preview = document.getElementById('banner-preview');
+                if(!preview) {
+                    preview = document.createElement('img');
+                    preview.id = 'banner-preview';
+                    preview.style = "width:100px; height:60px; object-fit:cover; margin-top:10px; display:block; border-radius:5px; border:1px solid #ddd;";
+                    bannerInput.after(preview);
+                }
+                preview.src = data.banner;
             }
-            preview.src = data.banner;
+
+            // Subjects aur Links fill karein
+            if(data.subjects) {
+                for (const sub in data.subjects) {
+                    const cb = document.getElementById(`check_${sub}`);
+                    if(cb) {
+                        cb.checked = true;
+                        toggleSubjectInputs(sub, true); // Link box kholne ke liye
+                        
+                        const cont = document.getElementById(`inputs_container_${sub}`);
+                        if(cont) {
+                            cont.innerHTML = ""; // Purane empty inputs saaf karein
+                            data.subjects[sub].forEach(link => {
+                                const input = document.createElement('input');
+                                input.type = "text";
+                                input.name = `${sub}_links[]`;
+                                input.value = link;
+                                input.style = "width:80%; margin-bottom:5px; display:block;";
+                                cont.appendChild(input);
+                            });
+                        }
+                    }
+                }
+            }
         }
+    } catch (err) {
+        console.error("Error loading existing class data:", err);
     }
 }
