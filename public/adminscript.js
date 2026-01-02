@@ -802,3 +802,78 @@ async function loadExistingClassData(cls) {
         console.error("Error loading existing class data:", err);
     }
 }
+
+function processImage() {
+    const fileInput = document.getElementById('compInput');
+    const type = document.getElementById('compType').value;
+    const status = document.getElementById('compStatus');
+    const canvas = document.getElementById('compCanvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!fileInput.files[0]) {
+        alert("Pehle image select karein!");
+        return;
+    }
+
+    status.innerText = "Processing...";
+    const reader = new FileReader();
+    reader.readAsDataURL(fileInput.files[0]);
+
+    reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+
+        img.onload = function() {
+            let targetWidth, targetHeight;
+
+            if (type === 'logo') {
+                // Square Crop for Logo
+                targetWidth = 200;
+                targetHeight = 200;
+            } else if (type === 'banner') {
+                // Wide Crop for Banner
+                targetWidth = 1200;
+                targetHeight = 400;
+            } else {
+                // No crop for Photo, just standard size
+                targetWidth = img.width;
+                targetHeight = img.height;
+                // Scale down if too large to keep under 100kb
+                if(targetWidth > 1500) {
+                    targetHeight = (1500 / targetWidth) * targetHeight;
+                    targetWidth = 1500;
+                }
+            }
+
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            // Logic to Crop from Center
+            let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
+            
+            if (type !== 'photo') {
+                const aspect = targetWidth / targetHeight;
+                if (img.width / img.height > aspect) {
+                    sourceWidth = img.height * aspect;
+                    sourceX = (img.width - sourceWidth) / 2;
+                } else {
+                    sourceHeight = img.width / aspect;
+                    sourceY = (img.height - sourceHeight) / 2;
+                }
+            }
+
+            ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
+
+            // 0.7 quality ensures it stays around/under 100KB
+            const processedData = canvas.toDataURL('image/jpeg', 0.7);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.download = `BBCC_${type}_${Date.now()}.jpg`;
+            downloadLink.href = processedData;
+            downloadLink.click();
+
+            status.innerText = "Done! Image Downloaded.";
+            status.style.color = "#27ae60";
+        };
+    };
+}
