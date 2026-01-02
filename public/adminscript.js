@@ -5,7 +5,7 @@
     const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
     if (isAdminLoggedIn !== 'true') {
         // Agar login nahi hai toh seedha login page (index.html) par bhej dega
-        window.location.href = 'index.html'; 
+        window.location.href = 'login.html'; 
     }
 })();
 
@@ -13,7 +13,7 @@
 function logoutAdmin() {
     if(confirm("Are you sure you want to logout?")) {
         localStorage.removeItem('isAdminLoggedIn'); // Login status delete karein
-        window.location.href = 'index.html'; // First page par bhejein
+        window.location.href = 'login.html'; // First page par bhejein
     }
 }
 
