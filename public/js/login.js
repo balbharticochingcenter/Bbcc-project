@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const footerTwitter = document.getElementById('footer-twitter');
     const footerHelp = document.getElementById('footer-help');
 
+    // Login Elements (Naya Add Kiya Gaya)
+    const loginModal = document.getElementById('loginModal');
+    const loginBtn = document.getElementById('loginBtn');
+    const closeLogin = document.getElementById('closeLogin');
     const loginForm = document.getElementById('loginForm');
     const loginMessage = document.getElementById('loginMessage');
 
@@ -57,7 +61,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         finally { loader.style.display = 'none'; }
     }
 
-    // --- 2. Login Logic ---
+    // --- 2. Login Logic (Updated for Popup) ---
+    // Login Modal Open karne ke liye
+    if(loginBtn) {
+        loginBtn.onclick = () => {
+            loginModal.style.display = 'flex';
+        };
+    }
+
+    // Login Modal Close karne ke liye
+    if(closeLogin) {
+        closeLogin.onclick = () => {
+            loginModal.style.display = 'none';
+            loginMessage.textContent = ""; // Purana error message saaf karne ke liye
+        };
+    }
+
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         loader.style.display = 'flex';
@@ -79,9 +98,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 else if (students.find(s => s.student_id === userId && s.pass === password)) loginType = 'student';
             }
 
-            if (loginType === 'admin') window.location.href = '/admin';
-            else if (loginType) alert(`Login Successful as ${loginType.toUpperCase()}!`);
-            else loginMessage.textContent = "❌ Invalid ID or Password!";
+            if (loginType === 'admin') {
+                window.location.href = '/admin';
+            } else if (loginType) {
+                alert(`✅ Login Successful as ${loginType.toUpperCase()}!`);
+                loginModal.style.display = 'none'; // Login ke baad modal band karein
+            } else {
+                loginMessage.textContent = "❌ Invalid ID or Password!";
+            }
         } catch (err) { loginMessage.textContent = "❌ Server Error!"; }
         finally { loader.style.display = 'none'; }
     });
@@ -93,6 +117,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.onclick = () => {
             resultModal.style.display = 'none';
             regModal.style.display = 'none';
+            // Agar class modal ya login modal button isi class ko use kar rahe hain
+            if(loginModal) loginModal.style.display = 'none';
         }
     });
 
@@ -173,10 +199,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Outside click
+    // Outside click (Updated to include loginModal)
     window.onclick = (event) => {
         if (event.target == regModal) regModal.style.display = "none";
         if (event.target == resultModal) resultModal.style.display = "none";
+        if (event.target == loginModal) loginModal.style.display = "none";
         if (event.target == document.getElementById('classDetailModal')) {
             document.getElementById('classDetailModal').style.display = "none";
         }
@@ -219,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadClasses(); 
 });
 
-// --- GLOBAL FUNCTIONS ---
+// --- GLOBAL FUNCTIONS --- (Inmein koi badlav nahi kiya gaya)
 
 let currentSlide = 0;
 let totalSlides = 0;
@@ -315,7 +342,6 @@ async function openClassModal(className) {
         const config = await response.json();
 
         if (response.ok && config) {
-            // --- VIDEO AUTO-CONVERTER & AUTOPLAY ---
             if (config.intro_video) {
                 let videoUrl = config.intro_video;
                 if (videoUrl.includes("watch?v=")) {
@@ -334,7 +360,6 @@ async function openClassModal(className) {
                 videoContainer.innerHTML = `<div class="no-data">No Intro Video Available</div>`;
             }
 
-            // --- UPDATED SUBJECT LIST (ONLY SUBJECT NAME) ---
             if (config.subjects && Object.keys(config.subjects).length > 0) {
                 let html = '<ul class="subject-list" style="list-style: none; padding: 0;">';
                 for (const subject of Object.keys(config.subjects)) {
