@@ -232,29 +232,51 @@ body {
 .slider-wrapper img { min-width: 100%; height: 100%; object-fit: cover; }
 
 /* --- Teacher Ring Section --- */
-.teacher-ring-section { padding: 50px 0; background: #0f0f0f; text-align: center; }
-/* Container jo extra photos ko chhupayega */
-.ring-container {
-    overflow: hidden;
+/* Container ko pura wide rakhein */
+.teacher-ring-section {
     width: 100%;
-    padding: 40px 0;
+    overflow: hidden; /* Bahar nikle hue cards chhupane ke liye */
+    background: #0f0f0f;
+    padding: 60px 0;
 }
 
-/* Track jo cards ko ek line mein rakhega aur move karega */
+/* Ye main container hai jo screen ke hisab se rahega */
+.ring-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Ye wo track hai jo cards ko ek lambi line mein rakhega */
 .ring-track {
     display: flex;
-    gap: 40px;
-    width: max-content; /* Cards ki width ke hisab se badhega */
-    animation: slide-teachers 20s linear infinite; /* Sliding animation */
+    width: max-content; /* Cards ki sankhya ke hisab se lambai badh jayegi */
+    gap: 50px; /* Cards ke beech ki doori */
+    animation: scroll-left 25s linear infinite; /* Left ki taraf slide karega */
 }
 
-/* Jab mouse upar ho toh ruk jaye */
+/* Mouse le jane par ruk jaye (Optional) */
 .ring-track:hover {
     animation-play-state: paused;
 }
 
+/* Animation Logic */
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        /* JS mein humne cards double kiye hain, isliye 50% par loop perfect dikhega */
+        transform: translateX(-50%); 
+    }
+}
+
+/* Teacher Card ka style */
 .teacher-card {
-    text-align: center;
+    flex-shrink: 0; /* Card pichke nahi, isliye ye zaroori hai */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     color: white;
 }
 
@@ -262,33 +284,25 @@ body {
     width: 130px;
     height: 130px;
     border-radius: 50%;
-    padding: 5px; /* Border ki motai */
+    padding: 5px;
     background: linear-gradient(45deg, #ff00ea, #00d4ff, #ffcc00, #00ff6a);
     background-size: 300% 300%;
     animation: magic-ring 4s linear infinite;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .ring-wrapper img {
     width: 100%;
     height: 100%;
-    border-radius: 50%; /* Photo ko bhi gol karega */
+    border-image: none;
+    border-radius: 50%;
     object-fit: cover;
-    background: #222; /* Photo load na ho toh piche ka color */
+    background: #222;
 }
 
-/* --- Animations --- */
-@keyframes slide-teachers {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); } /* Half track move hoga kyunki humne code mein clone kiya hai */
-}
 
-@keyframes magic-ring { 
-    0% { background-position: 0% 50%; } 
-    50% { background-position: 100% 50%; } 
-    100% { background-position: 0% 50%; } 
-}
 /* --- EXPLORE OUR CLASSES (MAGICAL CARDS) --- */
 .class-config-section {
     padding: 60px 20px;
