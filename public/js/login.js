@@ -269,8 +269,6 @@ async function loadTeacherRing() {
     } catch (err) { console.error("Teacher Ring Error:", err); }
 }
 
-// --- UPDATED: EXPLORE OUR CLASSES LOGIC ---
-
 async function loadClasses() {
     const classList = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "I.Sc.", "I.A.", "I.Com."];
     const container = document.getElementById('class-cards-container');
@@ -293,7 +291,7 @@ async function loadClasses() {
                 <img src="${bannerImg}" class="class-banner-img" alt="Class Banner">
                 <div class="class-card-icon"><i class="fas fa-university"></i></div>
                 <h3 class="class-name-text">Class ${className}</h3>
-                <p>Click to explore subjects and details.</p>
+                <p>Click to explore subjects.</p>
                 <button class="view-now-btn">View Now</button>
             </div>
         </div>
@@ -317,40 +315,32 @@ async function openClassModal(className) {
         const config = await response.json();
 
         if (response.ok && config) {
-            // --- VIDEO AUTO-CONVERTER & AUTOPLAY LOGIC ---
+            // --- VIDEO AUTO-CONVERTER & AUTOPLAY ---
             if (config.intro_video) {
                 let videoUrl = config.intro_video;
-                
-                // Convert normal YouTube link to Embed link
                 if (videoUrl.includes("watch?v=")) {
                     videoUrl = videoUrl.replace("watch?v=", "embed/");
                 } else if (videoUrl.includes("youtu.be/")) {
                     videoUrl = videoUrl.replace("youtu.be/", "www.youtube.com/embed/");
                 }
-
-                // Add Autoplay and Mute parameters
                 let separator = videoUrl.includes('?') ? '&' : '?';
                 let finalSrc = `${videoUrl}${separator}autoplay=1&mute=1&rel=0&enablejsapi=1`;
 
                 videoContainer.innerHTML = `
-                    <iframe 
-                        width="100%" 
-                        height="200" 
-                        src="${finalSrc}" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>`;
+                    <iframe width="100%" height="200" src="${finalSrc}" 
+                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen></iframe>`;
             } else {
                 videoContainer.innerHTML = `<div class="no-data">No Intro Video Available</div>`;
             }
 
+            // --- UPDATED SUBJECT LIST (ONLY SUBJECT NAME) ---
             if (config.subjects && Object.keys(config.subjects).length > 0) {
                 let html = '<ul class="subject-list" style="list-style: none; padding: 0;">';
-                for (const [subject, detail] of Object.entries(config.subjects)) {
-                    html += `<li style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                                <i class="fas fa-book-open" style="color: #28a745; margin-right: 8px;"></i>
-                                <strong>${subject}:</strong> ${detail}
+                for (const subject of Object.keys(config.subjects)) {
+                    html += `<li style="margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 16px; font-weight: 500;">
+                                <i class="fas fa-check-circle" style="color: #28a745; margin-right: 10px;"></i>
+                                ${subject}
                              </li>`;
                 }
                 html += '</ul>';
