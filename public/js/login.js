@@ -284,3 +284,80 @@ async function loadTeacherRing() {
 document.addEventListener('DOMContentLoaded', () => {
     loadTeacherRing();
 });
+// 1. Class Config Load Karna aur Cards Banana
+async function loadClassCards() {
+    const classes = ["10th", "I.Sc.", "I.A.", "9th"]; // Aap apni list yahan de sakte hain
+    const container = document.getElementById('class-cards-container');
+    container.innerHTML = '';
+
+    for (let cls of classes) {
+        try {
+            const res = await fetch(`/api/get-class-config/${cls}`);
+            const config = await res.json();
+            
+            if (res.ok) {
+                const card = document.createElement('div');
+                card.className = 'class-card';
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <img src="${config.banner || 'default-banner.jpg'}" class="class-banner-img">
+                        <h3>Class ${cls}</h3>
+                        <button class="view-now-btn" onclick="openClassDetail('${cls}')">VIEW NOW</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        } catch (err) { console.log("Class load error:", err); }
+    }
+}
+
+// 2. Popup Open Karna
+async function openClassDetail(className) {
+    const modal = document.getElementById('classDetailModal');
+    const res = await fetch(`/api/get-class-config/${className}`);
+    const config = await res.json();
+
+    // Set Title & Video
+    document.getElementById('modal-class-title').innerText = "Class: " + className;
+    const videoId = config.intro_video.split('v=')[1] || config.intro_video.split('/').pop();
+    document.getElementById('video-container').innerHTML = `
+        <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
+    `;
+
+    // Set Subjects
+    const subContainer = document.getElementById('subject-list-container');
+    subContainer.innerHTML = '';
+    if (config.subjects) {
+        Object.keys(config.subjects).forEach(sub => {
+            subContainer.innerHTML += `<div class="subject-chip"><i class="fas fa-book"></i> ${sub}</div>`;
+        });
+    }
+
+    // Load Class Teachers
+    const tRes = await fetch('/api/get-teachers');
+    const teachers = await tRes.json();
+    const tContainer = document.getElementById('class-teachers-display');
+    tContainer.innerHTML = '';
+    
+    teachers.filter(t => t.classes.includes(className)).forEach(t => {
+        tContainer.innerHTML += `
+            <div class="mini-t-card">
+                <img src="${t.photo || 'default-avatar.png'}">
+                <p>${t.teacher_name}</p>
+            </div>
+        `;
+    });
+
+    modal.style.display = "block";
+}
+
+// Modal Close logic
+document.getElementById('closeClassModal').onclick = () => {
+    document.getElementById('classDetailModal').style.display = "none";
+    document.getElementById('video-container').innerHTML = ''; // Stop video
+};
+
+// Page load hone par cards load karein
+window.addEventListener('DOMContentLoaded', () => {
+    loadClassCards();
+});
