@@ -79,7 +79,13 @@ app.post('/api/update-student-data', async (req, res) => {
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
+// ✅ ADDED: Student Delete Code
+app.delete('/api/delete-student', async (req, res) => {
+    try {
+        await Student.findOneAndDelete({ student_id: req.body.student_id });
+        res.json({ success: true, message: "Student deleted" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
 // Naya logic: Student fees checkbox ke liye (Agar front-end use kar raha hai)
 app.post('/api/update-fees-status', async (req, res) => {
     try {
