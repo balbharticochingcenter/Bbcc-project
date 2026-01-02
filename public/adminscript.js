@@ -6,6 +6,15 @@ const toBase64 = file => new Promise((resolve, reject) => {
     reader.onerror = error => reject(error);
 });
 
+// --- HELPER: Mahine ka naam nikalne ke liye (Jan-24 format) ---
+function getMonthLabel(joiningDateStr, index) {
+    const date = joiningDateStr ? new Date(joiningDateStr) : new Date();
+    // Index 1 matlab joining month, isliye (index - 1)
+    date.setMonth(date.getMonth() + (index - 1));
+    const options = { month: 'short', year: '2-digit' };
+    return date.toLocaleString('en-US', options).replace(' ', '-');
+}
+
 // --- INITIALIZE DASHBOARD ---
 function initDashboard() {
     loadSettings();
@@ -94,10 +103,9 @@ async function loadTeacherData() {
         return;
     }
 
-    container.innerHTML = ""; // Purana data saaf karein
+    container.innerHTML = ""; 
 
     teachers.forEach(t => {
-        // Salary Months Calculation
         const joinDate = t.joining_date ? new Date(t.joining_date) : new Date();
         const diff = (new Date().getFullYear() - joinDate.getFullYear()) * 12 + (new Date().getMonth() - joinDate.getMonth());
         const totalMonths = diff < 0 ? 1 : diff + 1;
@@ -105,13 +113,13 @@ async function loadTeacherData() {
         let checks = "";
         for(let i=1; i<=totalMonths; i++) {
             const checked = t.paid_months?.includes(i) ? "checked" : "";
+            const monthName = getMonthLabel(t.joining_date, i); // Updated Label
             checks += `
-                <label style="background:#eee; padding:2px 5px; border-radius:4px; font-size:11px; cursor:pointer;">
-                    <input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> M${i}
+                <label style="background:#eee; padding:2px 5px; border-radius:4px; font-size:11px; cursor:pointer; min-width:55px; display:inline-block; text-align:center;">
+                    <input type="checkbox" ${checked} onchange="updatePaidStatus('${t.teacher_id}', ${i}, this.checked)"> ${monthName}
                 </label>`;
         }
 
-        // Card Design Injecting
         container.innerHTML += `
             <div class="teacher-card" style="background:white; padding:15px; border-radius:15px; color:#333; display:flex; flex-direction:column; gap:10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                 <div style="display:flex; align-items:center; gap:12px;">
@@ -138,7 +146,7 @@ async function loadTeacherData() {
             </div>`;
     });
 }
-//--------------------------------------------------------//
+
 // --- 5. SHOW FULL PROFILE POPUP ---
 async function showFullProfile(tId) {
     const res = await fetch('/api/get-teachers');
@@ -171,104 +179,68 @@ async function updatePaidStatus(tId, month, status) {
     });
 }
 
-// --- 7. SEARCH & UPDATE LOGIC (Fixed for Teacher ID & Case Sensitivity) ---
+// --- 7. SEARCH & UPDATE LOGIC ---
 async function searchTeacher() {
-    // ID ko search karte waqt Capital kar diya taaki mismatch na ho
     const id = document.getElementById('search_tid').value.trim().toUpperCase();
-    
     if(!id) return alert("Pehle Teacher ID likhein!");
-
     const res = await fetch('/api/get-teachers');
     const teachers = await res.json();
     const t = teachers.find(x => x.teacher_id === id);
 
     if(t) {
-        // Hidden field aur form fields mein data bharna
         document.getElementById('up_id').value = t.teacher_id;
         document.getElementById('up_name').value = t.teacher_name || "";
         document.getElementById('up_mobile').value = t.mobile || "";
         document.getElementById('up_pass').value = t.pass || "";
         document.getElementById('up_salary').value = t.salary || "";
-        
-        // Reset and Check Checkboxes (Classes & Subjects)
         document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
-        
         t.classes?.forEach(c => {
             const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
             if(cb) cb.checked = true;
         });
-        
         t.subjects?.forEach(s => {
             const cb = document.querySelector(`#up_subjects_div input[value="${s}"]`);
             if(cb) cb.checked = true;
         });
-        
         alert("Teacher data mil gaya aur load ho gaya! ✅");
     } else { 
         alert("Teacher ID '" + id + "' nahi mili!"); 
     }
 }
 
-// Update Form Submission Logic
 document.getElementById("updateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
-    // Zaroori Fix: Hidden field se teacher_id confirm karein
     data.teacher_id = document.getElementById('up_id').value; 
-    
-    // Checkboxes ka data extract karein
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
-
-    if(!data.teacher_id) {
-        alert("Pehle kisi teacher ko search karke load karein!");
-        return;
-    }
-
+    if(!data.teacher_id) return alert("Pehle kisi teacher ko search karke load karein!");
     try {
         const res = await fetch('/api/update-teacher-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-
-        if(res.ok) { 
-            alert("Teacher Data Updated Successfully! ✅"); 
-            modals.update.style.display = "none"; 
-            loadTeacherData(); // List ko refresh karein
-        } else {
-            alert("Update failed! Server check karein.");
-        }
-    } catch (err) {
-        console.error("Error during update:", err);
-        alert("Server connection error!");
-    }
+        if(res.ok) { alert("Teacher Data Updated Successfully! ✅"); modals.update.style.display = "none"; loadTeacherData(); }
+    } catch (err) { alert("Server connection error!"); }
 };
-// --- 8. DELETE TEACHER (Improved) ---
+
+// --- 8. DELETE TEACHER ---
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
     if(!id) return alert("Pehle kisi Teacher ko Search karein!");
-    
     if(!confirm("Kya aap sach mein is account ko delete karna chahte hain?")) return;
-    
     try {
         const res = await fetch('/api/delete-teacher', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teacher_id: id })
         });
-        
-        if(res.ok) {
-            alert("Teacher Account Deleted! 🗑️"); 
-            modals.update.style.display="none"; 
-            loadTeacherData(); 
-        }
-    } catch (err) {
-        alert("Delete error! Connection check karein.");
-    }
+        if(res.ok) { alert("Teacher Account Deleted! 🗑️"); modals.update.style.display="none"; loadTeacherData(); }
+    } catch (err) { alert("Delete error!"); }
 }
+
 // --- 9. SAVE SYSTEM SETTINGS ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
@@ -276,7 +248,6 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     const data = Object.fromEntries(formData.entries());
     const logo = document.getElementById('logoInput').files[0];
     if (logo) data.logo = await toBase64(logo);
-
     await fetch('/api/update-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -284,6 +255,7 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     });
     alert("Settings Saved!"); loadSettings(); modals.sys.style.display="none";
 };
+
 // Student ID Auto Generation
 document.getElementById('s_name').oninput = (e) => {
     const name = e.target.value.trim().toUpperCase();
@@ -294,17 +266,13 @@ document.getElementById('s_name').oninput = (e) => {
     }
 };
 
-// Open/Close Modals for Students
 document.getElementById("openStudentBtn").onclick = () => document.getElementById("studentModal").style.display = "block";
 document.getElementById("openStudentDataBtn").onclick = () => { 
     document.getElementById("studentDataModal").style.display = "block"; 
     loadStudentData(); 
 };
 
-// Load Student Cards with Parent SMS Option
-// --- LOAD STUDENT CARDS WITH DYNAMIC SMS & WHATSAPP ---
-// --- LOAD STUDENT CARDS WITH MONTHLY FEES TRACKER ---
-// --- LOAD STUDENT CARDS (DIARY DESIGN WITH ALL DATA) ---
+// --- LOAD STUDENT CARDS WITH MONTHLY LABELS ---
 async function loadStudentData() {
     const res = await fetch('/api/get-students');
     const students = await res.json();
@@ -318,28 +286,25 @@ async function loadStudentData() {
     container.innerHTML = ""; 
 
     students.forEach(s => {
-        // --- MONTH CALCULATION LOGIC ---
         const joinDate = s.joining_date ? new Date(s.joining_date) : new Date();
         const today = new Date();
         const diff = (today.getFullYear() - joinDate.getFullYear()) * 12 + (today.getMonth() - joinDate.getMonth());
         const totalMonths = diff < 0 ? 1 : diff + 1;
 
-        // --- CHECKBOX GENERATION ---
         let checks = "";
         for(let i = 1; i <= totalMonths; i++) {
             const isPaid = s.paid_months?.includes(i) ? "checked" : "";
+            const monthName = getMonthLabel(s.joining_date, i); // Updated Label
             checks += `
-                <label class="fee-chip">
+                <label class="fee-chip" style="min-width:65px; display:inline-flex; align-items:center; gap:3px; background:#f1f2f6; padding:3px 6px; border-radius:5px; font-size:11px;">
                     <input type="checkbox" ${isPaid} onchange="updateFeesStatus('${s.student_id}', ${i}, this.checked)">
-                    <span>M${i}</span>
+                    <span style="font-weight:bold;">${monthName}</span>
                 </label>`;
         }
 
-        // --- DYNAMIC MESSAGE TEMPLATES ---
         const p_msg = `Dear Parent, your child ${s.student_name} CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
         const s_msg = `Dear STUDENT, your CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
 
-        // --- UPDATED DIARY CARD HTML (All Data Included) ---
         container.innerHTML += `
             <div class="diary-card">
                 <div style="display:flex; justify-content:space-between; align-items:start; border-bottom:1px dashed #ddd; padding-bottom:10px;">
@@ -373,9 +338,7 @@ async function loadStudentData() {
                             <a href="tel:${s.parent_mobile}" style="color:#0984e3;" title="Call Parent"><i class="fas fa-phone-alt"></i></a>
                         </div>
                     </div>
-                    
                     <div style="width:1px; background:#eee;"></div>
-
                     <div style="text-align:center;">
                         <small style="display:block; font-size:9px; margin-bottom:3px; color:#999;">STUDENT CONTACT</small>
                         <div style="display:flex; gap:10px;">
@@ -388,7 +351,7 @@ async function loadStudentData() {
 
                 <div style="margin-top:15px;">
                     <p style="font-size:10px; font-weight:bold; color:#747d8c; margin-bottom:8px; display:flex; justify-content:space-between;">
-                        <span>FEES TRACKER (UNPAID/PAID)</span>
+                        <span>FEES TRACKER</span>
                         <span style="color:#6c5ce7;">${totalMonths} Months Total</span>
                     </p>
                     <div style="display:flex; flex-wrap:wrap; gap:6px;">${checks}</div>
@@ -397,7 +360,6 @@ async function loadStudentData() {
     });
 }
 
-// --- UPDATE FEES STATUS IN DATABASE ---
 async function updateFeesStatus(stuId, month, status) {
     try {
         await fetch('/api/update-fees-status', {
@@ -405,51 +367,32 @@ async function updateFeesStatus(stuId, month, status) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ student_id: stuId, month, status })
         });
-        console.log(`Fees updated for ${stuId} - Month ${month}`);
-    } catch (err) {
-        console.error("Fees update failed:", err);
-    }
+    } catch (err) { console.error(err); }
 }
-//---------------------------------------------------------------------------
-// --- STUDENT FORM SUBMISSION ---
+
 document.getElementById("studentForm").onsubmit = async (e) => {
     e.preventDefault();
-    
-    // Form se saara data nikalna
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-
     try {
         const res = await fetch('/api/student-reg', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-
-        if (res.ok) {
-            alert("Student Registered in Database! 🎉");
-            e.target.reset(); // Form khali karein
-            document.getElementById("studentModal").style.display = "none"; // Modal band karein
-        } else {
-            alert("Database Error: Data save nahi hua.");
-        }
-    } catch (err) {
-        console.error("Connection Error:", err);
-        alert("Server se connection nahi ho pa raha hai.");
-    }
+        if (res.ok) { alert("Student Registered! 🎉"); e.target.reset(); document.getElementById("studentModal").style.display = "none"; }
+    } catch (err) { alert("Error!"); }
 };
-// --- 1. OPEN STUDENT UPDATE MODAL ---
+
 document.getElementById("openStudentUpdateBtn").onclick = () => {
     document.getElementById("studentUpdateModal").style.display = "block";
 };
 
-// --- 2. SEARCH STUDENT BY ID (FIXED FOR DATE) ---
 async function searchStudent() {
     const id = document.getElementById('search_sid').value.trim().toUpperCase();
     const res = await fetch('/api/get-students');
     const students = await res.json();
     const s = students.find(x => x.student_id === id);
-
     if(s) {
         document.getElementById('up_sid').value = s.student_id;
         document.getElementById('up_sname').value = s.student_name || "";
@@ -459,106 +402,65 @@ async function searchStudent() {
         document.getElementById('up_pmobile').value = s.parent_mobile || "";
         document.getElementById('up_sfees').value = s.fees || "";
         document.getElementById('up_sclass').value = s.student_class || "";
-        
-        // --- DATE LOAD FIX ---
         document.getElementById('up_sdoj').value = s.joining_date || ""; 
-        
         alert("Student data loaded!");
-    } else { 
-        alert("Student ID not found!"); 
-    }
+    } else { alert("Not found!"); }
 }
 
-// --- 3. UPDATE STUDENT DATA (FIXED FOR DATE) ---
 document.getElementById("studentUpdateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-
-    // --- MANUAL DATE INJECTION ---
-    // Ye line ensure karegi ki Joining Date database mein jaye
     data.joining_date = document.getElementById('up_sdoj').value;
-
     const res = await fetch('/api/update-student-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-
-    if(res.ok) { 
-        alert("Student Data Updated Successfully! ✅"); 
-        document.getElementById("studentUpdateModal").style.display="none"; 
-        loadStudentData(); // Refresh diary cards
-    } else {
-        alert("Update failed! Server error.");
-    }
+    if(res.ok) { alert("Updated! ✅"); document.getElementById("studentUpdateModal").style.display="none"; loadStudentData(); }
 };
-// --- 4. DELETE STUDENT ACCOUNT ---
+
 async function deleteStudent() {
     const id = document.getElementById('up_sid').value;
-    if(!id) return alert("Search a student first!");
-    
-    if(!confirm("Are you sure? This will delete all student records!")) return;
-    
+    if(!id) return alert("Search student!");
+    if(!confirm("Delete everything?")) return;
     const res = await fetch('/api/delete-student', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ student_id: id })
     });
-    
-    if(res.ok) {
-        alert("Student Account Deleted!"); 
-        document.getElementById("studentUpdateModal").style.display="none"; 
-        loadStudentData(); 
-    }
+    if(res.ok) { alert("Deleted!"); document.getElementById("studentUpdateModal").style.display="none"; loadStudentData(); }
 }
-//---------------------------------------------------------------------------------------
-// --- 1. RESULT MODAL CONTROL ---
+
 document.getElementById("openResultBtn").onclick = () => {
     document.getElementById("resultModal").style.display = "block";
 };
 
-// --- 2. CLASS FILTER & SEARCH LOGIC ---
 async function filterClassForResults() {
     const selectedClass = document.getElementById('res_class_filter').value;
     const res = await fetch('/api/get-students');
     const students = await res.json();
-    
-    // Sirf wahi students dikhayega jo selected class ke hain
     const classStudents = students.filter(s => s.student_class === selectedClass);
     const container = document.getElementById("resultTableBody");
     container.innerHTML = "";
-
     if(classStudents.length === 0) {
-        container.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px; color:red;'>Is class mein koi student nahi mila!</td></tr>";
+        container.innerHTML = "<tr><td colspan='5' style='color:red;'>No students!</td></tr>";
         return;
     }
-
     classStudents.forEach(s => {
-        // Marks aur Division ka calculation
         const obt = s.obtained_marks || "";
         const tot = s.total_marks || "";
-        
         container.innerHTML += `
             <tr style="border-bottom:1px solid #ddd; text-align:center;">
                 <td style="padding:12px;"><b>${s.student_id}</b></td>
                 <td>${s.student_name}</td>
-                <td>
-                    <input type="number" id="obt_${s.student_id}" value="${obt}" placeholder="Marks" style="width:70px; padding:5px; border:1px solid #ccc; border-radius:4px;">
-                </td>
-                <td id="div_${s.student_id}" style="font-weight:bold;">
-                    ${calculateDivision(obt, tot)}
-                </td>
-                <td>
-                    <button onclick="saveIndividualResult('${s.student_id}')" style="background:#6c5ce7; color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer;">
-                        <i class="fas fa-save"></i> Save
-                    </button>
-                </td>
+                <td><input type="number" id="obt_${s.student_id}" value="${obt}" style="width:70px;"></td>
+                <td id="div_${s.student_id}">${calculateDivision(obt, tot)}</td>
+                <td><button onclick="saveIndividualResult('${s.student_id}')">Save</button></td>
             </tr>`;
     });
 }
 
-// --- 3. DIVISION CALCULATION ---
 function calculateDivision(obt, total) {
     if(!obt || !total || total == 0) return "---";
     const per = (parseInt(obt) / parseInt(total)) * 100;
@@ -568,44 +470,24 @@ function calculateDivision(obt, total) {
     return "<span style='color:red;'>Fail</span>";
 }
 
-// --- 4. INDIVIDUAL SAVE LOGIC ---
 async function saveIndividualResult(sid) {
     const obt = document.getElementById(`obt_${sid}`).value;
     const total = document.getElementById('bulk_total_marks').value;
     const exDate = document.getElementById('bulk_exam_date').value;
-
-    if(!total || !exDate) {
-        alert("Please enter Total Marks and Exam Date first!");
-        return;
-    }
-
+    if(!total || !exDate) return alert("Total Marks & Date required!");
     const res = await fetch('/api/update-student-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            student_id: sid,
-            obtained_marks: obt,
-            total_marks: total,
-            exam_date: exDate
-        })
+        body: JSON.stringify({ student_id: sid, obtained_marks: obt, total_marks: total, exam_date: exDate })
     });
-
-    if(res.ok) {
-        // Live update division on the screen
-        document.getElementById(`div_${sid}`).innerHTML = calculateDivision(obt, total);
-        console.log("Result updated for: " + sid);
-    }
+    if(res.ok) document.getElementById(`div_${sid}`).innerHTML = calculateDivision(obt, total);
 }
-//-----------------------------------------------
-// Admin Profile Modal Control
+
 const adminProfileModal = document.getElementById('adminProfileModal');
 document.getElementById('openAdminProfileBtn').onclick = async () => {
     adminProfileModal.style.display = "block";
-    
-    // Server se data load karna
     const response = await fetch('/api/get-admin-profile');
     const data = await response.json();
-    
     if(data.admin_userid) {
         document.getElementById('adm_name').value = data.admin_name || "";
         document.getElementById('adm_userid').value = data.admin_userid || "";
@@ -614,7 +496,6 @@ document.getElementById('openAdminProfileBtn').onclick = async () => {
     }
 };
 
-// Form Save Karne ka logic
 document.getElementById('adminProfileForm').onsubmit = async (e) => {
     e.preventDefault();
     const formData = {
@@ -623,18 +504,11 @@ document.getElementById('adminProfileForm').onsubmit = async (e) => {
         admin_pass: document.getElementById('adm_pass').value,
         admin_mobile: document.getElementById('adm_mobile').value
     };
-
     const response = await fetch('/api/update-admin-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
     });
-
     const result = await response.json();
-    if(result.success) {
-        alert("Admin Profile Updated Successfully!");
-        adminProfileModal.style.display = "none";
-    } else {
-        alert("Error updating profile.");
-    }
+    if(result.success) { alert("Profile Updated!"); adminProfileModal.style.display = "none"; }
 };
