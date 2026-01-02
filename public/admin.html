@@ -27,6 +27,9 @@
         <button id="openModalBtn" class="btn-primary">
             <i class="fas fa-cogs"></i> System Settings
         </button>
+        <button id="openSliderBtn" class="btn-primary" style="background: #6c5ce7;">
+        <i class="fas fa-images"></i> Home Slider
+    </button>
     </div>
 
     <div class="button-group" data-label="Teacher Management">
@@ -386,6 +389,30 @@
         </form>
     </div>
 </div>
+    <div id="sliderModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close" onclick="closeModal('sliderModal')">&times;</span>
+        <h3 style="border-bottom: 2px solid #6c5ce7; margin-bottom: 15px;">
+            <i class="fas fa-images"></i> Home Slider Settings
+        </h3>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <label><b>Add New Slider Photo:</b></label>
+            <input type="file" id="sliderInput" accept="image/*" style="margin-top:10px;">
+            <button onclick="uploadSliderPhoto()" class="btn-update" style="margin-top:10px; background: #27ae60;">
+                <i class="fas fa-plus"></i> Upload & Save
+            </button>
+        </div>
+
+        <label><b>Current Slider Photos:</b></label>
+        <div id="sliderPreviewContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; max-height: 300px; overflow-y: auto;">
+            <p style="color:#888; font-size: 14px;">No photos added yet.</p>
+        </div>
+    </div>
+</div>
+
+
+    
 <footer class="magical-footer">
     <div class="social-icons">
         <a id="foot-whatsapp" href="#"><i class="fab fa-whatsapp"></i></a>
