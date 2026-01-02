@@ -19,6 +19,26 @@
         </div>
     </header>
 
+<div class="compressor-box" style="margin: 20px auto; max-width: 900px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #6c5ce7;">
+    <h3 style="text-align: center; color: #2d3436; margin-bottom: 15px;"><i class="fas fa-tools"></i> Image Auto-Crop & Compressor</h3>
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center;">
+        <input type="file" id="compInput" accept="image/*" style="border: 2px dashed #6c5ce7; padding: 10px; border-radius: 8px;">
+        
+        <select id="compType" style="padding: 12px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold;">
+            <option value="logo">AS LOGO (Square Crop)</option>
+            <option value="banner">AS BANNER (Wide Crop)</option>
+            <option value="photo">AS PHOTO (Only Compress)</option>
+        </select>
+
+        <button onclick="processImage()" style="background: #6c5ce7; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;">
+            <i class="fas fa-file-download"></i> Process & Download
+        </button>
+    </div>
+    <p id="compStatus" style="text-align: center; margin-top: 10px; font-weight: 500; color: #636e72;"></p>
+    <canvas id="compCanvas" style="display:none;"></canvas>
+</div>
+    
     <div class="dashboard">
     <div class="button-group" data-label="System Control">
         <button id="openAdminProfileBtn" class="btn-primary" style="background: #34495e;">
