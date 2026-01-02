@@ -253,3 +253,34 @@ function moveSlider(direction) {
 
     wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
+// Teachers ko fetch karke Ring Slider mein dikhane ka function
+async function loadTeacherRing() {
+    try {
+        const response = await fetch('/api/get-teachers');
+        const teachers = await response.json();
+        const ringContainer = document.getElementById('teacher-ring');
+
+        if (teachers.length > 0) {
+            ringContainer.innerHTML = teachers.map(t => `
+                <div class="teacher-card">
+                    <div class="ring-wrapper">
+                        <img src="${t.photo || 'default-teacher.png'}" alt="${t.teacher_name}">
+                    </div>
+                    <p>${t.teacher_name}</p>
+                </div>
+            `).join('');
+            
+            // Duplicate the list for seamless circular scrolling
+            ringContainer.innerHTML += ringContainer.innerHTML;
+        } else {
+            ringContainer.parentElement.style.display = 'none';
+        }
+    } catch (err) {
+        console.error("Teacher Ring Error:", err);
+    }
+}
+
+// Page load hote hi run karein
+document.addEventListener('DOMContentLoaded', () => {
+    loadTeacherRing();
+});
