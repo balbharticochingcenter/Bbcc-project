@@ -63,12 +63,22 @@ app.get('/', (req, res) => {
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
+
 // --- 5. Slider Schema (Naya Schema) ---
 const SliderPhoto = mongoose.model('SliderPhoto', new mongoose.Schema({
     photo: String, // Base64 image data yahan save hoga
     upload_date: { type: Date, default: Date.now }
 }));
-
+// --- 6. Class Configuration Schema (Naya) ---
+const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
+    class_name: { type: String, unique: true }, // e.g., "10th", "I.Sc."
+    banner: String,
+    intro_video: String,
+    subjects: {
+        type: Map,
+        of: [String] // Subject name key hogi aur array mein links honge
+    }
+}));
 // --- E. SLIDER API (Naya Routes) ---
 
 // Photo Save karne ke liye
@@ -178,7 +188,37 @@ app.post('/api/update-salary-status', async (req, res) => {
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
+// --- F. CLASS SYSTEM API (Naya) ---
 
+// 1. Class ka configuration save ya update karne ke liye
+app.post('/api/save-class-config', async (req, res) => {
+    try {
+        const { class_name, banner, intro_video, subjects } = req.body;
+        // upsert: true se agar class nahi hai to ban jayegi, hai to update ho jayegi
+        const updatedData = await ClassConfig.findOneAndUpdate(
+            { class_name: class_name },
+            { banner, intro_video, subjects },
+            { upsert: true, new: true }
+        );
+        res.json({ success: true, data: updatedData });
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
+});
+
+// 2. Specific class ka data fetch karne ke liye
+app.get('/api/get-class-config/:className', async (req, res) => {
+    try {
+        const config = await ClassConfig.findOne({ class_name: req.params.className });
+        if (config) {
+            res.json(config);
+        } else {
+            res.status(404).json({ message: "No configuration found for this class" });
+        }
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
+});
 // --- C. SETTINGS API ---
 app.get('/api/get-settings', async (req, res) => {
     try {
