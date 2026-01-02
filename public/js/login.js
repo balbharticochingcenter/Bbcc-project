@@ -240,3 +240,24 @@ document.getElementById('studentRegForm').addEventListener('submit', async (e) =
         alert('Server Error!');
     }
 });
+// Modal elements
+const regModal = document.getElementById('regModal');
+const regBtn = document.getElementById('studentRegBtn');
+const closeBtn = document.getElementById('closeReg');
+
+// Open Modal
+regBtn.addEventListener('click', () => {
+    regModal.style.display = "block";
+});
+
+// Close Modal (Cross button click par)
+closeBtn.addEventListener('click', () => {
+    regModal.style.display = "none";
+});
+
+// Close Modal (Bahar click karne par)
+window.addEventListener('click', (event) => {
+    if (event.target == regModal) {
+        regModal.style.display = "none";
+    }
+});
