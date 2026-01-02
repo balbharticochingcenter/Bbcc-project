@@ -3,95 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BBCC - Login Portal</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css"> 
+    <title>BBCC Portal - Login</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body class="magical-bg" onload="loadSettings()">
+<body>
+    <div class="loader-container" id="loader">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
 
     <header class="main-header">
-        <div class="header-left">
-            <img id="db-logo" src="" alt="Logo" class="ring-logo" onerror="this.src='https://via.placeholder.com/60'">
-        </div>
-        <div class="header-center">
-            <h1 id="db-title" class="glow-text">Loading...</h1>
-            <p id="db-subtitle" class="sub-text"></p>
-        </div>
-        <div class="header-right">
-            <button class="result-trigger-3d" onclick="openModal('resultCheckModal')">
-                <i class="fas fa-poll"></i> Result
-            </button>
-            <button class="login-trigger-3d" onclick="openModal('login3DModal')">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </button>
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-container">
+                    <img id="header-logo" src="" alt="BBCC Logo" class="logo-img" style="display: none;">
+                    <div class="logo-ring-animation"></div>
+                </div>
+            </div>
+            <div class="header-center">
+                <h1 id="header-title" class="magical-text"></h1>
+                <h2 id="header-subtitle" class="magical-text"></h2>
+            </div>
+            <div class="header-right">
+                <button id="studentResultBtn" class="result-button">Student Result</button>
+            </div>
         </div>
     </header>
 
-    <main class="hero-section">
-        <div class="welcome-box">
-            <h2 class="glow-text">Digital Campus Portal</h2>
-            <p>Admin, Teacher & Student Unified Access</p>
+    <main class="login-main">
+        <div class="login-container">
+            <div class="login-box card 3d-card">
+                <h2>Login</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label for="userId">User ID:</label>
+                        <input type="text" id="userId" name="userId" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn 3d-button">Login</button>
+                    <p id="loginMessage" class="error-message"></p>
+                </form>
+            </div>
         </div>
     </main>
 
-    <div id="login3DModal" class="modal-3d">
-        <div class="cube-container">
-            <div class="cube-card">
-                <span class="close-3d" onclick="closeModal('login3DModal')">&times;</span>
-                <div class="cube-front">
-                    <h3><i class="fas fa-lock"></i> SECURE LOGIN</h3>
-                    <p style="font-size: 11px; color: #6c5ce7; margin-bottom: 15px;">Enter credentials to access portal</p>
-                    <div class="input-group">
-                        <input type="text" id="login_id" placeholder="User ID (e.g. ADMIN, STU101)">
-                        <input type="password" id="login_pass" placeholder="Password">
-                    </div>
-                    <button onclick="universalLogin()" class="btn-3d-glow">ENTER PORTAL</button>
-                </div>
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>Contact: <span id="footer-contact"></span> | Call: <span id="footer-call"></span> | Email: <span id="footer-gmail"></span></p>
+            <div class="social-links">
+                <a id="footer-facebook" href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a id="footer-youtube" href="#" target="_blank"><i class="fab fa-youtube"></i></a>
+                <a id="footer-instagram" href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a id="footer-twitter" href="#" target="_blank"><i class="fab fa-twitter"></i></a>
             </div>
+            <p id="footer-help"></p>
         </div>
-    </div>
-
-    <div id="resultCheckModal" class="modal-3d">
-        <div class="cube-container">
-            <div class="cube-card">
-                <span class="close-3d" onclick="closeModal('resultCheckModal')">&times;</span>
-                <h3><i class="fas fa-poll-h"></i> CHECK RESULT</h3>
-                <div class="input-group">
-                    <input type="text" id="stu_roll_id" placeholder="Enter Student ID">
-                </div>
-                <button onclick="checkResult()" class="btn-3d-glow" style="background: #f39c12;">SEARCH</button>
-                <div id="resultDisplayArea" style="margin-top: 15px; text-align: left; color: #333;"></div>
-            </div>
-        </div>
-    </div>
-
-    <footer class="magical-footer">
-        <div class="social-icons">
-            <a id="foot-whatsapp" href="#" target="_blank"><i class="fab fa-whatsapp"></i></a>
-            <a id="foot-facebook" href="#" target="_blank"><i class="fab fa-facebook"></i></a>
-            <a id="foot-gmail" href="#"><i class="fas fa-envelope"></i></a>
-            <a id="foot-call" href="#"><i class="fas fa-phone-alt"></i></a>
-        </div>
-        <p id="foot-help" style="font-size: 14px; color: #a29bfe; margin-top:10px;"></p>
-        <p style="margin-top: 10px; font-size: 12px; opacity: 0.6;">
-            &copy; 2026 <span id="db-admin"></span> | BBCC Portal
-        </p>
     </footer>
 
-    <script src="adminscript.js"></script>
-    <script>
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    <div id="resultModal" class="modal">
+        <div class="modal-content 3d-card">
+            <span class="close-button">&times;</span>
+            <h3>Search Student Result</h3>
+            <div class="search-form-group">
+                <label for="searchStudentId">Student ID:</label>
+                <input type="text" id="searchStudentId" placeholder="Enter Student ID">
+                <button id="searchStudentBtn" class="btn 3d-button">Search</button>
+            </div>
+            <p id="searchMessage" class="error-message"></p>
+            <div id="studentResultDisplay" class="student-result-display" style="display: none;">
+                <div class="result-header">
+                    <h4 id="result-student-name"></h4>
+                    <p>ID: <span id="result-student-id"></span></p>
+                </div>
+                <div class="result-details">
+                    <div class="detail-item">
+                        <p>Parent Name: <span id="result-parent-name"></span></p>
+                        <p>Mobile: <span id="result-student-mobile"></span></p>
+                        <p>Class: <span id="result-student-class"></span></p>
+                    </div>
+                    <div class="detail-item">
+                        <p>Exam Date: <span id="result-exam-date"></span></p>
+                        <p>Total Marks: <span id="result-total-marks"></span></p>
+                        <p>Obtained Marks: <span id="result-obtained-marks"></span></p>
+                    </div>
+                    <div class="result-photo-container">
+                        <img id="result-student-photo" src="" alt="Student Photo" style="display: none;">
+                    </div>
+                </div>
+                <div class="download-buttons">
+                    <button id="downloadPdfBtn" class="btn download-btn">Download PDF</button>
+                    <button id="downloadJpgBtn" class="btn download-btn">Download JPG</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Modal ke bahar click karne par band hona
-        window.onclick = function(event) {
-            if (event.target.className === 'modal-3d') {
-                event.target.style.display = "none";
-            }
-        }
-    </script>
+    <div id="detailedResultModal" class="modal">
+        <div class="modal-content detailed-result-content 3d-card">
+            <span class="close-button close-detailed-modal">&times;</span>
+            <div id="detailedResultContent">
+                </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="/js/login.js"></script>
 </body>
 </html>
