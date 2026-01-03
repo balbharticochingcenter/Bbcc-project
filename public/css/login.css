@@ -580,7 +580,7 @@ body {
     position: relative;
     transform-style: preserve-3d;
     transition: transform 1s;
-    animation: flipCoin 3s infinite linear; /* Har 3 sec me ghumega */
+    animation: flipCoin 10s infinite linear; /* Har 3 sec me ghumega */
 }
 
 /* Coin ki dono sides ki common setting */
