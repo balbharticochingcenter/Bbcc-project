@@ -103,8 +103,16 @@ body {
     object-fit: contain;
     position: relative;
     z-index: 2;
+    /* Naya Animation */
+    animation: channelLogoEffect 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }
 
+@keyframes channelLogoEffect {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.1); filter: brightness(1.4) contrast(1.2); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
 .logo-ring-animation {
     position: absolute;
     width: 100%;
@@ -137,35 +145,56 @@ body {
 }
 
 .magical-text {
-    background: var(--magical-text-gradient);
-    background-size: var(--magical-text-gradient-size);
+    background: linear-gradient(to right, #ff00cc, #3333ff, #00ffcc, #ffcc00, #ff00cc);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: animateMagicalText 15s ease infinite;
+    animation: waterWave 3s linear infinite;
     display: inline-block;
     font-family: 'Orbitron', sans-serif;
-    text-shadow: 0 0 10px rgba(74, 144, 226, 0.7), 0 0 20px rgba(80, 227, 194, 0.5);
+    text-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
 }
 
 #header-title { font-size: 2.5em; margin-bottom: 5px; }
 #header-subtitle { font-size: 1.2em; opacity: 0.8; }
 
-@keyframes animateMagicalText {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@keyframes waterWave {
+    to { background-position: 200% center; }
 }
 
 .header-right .result-button {
-    background-color: var(--accent-color);
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+    animation: glowingBtn 2s infinite;
+}
+
+@keyframes glowingBtn {
+    0% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+    50% { box-shadow: 0 0 15px currentColor; }
+    100% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
+}
+
+/* Shine effect inside button */
+.header-right .result-button::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 20%; height: 200%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: rotate(30deg);
+    animation: shineLine 3s infinite;
+}
+
+@keyframes shineLine {
+    0% { left: -60%; }
+    100% { left: 120%; }
 }
 
 .header-right .result-button:hover {
@@ -300,18 +329,34 @@ body {
 
 /* --- EXPLORE OUR CLASSES (MAGICAL CARDS) --- */
 .class-config-section {
-    padding: 60px 20px;
+    padding: 60px 0;
     background: #0a0a12;
     text-align: center;
+    overflow: hidden; /* Bahar ka hide karne ke liye */
 }
 
 .class-cards-grid {
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+    justify-content: flex-start;
+    flex-wrap: nowrap; /* Line break nahi hoga */
     gap: 35px;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 20px;
+    width: max-content;
+    animation: scrollClasses 30s linear infinite; /* Right to Left Move */
+    cursor: grab;
+    overflow-x: auto;
+    scrollbar-width: none; /* Hide scrollbar */
+}
+
+.class-cards-grid::-webkit-scrollbar { display: none; }
+
+.class-cards-grid:hover {
+    animation-play-state: paused; /* Touch ya mouse par ruk jayega */
+}
+
+@keyframes scrollClasses {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 /* The Bubble Border Effect Card */
@@ -327,6 +372,7 @@ body {
     overflow: hidden;
     transition: 0.4s;
     cursor: pointer;
+    flex-shrink: 0;///////////////////////////////////////////////////////////////////////////////////////////
 }
 
 .class-card:hover { transform: translateY(-10px); }
