@@ -152,6 +152,16 @@
                 <input type="hidden" name="teacher_id" id="up_id">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <input type="text" name="teacher_name" id="up_name" placeholder="Name">
+                    <div style="grid-column: span 2; display: flex; align-items: center; gap: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 10px;">
+    <div>
+        <label style="font-size: 12px; font-weight: bold;">Current Photo:</label><br>
+        <img id="up_tview_photo" src="https://via.placeholder.com/80" style="width: 80px; height: 80px; border-radius: 5px; border: 2px solid #ddd; object-fit: cover;">
+    </div>
+    <div style="flex:1;">
+        <label style="font-size: 12px; font-weight: bold;">Update Teacher Photo:</label>
+        <input type="file" id="up_tphoto" accept="image/*" style="font-size: 12px;">
+    </div>
+</div>
                     <input type="text" name="mobile" id="up_mobile" placeholder="Mobile">
                     <input type="text" name="pass" id="up_pass" placeholder="Password">
                     <input type="number" name="salary" id="up_salary" placeholder="Salary Amount">
