@@ -364,26 +364,40 @@ input, select {
 
 
 /* बॉट का गोल अवतार बटन */
+/* तैरता हुआ असिस्टेंट (Floating Avatar) */
 #chat-circle {
     position: fixed;
-    bottom: 25px;
-    right: 25px;
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    background: url('https://cdn-icons-png.flaticon.com/512/4140/4140047.png'); /* यहाँ अपनी फोटो लगा सकते हैं */
+    background: url('https://cdn-icons-png.flaticon.com/512/4140/4140047.png');
     background-size: cover;
     background-position: center;
     cursor: pointer;
-    box-shadow: 0 10px 25px rgba(108, 92, 231, 0.5);
+    box-shadow: 0 10px 30px rgba(108, 92, 231, 0.6);
     z-index: 9999;
-    border: 3px solid #fff;
-    animation: breathing 3s infinite ease-in-out; /* झटके वाला एनीमेशन हटाकर सांस लेने वाला लगाया */
+    border: 4px solid #fff;
+    /* एनीमेशन: 20 सेकंड में पूरी स्क्रीन पर घूमेगा */
+    animation: moveAssistant 20s infinite linear alternate, breathing 3s infinite ease-in-out;
+}
+
+/* स्क्रीन पर इधर-उधर घूमने का लॉजिक */
+@keyframes moveAssistant {
+    0%   { bottom: 10%; right: 10%; }
+    25%  { bottom: 50%; right: 80%; }
+    50%  { bottom: 80%; right: 20%; }
+    75%  { bottom: 30%; right: 60%; }
+    100% { bottom: 10%; right: 10%; }
 }
 
 @keyframes breathing {
-    0%, 100% { transform: scale(1); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    50% { transform: scale(1.1); box-shadow: 0 15px 30px rgba(108, 92, 231, 0.4); }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* मोबाइल पर असिस्टेंट थोड़ा छोटा रहे */
+@media (max-width: 500px) {
+    #chat-circle { width: 60px; height: 60px; }
 }
 
 /* चैट बॉक्स - जो अब बड़ी स्क्रीन और मोबाइल पर फुल दिखेगा */
