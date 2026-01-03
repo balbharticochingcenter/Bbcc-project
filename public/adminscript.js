@@ -1058,80 +1058,160 @@ function processImage() {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
 
-const devContact = "7543952488";
+const devCall = "7543952488";
 
-// वॉयस सिस्टम (बॉट बोलेगा)
-function botSpeak(text) {
-    window.speechSynthesis.cancel();
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = 'hi-IN';
-    speech.rate = 1.1;
-    window.speechSynthesis.speak(speech);
-}
-
-// सवालों और रैंडम जवाबों का डेटाबेस (हर सवाल के 5 जवाब)
-const helpData = {
-    "sys_pwd": ["एडमिन प्रोफाइल में जाकर पासवर्ड बदलें।", "नया पासवर्ड एडमिन प्रोफाइल बटन से सेट करें।", "सुरक्षा के लिए प्रोफाइल सेक्शन से पासवर्ड अपडेट करें।", "अपना पासवर्ड बदलने के लिए एडमिन प्रोफाइल का उपयोग करें।", "प्रोफाइल सेटिंग्स में आपको पासवर्ड बदलने का विकल्प मिलेगा।"],
-    "sys_name": ["सिस्टम सेटिंग्स से कोचिंग का नाम बदलें।", "कोचिंग का नाम बदलने के लिए System Settings में जाएँ।", "System Settings खोलें और नया नाम टाइप करके सेव करें।", "हेडर का नाम बदलना है? तो सिस्टम सेटिंग्स में जाएँ।", "कोचिंग की पहचान यानी नाम सिस्टम सेटिंग्स से अपडेट होता है।"],
-    "t_reg": ["टीचर रजिस्ट्रेशन के लिए 'Teacher Reg' बटन दबाएं।", "नया शिक्षक जोड़ने के लिए रजिस्ट्रेशन फॉर्म भरें।", "Teacher Reg बटन से आप नए टीचर की एंट्री कर सकते हैं।", "टीचर को रजिस्टर करना बहुत आसान है, फॉर्म भरें और सेव करें।", "टीचर मैनेजमेंट सेक्शन में रजिस्ट्रेशन बटन पर क्लिक करें।"],
-    "s_fees": ["छात्रों की फीस 'Fees/Data' बटन में दिखेगी।", "फीस रिकॉर्ड चेक करने के लिए Fees/Data पर जाएँ।", "क्लास चुनकर आप फीस का पूरा डाटा देख सकते हैं।", "फीस की जानकारी के लिए स्टूडेंट मैनेजमेंट सेक्शन देखें।", "Fees/Data बटन दबाएं और अपनी क्लास लोड करें।"],
-    "i_crop": ["इमेज टूल से फोटो को क्रॉप और छोटा करें।", "फोटो का साइज सही करने के लिए इमेज टूल का उपयोग करें।", "फोटो को बैनर या लोगो बनाने के लिए इमेज टूल बेस्ट है।", "सबसे ऊपर दिए गए इमेज बॉक्स से फोटो क्रॉप करें।", "वेबसाइट की स्पीड के लिए फोटो यहीं से कंप्रेस करें।"]
-    // आप इसी तरह बाकी 40 सवालों को यहाँ जोड़ सकते हैं...
-};
-
-function toggleChat() {
-    const box = document.getElementById('chat-box');
-    const isOpen = box.style.display === 'flex';
-    box.style.display = isOpen ? 'none' : 'flex';
-    if (!isOpen) botSpeak("नमस्ते एडमिन, मैं आपकी क्या सहायता कर सकता हूँ?");
-}
-
-function showHelp(cat) {
-    const list = document.getElementById('sub-list');
-    list.innerHTML = "";
-    let qs = [];
+// 1. इंसानी आवाज़ (Female Voice) वाला फंक्शन
+function talk(text) {
+    window.speechSynthesis.cancel(); // पुराना बोलना तुरंत बंद करें
+    let utterance = new SpeechSynthesisUtterance(text);
     
-    if(cat === 'system') {
-        qs = [{id:"sys_pwd", t:"पासवर्ड कैसे बदलें?"}, {id:"sys_name", t:"नाम कैसे बदलें?"}];
-    } else if(cat === 'teacher') {
-        qs = [{id:"t_reg", t:"नया टीचर कैसे जोड़ें?"}];
-    } else if(cat === 'student') {
-        qs = [{id:"s_fees", t:"फीस कहाँ दिखेगी?"}];
-    } else if(cat === 'image') {
-        qs = [{id:"i_crop", t:"फोटो क्रॉप कैसे करें?"}];
+    // ब्राउज़र से आवाज़ों की लिस्ट लें
+    let voices = window.speechSynthesis.getVoices();
+    
+    // साफ़ हिंदी फीमेल आवाज़ ढूंढें
+    let femaleVoice = voices.find(voice => 
+        (voice.lang.includes('hi-IN')) && 
+        (voice.name.toLowerCase().includes('google') || voice.name.toLowerCase().includes('hemlata') || voice.name.toLowerCase().includes('female'))
+    );
+
+    if (femaleVoice) {
+        utterance.voice = femaleVoice;
     }
 
-    qs.forEach(item => {
-        list.innerHTML += `<button class="quick-btn" onclick="getAns('${item.id}', '${item.t}')">${item.t}</button>`;
-    });
+    utterance.lang = 'hi-IN';
+    utterance.pitch = 1.1; // सुरीली आवाज़ के लिए
+    utterance.rate = 0.9;  // धीरे और साफ़ बोलने के लिए
+    window.speechSynthesis.speak(utterance);
 }
 
-function getAns(id, qText) {
-    const content = document.getElementById('chat-content');
-    const answers = helpData[id];
-    const finalAns = answers[Math.floor(Math.random() * answers.length)];
+// 2. चैटबॉट का डेटाबेस (40 Questions + 5 Random Answers per question)
+const aiData = {
+    "system": {
+        "Admin Profile": ["प्रोफाइल से पासवर्ड बदलें।", "अपना पासवर्ड यहाँ अपडेट करें।", "सुरक्षा के लिए आईडी यहाँ बदलें।", "एडमिन सेटिंग्स यहाँ मिलेंगी।", "अपना यूजरनेम यहाँ से सुधारें।"],
+        "System Settings": ["कोचिंग नाम और लोगो बदलें।", "नाम-पता यहाँ से अपडेट करें।", "मुख्य वेबसाइट सेटिंग्स यहाँ हैं।", "सोशल लिंक यहाँ से बदलें।", "कोचिंग की जानकारी यहाँ सेट करें।"],
+        "Home Slider": ["स्लाइडर में नई फोटो जोड़ें।", "होम पेज इमेज यहाँ से बदलें।", "स्लाइडर फोटो अपलोड करें।", "वेबसाइट एड्स यहाँ सेट करें।", "मुख्य बैनर फोटो यहाँ बदलें।"],
+        "Class System": ["क्लास वीडियो लिंक यहाँ डालें।", "यूट्यूब लिंक यहाँ सेट करें।", "क्लास के बैनर यहाँ बदलें।", "वीडियो सेटिंग्स यहाँ मिलेंगी।", "क्लास मैनेजमेंट यहाँ से करें।"],
+        "Contact Info": ["WhatsApp नंबर यहाँ बदलें।", "Footer कॉन्टैक्ट यहाँ सुधारें।", "नया नंबर यहाँ से जोड़ें।", "संपर्क जानकारी यहाँ अपडेट करें।", "WhatsApp सेटिंग्स यहाँ हैं।"],
+        "Social Links": ["Facebook लिंक यहाँ बदलें।", "Social Media लिंक यहाँ जोड़ें।", "सोशल प्रोफाइल यहाँ सेट करें।", "लिंक्स अपडेट यहाँ से करें।", "Social सेटिंग्स यहाँ मिलेंगी।"],
+        "Admin ID": ["नई एडमिन आईडी यहाँ बनाएँ।", "आईडी बदलने के लिए यहाँ क्लिक करें।", "लॉगिन आईडी यहाँ से अपडेट होगी।", "Admin ID यहाँ बदल सकते हैं।", "आईडी सुधारने के लिए प्रोफाइल खोलें।"],
+        "Slogan Update": ["कोचिंग स्लोगन यहाँ बदलें।", "नया नारा (Slogan) यहाँ लिखें।", "वेबसाइट का स्लोगन यहाँ सेट करें।", "Subtitle यहाँ से अपडेट करें।", "कोचिंग स्लोगन यहाँ सुधारें।"],
+        "Logo Size": ["लोगो अपलोड से पहले कंप्रेस करें।", "लोगो को चौकोर (Square) रखें।", "लोगो फाइल यहाँ बदलें।", "नया लोगो यहाँ से लगाएँ।", "लोगो सेटिंग्स यहाँ मिलेंगी।"],
+        "Logout": ["ऊपर राइट साइड से लॉगआउट करें।", "सुरक्षा के लिए लॉगआउट जरूर करें।", "लॉगआउट बटन टॉप पर है।", "काम के बाद लॉगआउट यहाँ से करें।", "एग्जिट के लिए लॉगआउट दबाएँ।"]
+    },
+    "teacher": {
+        "Teacher Reg": ["नया टीचर यहाँ से जोड़ें।", "टीचर रजिस्ट्रेशन यहाँ करें।", "टीचर डाटा यहाँ भरें।", "शिक्षक की एंट्री यहाँ करें।", "नया टीचर रिकॉर्ड यहाँ बनाएँ।"],
+        "Teacher Salary": ["टीचर सैलरी यहाँ देखें।", "वेतन का डाटा यहाँ मिलेगा।", "टीचर पेमेंट यहाँ चेक करें।", "सैलरी रिकॉर्ड यहाँ है।", "पेमेंट हिस्ट्री यहाँ देखें।"],
+        "Delete Teacher": ["टीचर को यहाँ से हटाएँ।", "रिकॉर्ड डिलीट यहाँ से करें।", "शिक्षक को सिस्टम से हटाएँ।", "Delete बटन अपडेट में है।", "टीचर आईडी सर्च करके हटाएँ।"],
+        "Teacher List": ["पूरी टीचर लिस्ट यहाँ देखें।", "शिक्षकों का डाटा यहाँ है।", "टीचर टेबल यहाँ देखें।", "सब टीचर यहाँ दिखेंगे।", "Salary/Data में लिस्ट देखें।"],
+        "Teacher ID": ["सिस्टम आईडी खुद बनाएगा।", "ID ऑटो-जेनरेट होती है।", "टीचर आईडी यहाँ से नोट करें।", "पासवर्ड सिस्टम खुद देगा।", "ID और Password ऑटो बनेगा।"],
+        "Update Teacher": ["टीचर प्रोफाइल यहाँ बदलें।", "मोबाइल नंबर यहाँ अपडेट करें।", "टीचर डाटा यहाँ सुधारें।", "सर्च करके अपडेट करें।", "शिक्षक की जानकारी यहाँ बदलें।"],
+        "Teacher Photo": ["टीचर फोटो कंप्रेस करके लगाएँ।", "फोटो रजिस्ट्रेशन में अपलोड करें।", "शिक्षक की फोटो यहाँ सेट करें।", "फोटो अपलोड बटन यहाँ है।", "फोटो को यहाँ प्रोसेस करें।"],
+        "Joining Date": ["जॉइनिंग डेट यहाँ भरें।", "तारीख रजिस्ट्रेशन में डालें।", "शामिल होने की तिथि यहाँ लिखें।", "Date of Joining यहाँ सेट करें।", "तारीख यहाँ नोट करें।"],
+        "Teacher Mobile": ["मोबाइल नंबर यहाँ अपडेट करें।", "नया नंबर यहाँ से जोड़ें।", "शिक्षक फोन यहाँ बदलें।", "मोबाइल अपडेट यहाँ से करें।", "कांटेक्ट यहाँ सुधारें।"],
+        "Teacher Password": ["पासवर्ड यहाँ से बदलें।", "नया पासवर्ड यहाँ सेट करें।", "टीचर लॉगिन यहाँ सुधारें।", "पासवर्ड अपडेट यहाँ मिलेगा।", "टीचर आईडी सर्च कर पासवर्ड बदलें।"]
+    },
+    "student": {
+        "Student Reg": ["नया एडमिशन यहाँ से करें।", "छात्र रजिस्ट्रेशन यहाँ करें।", "एडमिशन फॉर्म यहाँ भरें।", "New Student यहाँ जोड़ें।", "छात्र की एंट्री यहाँ करें।"],
+        "Fees Check": ["फीस रिकॉर्ड यहाँ देखें।", "क्लास फीस यहाँ चेक करें।", "Fees/Data में जाएँ।", "छात्र की फीस यहाँ है।", "पूरी क्लास की फीस देखें।"],
+        "Result Make": ["रिजल्ट यहाँ से बनाएँ।", "नंबर यहाँ अपलोड करें।", "Class Result बटन दबाएँ।", "मार्कशीट यहाँ तैयार करें।", "छात्र के नंबर यहाँ भरें।"],
+        "Update Student": ["छात्र डाटा यहाँ बदलें।", "आईडी सर्च करके सुधारें।", "Student Profile यहाँ बदलें।", "मोबाइल नंबर यहाँ सुधारें।", "डाटा अपडेट यहाँ से करें।"],
+        "Delete Student": ["छात्र को यहाँ से हटाएँ।", "एडमिशन यहाँ से काटें।", "डिलीट बटन यहाँ मिलेगा।", "छात्र का नाम यहाँ से हटाएँ।", "रिकॉर्ड यहाँ से डिलीट करें।"],
+        "Parent Number": ["पेरेंट्स नंबर यहाँ भरें।", "अभिभावक फोन यहाँ डालें।", "कांटेक्ट नंबर यहाँ जोड़ें।", "पिता का नंबर यहाँ लिखें।", "गार्जियन मोबाइल यहाँ दें।"],
+        "Class Filter": ["क्लास चुनकर डाटा देखें।", "फिल्टर बटन यहाँ दबाएँ।", "अपनी क्लास यहाँ सिलेक्ट करें।", "क्लास वाइज डाटा यहाँ है।", "फिल्टर से छात्र ढूँढें।"],
+        "Auto Division": ["डिवीजन खुद बन जाएगा।", "सिस्टम डिवीजन खुद देगा।", "नंबर डालें डिवीजन आएगा।", "रिजल्ट में डिवीजन ऑटो है।", "ग्रेडिंग सिस्टम ऑटोमैटिक है।"],
+        "Student Photo": ["छात्र फोटो कंप्रेस जरूर करें।", "फोटो रजिस्ट्रेशन में लगाएँ।", "छात्र की फोटो यहाँ डालें।", "फोटो यहाँ अपलोड करें।", "साइज छोटा करके फोटो लगाएँ।"],
+        "Student List": ["छात्रों की लिस्ट यहाँ देखें।", "पूरा छात्र डाटा यहाँ है।", "Student Data यहाँ देखें।", "लिस्ट के लिए यहाँ क्लिक करें।", "पूरी टेबल यहाँ खुलेगी।"]
+    },
+    "image": {
+        "Auto Crop": ["फोटो यहाँ से क्रॉप करें।", "क्रॉप टूल यहाँ मिलेगा।", "सही साइज के लिए यहाँ आएँ।", "फोटो कटिंग यहाँ से करें।", "इमेज क्रॉप यहाँ होगी।"],
+        "Compress Image": ["अपलोड से पहले कंप्रेस करें।", "फोटो हल्की यहाँ से करें।", "साइज छोटा यहाँ होगा।", "AS PHOTO बटन दबाएँ।", "फोटो का वजन यहाँ घटाएँ।"],
+        "As Logo": ["फोटो लोगो साइज में काटें।", "चौकोर फोटो यहाँ बनाएँ।", "Logo क्रॉप यहाँ से करें।", "Square फोटो यहाँ बनेगी।", "AS LOGO बटन उपयोग करें।"],
+        "As Banner": ["बैनर साइज यहाँ बनाएँ।", "Wide फोटो यहाँ बनेगी।", "वेबसाइट बैनर यहाँ काटें।", "AS BANNER बटन दबाएँ।", "बैनर फोटो यहाँ से लें।"],
+        "Process Now": ["प्रोसेस बटन यहाँ दबाएँ।", "डाउनलोड के लिए प्रोसेस करें।", "फोटो तैयार यहाँ से करें।", "बटन दबाकर फोटो लें।", "प्रोसेसिंग यहाँ शुरू करें।"],
+        "Speed Tip": ["हल्की फोटो वेबसाइट बढ़ाएगी।", "स्पीड के लिए कंप्रेस करें।", "वेबसाइट फ़ास्ट यहाँ से होगी।", "कंप्रेस करना बहुत जरूरी है।", "फोटो छोटी तो वेबसाइट फ़ास्ट।"],
+        "File Support": ["JPG और PNG यहाँ चलेंगी।", "हर फोटो यहाँ सपोर्टेड है।", "इमेज फाइल यहाँ डालें।", "फोटो फॉर्मेट यहाँ चलेगा।", "PNG/JPG यहाँ प्रोसेस करें।"],
+        "Image Tool": ["यह टूल डैशबोर्ड के टॉप पर है।", "सबसे ऊपर इमेज टूल देखें।", "फोटो सुधारने का टूल यहाँ है।", "इमेज एडिटर सबसे ऊपर है।", "फोटो सेटिंग्स यहाँ मिलेंगी।"],
+        "Banner Quality": ["क्वालिटी बैनर यहाँ बनाएँ।", "साइज और क्वालिटी यहाँ सेट करें।", "बैनर की चमक यहाँ रखें।", "HD बैनर यहाँ से काटें।", "क्वालिटी यहाँ बनी रहेगी।"],
+        "Why Compress": ["वेबसाइट स्पीड के लिए कंप्रेस करें।", "सर्वर लोड कम करने के लिए।", "फोटो हल्की तो काम आसान।", "कंप्रेस करना सबसे जरूरी है।", "अपलोड से पहले कंप्रेस करें।"]
+    }
+};
+
+// 3. फंक्शन: चैट खोलना/बंद करना
+function toggleChat() {
+    let b = document.getElementById('chat-box');
+    let isOpening = b.style.display !== 'flex';
+    b.style.display = isOpening ? 'flex' : 'none';
     
-    content.innerHTML += `<div class="user-msg">${qText}</div>`;
-    
-    setTimeout(() => {
-        content.innerHTML += `<div class="bot-msg">${finalAns}</div>`;
-        content.scrollTop = content.scrollHeight;
-        botSpeak(finalAns);
+    if(isOpening) {
+        talk("नमस्ते एडमिन, फोटो अपलोड से पहले कंप्रेस जरूर करें।");
+    }
+}
+
+// 4. फंक्शन: ग्रुप के सवाल दिखाना
+function openGrp(g) {
+    let l = document.getElementById('questions-list');
+    l.innerHTML = `<div style="padding:10px; font-weight:bold; color:#6c5ce7; border-bottom:1px solid #eee;">${g.toUpperCase()} HELP</div>`;
+    for(let q in aiData[g]) {
+        l.innerHTML += `<button class="q-btn" onclick="giveAns('${g}','${q}')">${q}</button>`;
+    }
+}
+
+// 5. फंक्शन: जवाब देना (5 Random Answers)
+function giveAns(g, q) {
+    let a = aiData[g][q];
+    let r = a[Math.floor(Math.random() * a.length)];
+    show(q, 'user');
+    setTimeout(() => { 
+        show(r, 'bot'); 
+        talk(r); 
     }, 400);
 }
 
-function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const content = document.getElementById('chat-content');
-    if(!input.value.trim()) return;
-
-    const msg = `इस बारे में अधिक जानकारी के लिए डेवलपर से बात करें। नंबर है: ${devContact}`;
-    content.innerHTML += `<div class="user-msg">${input.value}</div>`;
-    
-    setTimeout(() => {
-        content.innerHTML += `<div class="bot-msg" style="border-left-color: #e74c3c;">${msg}</div>`;
-        content.scrollTop = content.scrollHeight;
-        botSpeak(msg);
-    }, 400);
-    input.value = "";
+// 6. फंक्शन: मैसेज स्क्रीन पर दिखाना
+function show(t, s) {
+    let c = document.getElementById('chat-content');
+    let d = document.createElement('div');
+    d.className = s === 'bot' ? 'bot-msg' : 'user-msg';
+    d.innerText = t;
+    c.appendChild(d);
+    c.scrollTop = c.scrollHeight;
 }
+
+// 7. फंक्शन: टाइप करके मैसेज भेजना
+function userSend() {
+    let i = document.getElementById('chat-input');
+    let v = i.value.trim().toLowerCase();
+    if(!v) return;
+
+    show(i.value, 'user');
+    
+    let rep = `डेवलपर से मदद लें: ${devCall}`;
+    
+    // कीवर्ड आधारित स्मार्ट रिप्लाई
+    if(v.includes("photo") || v.includes("image") || v.includes("crop")) {
+        rep = "फोटो अपलोड से पहले Image Tool में कंप्रेस (AS PHOTO) जरूर करें ताकि वेबसाइट लोड होने में समय न ले।";
+    } else if(v.includes("fees") || v.includes("paisa")) {
+        rep = aiData.student["Fees Check"][0];
+    } else if(v.includes("pass") || v.includes("login")) {
+        rep = aiData.system["Admin Profile"][0];
+    }
+    
+    setTimeout(() => { 
+        show(rep, 'bot'); 
+        talk(rep); 
+    }, 500);
+    
+    i.value = "";
+}
+
+// एंटर की (Enter Key) सपोर्ट
+document.getElementById('chat-input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        userSend();
+    }
+});
+
+// वॉयस लोड होने के लिए (Chrome Fix)
+window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+};
