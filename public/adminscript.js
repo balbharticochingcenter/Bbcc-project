@@ -403,7 +403,7 @@ async function loadStudentData() {
         if(dueBreakdown.endsWith(", ")) dueBreakdown = dueBreakdown.slice(0, -2); // Aakhri comma hatane ke liye
         
         // Final Message Format
-        const commonMsg = `Dear Parent/Student, Child: ${s.student_name}. Total Due: ₹${totalDue}. Details: ${dueBreakdown ? dueBreakdown : 'Nil'}. Please pay soon. REGARD: BBCC MADHUBANI (7543952488)`;
+        const commonMsg = `Dear Parent/Student,  ${s.student_name}. Total Due: ₹${totalDue}. Details: ${dueBreakdown ? dueBreakdown : 'Nil'}. Please pay soon. REGARD: Bal Bharti Coching Center more info click https://balbharticoachingcenter.onrender.com , call 9971095964 ;
         
         container.innerHTML += `
             <div class="diary-card" style="border-left: 5px solid #6c5ce7; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
