@@ -212,6 +212,7 @@ async function searchTeacher() {
         document.getElementById('up_mobile').value = t.mobile || "";
         document.getElementById('up_pass').value = t.pass || "";
         document.getElementById('up_salary').value = t.salary || "";
+        document.getElementById('up_tview_photo').src = t.photo || "https://via.placeholder.com/80";
         document.querySelectorAll('#updateForm input[type="checkbox"]').forEach(cb => cb.checked = false);
         t.classes?.forEach(c => {
             const cb = document.querySelector(`#up_classes_div input[value="${c}"]`);
@@ -227,25 +228,50 @@ async function searchTeacher() {
     }
 }
 
+// --- UPDATED TEACHER UPDATE WITH PHOTO HANDLING ---
 document.getElementById("updateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+    
+    // 1. Teacher ID confirm karein
     data.teacher_id = document.getElementById('up_id').value; 
+    if(!data.teacher_id) return alert("Pehle kisi teacher ko search karke load karein!");
+
+    // 2. Photo Handling Logic (Add kiya gaya)
+    const updatePhotoFile = document.getElementById('up_tphoto').files[0];
+    if(updatePhotoFile) {
+        // Agar nayi file select ki hai to use Base64 mein badlein
+        data.photo = await convertToBase64(updatePhotoFile); 
+    } else {
+        // Agar nayi file select nahi ki, to purani photo (jo preview mein dikh rahi hai) wahi rehne dein
+        data.photo = document.getElementById('up_tview_photo').src;
+    }
+
+    // 3. Classes aur Subjects checkboxes ka data (Purana logic)
     data.classes = formData.getAll('classes');
     data.subjects = formData.getAll('subjects');
-    if(!data.teacher_id) return alert("Pehle kisi teacher ko search karke load karein!");
+
     try {
         const res = await fetch('/api/update-teacher-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        if(res.ok) { alert("Teacher Data Updated Successfully! ✅"); modals.update.style.display = "none"; loadTeacherData(); }
-    } catch (err) { alert("Server connection error!"); }
+        
+        if(res.ok) { 
+            alert("Teacher Data Updated Successfully! ✅"); 
+            // Modal band karne ke liye (aapke variable ke hisab se)
+            document.getElementById("updateModal").style.display = "none"; 
+            loadTeacherData(); 
+        }
+    } catch (err) { 
+        console.error(err);
+        alert("Server connection error!"); 
+    }
 };
 
-// --- 8. DELETE TEACHER ---
+// --- 8. DELETE TEACHER (Waisa hi rahega) ---
 async function deleteTeacher() {
     const id = document.getElementById('up_id').value;
     if(!id) return alert("Pehle kisi Teacher ko Search karein!");
@@ -256,10 +282,13 @@ async function deleteTeacher() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teacher_id: id })
         });
-        if(res.ok) { alert("Teacher Account Deleted! 🗑️"); modals.update.style.display="none"; loadTeacherData(); }
+        if(res.ok) { 
+            alert("Teacher Account Deleted! 🗑️"); 
+            document.getElementById("updateModal").style.display="none"; 
+            loadTeacherData(); 
+        }
     } catch (err) { alert("Delete error!"); }
 }
-
 // --- 9. SAVE SYSTEM SETTINGS ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
