@@ -1,5 +1,7 @@
+
 document.addEventListener('DOMContentLoaded', async () => {
     // --- DOM Elements ---
+    const regPhotoInput = document.getElementById('regPhoto'); // Naya add karein
     const loader = document.getElementById('loader');
     const headerLogo = document.getElementById('header-logo');
     const headerTitle = document.getElementById('header-title');
@@ -156,7 +158,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- 4. Registration Logic ---
     if(regBtn) regBtn.onclick = () => regModal.style.display = "block";
     if(closeReg) closeReg.onclick = () => regModal.style.display = "none";
+let compressedPhotoBase64 = "";
 
+// Image ko compress karne ka function
+async function handleImageCompression(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                // Size chhota rakhein taaki 10kb achieve ho sake
+                canvas.width = 150; 
+                canvas.height = 150;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 150, 150);
+                
+                // Sabse kam quality (0.1 se 0.3) 10kb ke liye best hai
+                compressedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.3);
+                
+                // Preview dikhayein
+                document.getElementById('photoPreview').src = compressedPhotoBase64;
+                document.getElementById('photoPreviewContainer').style.display = 'block';
+                const size = Math.round((compressedPhotoBase64.length * 3/4) / 1024);
+                document.getElementById('photoSizeLabel').innerText = "Size: ~" + size + " KB";
+                resolve();
+            };
+        };
+    });
+}
+
+// Input change event listener
+if(regPhotoInput) {
+    regPhotoInput.onchange = (e) => handleImageCompression(e.target.files[0]);
+}
     studentRegForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -176,6 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             joining_date: document.getElementById('regDate').value,
             student_id: studentId,
             pass: document.getElementById('regPass').value,
+            photo: compressedPhotoBase64,
             fees: "0"
         };
 
