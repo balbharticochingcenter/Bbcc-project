@@ -274,6 +274,17 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     });
     alert("Settings Saved!"); loadSettings(); modals.sys.style.display="none";
 };
+//===============================================================================================================
+// --- HELPER FUNCTION: Convert Image to Base64 ---
+// Ise photo processing ke liye use karenge
+function convertToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
 
 // Student ID Auto Generation
 document.getElementById('s_name').oninput = (e) => {
@@ -291,7 +302,7 @@ document.getElementById("openStudentDataBtn").onclick = () => {
     loadStudentData(); 
 };
 
-// --- LOAD STUDENT CARDS WITH MONTHLY LABELS ---
+// --- LOAD STUDENT CARDS WITH PHOTO & MONTHLY LABELS ---
 async function loadStudentData() {
     const res = await fetch('/api/get-students');
     const students = await res.json();
@@ -313,7 +324,7 @@ async function loadStudentData() {
         let checks = "";
         for(let i = 1; i <= totalMonths; i++) {
             const isPaid = s.paid_months?.includes(i) ? "checked" : "";
-            const monthName = getMonthLabel(s.joining_date, i); // Updated Label
+            const monthName = typeof getMonthLabel === 'function' ? getMonthLabel(s.joining_date, i) : "Month " + i; 
             checks += `
                 <label class="fee-chip" style="min-width:65px; display:inline-flex; align-items:center; gap:3px; background:#f1f2f6; padding:3px 6px; border-radius:5px; font-size:11px;">
                     <input type="checkbox" ${isPaid} onchange="updateFeesStatus('${s.student_id}', ${i}, this.checked)">
@@ -324,12 +335,16 @@ async function loadStudentData() {
         const p_msg = `Dear Parent, your child ${s.student_name} CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
         const s_msg = `Dear STUDENT, your CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
 
+        // Yahan photo display logic add kiya gaya hai
         container.innerHTML += `
             <div class="diary-card">
                 <div style="display:flex; justify-content:space-between; align-items:start; border-bottom:1px dashed #ddd; padding-bottom:10px;">
-                    <div>
-                        <h4 style="margin:0; color:#2d3436; font-size:16px;">${s.student_name}</h4>
-                        <small style="color:#6c5ce7; font-weight:bold;">ID: ${s.student_id} | Class: ${s.student_class}</small>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <img src="${s.photo || 'https://via.placeholder.com/50'}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #6c5ce7;">
+                        <div>
+                            <h4 style="margin:0; color:#2d3436; font-size:16px;">${s.student_name}</h4>
+                            <small style="color:#6c5ce7; font-weight:bold;">ID: ${s.student_id} | Class: ${s.student_class}</small>
+                        </div>
                     </div>
                     <div style="text-align:right;">
                         <span style="display:block; font-size:10px; color:#777;">DOJ: ${s.joining_date}</span>
@@ -389,17 +404,29 @@ async function updateFeesStatus(stuId, month, status) {
     } catch (err) { console.error(err); }
 }
 
+// --- UPDATED STUDENT REGISTRATION WITH PHOTO ---
 document.getElementById("studentForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+    
+    // Photo processing
+    const photoFile = document.getElementById('s_photo').files[0];
+    if(photoFile) {
+        data.photo = await convertToBase64(photoFile);
+    }
+
     try {
         const res = await fetch('/api/student-reg', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        if (res.ok) { alert("Student Registered! 🎉"); e.target.reset(); document.getElementById("studentModal").style.display = "none"; }
+        if (res.ok) { 
+            alert("Student Registered! 🎉"); 
+            e.target.reset(); 
+            document.getElementById("studentModal").style.display = "none"; 
+        }
     } catch (err) { alert("Error!"); }
 };
 
@@ -407,6 +434,7 @@ document.getElementById("openStudentUpdateBtn").onclick = () => {
     document.getElementById("studentUpdateModal").style.display = "block";
 };
 
+// --- UPDATED SEARCH WITH PHOTO PREVIEW ---
 async function searchStudent() {
     const id = document.getElementById('search_sid').value.trim().toUpperCase();
     const res = await fetch('/api/get-students');
@@ -422,21 +450,44 @@ async function searchStudent() {
         document.getElementById('up_sfees').value = s.fees || "";
         document.getElementById('up_sclass').value = s.student_class || "";
         document.getElementById('up_sdoj').value = s.joining_date || ""; 
+        
+        // Photo Preview in Update Modal
+        if(s.photo) {
+            document.getElementById('up_sview_photo').src = s.photo;
+        } else {
+            document.getElementById('up_sview_photo').src = "https://via.placeholder.com/80";
+        }
+        
         alert("Student data loaded!");
     } else { alert("Not found!"); }
 }
 
+// --- UPDATED UPDATE WITH PHOTO HANDLING ---
 document.getElementById("studentUpdateForm").onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     data.joining_date = document.getElementById('up_sdoj').value;
+
+    // Nayi photo check karein
+    const updatePhotoFile = document.getElementById('up_sphoto').files[0];
+    if(updatePhotoFile) {
+        data.photo = await convertToBase64(updatePhotoFile);
+    } else {
+        // Agar nayi photo select nahi ki, to purani hi rehne dein
+        data.photo = document.getElementById('up_sview_photo').src;
+    }
+
     const res = await fetch('/api/update-student-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    if(res.ok) { alert("Updated! ✅"); document.getElementById("studentUpdateModal").style.display="none"; loadStudentData(); }
+    if(res.ok) { 
+        alert("Updated! ✅"); 
+        document.getElementById("studentUpdateModal").style.display="none"; 
+        loadStudentData(); 
+    }
 };
 
 async function deleteStudent() {
@@ -454,7 +505,7 @@ async function deleteStudent() {
 document.getElementById("openResultBtn").onclick = () => {
     document.getElementById("resultModal").style.display = "block";
 };
-
+//==========================================================================================================
 async function filterClassForResults() {
     const selectedClass = document.getElementById('res_class_filter').value;
     const res = await fetch('/api/get-students');
