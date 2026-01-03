@@ -185,22 +185,23 @@
                         <input type="text" id="regMobile" placeholder="Student Mobile" required>
                         <input type="text" id="regParentMobile" placeholder="Parent Mobile" required>
                     </div>
-                    <p style="margin: 10px 0 5px; font-weight: bold; font-size: 14px;">Select Class:</p>
-                    <div class="class-checkboxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 12px; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 5px; max-height: 120px; overflow-y: auto;">
-                        <label><input type="checkbox" name="regClass" value="1st"> 1st</label>
-                        <label><input type="checkbox" name="regClass" value="2nd"> 2nd</label>
-                        <label><input type="checkbox" name="regClass" value="3rd"> 3rd</label>
-                        <label><input type="checkbox" name="regClass" value="4th"> 4th</label>
-                        <label><input type="checkbox" name="regClass" value="5th"> 5th</label>
-                        <label><input type="checkbox" name="regClass" value="6th"> 6th</label>
-                        <label><input type="checkbox" name="regClass" value="7th"> 7th</label>
-                        <label><input type="checkbox" name="regClass" value="8th"> 8th</label>
-                        <label><input type="checkbox" name="regClass" value="9th"> 9th</label>
-                        <label><input type="checkbox" name="regClass" value="10th"> 10th</label>
-                        <label><input type="checkbox" name="regClass" value="I.A."> I.A.</label>
-                        <label><input type="checkbox" name="regClass" value="I.Sc."> I.Sc.</label>
-                        <label><input type="checkbox" name="regClass" value="I.Com."> I.Com.</label>
-                    </div>
+                   <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Select Class:</label>
+<select id="regClassSelect" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; background: #fff; color: #333;">
+    <option value="" disabled selected>-- Choose Class --</option>
+    <option value="1st">1st</option>
+    <option value="2nd">2nd</option>
+    <option value="3rd">3rd</option>
+    <option value="4th">4th</option>
+    <option value="5th">5th</option>
+    <option value="6th">6th</option>
+    <option value="7th">7th</option>
+    <option value="8th">8th</option>
+    <option value="9th">9th</option>
+    <option value="10th">10th</option>
+    <option value="I.A.">I.A. (Inter Arts)</option>
+    <option value="I.Sc.">I.Sc. (Inter Science)</option>
+    <option value="I.Com.">I.Com. (Inter Commerce)</option>
+</select>
                     <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Joining Date:</label>
                     <input type="date" id="regDate" required>
                     <div style="display: flex; gap: 10px;">
