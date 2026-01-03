@@ -332,7 +332,7 @@ document.getElementById("openStudentDataBtn").onclick = () => {
 };
 
 // // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
-// // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
+// // --- UPDATED: Load Student Data with Class Filter, Photo, and Detailed Month Breakdown ---
 async function loadStudentData() {
     // 1. Class Filter ki value lena
     const filterElem = document.getElementById('fee_class_filter');
@@ -364,7 +364,7 @@ async function loadStudentData() {
         let feeRows = "";
         let totalPaid = 0;
         let totalDue = 0;
-        let paidMonthList = [];
+        let dueBreakdown = ""; // Message mein month-wise detail ke liye
 
         // --- Fees Row Generation (Paid/Due Inputs) ---
         for(let i = 1; i <= totalMonths; i++) {
@@ -373,11 +373,16 @@ async function loadStudentData() {
             
             if(monthData.status) {
                 totalPaid += Number(monthData.paid || 0);
-                paidMonthList.push(monthName);
             }
-            totalDue += Number(monthData.due || 0);
+            
+            let mDue = Number(monthData.due || 0);
+            totalDue += mDue;
 
-            // UPDATED: Added oninput for real-time Monthly Due calculation (Fee - Paid = Due)
+            // Agar kisi mahine mein paisa baki hai (>0), toh use message list mein jodo
+            if(mDue > 0) {
+                dueBreakdown += `${monthName} ₹${mDue}, `;
+            }
+
             feeRows += `
                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px; background:#f9f9f9; padding:5px; border-radius:5px; border:1px solid #eee;">
                     <input type="checkbox" class="status-chk-${s.student_id}" ${monthData.status ? "checked" : ""} onchange="saveFeeDetail('${s.student_id}', ${i}, 'status', this.checked)">
@@ -394,7 +399,11 @@ async function loadStudentData() {
                 </div>`;
         }
 
-        const commonMsg = `Dear Parent/Student, Child: ${s.student_name}. Total Due: ₹${totalDue}. Please pay soon. REGARD: BBCC MADHUBANI (7543952488)`;
+        // --- Message Cleaning ---
+        if(dueBreakdown.endsWith(", ")) dueBreakdown = dueBreakdown.slice(0, -2); // Aakhri comma hatane ke liye
+        
+        // Final Message Format
+        const commonMsg = `Dear Parent/Student, Child: ${s.student_name}. Total Due: ₹${totalDue}. Details: ${dueBreakdown ? dueBreakdown : 'Nil'}. Please pay soon. REGARD: BBCC MADHUBANI (7543952488)`;
         
         container.innerHTML += `
             <div class="diary-card" style="border-left: 5px solid #6c5ce7; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
@@ -463,14 +472,8 @@ function calculateLiveDue(sId, monthIndex, monthlyFees) {
     
     if (paidInput && dueBox) {
         const paidValue = Number(paidInput.value) || 0;
-        
-        // Month ka calculation: Fee - Paid = Month ka Due
         const remainingDue = monthlyFees - paidValue;
-        
-        // Month ke specific Due box mein result update karna
         dueBox.value = Math.max(0, remainingDue); 
-        
-        // Database mein automatically update karna
         saveFeeDetail(sId, monthIndex, 'due', dueBox.value);
     }
 }
@@ -484,7 +487,7 @@ async function saveFeeDetail(sId, monthIndex, field, value) {
             body: JSON.stringify({ student_id: sId, month: monthIndex, field: field, value: value })
         });
 
-        // Niche wale Total calculation ko update karna
+        // UI calculation update bina refresh kiye
         let newTotalPaid = 0;
         let newTotalDue = 0;
 
@@ -495,10 +498,7 @@ async function saveFeeDetail(sId, monthIndex, field, value) {
         statusChecks.forEach((chk, index) => {
             const pVal = Number(paidInputs[index].value) || 0;
             const dVal = Number(dueInputs[index].value) || 0;
-
-            if(chk.checked) {
-                newTotalPaid += pVal;
-            }
+            if(chk.checked) newTotalPaid += pVal;
             newTotalDue += dVal;
         });
 
