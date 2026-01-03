@@ -37,7 +37,7 @@ const Teacher = mongoose.model('Teacher', new mongoose.Schema({
     classes: [String], subjects: [String], paid_months: { type: [Number], default: [] }
 }));
 
-// 3. Student Schema
+// 3. Student Schema (UPDATED: Added fees_data)
 const Student = mongoose.model('Student', new mongoose.Schema({
     student_name: String, student_id: { type: String, unique: true },
     pass: String, parent_name: String, mobile: String,
@@ -46,15 +46,36 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     photo: String, 
     obtained_marks: { type: String, default: "" },
     exam_date: { type: String, default: "" },
-    paid_months: { type: [Number], default: [] }
+    paid_months: { type: [Number], default: [] },
+    // Naya field fees detail (Paid/Due/Status) store karne ke liye
+    fees_data: { type: Map, of: Object, default: {} }
 }));
-// 4. Admin Profile Schema (New)
+
+// 4. Admin Profile Schema
 const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
     admin_name: String,
     admin_userid: { type: String, unique: true },
     admin_pass: String,
     admin_mobile: String
 }));
+
+// 5. Slider Schema
+const SliderPhoto = mongoose.model('SliderPhoto', new mongoose.Schema({
+    photo: String, 
+    upload_date: { type: Date, default: Date.now }
+}));
+
+// 6. Class Configuration Schema
+const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
+    class_name: { type: String, unique: true },
+    banner: String,
+    intro_video: String,
+    subjects: {
+        type: Map,
+        of: [String]
+    }
+}));
+
 // --- HTML ROUTES ---
 
 app.get('/', (req, res) => {
@@ -65,47 +86,6 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// --- 5. Slider Schema (Naya Schema) ---
-const SliderPhoto = mongoose.model('SliderPhoto', new mongoose.Schema({
-    photo: String, // Base64 image data yahan save hoga
-    upload_date: { type: Date, default: Date.now }
-}));
-// --- 6. Class Configuration Schema (Naya) ---
-const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
-    class_name: { type: String, unique: true }, // e.g., "10th", "I.Sc."
-    banner: String,
-    intro_video: String,
-    subjects: {
-        type: Map,
-        of: [String] // Subject name key hogi aur array mein links honge
-    }
-}));
-// --- E. SLIDER API (Naya Routes) ---
-
-// Photo Save karne ke liye
-app.post('/api/add-slider', async (req, res) => {
-    try {
-        const newPhoto = new SliderPhoto({ photo: req.body.photo });
-        await newPhoto.save();
-        res.json({ success: true, message: "Photo saved to DB!" });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// Saari Photos Get karne ke liye
-app.get('/api/get-sliders', async (req, res) => {
-    try {
-        const photos = await SliderPhoto.find().sort({ upload_date: -1 });
-        res.json(photos);
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// Photo Delete karne ke liye
-app.delete('/api/delete-slider/:id', async (req, res) => {
-    try {
-        await SliderPhoto.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
 // --- API ROUTES ---
 
 // --- A. STUDENT API ---
@@ -127,14 +107,30 @@ app.post('/api/update-student-data', async (req, res) => {
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-// ✅ ADDED: Student Delete Code
+
 app.delete('/api/delete-student', async (req, res) => {
     try {
         await Student.findOneAndDelete({ student_id: req.body.student_id });
         res.json({ success: true, message: "Student deleted" });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-// Naya logic: Student fees checkbox ke liye (Agar front-end use kar raha hai)
+
+// ✅ NEW: Route for Detailed Fees (Paid, Due, Status)
+app.post('/api/update-student-fees', async (req, res) => {
+    try {
+        const { student_id, month, field, value } = req.body;
+        // Example Key: fees_data.1.paid
+        const updateKey = `fees_data.${month}.${field}`;
+        
+        await Student.findOneAndUpdate(
+            { student_id: student_id },
+            { $set: { [updateKey]: value } }
+        );
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Purana fees status route (Compatibility ke liye rakha gaya hai)
 app.post('/api/update-fees-status', async (req, res) => {
     try {
         const { student_id, month, status } = req.body;
@@ -147,7 +143,7 @@ app.post('/api/update-fees-status', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- B. TEACHER API (Fixed & Merged) ---
+// --- B. TEACHER API ---
 app.post('/api/teacher-reg', async (req, res) => {
     try { 
         const t = new Teacher(req.body); 
@@ -189,51 +185,7 @@ app.post('/api/update-salary-status', async (req, res) => {
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-// --- F. CLASS SYSTEM API (Naya) ---
 
-// 1. Class ka configuration save ya update karne ke liye
-app.post('/api/save-class-config', async (req, res) => {
-    try {
-        const { class_name, banner, intro_video, subjects } = req.body;
-        // upsert: true se agar class nahi hai to ban jayegi, hai to update ho jayegi
-        const updatedData = await ClassConfig.findOneAndUpdate(
-            { class_name: class_name },
-            { banner, intro_video, subjects },
-            { upsert: true, new: true }
-        );
-        res.json({ success: true, data: updatedData });
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
-    }
-});
-
-// 2. Specific class ka data fetch karne ke liye
-app.get('/api/get-class-config/:className', async (req, res) => {
-    try {
-        const config = await ClassConfig.findOne({ class_name: req.params.className });
-        if (config) {
-            res.json(config);
-        } else {
-            res.status(404).json({ message: "No configuration found for this class" });
-        }
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
-    }
-});
-// 3. Sabhi classes ka configuration ek saath fetch karne ke liye (Banners ke liye)
-app.get('/api/get-all-class-configs', async (req, res) => {
-    try {
-        const configs = await ClassConfig.find();
-        // Isse hum array ko ek object mein badal denge taaki frontend par access karna aasaan ho
-        const configMap = {};
-        configs.forEach(conf => {
-            configMap[conf.class_name] = conf;
-        });
-        res.json(configMap);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 // --- C. SETTINGS API ---
 app.get('/api/get-settings', async (req, res) => {
     try {
@@ -248,24 +200,75 @@ app.post('/api/update-settings', async (req, res) => {
         res.json({ success: true, data });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-// --- D. ADMIN PROFILE API (NEW) ---
 
-// Admin Data Get Karne ke liye
+// --- D. ADMIN PROFILE API ---
 app.get('/api/get-admin-profile', async (req, res) => {
     try {
-        const admin = await AdminProfile.findOne(); // Ek hi admin record fetch karega
+        const admin = await AdminProfile.findOne();
         res.json(admin || {});
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Admin Data Save/Update Karne ke liye
 app.post('/api/update-admin-profile', async (req, res) => {
     try {
-        // upsert: true ka matlab hai agar record nahi hai to naya bana do, hai to update kar do
         const data = await AdminProfile.findOneAndUpdate({}, req.body, { upsert: true, new: true });
         res.json({ success: true, message: "Admin Profile Updated!", data });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+// --- E. SLIDER API ---
+app.post('/api/add-slider', async (req, res) => {
+    try {
+        const newPhoto = new SliderPhoto({ photo: req.body.photo });
+        await newPhoto.save();
+        res.json({ success: true, message: "Photo saved to DB!" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/get-sliders', async (req, res) => {
+    try {
+        const photos = await SliderPhoto.find().sort({ upload_date: -1 });
+        res.json(photos);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/delete-slider/:id', async (req, res) => {
+    try {
+        await SliderPhoto.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- F. CLASS SYSTEM API ---
+app.post('/api/save-class-config', async (req, res) => {
+    try {
+        const { class_name, banner, intro_video, subjects } = req.body;
+        const updatedData = await ClassConfig.findOneAndUpdate(
+            { class_name: class_name },
+            { banner, intro_video, subjects },
+            { upsert: true, new: true }
+        );
+        res.json({ success: true, data: updatedData });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/get-class-config/:className', async (req, res) => {
+    try {
+        const config = await ClassConfig.findOne({ class_name: req.params.className });
+        if (config) res.json(config);
+        else res.status(404).json({ message: "No configuration found" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/get-all-class-configs', async (req, res) => {
+    try {
+        const configs = await ClassConfig.find();
+        const configMap = {};
+        configs.forEach(conf => { configMap[conf.class_name] = conf; });
+        res.json(configMap);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
