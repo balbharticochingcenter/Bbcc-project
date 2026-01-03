@@ -188,20 +188,29 @@
                    <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Select Class:</label>
 <select id="regClassSelect" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; background: #fff; color: #333;">
     <option value="" disabled selected>-- Choose Class --</option>
-    <option value="1st">1st</option>
-    <option value="2nd">2nd</option>
-    <option value="3rd">3rd</option>
-    <option value="4th">4th</option>
-    <option value="5th">5th</option>
-    <option value="6th">6th</option>
-    <option value="7th">7th</option>
-    <option value="8th">8th</option>
-    <option value="9th">9th</option>
-    <option value="10th">10th</option>
-    <option value="I.A.">I.A. (Inter Arts)</option>
-    <option value="I.Sc.">I.Sc. (Inter Science)</option>
-    <option value="I.Com.">I.Com. (Inter Commerce)</option>
-</select>
+                    <optgroup label="class">
+                        <option value="1st">1st</option>
+                        <option value="2nd">2nd</option>
+                        <option value="3rd">3rd</option>
+                        <option value="4th">4th</option>
+                        <option value="5th">5th</option>
+                        <option value="6th">6th</option>
+                        <option value="7th">7th</option>
+                        <option value="8th">8th</option>
+                        <option value="9th">9th</option>
+                        <option value="10th">10th</option>
+                    </optgroup>
+                    <optgroup label="Intermediate">
+                        <option value="I.A.">I.A.</option>
+                        <option value="I.Sc.">I.Sc.</option>
+                        <option value="I.Com.">I.Com.</option>
+                    </optgroup>
+                    <optgroup label="Graduation">
+                        <option value="B.A.">B.A.</option>
+                        <option value="B.Sc.">B.Sc.</option>
+                        <option value="B.Com.">B.Com.</option>
+                    </optgroup>
+                </select>
                     <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Joining Date:</label>
                     <input type="date" id="regDate" required>
                     <div style="display: flex; gap: 10px;">
