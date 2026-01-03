@@ -43,6 +43,7 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     pass: String, parent_name: String, mobile: String,
     parent_mobile: String, student_class: String, fees: String,
     joining_date: String, total_marks: { type: String, default: "" },
+    photo: String, 
     obtained_marks: { type: String, default: "" },
     exam_date: { type: String, default: "" },
     paid_months: { type: [Number], default: [] }
