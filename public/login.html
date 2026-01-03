@@ -121,30 +121,52 @@
             </div>
             <p id="searchMessage" class="error-message"></p>
             <div id="studentResultDisplay" class="student-result-display" style="display: none;">
-                <div class="result-header">
-                    <h4 id="result-student-name"></h4>
-                    <p>ID: <span id="result-student-id"></span></p>
-                </div>
-                <div class="result-details">
-                    <div class="detail-item">
-                        <p>Parent Name: <span id="result-parent-name"></span></p>
-                        <p>Mobile: <span id="result-student-mobile"></span></p>
-                        <p>Class: <span id="result-student-class"></span></p>
-                    </div>
-                    <div class="detail-item">
-                        <p>Exam Date: <span id="result-exam-date"></span></p>
-                        <p>Total Marks: <span id="result-total-marks"></span></p>
-                        <p>Obtained Marks: <span id="result-obtained-marks"></span></p>
-                    </div>
-                    <div class="result-photo-container">
-                        <img id="result-student-photo" src="" alt="Student Photo" style="display: none;">
-                    </div>
-                </div>
-                <div class="download-buttons">
-                    <button id="downloadPdfBtn" class="btn download-btn">Download PDF</button>
-                    <button id="downloadJpgBtn" class="btn download-btn">Download JPG</button>
-                </div>
-            </div>
+    <div class="result-header">
+        <h2 style="color: #4a90e2;">BBCC PROGRESS REPORT</h2>
+        <p>Annual Examination Result</p>
+    </div>
+    
+    <div class="result-details">
+        <div class="detail-item">
+            <p>Student Name: <span id="result-student-name"></span></p>
+            <p>Student ID: <span id="result-student-id"></span></p>
+            <p>Guardian Name: <span id="result-parent-name"></span></p>
+            <p>Class: <span id="result-student-class"></span></p>
+        </div>
+        <div class="result-photo-container">
+            <img id="result-student-photo" src="" alt="Student">
+        </div>
+    </div>
+
+    <table class="marks-table">
+        <thead>
+            <tr>
+                <th>Exam Date</th>
+                <th>Maximum Marks</th>
+                <th>Marks Obtained</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span id="result-exam-date"></span></td>
+                <td><span id="result-total-marks"></span></td>
+                <td><span id="result-obtained-marks"></span></td>
+                <td><span id="result-percentage"></span>%</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div style="margin-top: 30px; text-align: right;">
+        <p>___________________</p>
+        <p style="margin-right: 20px;">Principal Signature</p>
+    </div>
+
+    <div class="download-buttons" style="margin-top: 20px; text-align: center;">
+        <button id="downloadPdfBtn" class="btn">Download PDF</button>
+        <button id="downloadJpgBtn" class="btn" style="background: #28a745;">Download JPG</button>
+    </div>
+</div>
         </div>
     </div>
 
