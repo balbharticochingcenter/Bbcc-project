@@ -567,3 +567,57 @@ body {
     .class-modal-left, .class-modal-right { width: 100%; }
     .header-content { flex-direction: column; gap: 10px; }
 }
+/* Logo aur Admission Badge ko side-by-side lane ke liye */
+.logo-section-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* 3D Rotation Animation */
+.logo-img-3d {
+    width: 60px; /* Size adjust karein */
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    /* 3D Animation Settings */
+    animation: rotate3D 2s infinite linear;
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+@keyframes rotate3D {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+/* Admission Open Badge Styling */
+.admission-badge {
+    background: linear-gradient(45deg, #ff0000, #ff9900);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    animation: pulse 1.5s infinite;
+}
+
+.pulse-text {
+    display: block;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Mobile responsive check */
+@media (max-width: 600px) {
+    .logo-img-3d { width: 45px; height: 45px; }
+    .admission-badge { font-size: 10px; }
+}
