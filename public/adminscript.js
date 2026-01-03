@@ -331,107 +331,150 @@ document.getElementById("openStudentDataBtn").onclick = () => {
     loadStudentData(); 
 };
 
-// --- LOAD STUDENT CARDS WITH PHOTO & MONTHLY LABELS ---
+// // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---////////////////
 async function loadStudentData() {
+    // 1. Class Filter ki value lena
+    const filterElem = document.getElementById('fee_class_filter');
+    const selectedClass = filterElem ? filterElem.value : "ALL";
+
     const res = await fetch('/api/get-students');
-    const students = await res.json();
-    const container = document.getElementById("studentTableBody");
+    let students = await res.json();
     
+    // 2. Filter by Class logic
+    if(selectedClass !== "ALL") {
+        students = students.filter(s => s.student_class === selectedClass);
+    }
+
+    const container = document.getElementById("studentTableBody");
     if (students.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#666;'>Koi student nahi mila!</p>";
+        container.innerHTML = "<p style='text-align:center; color:#666; grid-column: 1/-1;'>Is class mein koi student nahi mila!</p>";
         return;
     }
 
     container.innerHTML = ""; 
 
     students.forEach(s => {
+        // --- Date & Month Calculation ---
         const joinDate = s.joining_date ? new Date(s.joining_date) : new Date();
         const today = new Date();
         const diff = (today.getFullYear() - joinDate.getFullYear()) * 12 + (today.getMonth() - joinDate.getMonth());
         const totalMonths = diff < 0 ? 1 : diff + 1;
 
-        let checks = "";
+        let feeRows = "";
+        let totalPaid = 0;
+        let totalDue = 0;
+        let paidMonthList = [];
+
+        // --- Fees Row Generation (Paid/Due Inputs) ---
         for(let i = 1; i <= totalMonths; i++) {
-            const isPaid = s.paid_months?.includes(i) ? "checked" : "";
-            const monthName = typeof getMonthLabel === 'function' ? getMonthLabel(s.joining_date, i) : "Month " + i; 
-            checks += `
-                <label class="fee-chip" style="min-width:65px; display:inline-flex; align-items:center; gap:3px; background:#f1f2f6; padding:3px 6px; border-radius:5px; font-size:11px;">
-                    <input type="checkbox" ${isPaid} onchange="updateFeesStatus('${s.student_id}', ${i}, this.checked)">
-                    <span style="font-weight:bold;">${monthName}</span>
-                </label>`;
+            const monthName = typeof getMonthLabel === 'function' ? getMonthLabel(s.joining_date, i) : "Month " + i;
+            
+            // Database se data nikalna (fees_data object se)
+            const monthData = s.fees_data?.[i] || { status: false, paid: 0, due: s.fees };
+            
+            if(monthData.status) {
+                totalPaid += Number(monthData.paid || 0);
+                paidMonthList.push(monthName);
+            }
+            totalDue += Number(monthData.due || 0);
+
+            feeRows += `
+                <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px; background:#f9f9f9; padding:5px; border-radius:5px; border:1px solid #eee;">
+                    <input type="checkbox" ${monthData.status ? "checked" : ""} onchange="saveFeeDetail('${s.student_id}', ${i}, 'status', this.checked)">
+                    <span style="width:65px; font-size:11px; font-weight:bold; color:#2d3436;">${monthName}</span>
+                    <input type="number" placeholder="Paid" value="${monthData.paid || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'paid', this.value)">
+                    <input type="number" placeholder="Due" value="${monthData.due || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'due', this.value)">
+                </div>`;
         }
 
-        const p_msg = `Dear Parent, your child ${s.student_name} CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
-        const s_msg = `Dear STUDENT, your CLASS ${s.student_class} fees is due. CALL FOR MORE INFORMATION: 7543952488 REGARD: BBCC MADHUBANI`;
-
-        // Yahan photo display logic add kiya gaya hai
+        // --- Messaging Logic (Total Due & Months included) ---
+        const monthStatusMsg = paidMonthList.length > 0 ? `Paid Months: ${paidMonthList.join(', ')}.` : "";
+        const commonMsg = `Dear Parent/Student, Child: ${s.student_name}. Total Due: ₹${totalDue}. ${monthStatusMsg} Please pay soon. REGARD: BBCC MADHUBANI (7543952488)`;
+        
+        // --- Card HTML (Keeping your Original Design Layout) ---
         container.innerHTML += `
-            <div class="diary-card">
+            <div class="diary-card" style="border-left: 5px solid #6c5ce7; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                 <div style="display:flex; justify-content:space-between; align-items:start; border-bottom:1px dashed #ddd; padding-bottom:10px;">
                     <div style="display:flex; gap:10px; align-items:center;">
                         <img src="${s.photo || 'https://via.placeholder.com/50'}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #6c5ce7;">
                         <div>
-                            <h4 style="margin:0; color:#2d3436; font-size:16px;">${s.student_name}</h4>
+                            <h4 style="margin:0; color:#2d3436; font-size:15px;">${s.student_name}</h4>
                             <small style="color:#6c5ce7; font-weight:bold;">ID: ${s.student_id} | Class: ${s.student_class}</small>
                         </div>
                     </div>
                     <div style="text-align:right;">
                         <span style="display:block; font-size:10px; color:#777;">DOJ: ${s.joining_date}</span>
-                        <span style="font-weight:bold; color:#2ecc71; font-size:15px;">₹${s.fees}/mo</span>
+                        <span style="font-weight:bold; color:#2ecc71; font-size:14px;">₹${s.fees}/mo</span>
                     </div>
                 </div>
 
-                <div style="margin:12px 0; display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px;">
+                <div style="margin:10px 0; display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:11px; background:#fffaf0; padding:5px; border-radius:5px;">
                     <div>
                         <p style="margin:2px 0;"><b>Parent:</b> ${s.parent_name}</p>
                         <p style="margin:2px 0;"><b>P. Mob:</b> ${s.parent_mobile}</p>
                     </div>
-                    <div style="border-left:1px solid #eee; padding-left:10px;">
+                    <div style="border-left:1px solid #ddd; padding-left:10px;">
                         <p style="margin:2px 0;"><b>Stu. Mob:</b> ${s.mobile}</p>
-                        <p style="margin:2px 0;"><b>Password:</b> <span style="color:#e84393;">${s.pass}</span></p>
+                        <p style="margin:2px 0;"><b>Pass:</b> <span style="color:#e84393;">${s.pass}</span></p>
                     </div>
                 </div>
-                
-                <div class="diary-actions">
+
+                <div style="margin:10px 0; max-height:180px; overflow-y:auto; padding-right:5px;">
+                    <p style="font-size:10px; font-weight:bold; color:#747d8c; margin-bottom:5px;">MONTHLY TRACKER (Month | Paid | Due)</p>
+                    ${feeRows}
+                </div>
+
+                <div style="background:#f1f2f6; padding:8px; border-radius:5px; font-size:12px; display:flex; justify-content:space-between; border:1px solid #dfe4ea;">
+                    <b style="color:#27ae60;">Paid: ₹${totalPaid}</b>
+                    <b style="color:#eb4d4b;">Total Due: ₹${totalDue}</b>
+                </div>
+
+                <div class="diary-actions" style="margin-top:10px;">
                     <div style="text-align:center;">
-                        <small style="display:block; font-size:9px; margin-bottom:3px; color:#999;">PARENT CONTACT</small>
-                        <div style="display:flex; gap:10px;">
-                            <a href="sms:${s.parent_mobile}?body=${encodeURIComponent(p_msg)}" style="color:#e84393;" title="SMS Parent"><i class="fas fa-comment"></i></a>
-                            <a href="https://wa.me/${s.parent_mobile}?text=${encodeURIComponent(p_msg)}" target="_blank" style="color:#25D366;" title="WA Parent"><i class="fab fa-whatsapp"></i></a>
-                            <a href="tel:${s.parent_mobile}" style="color:#0984e3;" title="Call Parent"><i class="fas fa-phone-alt"></i></a>
+                        <small style="display:block; font-size:9px; color:#999;">PARENT</small>
+                        <div style="display:flex; gap:12px;">
+                            <a href="sms:${s.parent_mobile}?body=${encodeURIComponent(commonMsg)}" style="color:#e84393;"><i class="fas fa-comment"></i></a>
+                            <a href="https://wa.me/${s.parent_mobile}?text=${encodeURIComponent(commonMsg)}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                            <a href="tel:${s.parent_mobile}" style="color:#0984e3;"><i class="fas fa-phone-alt"></i></a>
                         </div>
                     </div>
                     <div style="width:1px; background:#eee;"></div>
                     <div style="text-align:center;">
-                        <small style="display:block; font-size:9px; margin-bottom:3px; color:#999;">STUDENT CONTACT</small>
-                        <div style="display:flex; gap:10px;">
-                            <a href="sms:${s.mobile}?body=${encodeURIComponent(s_msg)}" style="color:#6c5ce7;" title="SMS Student"><i class="fas fa-comment"></i></a>
-                            <a href="https://wa.me/${s.mobile}?text=${encodeURIComponent(s_msg)}" target="_blank" style="color:#25D366;" title="WA Student"><i class="fab fa-whatsapp"></i></a>
-                            <a href="tel:${s.mobile}" style="color:#0984e3;" title="Call Student"><i class="fas fa-phone-alt"></i></a>
+                        <small style="display:block; font-size:9px; color:#999;">STUDENT</small>
+                        <div style="display:flex; gap:12px;">
+                            <a href="sms:${s.mobile}?body=${encodeURIComponent(commonMsg)}" style="color:#6c5ce7;"><i class="fas fa-comment"></i></a>
+                            <a href="https://wa.me/${s.mobile}?text=${encodeURIComponent(commonMsg)}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+                            <a href="tel:${s.mobile}" style="color:#0984e3;"><i class="fas fa-phone-alt"></i></a>
                         </div>
                     </div>
-                </div>
-
-                <div style="margin-top:15px;">
-                    <p style="font-size:10px; font-weight:bold; color:#747d8c; margin-bottom:8px; display:flex; justify-content:space-between;">
-                        <span>FEES TRACKER</span>
-                        <span style="color:#6c5ce7;">${totalMonths} Months Total</span>
-                    </p>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px;">${checks}</div>
                 </div>
             </div>`;
     });
 }
 
-async function updateFeesStatus(stuId, month, status) {
+// --- UPDATED: Save Fee Details to Database ---
+async function saveFeeDetail(sId, monthIndex, field, value) {
     try {
-        await fetch('/api/update-fees-status', {
+        // field will be 'status', 'paid', or 'due'
+        await fetch('/api/update-student-fees', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ student_id: stuId, month, status })
+            body: JSON.stringify({ 
+                student_id: sId, 
+                month: monthIndex, 
+                field: field, 
+                value: value 
+            })
         });
-    } catch (err) { console.error(err); }
+        // Data save hone ke baad UI update karein bina page refresh kiye
+        // Note: Performance ke liye aap bina loadStudentData() call kiye bhi calculation update kar sakte hain
+        // par loadStudentData() call karna sabse accurate method hai.
+        loadStudentData(); 
+    } catch (err) { 
+        console.error("Fee update error:", err); 
+    }
 }
+/////////////////////////////////////////////////////////////////////////
 
 // --- UPDATED STUDENT REGISTRATION WITH PHOTO ---
 document.getElementById("studentForm").onsubmit = async (e) => {
