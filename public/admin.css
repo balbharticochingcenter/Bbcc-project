@@ -88,7 +88,7 @@ body {
     border: none;
     padding: 20px 10px; /* Thoda chota padding taki group mein fit ho */
     border-radius: 20px;
-    color: white;
+    color: black;
     font-weight: 600;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.05);
@@ -100,7 +100,7 @@ body {
     align-items: center;
     gap: 10px;
     flex: 1; /* Group ke andar barabar jagah lega */
-    min-width: 120px; /* Mobile par buttons bahut chote na ho jayein */
+    min-width: 100px; /* Mobile par buttons bahut chote na ho jayein */
 }
 
 .btn-primary:hover {
