@@ -245,7 +245,18 @@ body {
     transition: 0.3s ease;
     font-family: 'Orbitron', sans-serif;
 }
+/* Student Result Button Color Fix */
+#studentResultBtn {
+    background: var(--accent-color) !important; /* Orange background */
+    color: #000 !important; /* Black text taaki safed par dikhe */
+    font-weight: bold;
+}
 
+/* Hover par text color badal sakte hain */
+#studentResultBtn:hover {
+    color: #fff !important;
+    background: #e69516 !important;
+}
 /* --- Slider Section --- */
 .slider-container {
     width: 95%;
@@ -329,36 +340,33 @@ body {
 
 /* --- EXPLORE OUR CLASSES (MAGICAL CARDS) --- */
 .class-config-section {
-    padding: 60px 0;
+    width: 100%;
+    overflow: hidden; /* Bahar ka area hide karne ke liye */
     background: #0a0a12;
-    text-align: center;
-    overflow: hidden; /* Bahar ka hide karne ke liye */
+    padding: 60px 0;
 }
 
 .class-cards-grid {
     display: flex;
-    justify-content: flex-start;
-    flex-wrap: nowrap; /* Line break nahi hoga */
     gap: 35px;
-    padding: 20px;
-    width: max-content;
-    animation: scrollClasses 30s linear infinite; /* Right to Left Move */
-    cursor: grab;
-    overflow-x: auto;
-    scrollbar-width: none; /* Hide scrollbar */
+    width: max-content; /* Content ke hisab se width */
+    animation: scrollInfinite 30s linear infinite; /* Right to Left Loop */
 }
 
-.class-cards-grid::-webkit-scrollbar { display: none; }
-
+/* Mouse lane par animation slow ya pause karne ke liye */
 .class-cards-grid:hover {
-    animation-play-state: paused; /* Touch ya mouse par ruk jayega */
+    animation-play-state: paused;
 }
 
-@keyframes scrollClasses {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+@keyframes scrollInfinite {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        /* Ye -50% tabhi kaam karega jab hum JS se cards double karenge */
+        transform: translateX(-50%);
+    }
 }
-
 /* The Bubble Border Effect Card */
 .class-card {
     position: relative;
