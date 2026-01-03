@@ -536,6 +536,37 @@
 </div>
 
 
+<div id="chat-circle" onclick="toggleChat()">
+    <i class="fas fa-robot" style="font-size: 28px;"></i>
+</div>
+
+<div id="chat-box">
+    <div style="background: #6c5ce7; color: white; padding: 18px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fas fa-magic"></i> BBCC Assistant</span>
+        <span onclick="toggleChat()" style="cursor: pointer; font-size: 24px;">&times;</span>
+    </div>
+    
+    <div id="chat-content">
+        <div class="bot-msg">स्वागत है एडमिन! मैं आपकी आवाज़ सुनकर भी मदद कर सकता हूँ। जानकारी के लिए विभाग चुनें:</div>
+        
+        <div id="main-cats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="quick-btn" onclick="showHelp('system')">⚙️ सिस्टम कंट्रोल</button>
+            <button class="quick-btn" onclick="showHelp('teacher')">👨‍🏫 शिक्षक प्रबंधन</button>
+            <button class="quick-btn" onclick="showHelp('student')">🎓 छात्र प्रबंधन</button>
+            <button class="quick-btn" onclick="showHelp('image')">🖼️ इमेज टूल्स</button>
+        </div>
+        <div id="sub-list" style="display: flex; flex-direction: column; gap: 6px; margin-top: 5px;"></div>
+    </div>
+
+    <div style="padding: 12px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white;">
+        <input type="text" id="chat-input" placeholder="कुछ पूछें या टाइप करें..." style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px; outline: none;">
+        <button onclick="sendMessage()" style="background: #6c5ce7; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer;">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+    
     
 <footer class="magical-footer">
     <div class="social-icons">
