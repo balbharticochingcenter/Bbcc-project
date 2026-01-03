@@ -1119,7 +1119,32 @@ const aiBrain = {
     }
 };
 
-// 3. चैट में मैसेज डिस्प्ले करना
+// 3. चैट में // 1. स्मार्ट रिस्पांस फंक्शन (टाइपिंग एनीमेशन के साथ)
+function botResponse(text) {
+    let content = document.getElementById('chat-content');
+    
+    // टाइपिंग इंडिकेटर बनाएँ
+    let typingDiv = document.createElement('div');
+    typingDiv.id = "typing-status";
+    typingDiv.className = "bot-msg";
+    typingDiv.style.fontStyle = "italic";
+    typingDiv.style.opacity = "0.7";
+    typingDiv.innerText = "टाइप कर रही हूँ...";
+    
+    content.appendChild(typingDiv);
+    content.scrollTop = content.scrollHeight;
+
+    // 1.2 सेकंड का डिले (Human-like feeling के लिए)
+    setTimeout(() => {
+        let status = document.getElementById('typing-status');
+        if(status) status.remove(); // टाइपिंग टेक्स्ट हटाएँ
+        
+        showMsg(text, 'bot');
+        talk(text);
+    }, 1200);
+}
+
+// 2. मैसेज डिस्प्ले करना
 function showMsg(t, s) {
     let c = document.getElementById('chat-content');
     let d = document.createElement('div');
@@ -1129,7 +1154,7 @@ function showMsg(t, s) {
     c.scrollTop = c.scrollHeight;
 }
 
-// 4. टाइपिंग सर्च लॉजिक
+// 3. टाइपिंग सर्च लॉजिक (Updated with botResponse)
 function userSend() {
     let input = document.getElementById('chat-input');
     let val = input.value.trim().toLowerCase();
@@ -1149,37 +1174,44 @@ function userSend() {
     if (foundKey) {
         confirmTopic(foundKey);
     } else {
-        let error = "माफ़ कीजिये, मैं समझ नहीं पाई। क्या आप आईडी, फीस या फोटो के बारे में पूछना चाहते हैं? या डेवलपर को कॉल करें: " + devCall;
-        setTimeout(() => { showMsg(error, 'bot'); talk(error); }, 500);
+        let error = "माफ़ कीजिये, मैं समझ नहीं पाई। क्या आप आईडी, फीस या फोटो के बारे में पूछना चाहते हैं? या डेवलपर को कॉल करें: " + devCall;
+        // यहाँ भी टाइपिंग एनीमेशन का उपयोग करें
+        setTimeout(() => { botResponse(error); }, 400);
     }
 }
 
-// 5. कन्फर्मेशन सिस्टम
+// 4. कन्फर्मेशन सिस्टम (Updated with botResponse)
 function confirmTopic(key) {
     let item = aiBrain[key];
+    // पहले बटन एरिया को साफ करें ताकि यूजर दोबारा क्लिक न करे
+    document.getElementById('questions-list').innerHTML = "सोच रही हूँ...";
+    
     setTimeout(() => {
-        showMsg(item.ask, 'bot');
-        talk(item.ask);
-        let area = document.getElementById('questions-list');
-        area.innerHTML = `
-            <button class="q-btn" style="background:#27ae60; color:white; border:none;" onclick="finalAnswer('${key}')">हाँ, यही बताइए</button>
-            <button class="q-btn" onclick="resetMenu()">नहीं, कुछ और</button>
-        `;
-    }, 500);
+        botResponse(item.ask); // टाइपिंग के साथ सवाल पूछेगा
+        
+        // जवाब देने के बाद 'हाँ/नहीं' के बटन दिखाएँ
+        setTimeout(() => {
+            let area = document.getElementById('questions-list');
+            area.innerHTML = `
+                <button class="q-btn" style="background:#27ae60; color:white; border:none;" onclick="finalAnswer('${key}')">हाँ, यही बताइए</button>
+                <button class="q-btn" onclick="resetMenu()">नहीं, कुछ और</button>
+            `;
+        }, 1300); // botResponse के खत्म होने का इंतज़ार
+    }, 300);
 }
 
-// 6. फाइनल जवाब (Step-by-Step)
+// 5. फाइनल जवाब - Step-by-Step (Updated with botResponse)
 function finalAnswer(key) {
     let steps = aiBrain[key].steps;
     showMsg("हाँ, बताइए कैसे होगा?", 'user');
+    
     setTimeout(() => {
-        showMsg(steps, 'bot');
-        talk(steps);
+        botResponse(steps); // टाइपिंग के साथ पूरा तरीका बताएगा
         resetMenu();
-    }, 600);
+    }, 500);
 }
 
-// 7. मेनू रिसेट करना
+// 6. मेनू रिसेट करना
 function resetMenu() {
     document.getElementById('questions-list').innerHTML = `
         <button class="q-btn" onclick="openGrp('system')">⚙️ System Control</button>
@@ -1189,7 +1221,7 @@ function resetMenu() {
     `;
 }
 
-// 8. कैटेगरी ग्रुप्स
+// 7. कैटेगरी ग्रुप्स
 function openGrp(g) {
     const groups = {
         "system": ["admin_id", "password", "coaching_name"],
@@ -1204,15 +1236,14 @@ function openGrp(g) {
     });
 }
 
-// 9. चैट टॉगल (Open/Close)
+// 8. चैट टॉगल (Open/Close)
 function toggleChat() {
     let b = document.getElementById('chat-box');
     let isOpening = b.style.display !== 'flex';
     b.style.display = isOpening ? 'flex' : 'none';
+    
     if(isOpening) {
-        talk("नमस्ते एडमिन, मैं आपकी क्या मदद कर सकती हूँ? कृपया फोटो अपलोड से पहले कंप्रेस जरूर करें।");
+        // शुरुआत में भी टाइपिंग अहसास के साथ स्वागत
+        botResponse("नमस्ते एडमिन, मैं आपकी क्या मदद कर सकती हूँ? कृपया फोटो अपलोड से पहले कंप्रेस जरूर करें।");
     }
 }
-
-// Chrome के लिए वॉयस लोड फिक्स
-window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
