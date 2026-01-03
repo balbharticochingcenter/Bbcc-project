@@ -332,6 +332,7 @@ document.getElementById("openStudentDataBtn").onclick = () => {
 };
 
 // // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
+// // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
 async function loadStudentData() {
     // 1. Class Filter ki value lena
     const filterElem = document.getElementById('fee_class_filter');
@@ -376,13 +377,13 @@ async function loadStudentData() {
             }
             totalDue += Number(monthData.due || 0);
 
-            // UPDATED: Added oninput for live calculation and unique ID for due box
+            // UPDATED: Added ID to paid-box and fixed selector for real-time calculation
             feeRows += `
                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px; background:#f9f9f9; padding:5px; border-radius:5px; border:1px solid #eee;">
                     <input type="checkbox" class="status-chk-${s.student_id}" ${monthData.status ? "checked" : ""} onchange="saveFeeDetail('${s.student_id}', ${i}, 'status', this.checked)">
                     <span style="width:65px; font-size:11px; font-weight:bold; color:#2d3436;">${monthName}</span>
                     
-                    <input type="number" class="paid-in-${s.student_id}" placeholder="Paid" value="${monthData.paid || ''}" 
+                    <input type="number" id="paid-box-${s.student_id}-${i}" class="paid-in-${s.student_id}" placeholder="Paid" value="${monthData.paid || ''}" 
                         style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" 
                         oninput="calculateLiveDue('${s.student_id}', ${i}, ${s.fees})"
                         onchange="saveFeeDetail('${s.student_id}', ${i}, 'paid', this.value)">
@@ -455,40 +456,34 @@ async function loadStudentData() {
     });
 }
 
-// --- NEW: Calculate Live Due logic ---
+// --- UPDATED: Calculate Live Due Logic (ID Based) ---
 function calculateLiveDue(sId, monthIndex, monthlyFees) {
-    // Current row ke paid input ko dhoondhna
-    const paidInput = document.querySelector(`.paid-in-${sId}[onchange*="'${monthIndex}'"]`);
+    const paidInput = document.getElementById(`paid-box-${sId}-${monthIndex}`);
     const dueBox = document.getElementById(`due-box-${sId}-${monthIndex}`);
     
     if (paidInput && dueBox) {
         const paidValue = Number(paidInput.value) || 0;
+        // Calculation: Total monthly fees - jitna pay kiya = utna due bacha
         const remainingDue = monthlyFees - paidValue;
         
-        // UI mein due update karna
-        dueBox.value = remainingDue > 0 ? remainingDue : 0;
+        // Due box ko update karein (Negative na ho isliye Math.max)
+        dueBox.value = Math.max(0, remainingDue);
         
-        // Real-time mein database mein bhi due save karna
+        // Database mein turant save kar dein
         saveFeeDetail(sId, monthIndex, 'due', dueBox.value);
     }
 }
 
-// --- UPDATED: Save Fee Details with Local UI Updates (No Refresh) ---
+// --- UPDATED: Save Fee Details ---
 async function saveFeeDetail(sId, monthIndex, field, value) {
     try {
-        // Backend update
         await fetch('/api/update-student-fees', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                student_id: sId, 
-                month: monthIndex, 
-                field: field, 
-                value: value 
-            })
+            body: JSON.stringify({ student_id: sId, month: monthIndex, field: field, value: value })
         });
 
-        // UI calculation update bina refresh kiye
+        // UI calculation update
         let newTotalPaid = 0;
         let newTotalDue = 0;
 
@@ -506,7 +501,6 @@ async function saveFeeDetail(sId, monthIndex, field, value) {
             newTotalDue += dVal;
         });
 
-        // Sirf Total labels ko update karein
         const paidLabel = document.getElementById(`total-paid-${sId}`);
         const dueLabel = document.getElementById(`total-due-${sId}`);
         
