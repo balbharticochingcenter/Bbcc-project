@@ -567,57 +567,66 @@ body {
     .class-modal-left, .class-modal-right { width: 100%; }
     .header-content { flex-direction: column; gap: 10px; }
 }
-/* Logo aur Admission Badge ko side-by-side lane ke liye */
-.logo-section-wrapper {
+/* Coin Container */
+.coin-container {
+    width: 70px;
+    height: 70px;
+    perspective: 1000px; /* 3D effect ke liye */
+}
+
+.coin-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+    animation: flipCoin 3s infinite linear; /* Har 3 sec me ghumega */
+}
+
+/* Coin ki dono sides ki common setting */
+.coin-front, .coin-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* Piche wala hissa chhupane ke liye */
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    border: 2px solid #ffd700; /* Sone ke sikke jaisa border */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* 3D Rotation Animation */
-.logo-img-3d {
-    width: 60px; /* Size adjust karein */
-    height: 60px;
+/* Front Side: Jisme logo hai */
+.coin-front {
+    background-color: white;
+}
+
+.coin-img {
+    width: 90%;
+    height: 90%;
     border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    /* 3D Animation Settings */
-    animation: rotate3D 2s infinite linear;
-    transform-style: preserve-3d;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    object-fit: contain;
 }
 
-@keyframes rotate3D {
+/* Back Side: Jisme Admission Open hai */
+.coin-back {
+    background: linear-gradient(45deg, #d41414, #ff4b2b);
+    color: white;
+    transform: rotateY(180deg); /* Isko ulta rakha hai */
+    text-align: center;
+}
+
+.admission-text {
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.1;
+    font-family: sans-serif;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Sikke ghumne ki animation */
+@keyframes flipCoin {
     0% { transform: rotateY(0deg); }
     100% { transform: rotateY(360deg); }
-}
-
-/* Admission Open Badge Styling */
-.admission-badge {
-    background: linear-gradient(45deg, #ff0000, #ff9900);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 12px;
-    text-align: center;
-    line-height: 1.2;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-    animation: pulse 1.5s infinite;
-}
-
-.pulse-text {
-    display: block;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* Mobile responsive check */
-@media (max-width: 600px) {
-    .logo-img-3d { width: 45px; height: 45px; }
-    .admission-badge { font-size: 10px; }
 }
