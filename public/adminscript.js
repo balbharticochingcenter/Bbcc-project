@@ -332,6 +332,7 @@ document.getElementById("openStudentDataBtn").onclick = () => {
 };
 
 // // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---////////////////
+// --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
 async function loadStudentData() {
     // 1. Class Filter ki value lena
     const filterElem = document.getElementById('fee_class_filter');
@@ -368,8 +369,6 @@ async function loadStudentData() {
         // --- Fees Row Generation (Paid/Due Inputs) ---
         for(let i = 1; i <= totalMonths; i++) {
             const monthName = typeof getMonthLabel === 'function' ? getMonthLabel(s.joining_date, i) : "Month " + i;
-            
-            // Database se data nikalna (fees_data object se)
             const monthData = s.fees_data?.[i] || { status: false, paid: 0, due: s.fees };
             
             if(monthData.status) {
@@ -378,20 +377,18 @@ async function loadStudentData() {
             }
             totalDue += Number(monthData.due || 0);
 
+            // Inputs ko specific class di gayi hai calculations ke liye
             feeRows += `
                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px; background:#f9f9f9; padding:5px; border-radius:5px; border:1px solid #eee;">
-                    <input type="checkbox" ${monthData.status ? "checked" : ""} onchange="saveFeeDetail('${s.student_id}', ${i}, 'status', this.checked)">
+                    <input type="checkbox" class="status-chk-${s.student_id}" ${monthData.status ? "checked" : ""} onchange="saveFeeDetail('${s.student_id}', ${i}, 'status', this.checked)">
                     <span style="width:65px; font-size:11px; font-weight:bold; color:#2d3436;">${monthName}</span>
-                    <input type="number" placeholder="Paid" value="${monthData.paid || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'paid', this.value)">
-                    <input type="number" placeholder="Due" value="${monthData.due || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'due', this.value)">
+                    <input type="number" class="paid-in-${s.student_id}" placeholder="Paid" value="${monthData.paid || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'paid', this.value)">
+                    <input type="number" class="due-in-${s.student_id}" placeholder="Due" value="${monthData.due || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'due', this.value)">
                 </div>`;
         }
 
-        // --- Messaging Logic (Total Due & Months included) ---
-        const monthStatusMsg = paidMonthList.length > 0 ? `Paid Months: ${paidMonthList.join(', ')}.` : "";
-        const commonMsg = `Dear Parent/Student, Child: ${s.student_name}. Total Due: ₹${totalDue}. ${monthStatusMsg} Please pay soon. REGARD: BBCC MADHUBANI (7543952488)`;
+        const commonMsg = `Dear Parent/Student, Child: ${s.student_name}. Total Due: ₹${totalDue}. Please pay soon. REGARD: BBCC MADHUBANI (7543952488)`;
         
-        // --- Card HTML (Keeping your Original Design Layout) ---
         container.innerHTML += `
             <div class="diary-card" style="border-left: 5px solid #6c5ce7; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                 <div style="display:flex; justify-content:space-between; align-items:start; border-bottom:1px dashed #ddd; padding-bottom:10px;">
@@ -425,8 +422,8 @@ async function loadStudentData() {
                 </div>
 
                 <div style="background:#f1f2f6; padding:8px; border-radius:5px; font-size:12px; display:flex; justify-content:space-between; border:1px solid #dfe4ea;">
-                    <b style="color:#27ae60;">Paid: ₹${totalPaid}</b>
-                    <b style="color:#eb4d4b;">Total Due: ₹${totalDue}</b>
+                    <b style="color:#27ae60;">Paid: ₹<span id="total-paid-${s.student_id}">${totalPaid}</span></b>
+                    <b style="color:#eb4d4b;">Total Due: ₹<span id="total-due-${s.student_id}">${totalDue}</span></b>
                 </div>
 
                 <div class="diary-actions" style="margin-top:10px;">
@@ -452,10 +449,10 @@ async function loadStudentData() {
     });
 }
 
-// --- UPDATED: Save Fee Details to Database ---
+// --- UPDATED: Save Fee Details with Local UI Updates (No Refresh) ---
 async function saveFeeDetail(sId, monthIndex, field, value) {
     try {
-        // field will be 'status', 'paid', or 'due'
+        // Backend update
         await fetch('/api/update-student-fees', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -466,10 +463,29 @@ async function saveFeeDetail(sId, monthIndex, field, value) {
                 value: value 
             })
         });
-        // Data save hone ke baad UI update karein bina page refresh kiye
-        // Note: Performance ke liye aap bina loadStudentData() call kiye bhi calculation update kar sakte hain
-        // par loadStudentData() call karna sabse accurate method hai.
-        loadStudentData(); 
+
+        // UI calculation update bina refresh kiye
+        let newTotalPaid = 0;
+        let newTotalDue = 0;
+
+        const paidInputs = document.querySelectorAll(`.paid-in-${sId}`);
+        const dueInputs = document.querySelectorAll(`.due-in-${sId}`);
+        const statusChecks = document.querySelectorAll(`.status-chk-${sId}`);
+
+        statusChecks.forEach((chk, index) => {
+            const pVal = Number(paidInputs[index].value) || 0;
+            const dVal = Number(dueInputs[index].value) || 0;
+
+            if(chk.checked) {
+                newTotalPaid += pVal;
+            }
+            newTotalDue += dVal;
+        });
+
+        // Sirf Total labels ko update karein
+        document.getElementById(`total-paid-${sId}`).innerText = newTotalPaid;
+        document.getElementById(`total-due-${sId}`).innerText = newTotalDue;
+
     } catch (err) { 
         console.error("Fee update error:", err); 
     }
