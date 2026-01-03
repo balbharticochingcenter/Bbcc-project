@@ -331,8 +331,7 @@ document.getElementById("openStudentDataBtn").onclick = () => {
     loadStudentData(); 
 };
 
-// // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---////////////////
-// --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
+// // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
 async function loadStudentData() {
     // 1. Class Filter ki value lena
     const filterElem = document.getElementById('fee_class_filter');
@@ -377,13 +376,20 @@ async function loadStudentData() {
             }
             totalDue += Number(monthData.due || 0);
 
-            // Inputs ko specific class di gayi hai calculations ke liye
+            // UPDATED: Added oninput for live calculation and unique ID for due box
             feeRows += `
                 <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px; background:#f9f9f9; padding:5px; border-radius:5px; border:1px solid #eee;">
                     <input type="checkbox" class="status-chk-${s.student_id}" ${monthData.status ? "checked" : ""} onchange="saveFeeDetail('${s.student_id}', ${i}, 'status', this.checked)">
                     <span style="width:65px; font-size:11px; font-weight:bold; color:#2d3436;">${monthName}</span>
-                    <input type="number" class="paid-in-${s.student_id}" placeholder="Paid" value="${monthData.paid || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'paid', this.value)">
-                    <input type="number" class="due-in-${s.student_id}" placeholder="Due" value="${monthData.due || ''}" style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" onchange="saveFeeDetail('${s.student_id}', ${i}, 'due', this.value)">
+                    
+                    <input type="number" class="paid-in-${s.student_id}" placeholder="Paid" value="${monthData.paid || ''}" 
+                        style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" 
+                        oninput="calculateLiveDue('${s.student_id}', ${i}, ${s.fees})"
+                        onchange="saveFeeDetail('${s.student_id}', ${i}, 'paid', this.value)">
+                    
+                    <input type="number" id="due-box-${s.student_id}-${i}" class="due-in-${s.student_id}" placeholder="Due" value="${monthData.due || ''}" 
+                        style="width:55px; padding:2px; font-size:11px; border:1px solid #ccc; border-radius:3px;" 
+                        onchange="saveFeeDetail('${s.student_id}', ${i}, 'due', this.value)">
                 </div>`;
         }
 
@@ -449,6 +455,24 @@ async function loadStudentData() {
     });
 }
 
+// --- NEW: Calculate Live Due logic ---
+function calculateLiveDue(sId, monthIndex, monthlyFees) {
+    // Current row ke paid input ko dhoondhna
+    const paidInput = document.querySelector(`.paid-in-${sId}[onchange*="'${monthIndex}'"]`);
+    const dueBox = document.getElementById(`due-box-${sId}-${monthIndex}`);
+    
+    if (paidInput && dueBox) {
+        const paidValue = Number(paidInput.value) || 0;
+        const remainingDue = monthlyFees - paidValue;
+        
+        // UI mein due update karna
+        dueBox.value = remainingDue > 0 ? remainingDue : 0;
+        
+        // Real-time mein database mein bhi due save karna
+        saveFeeDetail(sId, monthIndex, 'due', dueBox.value);
+    }
+}
+
 // --- UPDATED: Save Fee Details with Local UI Updates (No Refresh) ---
 async function saveFeeDetail(sId, monthIndex, field, value) {
     try {
@@ -483,14 +507,17 @@ async function saveFeeDetail(sId, monthIndex, field, value) {
         });
 
         // Sirf Total labels ko update karein
-        document.getElementById(`total-paid-${sId}`).innerText = newTotalPaid;
-        document.getElementById(`total-due-${sId}`).innerText = newTotalDue;
+        const paidLabel = document.getElementById(`total-paid-${sId}`);
+        const dueLabel = document.getElementById(`total-due-${sId}`);
+        
+        if(paidLabel) paidLabel.innerText = newTotalPaid;
+        if(dueLabel) dueLabel.innerText = newTotalDue;
 
     } catch (err) { 
         console.error("Fee update error:", err); 
     }
 }
-/////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 
 // --- UPDATED STUDENT REGISTRATION WITH PHOTO ---
 document.getElementById("studentForm").onsubmit = async (e) => {
