@@ -1056,3 +1056,82 @@ function processImage() {
         };
     };
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
+
+const devContact = "7543952488";
+
+// वॉयस सिस्टम (बॉट बोलेगा)
+function botSpeak(text) {
+    window.speechSynthesis.cancel();
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = 'hi-IN';
+    speech.rate = 1.1;
+    window.speechSynthesis.speak(speech);
+}
+
+// सवालों और रैंडम जवाबों का डेटाबेस (हर सवाल के 5 जवाब)
+const helpData = {
+    "sys_pwd": ["एडमिन प्रोफाइल में जाकर पासवर्ड बदलें।", "नया पासवर्ड एडमिन प्रोफाइल बटन से सेट करें।", "सुरक्षा के लिए प्रोफाइल सेक्शन से पासवर्ड अपडेट करें।", "अपना पासवर्ड बदलने के लिए एडमिन प्रोफाइल का उपयोग करें।", "प्रोफाइल सेटिंग्स में आपको पासवर्ड बदलने का विकल्प मिलेगा।"],
+    "sys_name": ["सिस्टम सेटिंग्स से कोचिंग का नाम बदलें।", "कोचिंग का नाम बदलने के लिए System Settings में जाएँ।", "System Settings खोलें और नया नाम टाइप करके सेव करें।", "हेडर का नाम बदलना है? तो सिस्टम सेटिंग्स में जाएँ।", "कोचिंग की पहचान यानी नाम सिस्टम सेटिंग्स से अपडेट होता है।"],
+    "t_reg": ["टीचर रजिस्ट्रेशन के लिए 'Teacher Reg' बटन दबाएं।", "नया शिक्षक जोड़ने के लिए रजिस्ट्रेशन फॉर्म भरें।", "Teacher Reg बटन से आप नए टीचर की एंट्री कर सकते हैं।", "टीचर को रजिस्टर करना बहुत आसान है, फॉर्म भरें और सेव करें।", "टीचर मैनेजमेंट सेक्शन में रजिस्ट्रेशन बटन पर क्लिक करें।"],
+    "s_fees": ["छात्रों की फीस 'Fees/Data' बटन में दिखेगी।", "फीस रिकॉर्ड चेक करने के लिए Fees/Data पर जाएँ।", "क्लास चुनकर आप फीस का पूरा डाटा देख सकते हैं।", "फीस की जानकारी के लिए स्टूडेंट मैनेजमेंट सेक्शन देखें।", "Fees/Data बटन दबाएं और अपनी क्लास लोड करें।"],
+    "i_crop": ["इमेज टूल से फोटो को क्रॉप और छोटा करें।", "फोटो का साइज सही करने के लिए इमेज टूल का उपयोग करें।", "फोटो को बैनर या लोगो बनाने के लिए इमेज टूल बेस्ट है।", "सबसे ऊपर दिए गए इमेज बॉक्स से फोटो क्रॉप करें।", "वेबसाइट की स्पीड के लिए फोटो यहीं से कंप्रेस करें।"]
+    // आप इसी तरह बाकी 40 सवालों को यहाँ जोड़ सकते हैं...
+};
+
+function toggleChat() {
+    const box = document.getElementById('chat-box');
+    const isOpen = box.style.display === 'flex';
+    box.style.display = isOpen ? 'none' : 'flex';
+    if (!isOpen) botSpeak("नमस्ते एडमिन, मैं आपकी क्या सहायता कर सकता हूँ?");
+}
+
+function showHelp(cat) {
+    const list = document.getElementById('sub-list');
+    list.innerHTML = "";
+    let qs = [];
+    
+    if(cat === 'system') {
+        qs = [{id:"sys_pwd", t:"पासवर्ड कैसे बदलें?"}, {id:"sys_name", t:"नाम कैसे बदलें?"}];
+    } else if(cat === 'teacher') {
+        qs = [{id:"t_reg", t:"नया टीचर कैसे जोड़ें?"}];
+    } else if(cat === 'student') {
+        qs = [{id:"s_fees", t:"फीस कहाँ दिखेगी?"}];
+    } else if(cat === 'image') {
+        qs = [{id:"i_crop", t:"फोटो क्रॉप कैसे करें?"}];
+    }
+
+    qs.forEach(item => {
+        list.innerHTML += `<button class="quick-btn" onclick="getAns('${item.id}', '${item.t}')">${item.t}</button>`;
+    });
+}
+
+function getAns(id, qText) {
+    const content = document.getElementById('chat-content');
+    const answers = helpData[id];
+    const finalAns = answers[Math.floor(Math.random() * answers.length)];
+    
+    content.innerHTML += `<div class="user-msg">${qText}</div>`;
+    
+    setTimeout(() => {
+        content.innerHTML += `<div class="bot-msg">${finalAns}</div>`;
+        content.scrollTop = content.scrollHeight;
+        botSpeak(finalAns);
+    }, 400);
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const content = document.getElementById('chat-content');
+    if(!input.value.trim()) return;
+
+    const msg = `इस बारे में अधिक जानकारी के लिए डेवलपर से बात करें। नंबर है: ${devContact}`;
+    content.innerHTML += `<div class="user-msg">${input.value}</div>`;
+    
+    setTimeout(() => {
+        content.innerHTML += `<div class="bot-msg" style="border-left-color: #e74c3c;">${msg}</div>`;
+        content.scrollTop = content.scrollHeight;
+        botSpeak(msg);
+    }, 400);
+    input.value = "";
+}
