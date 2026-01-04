@@ -1117,37 +1117,57 @@ function toggleBhartiChat() {
 // 1. Speak Function (Real Female Voice)
 // --- UPDATED HUMAN-LIKE VOICE SYSTEM ---
 
+// --- HYBRID VOICE SYSTEM (SWAP LOGIC) ---
+
 function bhartiSpeak(text) {
     if (!text) return;
 
-    // Purani awaz ko stop karne ke liye
-    const oldAudio = document.getElementById('bharti-audio-player');
-    if (oldAudio) oldAudio.remove();
+    // 1. Pehle purani awaz band karein
+    if (window.responsiveVoice && responsiveVoice.isPlaying()) {
+        responsiveVoice.cancel();
+    }
+    window.speechSynthesis.cancel();
 
-    // Google Translate TTS Engine (Natural Voice)
-    // 'hi' stands for Hindi
-    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=hi&client=tw-ob`;
-
-    const audio = new Audio(audioUrl);
-    audio.id = 'bharti-audio-player';
-    
-    // Playback speed thodi natural rakhte hain
-    audio.playbackRate = 1.0; 
-
-    audio.play().catch(err => {
-        console.error("Voice play karne mein dikkat aayi:", err);
-        // Fallback: Agar Google fail ho toh purana method chal jaye
-        fallbackSpeak(text);
-    });
+    // 2. Try Karein ResponsiveVoice (Best Female Voice)
+    if (window.responsiveVoice) {
+        responsiveVoice.speak(text, "Hindi Female", {
+            pitch: 1, 
+            rate: 1, 
+            onstart: () => console.log("ResponsiveVoice shuru hua"),
+            onerror: function(e) {
+                console.warn("ResponsiveVoice fail hua, swapping to System Voice...");
+                fallbackToSystemVoice(text); // Swap logic
+            }
+        });
+    } else {
+        // Agar library load hi nahi hui toh direct system voice
+        fallbackToSystemVoice(text);
+    }
 }
 
-// Fallback method (Agar internet slow ho toh browser voice use hogi)
-function fallbackSpeak(text) {
+// 3. Swap Function: Jo browser ki inbuilt voice use karega
+function fallbackToSystemVoice(text) {
     const speech = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+
+    // Indian Female Voice dhundhna
+    const femaleVoice = voices.find(voice => 
+        (voice.name.includes('Heera') || voice.name.includes('Kalpana') || voice.name.includes('Google Hindi'))
+    );
+
+    if (femaleVoice) speech.voice = femaleVoice;
+    
     speech.lang = 'hi-IN';
+    speech.rate = 0.9;
+    speech.pitch = 1.1;
+
     window.speechSynthesis.speak(speech);
 }
 
+// Voices load hone ke liye zaroori hai
+window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+};
 // 2. Message Sending Logic
 async function sendBhartiMessage() {
     const input = document.getElementById('bharti-input');
