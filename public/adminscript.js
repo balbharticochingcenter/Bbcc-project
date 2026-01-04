@@ -1301,3 +1301,7 @@ function toggleChat() {
         botResponse("नमस्ते एडमिन, मैं आपकी क्या मदद कर सकती हूँ? कृपया फोटो अपलोड से पहले कंप्रेस जरूर करें।");
     }
 }
+
+
+const groq_key = document.getElementById('set-groq-key').value;
+// Fir isse fetch body mein bhej dein
