@@ -113,7 +113,7 @@ app.post('/api/ai-chat', async (req, res) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "llama3-8b-8192",
+               model: "llama-3.3-70b-versatile",
                 messages: [
                     { 
                         role: "system", 
