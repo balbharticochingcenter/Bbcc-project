@@ -1136,12 +1136,12 @@ function bhartiSpeak(text) {
 async function sendBhartiMessage() {
     const input = document.getElementById('bharti-input');
     const container = document.getElementById('bharti-messages');
-    const text = input.value.trim();
+    const prompt = input.value.trim();
 
-    if (!text) return;
+    if (!prompt) return;
 
-    // User Message Add Karein
-    container.innerHTML += `<div class="bharti-msg user">${text}</div>`;
+    // User message screen par dikhao
+    container.innerHTML += `<div class="msg user">${prompt}</div>`;
     input.value = '';
     container.scrollTop = container.scrollHeight;
 
@@ -1149,26 +1149,26 @@ async function sendBhartiMessage() {
         const response = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: text })
+            body: JSON.stringify({ prompt: prompt }) // Backend ko sawal bhej rahe hain
         });
 
         const data = await response.json();
         
-        // Backend se 'reply' key ko pakadna (Undefined fix yahi hai)
-        const bhartiReply = data.reply || "Sorry, main abhi samajh nahi paa rahi hoon.";
+        // DHAYAN DEIN: Backend 'reply' bhej raha hai, isliye data.reply hi use karein
+        const bhartiReply = data.reply || "Maaf kijiye, main connect nahi ho paa rahi hoon.";
 
-        // AI Response Add Karein
-        container.innerHTML += `<div class="bharti-msg ai">${bhartiReply}</div>`;
+        // Bharti ka jawab screen par dikhao
+        container.innerHTML += `<div class="msg ai">${bhartiReply}</div>`;
         container.scrollTop = container.scrollHeight;
 
-        // Bolkar Sunao
+        // Awaz ke liye
         bhartiSpeak(bhartiReply);
 
     } catch (err) {
-        container.innerHTML += `<div class="bharti-msg ai">Connection error! Check backend.</div>`;
+        console.error("Error:", err);
+        container.innerHTML += `<div class="msg ai">Server se connection toot gaya hai.</div>`;
     }
 }
-
 // 3. Voice Recognition (Mic)
 function bhartiListen() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
