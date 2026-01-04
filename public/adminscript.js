@@ -1108,3 +1108,72 @@ function processImage() {
     };
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
+// Chat Toggle
+function toggleChat() {
+    document.getElementById('bharti-chat-window').classList.toggle('hidden');
+}
+
+// Speak Function (Google Voice style)
+function bhartiSpeak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'hi-IN'; // Hindi-English Mixed
+    utterance.rate = 1.0;
+    utterance.pitch = 1.1; // Female tone
+    window.speechSynthesis.speak(utterance);
+}
+
+// Send Message to Backend
+async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const msgContainer = document.getElementById('chat-messages');
+    const prompt = input.value.trim();
+    if (!prompt) return;
+
+    // User UI update
+    msgContainer.innerHTML += `<div class="msg user">${prompt}</div>`;
+    input.value = '';
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+    try {
+        const response = await fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        const data = await response.json();
+        const reply = data.reply;
+
+        // AI UI update
+        msgContainer.innerHTML += `<div class="msg ai">${reply}</div>`;
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+
+        // Voice Response
+        bhartiSpeak(reply);
+
+    } catch (err) {
+        console.error("AI Error:", err);
+    }
+}
+
+// Voice Recognition (Mic)
+function startListening() {
+    const micBtn = document.getElementById('mic-btn');
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'hi-IN';
+
+    recognition.onstart = () => {
+        micBtn.classList.add('active');
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('user-input').value = transcript;
+        sendMessage();
+    };
+
+    recognition.onend = () => {
+        micBtn.classList.remove('active');
+    };
+
+    recognition.start();
+}
