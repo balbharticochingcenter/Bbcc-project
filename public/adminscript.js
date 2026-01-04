@@ -1186,12 +1186,12 @@ async function userSend() {
     let val = input.value.trim();
     if (!val) return;
 
-    // User ka message screen par dikhayein
+    // 1. स्क्रीन पर यूजर का मैसेज दिखाएँ
     showMsg(val, 'user');
     input.value = "";
     let lowVal = val.toLowerCase();
 
-    // STEP A: Brain Check (Portal ke fixed features ke liye)
+    // 2. Local Brain Check (Keywords के लिए)
     let foundKey = null;
     for (let key in aiBrain) {
         if (aiBrain[key].keywords.some(k => lowVal.includes(k))) {
@@ -1201,52 +1201,45 @@ async function userSend() {
     }
 
     if (foundKey) {
-        // Agar keyword mil gaya toh fixed steps dikhayein
         confirmTopic(foundKey);
-    } else {
-        // STEP B: Groq AI Integration (Baaki sab sawaalo ke liye)
+        return;
+    }
+
+    // 3. Typing Indicator दिखाएँ
+    let content = document.getElementById('chat-content');
+    let typingDiv = document.createElement('div');
+    typingDiv.id = "typing-status";
+    typingDiv.className = "bot-msg";
+    typingDiv.innerHTML = "<i class='fas fa-robot'></i> AI सोच रही हूँ...";
+    content.appendChild(typingDiv);
+    content.scrollTop = content.scrollHeight;
+
+    try {
+        // --- यहाँ ध्यान दें: अब हम अपने LOCAL SERVER के API को कॉल कर रहे हैं ---
+        const res = await fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                prompt: val,
+                context: "Admin wants to know about BBCC portal management."
+            })
+        });
+
+        const data = await res.json();
         
-        // Typing indicator dikhayein
-        let content = document.getElementById('chat-content');
-        let typingDiv = document.createElement('div');
-        typingDiv.id = "typing-status";
-        typingDiv.className = "bot-msg";
-        typingDiv.innerHTML = "<i class='fas fa-robot'></i> सोच रही हूँ...";
-        content.appendChild(typingDiv);
-        content.scrollTop = content.scrollHeight;
+        // Typing status हटाएँ
+        if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
 
-        try {
-            const res = await fetch('/api/ai-chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    prompt: val,
-                    context: "Aap BBCC coaching portal ke AI assistant hain. User admin hai. Use dosti se aur natural hindi/english mein jawab dein. Portal features: Student Management, Teacher Salaries, Result Making, and Image Tools."
-                })
-            });
-            
-            const data = await res.json();
-            
-            // Typing status hatayein
-            const status = document.getElementById('typing-status');
-            if(status) status.remove();
-
-            if (data.reply) {
-                // AI ka reply dikhayein aur voice sunayein
-                showMsg(data.reply, 'ai');
-                talk(data.reply);
-                
-                // Smart UI Action: Content ke hisaab se menu auto-kholna
-                if(lowVal.includes("student") || lowVal.includes("छात्र")) openGrp('student');
-                if(lowVal.includes("teacher") || lowVal.includes("शिक्षक")) openGrp('teacher');
-                if(lowVal.includes("system") || lowVal.includes("setting")) openGrp('system');
-            } else {
-                botResponse("माफ़ कीजिये, अभी मेरे सर्वर में कुछ दिक्कत है।");
-            }
-        } catch (err) {
-            if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
-            botResponse("सर्वर कनेक्ट नहीं हो रहा। इंटरनेट चेक करें।");
+        if (data.reply) {
+            showMsg(data.reply, 'ai');
+            if (typeof talk === "function") talk(data.reply);
+        } else if (data.error) {
+            botResponse("Error: " + data.error); // अगर Key नहीं मिली तो सर्वर यह मैसेज भेजेगा
         }
+    } catch (err) {
+        if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
+        botResponse("सर्वर से कनेक्ट नहीं हो पा रहा। कृपया चेक करें कि Node.js Server चालू है या नहीं।");
+        console.error(err);
     }
 }
 
