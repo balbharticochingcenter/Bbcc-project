@@ -389,7 +389,9 @@ input, select {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     z-index: 10001;
 }
-
+#bharti-launcher img {
+    width: 30px; 
+}
 #bharti-launcher:hover {
     transform: scale(1.1);
 }
@@ -505,7 +507,7 @@ input, select {
 .msg.ai {
     align-self: flex-start;
     background: var(--ai-bubble);
-    color: #374151;
+    color: white;
     border-bottom-left-radius: 2px;
 }
 
