@@ -1115,21 +1115,37 @@ function toggleBhartiChat() {
 }
 
 // 1. Speak Function (Real Female Voice)
+// --- UPDATED HUMAN-LIKE VOICE SYSTEM ---
+
 function bhartiSpeak(text) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Purana stop karein
-        const speech = new SpeechSynthesisUtterance(text);
-        
-        // Hindi female voice select karna
-        const voices = window.speechSynthesis.getVoices();
-        const hindiVoice = voices.find(v => v.lang.includes('hi') || v.name.includes('Google हिन्दी'));
-        
-        speech.voice = hindiVoice;
-        speech.lang = 'hi-IN';
-        speech.rate = 1.0;
-        speech.pitch = 1.1; 
-        window.speechSynthesis.speak(speech);
-    }
+    if (!text) return;
+
+    // Purani awaz ko stop karne ke liye
+    const oldAudio = document.getElementById('bharti-audio-player');
+    if (oldAudio) oldAudio.remove();
+
+    // Google Translate TTS Engine (Natural Voice)
+    // 'hi' stands for Hindi
+    const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=hi&client=tw-ob`;
+
+    const audio = new Audio(audioUrl);
+    audio.id = 'bharti-audio-player';
+    
+    // Playback speed thodi natural rakhte hain
+    audio.playbackRate = 1.0; 
+
+    audio.play().catch(err => {
+        console.error("Voice play karne mein dikkat aayi:", err);
+        // Fallback: Agar Google fail ho toh purana method chal jaye
+        fallbackSpeak(text);
+    });
+}
+
+// Fallback method (Agar internet slow ho toh browser voice use hogi)
+function fallbackSpeak(text) {
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = 'hi-IN';
+    window.speechSynthesis.speak(speech);
 }
 
 // 2. Message Sending Logic
