@@ -1108,81 +1108,116 @@ function processImage() {
     };
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
-// --- 1. HUMAN-LIKE VOICE ENGINE (Gemini Style) ---
-function talk(text) {
-    window.speechSynthesis.cancel(); // Purani awaz band karein
-    let utterance = new SpeechSynthesisUtterance(text);
+// ======================================================
+// 🧠 BHARTI AI: FULL SPEECH, MIC & CHAT ENGINE (MERGED)
+// ======================================================
+
+// --- 1. BHARTI'S HUMAN-LIKE VOICE ENGINE (Gemini Style) ---
+function bhartiTalk(text) {
+    // Purani kisi bhi speech ko cancel karein taaki overlap na ho
+    window.speechSynthesis.cancel(); 
+
+    let speech = new SpeechSynthesisUtterance(text);
     
-    // Sabhi available voices nikalna
+    // Sabhi available voices load karein
     let voices = window.speechSynthesis.getVoices();
     
-    // Natural sounding Hindi/English female voice select karna
-    let humanVoice = voices.find(v => 
+    // Step 1: Best Female Natural Voice dhundein (Hindi ya English IN)
+    let selectedVoice = voices.find(v => 
         (v.lang.includes('hi-IN') || v.lang.includes('en-IN')) && 
-        (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Aria'))
+        (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Aria') || v.name.includes('Female'))
     );
 
-    if (humanVoice) {
-        utterance.voice = humanVoice;
+    if (selectedVoice) {
+        speech.voice = selectedVoice;
     }
 
-    // Voice settings for Human Feel
-    utterance.pitch = 1.05; // Slightly high for clarity
-    utterance.rate = 0.95;  // Thoda dhire taaki natural lage
-    utterance.volume = 1.0;
+    // Voice settings for "Human/Gemini Feel"
+    speech.pitch = 1.1;  // Thodi mithi aur saaf awaz ke liye
+    speech.rate = 0.95;  // Thoda dhire taaki natural aur professional lage
+    speech.volume = 1.0; // Full volume
 
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(speech);
 }
 
-// --- 2. MICROPHONE (Speech to Text) ---
+// --- 2. MICROPHONE ENGINE (Speech to Text) ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (SpeechRecognition) {
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'hi-IN'; // Hindi input support
-    recognition.interimResults = false;
+let recognition;
 
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'hi-IN'; // Bharti Hindi aur Hinglish dono samjhegi
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    // Jab user bolna shuru kare
+    recognition.onstart = () => {
+        const micBtn = document.getElementById('mic-btn');
+        if (micBtn) {
+            micBtn.style.color = "red";
+            micBtn.classList.add('pulse-red'); // CSS mein pulse animation hona chahiye
+            micBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>'; 
+        }
+    };
+
+    // Jab Bharti sun le aur result de
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        document.getElementById('chat-input').value = transcript;
-        userSend(); // Automatic send after speaking
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            chatInput.value = transcript;
+            userSend(); // Voice input ke baad automatic send
+        }
     };
 
-    recognition.onstart = () => {
-        document.getElementById('mic-btn').style.color = "red";
-        document.getElementById('mic-btn').classList.add('pulse');
-    };
-
+    // Jab mic band ho
     recognition.onend = () => {
-        document.getElementById('mic-btn').style.color = "#6c5ce7";
-        document.getElementById('mic-btn').classList.remove('pulse');
+        const micBtn = document.getElementById('mic-btn');
+        if (micBtn) {
+            micBtn.style.color = "#6c5ce7";
+            micBtn.classList.remove('pulse-red');
+            micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        }
     };
 
-    function startMic() {
-        recognition.start();
-    }
+    recognition.onerror = (err) => {
+        console.error("Mic Error:", err.error);
+    };
+
 } else {
-    console.error("Speech Recognition not supported in this browser.");
+    console.error("Speech Recognition is not supported in this browser.");
 }
 
-// --- 3. SMART SEND FUNCTION (Llama API) ---
+// Function to trigger Mic
+function startMic() {
+    if (recognition) {
+        recognition.start();
+    } else {
+        alert("Aapka browser voice support nahi karta.");
+    }
+}
+
+// --- 3. SMART CHAT SEND FUNCTION (Llama API Integration) ---
 async function userSend() {
     let input = document.getElementById('chat-input');
     let val = input.value.trim();
     if (!val) return;
 
+    // 1. User ka message screen par dikhayein
     showMsg(val, 'user');
     input.value = "";
 
-    // Show Typing Indicator
+    // 2. Typing Indicator dikhayein
     let content = document.getElementById('chat-content');
     let typingDiv = document.createElement('div');
     typingDiv.id = "typing-status";
     typingDiv.className = "ai-msg";
-    typingDiv.innerHTML = "<i>AI is thinking...</i>";
+    typingDiv.innerHTML = "<i>Bharti is thinking...</i>";
     content.appendChild(typingDiv);
     content.scrollTop = content.scrollHeight;
 
     try {
+        // 3. Backend API ko call karein
         const res = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1190,29 +1225,44 @@ async function userSend() {
         });
 
         const data = await res.json();
+        
+        // Typing indicator hatayein
         if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
 
         if (data.reply) {
+            // 4. Bharti ka reply screen par dikhayein
             showMsg(data.reply, 'ai');
-            talk(data.reply); // Bol kar sunayega
+            
+            // 5. Bharti reply ko bol kar sunayegi
+            bhartiTalk(data.reply);
+        } else {
+            showMsg("Maaf kijiyega, main samajh nahi paayi.", 'ai');
         }
     } catch (err) {
         if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
-        showMsg("Sorry, network issue.", 'bot');
+        console.error("Bharti Connection Error:", err);
+        showMsg("Network issue hai, kripya check karein.", 'ai');
     }
 }
 
-// --- 4. UI HELPERS ---
-function showMsg(t, s) {
-    let c = document.getElementById('chat-content');
-    let d = document.createElement('div');
-    d.className = s === 'user' ? 'user-msg' : 'ai-msg';
-    d.innerText = t;
-    c.appendChild(d);
-    c.scrollTop = c.scrollHeight;
+// --- 4. UI HELPERS (Messages & Chat Box) ---
+function showMsg(text, sender) {
+    let container = document.getElementById('chat-content');
+    let msgDiv = document.createElement('div');
+    
+    // Sender ke hisab se CSS class set karein
+    msgDiv.className = sender === 'user' ? 'user-msg' : 'ai-msg';
+    msgDiv.innerText = text;
+    
+    container.appendChild(msgDiv);
+    
+    // Scroll auto-down karein
+    container.scrollTop = container.scrollHeight;
 }
 
 function toggleChat() {
     const chatBox = document.getElementById('chat-box');
-    chatBox.style.display = (chatBox.style.display === "none" || !chatBox.style.display) ? "flex" : "none";
+    if (chatBox) {
+        chatBox.style.display = (chatBox.style.display === "none" || !chatBox.style.display) ? "flex" : "none";
+    }
 }
