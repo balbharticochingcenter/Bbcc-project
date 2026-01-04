@@ -74,56 +74,88 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'adm
 
 
 
-// AI Chat Endpoint with Better Error Handling & Data Access
-// AI Chat Endpoint - Token Optimized
+// AI Chat Models Priority List (Auto-Fallback logic ke liye)
+const AI_MODELS = [
+    "llama-3.1-8b-instant",        // Fast aur High Limit
+    "meta-llama/llama-4-scout-17b-16e-instruct", // High Tokens
+    "llama-3.3-70b-versatile",    // Smart but Low Limit
+    "qwen/qwen3-32b"              // Backup
+];
+
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt } = req.body;
     try {
         const config = await SystemConfig.findOne();
         const apiKey = config ? config.groq_key : null;
 
-        if (!apiKey) return res.status(400).json({ reply: "API Key missing!" });
+        if (!apiKey) return res.status(400).json({ reply: "API Key missing hai, please settings mein check karein." });
 
-        // Database se sirf top 10 ya zaroori data hi lein taaki limit cross na ho
+        // Database se context fetch karna
         const [students, teachers, admin] = await Promise.all([
-            mongoose.model('Student').find().limit(20).select('student_name student_class joining_date'),
-            mongoose.model('Teacher').find().select('teacher_name salary joining_date'),
+            mongoose.model('Student').find().limit(15).select('student_name student_class student_id'),
+            mongoose.model('Teacher').find().limit(10).select('teacher_name teacher_id'),
             mongoose.model('AdminProfile').findOne({})
         ]);
 
-        const studentSummary = students.map(s => `${s.student_name}(${s.student_class})`).join(", ");
-        const teacherSummary = teachers.map(t => `${t.teacher_name}(Join:${t.joining_date})`).join(", ");
+        const studentSummary = students.map(s => `${s.student_name}(ID:${s.student_id})`).join(", ");
+        const teacherSummary = teachers.map(t => `${t.teacher_name}(ID:${t.teacher_id})`).join(", ");
 
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { 
-                        role: "system", 
-                        content: `Aap Bharti ho, BBCC ki expert. Admin: ${admin?.admin_name}. Data: Students[${studentSummary}], Teachers[${teacherSummary}]. Jawab hamesha chota aur Hinglish mein dein.` 
-                    },
-                    { role: "user", content: prompt }
-                ],
-                max_tokens: 300 // Isse tokens ki bachat hogi
-            })
-        });
+        // Check if the user is trying to perform an action (Delete/Update)
+        const actionKeywords = ['delete', 'remove', 'update', 'change', 'hatao', 'badlo', 'mitao'];
+        const isActionRequest = actionKeywords.some(word => prompt.toLowerCase().includes(word));
 
-        const data = await response.json();
-        
-        if (data.error) {
-            // Agar limit ki problem hai toh user ko batao
-            if(data.error.code === 'rate_limit_exceeded') {
-                return res.json({ reply: "Maaf kijiye, aaj ki baat-cheet ki limit puri ho gayi hai. Kripya 15 minute baad koshish karein." });
-            }
-            return res.json({ reply: "Kuch technical issue hai, kripya thodi der baad puchein." });
+        let systemInstruction = `Aap Bharti ho, BBCC ki expert assistant. Admin: ${admin?.admin_name}. 
+        Data Context: Students[${studentSummary}], Teachers[${teacherSummary}]. 
+        RULES: 1. Jawab Hinglish mein dein. 2. Hamesha chota jawab dein.`;
+
+        if (isActionRequest) {
+            systemInstruction += ` 3. User shayad kuch delete ya update karna chahta hai. Aapko admin se kehna hai: "Theek hai, par kya aap confirm hain? (Yes/No)". Bina confirmation ke action suggest na karein.`;
         }
 
-        res.json({ reply: data.choices[0].message.content });
+        // --- Model Fallback Logic (Trying multiple models if one fails) ---
+        let aiResponse = null;
+        let lastError = null;
+
+        for (const modelName of AI_MODELS) {
+            try {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [
+                            { role: "system", content: systemInstruction },
+                            { role: "user", content: prompt }
+                        ],
+                        max_tokens: 250,
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.choices && data.choices[0]) {
+                    aiResponse = data.choices[0].message.content;
+                    break; // Success! Loop se bahar nikal jao
+                } else if (data.error && data.error.code === 'rate_limit_exceeded') {
+                    console.log(`Model ${modelName} limit reached, switching...`);
+                    continue; // Agle model par jao
+                }
+            } catch (err) {
+                lastError = err;
+                continue;
+            }
+        }
+
+        if (aiResponse) {
+            res.json({ reply: aiResponse });
+        } else {
+            res.json({ reply: "Maaf kijiye, abhi saare AI models busy hain. Kripya 5 minute baad koshish karein." });
+        }
 
     } catch (err) {
-        res.status(500).json({ reply: "Connect nahi ho paa rahi hoon." });
+        console.error(err);
+        res.status(500).json({ reply: "Technical error! Database ya API connect nahi ho pa raha." });
     }
 });
 // --- A. STUDENT API ---
