@@ -1108,72 +1108,87 @@ function processImage() {
     };
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
-// Chat Toggle
-function toggleChat() {
-    document.getElementById('bharti-chat-window').classList.toggle('hidden');
+// --- BHARTI AI SYSTEM ---
+
+function toggleBhartiChat() {
+    document.getElementById('bharti-chat-window').classList.toggle('bharti-hidden');
 }
 
-// Speak Function (Google Voice style)
+// 1. Speak Function (Real Female Voice)
 function bhartiSpeak(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'hi-IN'; // Hindi-English Mixed
-    utterance.rate = 1.0;
-    utterance.pitch = 1.1; // Female tone
-    window.speechSynthesis.speak(utterance);
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Purana stop karein
+        const speech = new SpeechSynthesisUtterance(text);
+        
+        // Hindi female voice select karna
+        const voices = window.speechSynthesis.getVoices();
+        const hindiVoice = voices.find(v => v.lang.includes('hi') || v.name.includes('Google हिन्दी'));
+        
+        speech.voice = hindiVoice;
+        speech.lang = 'hi-IN';
+        speech.rate = 1.0;
+        speech.pitch = 1.1; 
+        window.speechSynthesis.speak(speech);
+    }
 }
 
-// Send Message to Backend
-async function sendMessage() {
-    const input = document.getElementById('user-input');
-    const msgContainer = document.getElementById('chat-messages');
-    const prompt = input.value.trim();
-    if (!prompt) return;
+// 2. Message Sending Logic
+async function sendBhartiMessage() {
+    const input = document.getElementById('bharti-input');
+    const container = document.getElementById('bharti-messages');
+    const text = input.value.trim();
 
-    // User UI update
-    msgContainer.innerHTML += `<div class="msg user">${prompt}</div>`;
+    if (!text) return;
+
+    // User Message Add Karein
+    container.innerHTML += `<div class="bharti-msg user">${text}</div>`;
     input.value = '';
-    msgContainer.scrollTop = msgContainer.scrollHeight;
+    container.scrollTop = container.scrollHeight;
 
     try {
         const response = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
+            body: JSON.stringify({ prompt: text })
         });
+
         const data = await response.json();
-        const reply = data.reply;
+        
+        // Backend se 'reply' key ko pakadna (Undefined fix yahi hai)
+        const bhartiReply = data.reply || "Sorry, main abhi samajh nahi paa rahi hoon.";
 
-        // AI UI update
-        msgContainer.innerHTML += `<div class="msg ai">${reply}</div>`;
-        msgContainer.scrollTop = msgContainer.scrollHeight;
+        // AI Response Add Karein
+        container.innerHTML += `<div class="bharti-msg ai">${bhartiReply}</div>`;
+        container.scrollTop = container.scrollHeight;
 
-        // Voice Response
-        bhartiSpeak(reply);
+        // Bolkar Sunao
+        bhartiSpeak(bhartiReply);
 
     } catch (err) {
-        console.error("AI Error:", err);
+        container.innerHTML += `<div class="bharti-msg ai">Connection error! Check backend.</div>`;
     }
 }
 
-// Voice Recognition (Mic)
-function startListening() {
-    const micBtn = document.getElementById('mic-btn');
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+// 3. Voice Recognition (Mic)
+function bhartiListen() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Aapka browser voice support nahi karta.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    const micBtn = document.getElementById('bharti-mic');
+
     recognition.lang = 'hi-IN';
-
-    recognition.onstart = () => {
-        micBtn.classList.add('active');
-    };
-
+    recognition.onstart = () => micBtn.classList.add('active');
+    
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        document.getElementById('user-input').value = transcript;
-        sendMessage();
+        document.getElementById('bharti-input').value = transcript;
+        sendBhartiMessage();
     };
 
-    recognition.onend = () => {
-        micBtn.classList.remove('active');
-    };
-
+    recognition.onend = () => micBtn.classList.remove('active');
     recognition.start();
 }
