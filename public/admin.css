@@ -383,6 +383,9 @@ input, select {
     border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; 
     box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5); position: relative; transition: 0.3s;
     margin-top: 15px;
+    z-index: 10001 !important; /* Ye sabse upar rakhega */
+    position: fixed; /* Screen par fix rahega */
+    touch-action: none; /* Mobile par dragging smooth karega */
 }
 #bharti-launcher:hover { transform: scale(1.1); }
 #bharti-launcher img { width: 45px; height: 45px; z-index: 2; }
@@ -393,13 +396,17 @@ input, select {
 /* --- 3. CHAT WINDOW (Draggable & Magical) --- */
 #bharti-chat-window { 
     width: 350px; height: 500px; 
-    background: #ffffff; border-radius: 20px; 
+    
     box-shadow: 0 15px 50px rgba(0,0,0,0.3); 
     display: flex; flex-direction: column; overflow: hidden; 
     transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     transform-origin: bottom right;
     position: relative;
     border: 1px solid rgba(108, 92, 231, 0.1);
+    background: rgba(255, 255, 255, 0.9); /* Halka transparent white */
+    backdrop-filter: blur(15px); /* Piche ka background dhundhla (blur) karne ke liye */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Shishe jaisa border */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 .bharti-hidden { transform: scale(0); opacity: 0; pointer-events: none; display: none; }
 
