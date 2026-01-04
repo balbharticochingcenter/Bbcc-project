@@ -1169,40 +1169,89 @@ window.speechSynthesis.onvoiceschanged = () => {
     window.speechSynthesis.getVoices();
 };
 // 2. Message Sending Logic
+// Merged Function: Message bhejna, Modal kholna aur Update/Search logic
 async function sendBhartiMessage() {
-    const input = document.getElementById('bharti-input');
+    const inputField = document.getElementById('bharti-input');
     const container = document.getElementById('bharti-messages');
-    const prompt = input.value.trim();
+    const prompt = inputField.value.trim();
 
     if (!prompt) return;
 
-    // User message screen par dikhao
-    container.innerHTML += `<div class="msg user">${prompt}</div>`;
-    input.value = '';
+    // 1. User ka message screen par dikhana
+    container.innerHTML += `<div class="bharti-msg user">${prompt}</div>`;
+    inputField.value = '';
     container.scrollTop = container.scrollHeight;
 
     try {
+        // 2. Backend API ko data bhejna
         const response = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: prompt }) // Backend ko sawal bhej rahe hain
+            body: JSON.stringify({ prompt: prompt })
         });
 
         const data = await response.json();
-        
-        // DHAYAN DEIN: Backend 'reply' bhej raha hai, isliye data.reply hi use karein
-        const bhartiReply = data.reply || "Maaf kijiye, main connect nahi ho paa rahi hoon.";
+        let bhartiReply = data.reply || "Maaf kijiye, main connect nahi ho paa rahi hoon.";
 
-        // Bharti ka jawab screen par dikhao
-        container.innerHTML += `<div class="msg ai">${bhartiReply}</div>`;
+        // --- COMMAND PROCESSING LOGIC START ---
+
+        // A. Student Update Command ([UPDATE_STUDENT: ID])
+        if (bhartiReply.includes("[UPDATE_STUDENT:")) {
+            const stuMatch = bhartiReply.match(/\[UPDATE_STUDENT:\s*(\w+)\]/);
+            if (stuMatch) {
+                const sid = stuMatch[1];
+                const searchBox = document.getElementById('search_sid');
+                if(searchBox) {
+                    searchBox.value = sid;
+                    searchStudent(); // Aapka search function
+                    document.getElementById('studentUpdateModal').style.display = 'block';
+                }
+            }
+            bhartiReply = bhartiReply.replace(/\[UPDATE_STUDENT:.*?\]/g, "");
+        }
+
+        // B. Teacher Update Command ([UPDATE_TEACHER: ID])
+        if (bhartiReply.includes("[UPDATE_TEACHER:")) {
+            const teaMatch = bhartiReply.match(/\[UPDATE_TEACHER:\s*(\w+)\]/);
+            if (teaMatch) {
+                const tid = teaMatch[1];
+                const searchBox = document.getElementById('search_tid');
+                if(searchBox) {
+                    searchBox.value = tid;
+                    searchTeacher(); // Aapka search function
+                    document.getElementById('updateModal').style.display = 'block';
+                }
+            }
+            bhartiReply = bhartiReply.replace(/\[UPDATE_TEACHER:.*?\]/g, "");
+        }
+
+        // C. Normal Modal Open Command ([OPEN_MODAL: modalID])
+        if (bhartiReply.includes("[OPEN_MODAL:")) {
+            const modalMatch = bhartiReply.match(/\[OPEN_MODAL:\s*(\w+)\]/);
+            if (modalMatch) {
+                const modalId = modalMatch[1].trim();
+                const modalElem = document.getElementById(modalId);
+                if (modalElem) modalElem.style.display = 'block';
+            }
+            bhartiReply = bhartiReply.replace(/\[OPEN_MODAL:.*?\]/g, "");
+        }
+
+        // --- COMMAND PROCESSING LOGIC END ---
+
+        // 3. Bharti ka saaf jawab screen par dikhana
+        container.innerHTML += `<div class="bharti-msg ai">${bhartiReply.trim()}</div>`;
         container.scrollTop = container.scrollHeight;
 
-        // Awaz ke liye
-        bhartiSpeak(bhartiReply);
+        // 4. Voice Output (ResponsiveVoice ka upyog)
+        if (window.responsiveVoice) {
+            responsiveVoice.speak(bhartiReply.trim(), "Hindi Female");
+        } else if (typeof bhartiSpeak === 'function') {
+            bhartiSpeak(bhartiReply.trim()); // Agar aapka apna function hai
+        }
 
     } catch (err) {
-        console.error("Error:", err);
-        container.innerHTML += `<div class="msg ai">Server se connection toot gaya hai.</div>`;
+        console.error("Bharti Error:", err);
+        container.innerHTML += `<div class="bharti-msg ai">Server connection error!</div>`;
     }
 }
 // 3. Voice Recognition (Mic)
