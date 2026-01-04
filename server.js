@@ -1,3 +1,4 @@
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -73,37 +74,45 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'adm
 
 
 
-// AI Chat Endpoint with Live Data Access
+// AI Chat Endpoint with Better Error Handling & Data Access
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt } = req.body;
     try {
+        // 1. Config aur API Key check karein
         const config = await SystemConfig.findOne();
         const apiKey = config ? config.groq_key : null;
 
-        if (!apiKey) return res.status(400).json({ error: "API Key missing! Settings mein save karein." });
+        if (!apiKey) {
+            return res.status(400).json({ reply: "API Key missing hai! Settings mein save karein." });
+        }
 
-        // DATABASE FETCH: Bharti ko sab pata hona chahiye
+        // 2. DATABASE FETCH: Bharti ko students aur teachers ka data dena zaroori hai
         const [students, teachers, admin] = await Promise.all([
-            mongoose.model('Student').find({}, 'student_name student_id student_class paid_months fees'),
-            mongoose.model('Teacher').find({}, 'teacher_name teacher_id salary subjects paid_months'),
+            mongoose.model('Student').find({}, 'student_name student_id student_class paid_months fees joining_date'),
+            mongoose.model('Teacher').find({}, 'teacher_name teacher_id salary subjects paid_months joining_date'),
             mongoose.model('AdminProfile').findOne({})
         ]);
 
-        const studentSummary = students.map(s => `${s.student_name}(ID:${s.student_id}, Class:${s.student_class}, Fees:${s.paid_months.length}/12)`).join(", ");
-        const teacherSummary = teachers.map(t => `${t.teacher_name}(Salary:${t.salary}, Paid:${t.paid_months.length} months)`).join(", ");
+        // Data ko summary mein badlein
+        const studentSummary = students.map(s => `${s.student_name}(Class:${s.student_class}, Join:${s.joining_date || 'N/A'})`).join(", ");
+        const teacherSummary = teachers.map(t => `${t.teacher_name}(Salary:${t.salary}, Join:${t.joining_date || 'N/A'})`).join(", ");
 
+        // 3. Groq AI ko call karein
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            headers: { 
+                "Authorization": `Bearer ${apiKey}`, 
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
                     { 
                         role: "system", 
                         content: `Aapka naam "Bharti" hai. Aap Bal Bharti Coaching Center (BBCC) ki official Female AI Expert hain. 
-                        ADMIN: ${admin?.admin_name || "Sir"}.
+                        Admin: ${admin?.admin_name || "Sir"}.
                         DATA: Students[${studentSummary}], Teachers[${teacherSummary}].
-                        RULES: 1. Hinglish mein baat karein. 2. Data se calculation karein. 3. Friendly rahein. 4. Action se pehle 'CONFORM' bole.`
+                        RULES: 1. Hinglish mein baat karein. 2. Data se calculation karein. 3. Friendly rahein. 4. Joining date data se dekh kar batayein.` 
                     },
                     { role: "user", content: prompt }
                 ],
@@ -112,10 +121,25 @@ app.post('/api/ai-chat', async (req, res) => {
         });
 
         const data = await response.json();
-        res.json({ reply: data.choices[0]?.message?.content || "Sorry, try again." });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
+        
+        // 4. Groq Error Handling
+        if (data.error) {
+            console.log("Groq Error Detail:", data.error);
+            return res.json({ reply: "AI Model busy hai ya API Key galat hai. Kripya terminal check karein." });
+        }
 
+        // 5. Sahi Jawab Bhejein
+        if (data.choices && data.choices[0]) {
+            res.json({ reply: data.choices[0].message.content });
+        } else {
+            res.json({ reply: "Maaf kijiye, main abhi samajh nahi paa rahi hoon." });
+        }
+
+    } catch (err) {
+        console.log("Server Error:", err); 
+        res.status(500).json({ reply: "Connect nahi ho paa rahi hoon. Server error check karein." });
+    }
+});
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
     try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
