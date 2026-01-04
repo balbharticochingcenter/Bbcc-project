@@ -312,16 +312,47 @@ async function deleteTeacher() {
 // --- 9. SAVE SYSTEM SETTINGS ---
 document.getElementById("adminForm").onsubmit = async (e) => {
     e.preventDefault();
+    
+    // Loading indicator ya button disable kar sakte hain yahan
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if(submitBtn) submitBtn.innerText = "Saving...";
+
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
+    
+    // --- NAYA BADLAV: API Key ko manually add karein ---
+    const groqKeyInput = document.getElementById('set-groq-key');
+    if (groqKeyInput) {
+        data.groq_key = groqKeyInput.value; 
+    }
+    
     const logo = document.getElementById('logoInput').files[0];
-    if (logo) data.logo = await toBase64(logo);
-    await fetch('/api/update-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    alert("Settings Saved!"); loadSettings(); modals.sys.style.display="none";
+    if (logo) {
+        data.logo = await toBase64(logo);
+    }
+    
+    try {
+        const response = await fetch('/api/update-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert("✅ Settings saved successfully!");
+            loadSettings(); 
+            modals.sys.style.display = "none";
+        } else {
+            alert("❌ Error: " + (result.error || "Unknown error occurred"));
+        }
+    } catch (err) {
+        console.error("Save Settings Error:", err);
+        alert("❌ Network Error: Server se connection nahi ho paya.");
+    } finally {
+        if(submitBtn) submitBtn.innerText = "Save Settings";
+    }
 };
 //===============================================================================================================
 // --- HELPER FUNCTION: Convert Image to Base64 ---
