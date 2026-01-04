@@ -425,10 +425,13 @@ input, select {
 }
 
 /* --- 4. CHAT BODY & MESSAGES --- */
-.bharti-body { 
-    flex: 1; padding: 15px; overflow-y: auto; 
-    background: rgba(248, 249, 250, 0.5); 
-    display: flex; flex-direction: column; gap: 12px; 
+.bharti-body {
+    flex: 1; /* Ye sabse zaroori hai */
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .bharti-msg.ai { 
@@ -444,8 +447,61 @@ input, select {
 }
 
 /* --- 5. FOOTER --- */
-.bharti-footer { padding: 12px; display: flex; align-items: center; gap: 8px; background: #fff; border-top: 1px solid #eee; }
-#bharti-input { flex: 1; border: 1px solid #eee; padding: 10px 15px; border-radius: 25px; outline: none; }
+/* --- FOOTER FIX (Isse Send aur Mic sahi ho jayenge) --- */
+.bharti-footer { 
+    padding: 10px 15px; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    background: #ffffff; 
+    border-top: 1px solid #f1f1f1;
+    min-height: 60px; /* Ek fix height taaki buttons dabe nahi */
+}
 
-#bharti-mic.active { background: #ff4757; color: #fff; animation: mic-pulse 1.5s infinite; }
-@keyframes mic-pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
+/* Input Box ko bada karne ke liye */
+#bharti-input { 
+    flex: 1; 
+    border: 1.5px solid #eee; 
+    padding: 10px 15px; 
+    border-radius: 20px; 
+    outline: none; 
+    font-size: 14px; 
+    background: #f9f9f9;
+    transition: 0.3s;
+}
+
+#bharti-input:focus {
+    border-color: #6c5ce7;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(108, 92, 231, 0.2);
+}
+
+/* Buttons ko ek barabar size mein laane ke liye */
+#bharti-mic, #bharti-send { 
+    width: 40px; 
+    height: 40px; 
+    min-width: 40px; /* Flex mein dabe nahi isliye min-width */
+    background: #f1f2f6; 
+    border: none; 
+    color: #6c5ce7; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    transition: 0.2s; 
+    font-size: 18px;
+}
+
+#bharti-mic:hover, #bharti-send:hover { 
+    background: #6c5ce7; 
+    color: #fff; 
+    transform: scale(1.05);
+}
+
+/* Mic Active Animation */
+#bharti-mic.active { 
+    background: #ff4757; 
+    color: #fff; 
+    animation: mic-pulse 1.5s infinite; 
+}
