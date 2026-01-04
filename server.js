@@ -75,69 +75,55 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'adm
 
 
 // AI Chat Endpoint with Better Error Handling & Data Access
+// AI Chat Endpoint - Token Optimized
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt } = req.body;
     try {
-        // 1. Config aur API Key check karein
         const config = await SystemConfig.findOne();
         const apiKey = config ? config.groq_key : null;
 
-        if (!apiKey) {
-            return res.status(400).json({ reply: "API Key missing hai! Settings mein save karein." });
-        }
+        if (!apiKey) return res.status(400).json({ reply: "API Key missing!" });
 
-        // 2. DATABASE FETCH: Bharti ko students aur teachers ka data dena zaroori hai
+        // Database se sirf top 10 ya zaroori data hi lein taaki limit cross na ho
         const [students, teachers, admin] = await Promise.all([
-            mongoose.model('Student').find({}, 'student_name student_id student_class paid_months fees joining_date'),
-            mongoose.model('Teacher').find({}, 'teacher_name teacher_id salary subjects paid_months joining_date'),
+            mongoose.model('Student').find().limit(20).select('student_name student_class joining_date'),
+            mongoose.model('Teacher').find().select('teacher_name salary joining_date'),
             mongoose.model('AdminProfile').findOne({})
         ]);
 
-        // Data ko summary mein badlein
-        const studentSummary = students.map(s => `${s.student_name}(Class:${s.student_class}, Join:${s.joining_date || 'N/A'})`).join(", ");
-        const teacherSummary = teachers.map(t => `${t.teacher_name}(Salary:${t.salary}, Join:${t.joining_date || 'N/A'})`).join(", ");
+        const studentSummary = students.map(s => `${s.student_name}(${s.student_class})`).join(", ");
+        const teacherSummary = teachers.map(t => `${t.teacher_name}(Join:${t.joining_date})`).join(", ");
 
-        // 3. Groq AI ko call karein
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": `Bearer ${apiKey}`, 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
                     { 
                         role: "system", 
-                        content: `Aapka naam "Bharti" hai. Aap Bal Bharti Coaching Center (BBCC) ki official Female AI Expert hain. 
-                        Admin: ${admin?.admin_name || "Sir"}.
-                        DATA: Students[${studentSummary}], Teachers[${teacherSummary}].
-                        RULES: 1. Hinglish mein baat karein. 2. Data se calculation karein. 3. Friendly rahein. 4. Joining date data se dekh kar batayein.` 
+                        content: `Aap Bharti ho, BBCC ki expert. Admin: ${admin?.admin_name}. Data: Students[${studentSummary}], Teachers[${teacherSummary}]. Jawab hamesha chota aur Hinglish mein dein.` 
                     },
                     { role: "user", content: prompt }
                 ],
-                temperature: 0.7
+                max_tokens: 300 // Isse tokens ki bachat hogi
             })
         });
 
         const data = await response.json();
         
-        // 4. Groq Error Handling
         if (data.error) {
-            console.log("Groq Error Detail:", data.error);
-            return res.json({ reply: "AI Model busy hai ya API Key galat hai. Kripya terminal check karein." });
+            // Agar limit ki problem hai toh user ko batao
+            if(data.error.code === 'rate_limit_exceeded') {
+                return res.json({ reply: "Maaf kijiye, aaj ki baat-cheet ki limit puri ho gayi hai. Kripya 15 minute baad koshish karein." });
+            }
+            return res.json({ reply: "Kuch technical issue hai, kripya thodi der baad puchein." });
         }
 
-        // 5. Sahi Jawab Bhejein
-        if (data.choices && data.choices[0]) {
-            res.json({ reply: data.choices[0].message.content });
-        } else {
-            res.json({ reply: "Maaf kijiye, main abhi samajh nahi paa rahi hoon." });
-        }
+        res.json({ reply: data.choices[0].message.content });
 
     } catch (err) {
-        console.log("Server Error:", err); 
-        res.status(500).json({ reply: "Connect nahi ho paa rahi hoon. Server error check karein." });
+        res.status(500).json({ reply: "Connect nahi ho paa rahi hoon." });
     }
 });
 // --- A. STUDENT API ---
