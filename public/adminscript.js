@@ -1108,191 +1108,111 @@ function processImage() {
     };
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
-const devCall = "7543952488";
-
-// 1. वॉयस इंजन (Human Female Voice Setup)
+// --- 1. HUMAN-LIKE VOICE ENGINE (Gemini Style) ---
 function talk(text) {
-    window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel(); // Purani awaz band karein
     let utterance = new SpeechSynthesisUtterance(text);
+    
+    // Sabhi available voices nikalna
     let voices = window.speechSynthesis.getVoices();
     
-    let femaleVoice = voices.find(v => v.lang.includes('hi') && (v.name.includes('Google') || v.name.includes('Female') || v.name.includes('Hemlata')));
-    
-    if (femaleVoice) utterance.voice = femaleVoice;
-    utterance.pitch = 1.1; 
-    utterance.rate = 0.85; 
+    // Natural sounding Hindi/English female voice select karna
+    let humanVoice = voices.find(v => 
+        (v.lang.includes('hi-IN') || v.lang.includes('en-IN')) && 
+        (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Aria'))
+    );
+
+    if (humanVoice) {
+        utterance.voice = humanVoice;
+    }
+
+    // Voice settings for Human Feel
+    utterance.pitch = 1.05; // Slightly high for clarity
+    utterance.rate = 0.95;  // Thoda dhire taaki natural lage
+    utterance.volume = 1.0;
+
     window.speechSynthesis.speak(utterance);
 }
 
-// 2. मास्टर डेटाबेस (Keyword Mapping)
-const aiBrain = {
-    "admin_id": {
-        "keywords": ["id", "admin id", "user id", "लॉगिन आईडी", "पहचान"],
-        "ask": "क्या आप एडमिन आईडी बदलने की जानकारी चाहते हैं?",
-        "steps": "1. System Control में 'Admin Profile' पर क्लिक करें।\n2. नई आईडी लिखें।\n3. 'Update Admin Profile' दबाएं।"
-    },
-    "password": {
-        "keywords": ["password", "pass", "पासवर्ड", "लॉक"],
-        "ask": "क्या आप लॉगिन पासवर्ड बदलना चाहते हैं?",
-        "steps": "1. Admin Profile खोलें।\n2. नया पासवर्ड भरें।\n3. 'Update' बटन दबाएं।"
-    },
-    "student_reg": {
-        "keywords": ["student add", "admission", "new student", "छात्र", "एडमिशन"],
-        "ask": "क्या आप नए छात्र का रजिस्ट्रेशन करना चाहते हैं?",
-        "steps": "1. Student Reg बटन दबाएं।\n2. छात्र की जानकारी भरें और फोटो अपलोड करके सबमिट करें।"
-    },
-    "photo_compress": {
-        "keywords": ["compress", "photo tool", "size", "फोटो कम करें"],
-        "ask": "क्या आप फोटो कंप्रेस करने का सही तरीका जानना चाहते हैं?",
-        "steps": "जरूरी सूचना: कोई भी फोटो अपलोड करने से पहले ऊपर दिए 'Image Tool' में जाएं। 'AS PHOTO' दबाएं और फिर डाउनलोड करके इस्तेमाल करें।"
+// --- 2. MICROPHONE (Speech to Text) ---
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'hi-IN'; // Hindi input support
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('chat-input').value = transcript;
+        userSend(); // Automatic send after speaking
+    };
+
+    recognition.onstart = () => {
+        document.getElementById('mic-btn').style.color = "red";
+        document.getElementById('mic-btn').classList.add('pulse');
+    };
+
+    recognition.onend = () => {
+        document.getElementById('mic-btn').style.color = "#6c5ce7";
+        document.getElementById('mic-btn').classList.remove('pulse');
+    };
+
+    function startMic() {
+        recognition.start();
     }
-    // Baaki data aap as-is rakh sakte hain...
-};
-
-// 3. Smart Bot Response (Typing + Voice)
-function botResponse(text, isAI = false) {
-    let content = document.getElementById('chat-content');
-    
-    let typingDiv = document.createElement('div');
-    typingDiv.id = "typing-status";
-    typingDiv.className = "bot-msg";
-    typingDiv.style.fontStyle = "italic";
-    typingDiv.innerText = "टाइप कर रही हूँ...";
-    
-    content.appendChild(typingDiv);
-    content.scrollTop = content.scrollHeight;
-
-    setTimeout(() => {
-        let status = document.getElementById('typing-status');
-        if(status) status.remove();
-        
-        showMsg(text, isAI ? 'ai' : 'bot');
-        talk(text); // Voice output calling fixed talk function
-    }, 1200);
+} else {
+    console.error("Speech Recognition not supported in this browser.");
 }
 
-function showMsg(t, s) {
-    let c = document.getElementById('chat-content');
-    let d = document.createElement('div');
-    d.className = s === 'bot' ? 'bot-msg' : (s === 'ai' ? 'ai-msg' : 'user-msg');
-    d.innerText = t;
-    c.appendChild(d);
-    c.scrollTop = c.scrollHeight;
-}
-
-// --- 1. SMART SEND FUNCTION (Fixed Logic + NLP AI) ---
+// --- 3. SMART SEND FUNCTION (Llama API) ---
 async function userSend() {
     let input = document.getElementById('chat-input');
     let val = input.value.trim();
     if (!val) return;
 
-    // 1. स्क्रीन पर यूजर का मैसेज दिखाएँ
     showMsg(val, 'user');
     input.value = "";
-    let lowVal = val.toLowerCase();
 
-    // 2. Local Brain Check (Keywords के लिए)
-    let foundKey = null;
-    for (let key in aiBrain) {
-        if (aiBrain[key].keywords.some(k => lowVal.includes(k))) {
-            foundKey = key;
-            break;
-        }
-    }
-
-    if (foundKey) {
-        confirmTopic(foundKey);
-        return;
-    }
-
-    // 3. Typing Indicator दिखाएँ
+    // Show Typing Indicator
     let content = document.getElementById('chat-content');
     let typingDiv = document.createElement('div');
     typingDiv.id = "typing-status";
-    typingDiv.className = "bot-msg";
-    typingDiv.innerHTML = "<i class='fas fa-robot'></i> AI सोच रही हूँ...";
+    typingDiv.className = "ai-msg";
+    typingDiv.innerHTML = "<i>AI is thinking...</i>";
     content.appendChild(typingDiv);
     content.scrollTop = content.scrollHeight;
 
     try {
-        // --- यहाँ ध्यान दें: अब हम अपने LOCAL SERVER के API को कॉल कर रहे हैं ---
         const res = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                prompt: val,
-                context: "Admin wants to know about BBCC portal management."
-            })
+            body: JSON.stringify({ prompt: val })
         });
 
         const data = await res.json();
-        
-        // Typing status हटाएँ
         if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
 
         if (data.reply) {
             showMsg(data.reply, 'ai');
-            if (typeof talk === "function") talk(data.reply);
-        } else if (data.error) {
-            botResponse("Error: " + data.error); // अगर Key नहीं मिली तो सर्वर यह मैसेज भेजेगा
+            talk(data.reply); // Bol kar sunayega
         }
     } catch (err) {
         if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
-        botResponse("सर्वर से कनेक्ट नहीं हो पा रहा। कृपया चेक करें कि Node.js Server चालू है या नहीं।");
-        console.error(err);
+        showMsg("Sorry, network issue.", 'bot');
     }
 }
 
-// --- 2. CONFIRMATION SYSTEM ---
-function confirmTopic(key) {
-    botResponse(aiBrain[key].ask);
-    setTimeout(() => {
-        let area = document.getElementById('questions-list');
-        area.innerHTML = `
-            <div style="display:flex; gap:5px; margin-top:5px;">
-                <button class="q-btn" style="background:#27ae60; color:white; flex:1;" onclick="finalAnswer('${key}')">हाँ, यही</button>
-                <button class="q-btn" style="flex:1;" onclick="resetMenu()">कुछ और</button>
-            </div>
-        `;
-    }, 1000);
+// --- 4. UI HELPERS ---
+function showMsg(t, s) {
+    let c = document.getElementById('chat-content');
+    let d = document.createElement('div');
+    d.className = s === 'user' ? 'user-msg' : 'ai-msg';
+    d.innerText = t;
+    c.appendChild(d);
+    c.scrollTop = c.scrollHeight;
 }
 
-function finalAnswer(key) {
-    botResponse(aiBrain[key].steps);
-    resetMenu();
-}
-
-// --- 3. UI HELPERS ---
-function resetMenu() {
-    document.getElementById('questions-list').innerHTML = `
-        <button class="q-btn" onclick="openGrp('system')">⚙️ System Control</button>
-        <button class="q-btn" onclick="openGrp('teacher')">👨‍🏫 Teacher Management</button>
-        <button class="q-btn" onclick="openGrp('student')">🎓 Student Management</button>
-    `;
-}
-
-function openGrp(g) {
-    const groups = {
-        "system": ["admin_id", "password"],
-        "teacher": ["teacher_reg", "teacher_salary"],
-        "student": ["student_reg", "student_fees"]
-    };
-    let l = document.getElementById('questions-list');
-    l.innerHTML = `<b style="font-size:12px; color:#6c5ce7;">${g.toUpperCase()} HELP:</b>`;
-    groups[g].forEach(key => {
-        if(aiBrain[key]) {
-            let label = aiBrain[key].ask.replace("क्या आप ", "").replace(" चाहते हैं?", "");
-            l.innerHTML += `<button class="q-btn" onclick="confirmTopic('${key}')">${label}</button>`;
-        }
-    });
-}
 function toggleChat() {
     const chatBox = document.getElementById('chat-box');
-    const display = window.getComputedStyle(chatBox).display;
-    
-    if (display === "none") {
-        chatBox.style.display = "flex";
-    } else {
-        chatBox.style.display = "none";
-    }
+    chatBox.style.display = (chatBox.style.display === "none" || !chatBox.style.display) ? "flex" : "none";
 }
