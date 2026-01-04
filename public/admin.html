@@ -540,50 +540,25 @@
 </div>
 
 
-<div id="chat-circle" onclick="toggleChat()" style="background: url('https://cdn-icons-png.flaticon.com/512/4140/4140047.png'); background-size: cover; background-position: center; position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.5); cursor: pointer; z-index: 1000; border: 2px solid #fff;">
-</div>
-
-<div id="chat-box" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 500px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); flex-direction: column; overflow: hidden; z-index: 1000;">
+<div id="chat-box" class="bharti-chat-container">
+    <div class="chat-header">
+        <div class="bharti-avatar">B</div>
+        <span>Bharti AI Expert</span>
+        <button onclick="toggleChat()"><i class="fas fa-times"></i></button>
+    </div>
     
-    <div style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="position: relative;">
-                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png" style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid white;">
-                <span style="position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: #00ff00; border: 2px solid white; border-radius: 50%;"></span>
-            </div>
-            <div>
-                <div style="font-weight: bold; font-size: 16px;">Bharti AI Expert</div>
-                <div style="font-size: 11px; opacity: 0.9;">Coaching Manager • Online</div>
-            </div>
-        </div>
-        <span onclick="toggleChat()" style="cursor: pointer; font-size: 25px;">&times;</span>
+    <div id="chat-content" class="chat-body">
+        <div class="ai-msg">Namaste! Main Bharti hoon. Main aapki kaise madad kar sakti hoon?</div>
     </div>
 
-    <div id="chat-content" style="flex: 1; padding: 15px; overflow-y: auto; background: #f9f9fb; display: flex; flex-direction: column; gap: 10px;">
-        <div class="ai-msg">नमस्ते एडमिन! मैं भारती हूँ। मैं आपके BBCC पोर्टल का सारा डेटा (Students, Teachers, Fees) जानती हूँ। आप मुझसे बोलकर या लिखकर कुछ भी पूछ सकते हैं।</div>
-        
-        <div id="group-area" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px;">
-            <button class="q-btn" onclick="quickAsk('Kiski fees baki hai?')">💰 Fees Due?</button>
-            <button class="q-btn" onclick="quickAsk('Teachers ki list dikhao')">👨‍🏫 Teacher List</button>
-            <button class="q-btn" onclick="quickAsk('Naya student kaise add karein?')">🎓 Admission</button>
-            <button class="q-btn" onclick="quickAsk('System settings update karni hai')">⚙️ Settings</button>
-        </div>
-        
-        <div id="questions-list"></div>
-    </div>
-
-    <div style="padding: 12px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; align-items: center;">
-        <button id="mic-btn" onclick="startBhartiMic()" style="background: #f1f2f6; border: none; width: 40px; height: 40px; border-radius: 50%; color: #6c5ce7; cursor: pointer; transition: 0.3s;">
-            <i class="fas fa-microphone"></i>
-        </button>
-        
-        <input type="text" id="chat-input" placeholder="Bharti se baat karein..." style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 20px; outline: none; font-size: 14px;">
-        
-        <button onclick="userSend()" style="background:#6c5ce7; color:white; border:none; width: 40px; height: 40px; border-radius: 50%; cursor:pointer;">
-            <i class="fas fa-paper-plane"></i>
-        </button>
+    <div class="chat-footer">
+        <button id="mic-btn" onclick="startMic()"><i class="fas fa-microphone"></i></button>
+        <input type="text" id="chat-input" placeholder="Bharti se kuch puche..." onkeypress="if(event.key==='Enter') userSend()">
+        <button onclick="userSend()"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
+
+    
 <footer class="magical-footer">
     <div class="social-icons">
         <a id="foot-whatsapp" href="#"><i class="fab fa-whatsapp"></i></a>
