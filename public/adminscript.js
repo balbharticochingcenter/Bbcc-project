@@ -1293,3 +1293,13 @@ function openGrp(g) {
         }
     });
 }
+function toggleChat() {
+    const chatBox = document.getElementById('chat-box');
+    const display = window.getComputedStyle(chatBox).display;
+    
+    if (display === "none") {
+        chatBox.style.display = "flex";
+    } else {
+        chatBox.style.display = "none";
+    }
+}
