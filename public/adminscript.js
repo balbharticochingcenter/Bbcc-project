@@ -1111,158 +1111,53 @@ function processImage() {
 // ======================================================
 // 🧠 BHARTI AI: FULL SPEECH, MIC & CHAT ENGINE (MERGED)
 // ======================================================
-
-// --- 1. BHARTI'S HUMAN-LIKE VOICE ENGINE (Gemini Style) ---
+// --- BHARTI VOICE ENGINE ---
 function bhartiTalk(text) {
-    // Purani kisi bhi speech ko cancel karein taaki overlap na ho
-    window.speechSynthesis.cancel(); 
-
+    window.speechSynthesis.cancel();
     let speech = new SpeechSynthesisUtterance(text);
-    
-    // Sabhi available voices load karein
     let voices = window.speechSynthesis.getVoices();
-    
-    // Step 1: Best Female Natural Voice dhundein (Hindi ya English IN)
-    let selectedVoice = voices.find(v => 
-        (v.lang.includes('hi-IN') || v.lang.includes('en-IN')) && 
-        (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Aria') || v.name.includes('Female'))
-    );
-
-    if (selectedVoice) {
-        speech.voice = selectedVoice;
-    }
-
-    // Voice settings for "Human/Gemini Feel"
-    speech.pitch = 1.1;  // Thodi mithi aur saaf awaz ke liye
-    speech.rate = 0.95;  // Thoda dhire taaki natural aur professional lage
-    speech.volume = 1.0; // Full volume
-
+    speech.voice = voices.find(v => v.lang.includes('hi-IN')) || voices[0];
+    speech.pitch = 1.1; speech.rate = 1.0;
     window.speechSynthesis.speak(speech);
 }
 
-// --- 2. MICROPHONE ENGINE (Speech to Text) ---
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition;
+// --- MIC ENGINE ---
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+recognition.lang = 'hi-IN';
+recognition.onstart = () => document.getElementById('mic-btn').classList.add('pulse-red');
+recognition.onend = () => document.getElementById('mic-btn').classList.remove('pulse-red');
+recognition.onresult = (e) => {
+    document.getElementById('chat-input').value = e.results[0][0].transcript;
+    userSend();
+};
+function startMic() { recognition.start(); }
 
-if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'hi-IN'; // Bharti Hindi aur Hinglish dono samjhegi
-    recognition.interimResults = false;
-    recognition.continuous = false;
-
-    // Jab user bolna shuru kare
-    recognition.onstart = () => {
-        const micBtn = document.getElementById('mic-btn');
-        if (micBtn) {
-            micBtn.style.color = "red";
-            micBtn.classList.add('pulse-red'); // CSS mein pulse animation hona chahiye
-            micBtn.innerHTML = '<i class="fas fa-microphone-alt"></i>'; 
-        }
-    };
-
-    // Jab Bharti sun le aur result de
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        const chatInput = document.getElementById('chat-input');
-        if (chatInput) {
-            chatInput.value = transcript;
-            userSend(); // Voice input ke baad automatic send
-        }
-    };
-
-    // Jab mic band ho
-    recognition.onend = () => {
-        const micBtn = document.getElementById('mic-btn');
-        if (micBtn) {
-            micBtn.style.color = "#6c5ce7";
-            micBtn.classList.remove('pulse-red');
-            micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-        }
-    };
-
-    recognition.onerror = (err) => {
-        console.error("Mic Error:", err.error);
-    };
-
-} else {
-    console.error("Speech Recognition is not supported in this browser.");
-}
-
-// Function to trigger Mic
-function startMic() {
-    if (recognition) {
-        recognition.start();
-    } else {
-        alert("Aapka browser voice support nahi karta.");
-    }
-}
-
-// --- 3. SMART CHAT SEND FUNCTION (Llama API Integration) ---
+// --- SEND LOGIC ---
 async function userSend() {
     let input = document.getElementById('chat-input');
-    let val = input.value.trim();
-    if (!val) return;
-
-    // 1. User ka message screen par dikhayein
-    showMsg(val, 'user');
+    if (!input.value.trim()) return;
+    
+    let userVal = input.value;
+    showMsg(userVal, 'user');
     input.value = "";
 
-    // 2. Typing Indicator dikhayein
-    let content = document.getElementById('chat-content');
-    let typingDiv = document.createElement('div');
-    typingDiv.id = "typing-status";
-    typingDiv.className = "ai-msg";
-    typingDiv.innerHTML = "<i>Bharti is thinking...</i>";
-    content.appendChild(typingDiv);
-    content.scrollTop = content.scrollHeight;
-
     try {
-        // 3. Backend API ko call karein
         const res = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: val })
+            body: JSON.stringify({ prompt: userVal })
         });
-
         const data = await res.json();
-        
-        // Typing indicator hatayein
-        if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
-
-        if (data.reply) {
-            // 4. Bharti ka reply screen par dikhayein
-            showMsg(data.reply, 'ai');
-            
-            // 5. Bharti reply ko bol kar sunayegi
-            bhartiTalk(data.reply);
-        } else {
-            showMsg("Maaf kijiyega, main samajh nahi paayi.", 'ai');
-        }
-    } catch (err) {
-        if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
-        console.error("Bharti Connection Error:", err);
-        showMsg("Network issue hai, kripya check karein.", 'ai');
-    }
+        showMsg(data.reply, 'ai');
+        bhartiTalk(data.reply);
+    } catch (e) { showMsg("Server Error!", 'ai'); }
 }
 
-// --- 4. UI HELPERS (Messages & Chat Box) ---
-function showMsg(text, sender) {
-    let container = document.getElementById('chat-content');
-    let msgDiv = document.createElement('div');
-    
-    // Sender ke hisab se CSS class set karein
-    msgDiv.className = sender === 'user' ? 'user-msg' : 'ai-msg';
-    msgDiv.innerText = text;
-    
-    container.appendChild(msgDiv);
-    
-    // Scroll auto-down karein
-    container.scrollTop = container.scrollHeight;
-}
-
-function toggleChat() {
-    const chatBox = document.getElementById('chat-box');
-    if (chatBox) {
-        chatBox.style.display = (chatBox.style.display === "none" || !chatBox.style.display) ? "flex" : "none";
-    }
+function showMsg(text, type) {
+    let content = document.getElementById('chat-content');
+    let div = document.createElement('div');
+    div.className = type === 'user' ? 'user-msg' : 'ai-msg';
+    div.innerText = text;
+    content.appendChild(div);
+    content.scrollTop = content.scrollHeight;
 }
