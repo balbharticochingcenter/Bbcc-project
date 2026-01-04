@@ -377,8 +377,8 @@ input, select {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 65px;
-    height: 65px;
+    width: 45px;
+    height: 45px;
     background: var(--user-bubble);
     border-radius: 50%;
     box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
