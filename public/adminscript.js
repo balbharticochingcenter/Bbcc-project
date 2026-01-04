@@ -40,30 +40,50 @@ function initDashboard() {
 }
 
 // --- 1. LOAD SETTINGS (Header & Footer Sync) ---
+
+
+// Fir isse fetch body mein bhej dein
 async function loadSettings() {
     try {
         const response = await fetch('/api/get-settings');
+        if (!response.ok) throw new Error('Network response was not ok');
+        
         const data = await response.json();
-        if(data.title) {
-            // Header Branding
-            document.getElementById('db-title').innerText = data.title;
-            document.getElementById('db-subtitle').innerText = data.sub_title || "";
-            if(data.logo) document.getElementById('db-logo').src = data.logo;
-            
-            // Fill Form Fields (Header)
-            document.getElementById('form-title').value = data.title;
-            document.getElementById('form-subtitle').value = data.sub_title;
-            
-            // Fill Form Fields (Footer)
-            document.getElementById('form-contact').value = data.contact || "";
-            document.getElementById('form-call').value = data.call_no || "";
-            document.getElementById('form-gmail').value = data.gmail || "";
-            document.getElementById('form-facebook').value = data.facebook || "";
-            document.getElementById('form-help').value = data.help || "";
-        }
-    } catch (err) { console.error("Error loading settings:", err); }
-}
 
+        if (data) {
+            // Helper function: Taaki bar-bar document.getElementById na likhna pade
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val || "";
+            };
+            const setTxt = (id, txt) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = txt || "";
+            };
+
+            // UI Branding Update
+            setTxt('db-title', data.title);
+            setTxt('db-subtitle', data.sub_title);
+            
+            const logoEl = document.getElementById('db-logo');
+            if (logoEl && data.logo) logoEl.src = data.logo;
+
+            // Form Fields Update
+            setVal('form-title', data.title);
+            setVal('form-subtitle', data.sub_title);
+            setVal('form-contact', data.contact);
+            setVal('form-call', data.call_no);
+            setVal('form-gmail', data.gmail);
+            setVal('form-facebook', data.facebook);
+            setVal('form-help', data.help);
+
+            // Agar API se groq_key aa rahi hai toh:
+            setVal('set-groq-key', data.groq_key); 
+        }
+    } catch (err) { 
+        console.error("Error loading settings:", err); 
+    }
+}
 // --- 2. MODAL CONTROLS ---
 const modals = {
     sys: document.getElementById("systemModal"),
@@ -1065,110 +1085,40 @@ function talk(text) {
     let utterance = new SpeechSynthesisUtterance(text);
     let voices = window.speechSynthesis.getVoices();
     
-    // अच्छी हिंदी फीमेल वॉयस चुनना
     let femaleVoice = voices.find(v => v.lang.includes('hi') && (v.name.includes('Google') || v.name.includes('Female') || v.name.includes('Hemlata')));
     
     if (femaleVoice) utterance.voice = femaleVoice;
     utterance.pitch = 1.1; 
-    utterance.rate = 0.85; // स्टेप्स समझने के लिए हल्की धीमी रफ़्तार
+    utterance.rate = 0.85; 
     window.speechSynthesis.speak(utterance);
 }
 
-// 2. मास्टर डेटाबेस (Keyword Mapping + Steps)
-// यहाँ आप इसी तरह 200+ सवाल आसानी से जोड़ सकते हैं
+// 2. मास्टर डेटाबेस (Keyword Mapping)
 const aiBrain = {
-    // --- SYSTEM & SETTINGS ---
     "admin_id": {
         "keywords": ["id", "admin id", "user id", "लॉगिन आईडी", "पहचान"],
         "ask": "क्या आप एडमिन आईडी बदलने की जानकारी चाहते हैं?",
-        "steps": "1. System Control में 'Admin Profile' पर क्लिक करें।\n2. 'Admin Profile Settings' फॉर्म के दूसरे बॉक्स में नई आईडी लिखें।\n3. 'Update Admin Profile' बटन दबाएं।"
+        "steps": "1. System Control में 'Admin Profile' पर क्लिक करें।\n2. नई आईडी लिखें।\n3. 'Update Admin Profile' दबाएं।"
     },
     "password": {
         "keywords": ["password", "pass", "पासवर्ड", "लॉक"],
         "ask": "क्या आप लॉगिन पासवर्ड बदलना चाहते हैं?",
-        "steps": "1. Admin Profile खोलें।\n2. 'Password' और 'Confirm Password' वाले बॉक्स में नया पासवर्ड भरें।\n3. 'Update' बटन दबाएं।"
+        "steps": "1. Admin Profile खोलें।\n2. नया पासवर्ड भरें।\n3. 'Update' बटन दबाएं।"
     },
-    "logo_update": {
-        "keywords": ["logo", "image tool", "लोगो", "चिन्ह"],
-        "ask": "क्या आप वेबसाइट का लोगो बदलना चाहते हैं?",
-        "steps": "1. System Settings में जाएं।\n2. 'Coaching Logo' सेक्शन में 'Choose File' पर क्लिक करें।\n3. फाइल चुनें और नीचे 'Update Settings' बटन दबाएं।"
-    },
-    "coaching_info": {
-        "keywords": ["name", "title", "address", "नाम", "पता", "कोचिंग"],
-        "ask": "क्या आप कोचिंग का नाम, पता या स्लोगन बदलना चाहते हैं?",
-        "steps": "1. System Settings पर क्लिक करें।\n2. यहाँ 'Coaching Name', 'Slogan' और 'Address' के बॉक्स मिलेंगे।\n3. जानकारी भरकर 'Update Settings' पर क्लिक करें।"
-    },
-
-    // --- STUDENT MANAGEMENT ---
     "student_reg": {
         "keywords": ["student add", "admission", "new student", "छात्र", "एडमिशन"],
         "ask": "क्या आप नए छात्र का रजिस्ट्रेशन करना चाहते हैं?",
-        "steps": "1. Student Reg बटन दबाएं।\n2. छात्र का नाम, क्लास और फीस भरें।\n3. छात्र की फोटो अपलोड करें और फॉर्म सबमिट करें। छात्र को रोल नंबर ऑटोमैटिक मिल जाएगा।"
+        "steps": "1. Student Reg बटन दबाएं।\n2. छात्र की जानकारी भरें और फोटो अपलोड करके सबमिट करें।"
     },
-    "student_fees": {
-        "keywords": ["fees", "paisa", "fee receipt", "फीस", "रसीद"],
-        "ask": "क्या आप छात्र की फीस जमा करना या रिकॉर्ड देखना चाहते हैं?",
-        "steps": "1. Student Management -> Fees/Data में जाएं।\n2. छात्र की क्लास चुनें।\n3. छात्र के नाम के आगे 'Collect Fees' बटन दबाएं और रसीद प्रिंट करें।"
-    },
-    "student_id_card": {
-        "keywords": ["id card", "card", "पहचान पत्र", "कार्ड"],
-        "ask": "क्या आप छात्र का आईडी कार्ड (ID Card) निकालना चाहते हैं?",
-        "steps": "1. Student Management में जाएं।\n2. 'View Student List' खोलें।\n3. छात्र के नाम के पास 'ID Card' बटन पर क्लिक करें।"
-    },
-
-    // --- TEACHER MANAGEMENT ---
-    "teacher_reg": {
-        "keywords": ["teacher add", "new teacher", "टीचर", "शिक्षक"],
-        "ask": "क्या आप नया टीचर जोड़ने का तरीका जानना चाहते हैं?",
-        "steps": "1. Teacher Management में 'Teacher Reg' पर क्लिक करें।\n2. टीचर की जानकारी (नाम, सैलरी, फोटो) भरें और सेव करें।"
-    },
-    "teacher_salary": {
-        "keywords": ["salary", "pay", "payment", "सैलरी", "वेतन"],
-        "ask": "क्या आप टीचर की सैलरी का हिसाब-किताब देखना चाहते हैं?",
-        "steps": "1. Teacher Management -> Salary/Data में जाएं।\n2. यहाँ आपको सभी महीनों की सैलरी रिपोर्ट मिल जाएगी।"
-    },
-
-    // --- IMAGE TOOLS (WARNING) ---
-    "image_compress": {
+    "photo_compress": {
         "keywords": ["compress", "photo tool", "size", "फोटो कम करें"],
         "ask": "क्या आप फोटो कंप्रेस करने का सही तरीका जानना चाहते हैं?",
-        "steps": "जरूरी सूचना: कोई भी फोटो अपलोड करने से पहले ऊपर दिए 'Image Tool' में जाएं। फोटो चुनकर 'AS PHOTO' दबाएं और फिर डाउनलोड करके ही इस्तेमाल करें।"
-    },
-
-    // --- DEVELOPER HELP ---
-    "dev_help": {
-        "keywords": ["developer", "help", "contact", "बनाने वाला", "मदद"],
-        "ask": "क्या आप डेवलपर से बात करना चाहते हैं?",
-        "steps": "अगर आपको कोई तकनीकी समस्या आ रही है, तो आप डेवलपर को इस नंबर पर कॉल कर सकते हैं: 7543952488"
+        "steps": "जरूरी सूचना: कोई भी फोटो अपलोड करने से पहले ऊपर दिए 'Image Tool' में जाएं। 'AS PHOTO' दबाएं और फिर डाउनलोड करके इस्तेमाल करें।"
     }
+    // Baaki data aap as-is rakh sakte hain...
 };
 
-// --- Updated Bot Interaction Logic ---
-// --- 1. Voice to Text (Bolne ke liye) ---
-function startVoice() {
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'hi-IN';
-    recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        document.getElementById('chat-input').value = text;
-        userSend(); // Turant send karein
-    };
-    recognition.start();
-}
-
-// --- 2. Message Display Helper ---
-function showMsg(t, s) {
-    let c = document.getElementById('chat-content');
-    let d = document.createElement('div');
-    d.className = s === 'bot' ? 'bot-msg' : 'user-msg';
-    // AI message ke liye alag class agar styling karni ho
-    if(s === 'ai') d.className = 'ai-msg'; 
-    d.innerText = t;
-    c.appendChild(d);
-    c.scrollTop = c.scrollHeight;
-}
-
-// --- 3. Smart Bot Response (Typing Animation + Voice Output) ---
+// 3. Smart Bot Response (Typing + Voice)
 function botResponse(text, isAI = false) {
     let content = document.getElementById('chat-content');
     
@@ -1176,7 +1126,6 @@ function botResponse(text, isAI = false) {
     typingDiv.id = "typing-status";
     typingDiv.className = "bot-msg";
     typingDiv.style.fontStyle = "italic";
-    typingDiv.style.opacity = "0.7";
     typingDiv.innerText = "टाइप कर रही हूँ...";
     
     content.appendChild(typingDiv);
@@ -1187,145 +1136,118 @@ function botResponse(text, isAI = false) {
         if(status) status.remove();
         
         showMsg(text, isAI ? 'ai' : 'bot');
-        
-        // Voice Output (Text-to-Speech)
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'hi-IN';
-        window.speechSynthesis.speak(utterance);
+        talk(text); // Voice output calling fixed talk function
     }, 1200);
 }
 
-// --- 4. Main Send Function (Updated with Groq AI integration) ---
+function showMsg(t, s) {
+    let c = document.getElementById('chat-content');
+    let d = document.createElement('div');
+    d.className = s === 'bot' ? 'bot-msg' : (s === 'ai' ? 'ai-msg' : 'user-msg');
+    d.innerText = t;
+    c.appendChild(d);
+    c.scrollTop = c.scrollHeight;
+}
+
+// 4. Main Send Function (Fixed API Logic)
 async function userSend() {
     let input = document.getElementById('chat-input');
-    let val = input.value.trim().toLowerCase();
+    let val = input.value.trim();
     if (!val) return;
 
-    showMsg(input.value, 'user');
+    showMsg(val, 'user');
     input.value = "";
+    let lowVal = val.toLowerCase();
 
-    // A. Pehle existing "aiBrain" logic check karein
+    // A. Brain Check
     let foundKey = null;
     for (let key in aiBrain) {
-        if (aiBrain[key].keywords.some(k => val.includes(k))) {
+        if (aiBrain[key].keywords.some(k => lowVal.includes(k))) {
             foundKey = key;
             break;
         }
     }
 
     if (foundKey) {
-        // Purana manual logic
         confirmTopic(foundKey);
     } else {
-        // B. Agar manual keywords nahi mile, toh Groq AI se puchein
+        // B. Groq AI Integration
         try {
             const res = await fetch('/api/ai-chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    prompt: val, 
-                    context: "Admin panel features: Teacher registration, Student management, Fees tracking, System settings." 
-                })
+                body: JSON.stringify({ prompt: val })
             });
             const data = await res.json();
             
-            // AI Assistant Action Logic (Auto Open Groups)
-            if(val.includes("student") || val.includes("छात्र")) {
-                setTimeout(() => { openGrp('student'); }, 1500);
-            }
-            if(val.includes("teacher") || val.includes("शिक्षक")) {
-                setTimeout(() => { openGrp('teacher'); }, 1500);
-            }
+            // Auto Group Opening Logic
+            if(lowVal.includes("student") || lowVal.includes("छात्र")) openGrp('student');
+            if(lowVal.includes("teacher") || lowVal.includes("शिक्षक")) openGrp('teacher');
 
-            // AI ka reply dikhayein
-            botResponse(data.reply || "माफ़ कीजिये, मैं अभी जवाब नहीं दे पा रही हूँ।", true);
-
+            botResponse(data.reply || "माफ़ कीजिये, मैं समझ नहीं पाई।", true);
         } catch (err) {
-            botResponse("सर्वर से संपर्क नहीं हो पा रहा है। कृपया इंटरनेट चेक करें।");
+            botResponse("सर्वर से संपर्क नहीं हो पा raha है।");
         }
     }
 }
 
-// --- 5. Confirmation System ---
-function confirmTopic(key) {
-    let item = aiBrain[key];
-    document.getElementById('questions-list').innerHTML = "सोच रही हूँ...";
-    
-    setTimeout(() => {
-        botResponse(item.ask); 
-        
-        setTimeout(() => {
-            let area = document.getElementById('questions-list');
-            area.innerHTML = `
-                <button class="q-btn" style="background:#27ae60; color:white; border:none;" onclick="finalAnswer('${key}')">हाँ, यही बताइए</button>
-                <button class="q-btn" onclick="resetMenu()">नहीं, कुछ और</button>
-            `;
-        }, 1300);
-    }, 300);
-}
-
-// --- 6. Final Answer Step-by-Step ---
-function finalAnswer(key) {
-    let steps = aiBrain[key].steps;
-    showMsg("हाँ, बताइए कैसे होगा?", 'user');
-    
-    setTimeout(() => {
-        botResponse(steps); 
-        resetMenu();
-    }, 500);
-}
-
-// --- 7. Menu Reset ---
-function resetMenu() {
-    document.getElementById('questions-list').innerHTML = `
-        <button class="q-btn" onclick="openGrp('system')">⚙️ System Control</button>
-        <button class="q-btn" onclick="openGrp('teacher')">👨‍🏫 Teacher Management</button>
-        <button class="q-btn" onclick="openGrp('student')">🎓 Student Management</button>
-        <button class="q-btn" onclick="confirmTopic('photo_compress')">🖼️ फोटो कंप्रेस कैसे करें?</button>
-    `;
-}
-
-// --- 8. Category Groups ---
-function openGrp(g) {
-    const groups = {
-        "system": ["admin_id", "password", "coaching_name"],
-        "teacher": ["teacher_add", "teacher_salary"],
-        "student": ["student_reg", "student_fees"]
-    };
-    
-    let l = document.getElementById('questions-list');
-    l.innerHTML = `<b>${g.toUpperCase()} जानकारी</b>`;
-    groups[g].forEach(key => {
-        l.innerHTML += `<button class="q-btn" onclick="confirmTopic('${key}')">${aiBrain[key].ask.replace("क्या आप ", "").replace(" चाहते हैं?", "")}</button>`;
-    });
-}
-
-// --- 9. Chat Toggle (Admin Name fetch karne ke saath) ---
+// 5. Toggle Chat (Final Fix)
 async function toggleChat() {
     let b = document.getElementById('chat-box');
     let isOpening = b.style.display !== 'flex';
     b.style.display = isOpening ? 'flex' : 'none';
     
     if(isOpening) {
+        // Pehle empty welcome message na dikhe, isliye loading state de sakte hain
         try {
-            // Database se settings mangwayein jisme admin_name hai
             const res = await fetch('/api/get-settings');
             const settings = await res.json();
-            
-            // Agar admin_name milta hai toh wo use karein, nahi toh sirf 'एडमिन'
             let adminName = settings.admin_name || "एडमिन";
             
             let welcomeMsg = `नमस्ते ${adminName}, मैं आपकी क्या मदद कर सकती हूँ? कृपया फोटो अपलोड से पहले कंप्रेस जरूर करें।`;
-            
-            // Bot response function ko call karein (Typing + Voice logic iske andar pehle se hai)
             botResponse(welcomeMsg);
-            
         } catch (err) {
-            console.error("Error fetching admin name:", err);
             botResponse("नमस्ते एडमिन, मैं आपकी क्या मदद कर सकती हूँ?");
         }
     }
 }
 
-const groq_key = document.getElementById('set-groq-key').value;
-// Fir isse fetch body mein bhej dein
+// Confirmation & Helper Functions
+function confirmTopic(key) {
+    botResponse(aiBrain[key].ask);
+    setTimeout(() => {
+        let area = document.getElementById('questions-list');
+        area.innerHTML = `
+            <button class="q-btn" style="background:#27ae60; color:white;" onclick="finalAnswer('${key}')">हाँ, यही बताइए</button>
+            <button class="q-btn" onclick="resetMenu()">नहीं, कुछ और</button>
+        `;
+    }, 1500);
+}
+
+function finalAnswer(key) {
+    botResponse(aiBrain[key].steps);
+    resetMenu();
+}
+
+function resetMenu() {
+    document.getElementById('questions-list').innerHTML = `
+        <button class="q-btn" onclick="openGrp('system')">⚙️ System Control</button>
+        <button class="q-btn" onclick="openGrp('teacher')">👨‍🏫 Teacher Management</button>
+        <button class="q-btn" onclick="openGrp('student')">🎓 Student Management</button>
+    `;
+}
+
+function openGrp(g) {
+    const groups = {
+        "system": ["admin_id", "password"],
+        "teacher": ["teacher_reg", "teacher_salary"],
+        "student": ["student_reg", "student_fees"]
+    };
+    let l = document.getElementById('questions-list');
+    l.innerHTML = `<b>${g.toUpperCase()} जानकारी</b>`;
+    groups[g].forEach(key => {
+        if(aiBrain[key]) {
+            l.innerHTML += `<button class="q-btn" onclick="confirmTopic('${key}')">${aiBrain[key].ask.replace("क्या आप ", "").replace(" चाहते हैं?", "")}</button>`;
+        }
+    });
+}
