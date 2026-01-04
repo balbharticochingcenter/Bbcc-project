@@ -365,101 +365,87 @@ input, select {
 /* --- WAHI CODE HAI, BUS MAGIC ADD KIYA GAYA HAI --- */////////////////////////////////////////////
 /* --- 1. WIDGET CONTAINER (Logo aur Chat ko ek sath rakhne ke liye) --- */
 /* --- 1. MAIN WIDGET CONTAINER (Saare elements ko ek sath rakhne ke liye) --- */
+/* --- 1. MAIN WIDGET CONTAINER --- */
 #bharti-ai-widget { 
     position: fixed; 
-    bottom: 25px; 
-    right: 25px; 
     z-index: 10000; 
     font-family: 'Poppins', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end; /* Sab kuch right side fix rahega */
 }
 
-/* --- 2. LAUNCHER (AI Logo Jo Click Hota Hai) --- */
+/* --- 2. LAUNCHER (AI Logo) --- */
 #bharti-launcher { 
     width: 65px; height: 65px; 
     background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
     border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; 
-    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5); position: relative; transition: 0.3s;
-    margin-top: 15px;
-    z-index: 10001 !important; /* Ye sabse upar rakhega */
-    position: fixed; /* Screen par fix rahega */
-    touch-action: none; /* Mobile par dragging smooth karega */
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5); 
+    
+    /* Position Fix: Draggable banane ke liye top/left use karna best hai */
+    position: fixed; 
+    top: calc(100vh - 90px); 
+    left: calc(100vw - 90px);
+    
+    z-index: 10001 !important; 
+    touch-action: none; 
+    transition: transform 0.3s, box-shadow 0.3s; /* Position transition hatani hai dragging ke liye */
 }
+
 #bharti-launcher:hover { transform: scale(1.1); }
-#bharti-launcher img { width: 45px; height: 45px; z-index: 2; }
+#bharti-launcher img { width: 45px; height: 45px; z-index: 2; pointer-events: none; }
 
 .bharti-pulse { position: absolute; width: 100%; height: 100%; background: #6c5ce7; border-radius: 50%; opacity: 0.5; animation: bharti-ripple 2s infinite; }
 @keyframes bharti-ripple { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.7); opacity: 0; } }
 
-/* --- 3. CHAT WINDOW (Draggable & Magical) --- */
+/* --- 3. CHAT WINDOW (Glassmorphism) --- */
 #bharti-chat-window { 
     width: 350px; height: 500px; 
+    position: fixed;
+    /* Launcher ke upar set karne ke liye default position */
+    top: calc(100vh - 610px); 
+    left: calc(100vw - 375px);
     
-    box-shadow: 0 15px 50px rgba(0,0,0,0.3); 
-    display: flex; flex-direction: column; overflow: hidden; 
-    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    transform-origin: bottom right;
-    position: relative;
-    border: 1px solid rgba(108, 92, 231, 0.1);
-    background: rgba(255, 255, 255, 0.9); /* Halka transparent white */
-    backdrop-filter: blur(15px); /* Piche ka background dhundhla (blur) karne ke liye */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Shishe jaisa border */
+    background: rgba(255, 255, 255, 0.9); 
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 20px; 
+    border: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    display: flex; flex-direction: column; overflow: hidden; 
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; 
+    transform-origin: bottom right;
+    z-index: 10000;
 }
-.bharti-hidden { transform: scale(0); opacity: 0; pointer-events: none; display: none; }
 
-/* Header jise pakad kar aap move kar sakte hain */
+.bharti-hidden { transform: scale(0); opacity: 0; pointer-events: none; }
+
+/* Header Move Handle */
 .bharti-header { 
     background: linear-gradient(to right, #6c5ce7, #a29bfe); 
     padding: 15px; color: #fff; display: flex; align-items: center; gap: 12px; 
-    cursor: move; /* Hath wala cursor move ke liye */
+    cursor: move; 
 }
-.bharti-avatar-box img { width: 40px; height: 40px; background: #fff; border-radius: 50%; padding: 3px; }
 
-/* --- 4. CHAT BODY & MESSAGES (Sahi Visibility) --- */
+/* --- 4. CHAT BODY & MESSAGES --- */
 .bharti-body { 
     flex: 1; padding: 15px; overflow-y: auto; 
-    background: #f8f9fa; display: flex; flex-direction: column; gap: 12px; 
+    background: rgba(248, 249, 250, 0.5); 
+    display: flex; flex-direction: column; gap: 12px; 
 }
 
-/* AI Message: Deep visibility */
 .bharti-msg.ai { 
     background: #ffffff; color: #2d3436; align-self: flex-start; 
     border-radius: 15px 15px 15px 2px; padding: 12px; font-size: 14px;
-    border-left: 5px solid #e84393; /* Pink Border */
+    border-left: 5px solid #e84393; 
     box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
 }
 
-/* User Message: White Text on Purple */
 .bharti-msg.user { 
     background: #6c5ce7; color: #ffffff !important; align-self: flex-end; 
     border-radius: 15px 15px 2px 15px; padding: 12px; font-size: 14px;
-    box-shadow: -2px 2px 10px rgba(108, 92, 231, 0.3);
 }
 
-/* --- 5. FOOTER (Mic & Send Controls) --- */
+/* --- 5. FOOTER --- */
 .bharti-footer { padding: 12px; display: flex; align-items: center; gap: 8px; background: #fff; border-top: 1px solid #eee; }
-
-#bharti-input { 
-    flex: 1; border: 1px solid #eee; padding: 10px 15px; border-radius: 25px; 
-    outline: none; font-size: 14px; background: #f8f9fa; color: #2d3436;
-}
-
-#bharti-mic, #bharti-send { 
-    background: #f1f2f6; border: none; color: #6c5ce7; 
-    width: 40px; height: 40px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; 
-    cursor: pointer; transition: 0.2s; font-size: 18px;
-}
-
-#bharti-mic:hover, #bharti-send:hover { background: #6c5ce7; color: #fff; }
+#bharti-input { flex: 1; border: 1px solid #eee; padding: 10px 15px; border-radius: 25px; outline: none; }
 
 #bharti-mic.active { background: #ff4757; color: #fff; animation: mic-pulse 1.5s infinite; }
-
-@keyframes mic-pulse { 
-    0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); } 
-    70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); } 
-    100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } 
-}
+@keyframes mic-pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
