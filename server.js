@@ -71,79 +71,49 @@ const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
-// --- API ROUTES ---
 
-// 1. FIXED & MOOD-AWARE AI CHAT ROUTE
+
+// AI Chat Endpoint with Live Data Access
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt } = req.body;
-
     try {
         const config = await SystemConfig.findOne();
         const apiKey = config ? config.groq_key : null;
 
-        if (!apiKey || apiKey.trim() === "") {
-            return res.status(400).json({ error: "API Key missing! Settings mein save karein." });
-        }
+        if (!apiKey) return res.status(400).json({ error: "API Key missing! Settings mein save karein." });
 
-        const [allStudents, allTeachers, allClasses, adminProfile] = await Promise.all([
-            Student.find({}, 'student_name student_id fees paid_months student_class parent_name'),
-            Teacher.find({}, 'teacher_name teacher_id salary paid_months classes subjects'),
-            ClassConfig.find({}, 'class_name subjects'),
-            AdminProfile.findOne({}, 'admin_name admin_mobile')
+        // DATABASE FETCH: Bharti ko sab pata hona chahiye
+        const [students, teachers, admin] = await Promise.all([
+            mongoose.model('Student').find({}, 'student_name student_id student_class paid_months fees'),
+            mongoose.model('Teacher').find({}, 'teacher_name teacher_id salary subjects paid_months'),
+            mongoose.model('AdminProfile').findOne({})
         ]);
 
-        const studentSummary = allStudents.map(s => `- ${s.student_name}: ID ${s.student_id}, Class ${s.student_class}, Paid Months: ${s.paid_months.length}`).join("\n");
-        const teacherSummary = allTeachers.map(t => `- ${t.teacher_name}: Salary ₹${t.salary}, Subjects: ${t.subjects.join(", ")}`).join("\n");
+        const studentSummary = students.map(s => `${s.student_name}(ID:${s.student_id}, Class:${s.student_class}, Fees:${s.paid_months.length}/12)`).join(", ");
+        const teacherSummary = teachers.map(t => `${t.teacher_name}(Salary:${t.salary}, Paid:${t.paid_months.length} months)`).join(", ");
 
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
+            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
-               // server.js ke andar messages array ko update karein
-messages: [
-    { 
-        role: "system", 
-        content: `Aapka naam "Bharti" hai, aap Bal Bharti Coaching Center (BBCC) ki official Female AI Expert hain.
-        
-        🧠 BBCC BRAIN ARCHITECTURE:
-        - Backend: Node.js/Express, DB: MongoDB, Frontend: JS/HTML.
-        - Core Modules: System Config (Settings/API), Teacher Management (Auto ID/Salary), Student Management (Fees/Messaging), Results (PDF/Image).
-        
-        KNOWLEDGE BASE (Live Data):
-        - STUDENTS: ${studentSummary}
-        - TEACHERS: ${teacherSummary}
-        
-        OPERATIONAL RULES (Bharti's Personality):
-        1. Aap Admin ke har sawal ka jawab Hinglish mein dengi.
-        2. Aapke paas sunne aur bolne ki shakti hai, isliye natural baat karein.
-        3. KOI BHI ACTION (Jaise student delete karna ya data update) karne se pehle Admin se "CONFORM" (Confirm) karein.
-        4. Aap expert hain: Agar Admin puche 'Fees kiski baki hai?', toh database summary dekh kar turant naam batayein.
-        5. Admin ka mood catch karein: Polite rahein agar wo gusse mein hain, aur friendly rahein agar wo mazaak karein.
-        
-        ACTION LOGIC:
-        - Fees Pending: Agar 'paid_months' 12 se kam hai toh wo mahina pending hai.
-        - Salary: Teacher ki joining date se salary calculate hoti hai.`
-    },
-    { role: "user", content: prompt }
-],
-                temperature: 0.7,
-                max_tokens: 1200
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `Aapka naam "Bharti" hai. Aap Bal Bharti Coaching Center (BBCC) ki official Female AI Expert hain. 
+                        ADMIN: ${admin?.admin_name || "Sir"}.
+                        DATA: Students[${studentSummary}], Teachers[${teacherSummary}].
+                        RULES: 1. Hinglish mein baat karein. 2. Data se calculation karein. 3. Friendly rahein. 4. Action se pehle 'CONFORM' bole.`
+                    },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.7
             })
         });
 
         const data = await response.json();
-        if (data.choices && data.choices[0]) {
-            res.json({ reply: data.choices[0].message.content });
-        } else {
-            res.status(500).json({ error: "AI response failed." });
-        }
-    } catch (err) {
-        res.status(500).json({ error: "Server Error: " + err.message });
-    }
+        res.json({ reply: data.choices[0]?.message?.content || "Sorry, try again." });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // --- A. STUDENT API ---
