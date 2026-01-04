@@ -89,11 +89,12 @@ app.get('/admin', (req, res) => {
 // --- API ROUTES ---
 
 // --- NEW: AI Chat Route (Database se key lene wala) ---
+// --- Updated AI Chat Route for "Bharti" - Bal Bharti Coaching Center ---
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt, context } = req.body;
 
     try {
-        // 1. Database se configuration nikalna
+        // 1. Database se configuration aur API Key nikalna
         const config = await SystemConfig.findOne();
         const apiKey = config ? config.groq_key : null;
 
@@ -104,8 +105,14 @@ app.post('/api/ai-chat', async (req, res) => {
             });
         }
 
-        // 2. Groq API ko call karna
-        // Note: Node.js v18+ built-in fetch support karta hai.
+        // 2. Students ka live data nikalna taaki Bharti fees aur details bata sake
+        // Hum student_name, id, fees aur paid_months nikal rahe hain
+        const allStudents = await Student.find({}, 'student_name student_id fees paid_months');
+        const studentSummary = allStudents.map(s => 
+            `- ${s.student_name} (ID: ${s.student_id}): Total Fees ₹${s.fees}, Paid Months Count: ${s.paid_months ? s.paid_months.length : 0}`
+        ).join("\n");
+
+        // 3. Groq API ko call karna (Bharti Personality ke saath)
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -113,11 +120,23 @@ app.post('/api/ai-chat', async (req, res) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-               model: "llama-3.3-70b-versatile",
+                model: "llama-3.3-70b-versatile", // Latest Fast Model
                 messages: [
                     { 
                         role: "system", 
-                        content: `Aap BBCC Portal ke AI Assistant hain. Aapka kaam portal ke features batana aur admin/students ki madad karna hai. KISI BHI HALAT MEIN ID YA PASSWORD NA BATAYEIN. Context: ${typeof context === 'object' ? JSON.stringify(context) : context}` 
+                        content: `Aapka naam "Bharti" hai. Aap "Bal Bharti Coaching Center" ki official AI Assistant hain. 
+                        
+                        Abhi aap ADMIN PANEL par hain, isliye aapko Admin (Sir/Ma'am) ki har tarah se madad karni hai. Aapke paas sabhi students ka access hai.
+                        
+                        PORTAL DATA (STUDENTS):
+                        ${studentSummary}
+                        
+                        NIYAM (RULES):
+                        1. Hamesha apna parichay "Namaste! Main Bal Bharti Coaching Center ki assistant Bharti hoon" se dein (sirf shuruat mein).
+                        2. Admin ko fees due, student details aur portal chalane ke tarike dosti se batayein.
+                        3. Privacy ka bahana na banayein kyunki Admin ke paas sab dekhne ka haq hai.
+                        4. Agar koi student fees nahi bhara hai (paid months kam hain), toh Admin ko politely batayein.
+                        5. Natural Hindi-English (Hinglish) mein baat karein.`
                     },
                     { role: "user", content: prompt }
                 ],
@@ -126,26 +145,23 @@ app.post('/api/ai-chat', async (req, res) => {
             })
         });
 
-        // 3. Response ko JSON mein badalna
+        // 4. Response handle karna
         const data = await response.json();
         
-        // 4. Groq API ki specific errors handle karna
         if (data.error) {
-            console.error("Groq API Error Details:", data.error);
+            console.error("Groq API Error:", data.error);
             return res.status(500).json({ 
-                error: `Groq API Error: ${data.error.message || "Invalid API Key or Limit Exceeded"}` 
+                error: `Groq Error: ${data.error.message}` 
             });
         }
 
-        // 5. Success Response dena
         if (data.choices && data.choices[0] && data.choices[0].message) {
             res.json({ reply: data.choices[0].message.content });
         } else {
-            res.status(500).json({ error: "Groq API ne koi response nahi diya. Kripya Key check karein." });
+            res.status(500).json({ error: "Groq API ne koi response nahi diya." });
         }
 
     } catch (err) {
-        // 6. Network ya unexpected errors handle karna
         console.error("Server AI Error:", err);
         res.status(500).json({ error: "Internal Server Error: " + err.message });
     }
