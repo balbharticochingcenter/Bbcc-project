@@ -1208,3 +1208,56 @@ function bhartiListen() {
     recognition.onend = () => micBtn.classList.remove('active');
     recognition.start();
 }
+const launcher = document.getElementById('bharti-launcher');
+
+let isDragging = false;
+let offsetX, offsetY;
+
+// --- Mouse / Touch Start ---
+const startDrag = (e) => {
+    isDragging = true;
+    launcher.style.cursor = 'grabbing';
+    launcher.style.zIndex = "10005"; // Drag karte waqt aur upar aa jaye
+
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+    offsetX = clientX - launcher.getBoundingClientRect().left;
+    offsetY = clientY - launcher.getBoundingClientRect().top;
+};
+
+// --- Moving Logic ---
+const dragging = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+    // Nayi position calculate karna
+    let x = clientX - offsetX;
+    let y = clientY - offsetY;
+
+    // Screen se bahar na jaye iske liye limits
+    launcher.style.left = `${x}px`;
+    launcher.style.top = `${y}px`;
+    launcher.style.bottom = 'auto'; // Bottom hatana zaroori hai move ke liye
+    launcher.style.right = 'auto';
+};
+
+// --- Stop Dragging ---
+const stopDrag = () => {
+    isDragging = false;
+    launcher.style.cursor = 'pointer';
+    launcher.style.zIndex = "10001"; // Wapas normal z-index par
+};
+
+// Events Listeners
+launcher.addEventListener('mousedown', startDrag);
+launcher.addEventListener('touchstart', startDrag);
+
+document.addEventListener('mousemove', dragging);
+document.addEventListener('touchmove', dragging);
+
+document.addEventListener('mouseup', stopDrag);
+document.addEventListener('touchend', stopDrag);
