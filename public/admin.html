@@ -555,5 +555,36 @@
     <p style="margin-top: 10px; font-size: 12px; opacity: 0.6;">&copy; 2024 BBCC Portal | Designed for Excellence</p>
 </footer>
     <script src="adminscript.js"></script>
+
+    <div id="bharti-ai-container">
+    <div id="bharti-launcher" onclick="toggleChat()">
+        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="Bharti AI">
+        <span class="pulse"></span>
+    </div>
+
+    <div id="bharti-chat-window" class="hidden">
+        <div class="chat-header">
+            <div class="ai-info">
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="AI">
+                <div>
+                    <strong>Bharti AI</strong>
+                    <small>Online | Expert</small>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="close-chat">&times;</button>
+        </div>
+        
+        <div id="chat-messages" class="chat-messages">
+            <div class="msg ai">Namaste! Main Bharti hoon. Main aapki kaise madad kar sakti hoon?</div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Kuch puchiye...">
+            <button id="mic-btn" onclick="startListening()"><i class="fas fa-microphone"></i></button>
+            <button id="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+    
 </body>
 </html>
