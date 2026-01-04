@@ -91,15 +91,21 @@ app.get('/admin', (req, res) => {
 // --- NEW: AI Chat Route (Database se key lene wala) ---
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt, context } = req.body;
+
     try {
-        // Database se config nikalna
+        // 1. Database se configuration nikalna
         const config = await SystemConfig.findOne();
         const apiKey = config ? config.groq_key : null;
 
-        if (!apiKey) {
-            return res.status(400).json({ error: "API Key database mein nahi mili! Admin panel se key save karein." });
+        // API Key check
+        if (!apiKey || apiKey.trim() === "") {
+            return res.status(400).json({ 
+                error: "API Key database mein nahi mili! Kripya Admin Panel > System Settings mein Groq Key save karein." 
+            });
         }
 
+        // 2. Groq API ko call karna
+        // Note: Node.js v18+ built-in fetch support karta hai.
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -111,24 +117,40 @@ app.post('/api/ai-chat', async (req, res) => {
                 messages: [
                     { 
                         role: "system", 
-                        content: `Aap BBCC Portal ke AI Assistant hain. Aapka kaam portal ke features batana aur admin/students ki madad karna hai. KISI BHI HALAT MEIN ID YA PASSWORD NA BATAYEIN. Context: ${context}` 
+                        content: `Aap BBCC Portal ke AI Assistant hain. Aapka kaam portal ke features batana aur admin/students ki madad karna hai. KISI BHI HALAT MEIN ID YA PASSWORD NA BATAYEIN. Context: ${typeof context === 'object' ? JSON.stringify(context) : context}` 
                     },
                     { role: "user", content: prompt }
-                ]
+                ],
+                temperature: 0.7,
+                max_tokens: 1024
             })
         });
 
+        // 3. Response ko JSON mein badalna
         const data = await response.json();
-        if (data.choices && data.choices[0]) {
+        
+        // 4. Groq API ki specific errors handle karna
+        if (data.error) {
+            console.error("Groq API Error Details:", data.error);
+            return res.status(500).json({ 
+                error: `Groq API Error: ${data.error.message || "Invalid API Key or Limit Exceeded"}` 
+            });
+        }
+
+        // 5. Success Response dena
+        if (data.choices && data.choices[0] && data.choices[0].message) {
             res.json({ reply: data.choices[0].message.content });
         } else {
-            res.status(500).json({ error: "Groq API error or Invalid Key" });
+            res.status(500).json({ error: "Groq API ne koi response nahi diya. Kripya Key check karein." });
         }
+
     } catch (err) {
-        res.status(500).json({ error: "AI Error: " + err.message });
+        // 6. Network ya unexpected errors handle karna
+        console.error("Server AI Error:", err);
+        res.status(500).json({ error: "Internal Server Error: " + err.message });
     }
 });
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
     try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
