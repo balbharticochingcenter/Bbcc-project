@@ -1180,17 +1180,18 @@ function showMsg(t, s) {
     c.scrollTop = c.scrollHeight;
 }
 
-// 4. Main Send Function (Fixed API Logic)
+// --- 1. SMART SEND FUNCTION (Fixed Logic + NLP AI) ---
 async function userSend() {
     let input = document.getElementById('chat-input');
     let val = input.value.trim();
     if (!val) return;
 
+    // User ka message screen par dikhayein
     showMsg(val, 'user');
     input.value = "";
     let lowVal = val.toLowerCase();
 
-    // A. Brain Check
+    // STEP A: Brain Check (Portal ke fixed features ke liye)
     let foundKey = null;
     for (let key in aiBrain) {
         if (aiBrain[key].keywords.some(k => lowVal.includes(k))) {
@@ -1200,59 +1201,67 @@ async function userSend() {
     }
 
     if (foundKey) {
+        // Agar keyword mil gaya toh fixed steps dikhayein
         confirmTopic(foundKey);
     } else {
-        // B. Groq AI Integration
+        // STEP B: Groq AI Integration (Baaki sab sawaalo ke liye)
+        
+        // Typing indicator dikhayein
+        let content = document.getElementById('chat-content');
+        let typingDiv = document.createElement('div');
+        typingDiv.id = "typing-status";
+        typingDiv.className = "bot-msg";
+        typingDiv.innerHTML = "<i class='fas fa-robot'></i> सोच रही हूँ...";
+        content.appendChild(typingDiv);
+        content.scrollTop = content.scrollHeight;
+
         try {
             const res = await fetch('/api/ai-chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ prompt: val })
+                body: JSON.stringify({ 
+                    prompt: val,
+                    context: "Aap BBCC coaching portal ke AI assistant hain. User admin hai. Use dosti se aur natural hindi/english mein jawab dein. Portal features: Student Management, Teacher Salaries, Result Making, and Image Tools."
+                })
             });
+            
             const data = await res.json();
             
-            // Auto Group Opening Logic
-            if(lowVal.includes("student") || lowVal.includes("छात्र")) openGrp('student');
-            if(lowVal.includes("teacher") || lowVal.includes("शिक्षक")) openGrp('teacher');
+            // Typing status hatayein
+            const status = document.getElementById('typing-status');
+            if(status) status.remove();
 
-            botResponse(data.reply || "माफ़ कीजिये, मैं समझ नहीं पाई।", true);
+            if (data.reply) {
+                // AI ka reply dikhayein aur voice sunayein
+                showMsg(data.reply, 'ai');
+                talk(data.reply);
+                
+                // Smart UI Action: Content ke hisaab se menu auto-kholna
+                if(lowVal.includes("student") || lowVal.includes("छात्र")) openGrp('student');
+                if(lowVal.includes("teacher") || lowVal.includes("शिक्षक")) openGrp('teacher');
+                if(lowVal.includes("system") || lowVal.includes("setting")) openGrp('system');
+            } else {
+                botResponse("माफ़ कीजिये, अभी मेरे सर्वर में कुछ दिक्कत है।");
+            }
         } catch (err) {
-            botResponse("सर्वर से संपर्क नहीं हो पा raha है।");
+            if(document.getElementById('typing-status')) document.getElementById('typing-status').remove();
+            botResponse("सर्वर कनेक्ट नहीं हो रहा। इंटरनेट चेक करें।");
         }
     }
 }
 
-// 5. Toggle Chat (Final Fix)
-async function toggleChat() {
-    let b = document.getElementById('chat-box');
-    let isOpening = b.style.display !== 'flex';
-    b.style.display = isOpening ? 'flex' : 'none';
-    
-    if(isOpening) {
-        // Pehle empty welcome message na dikhe, isliye loading state de sakte hain
-        try {
-            const res = await fetch('/api/get-settings');
-            const settings = await res.json();
-            let adminName = settings.admin_name || "एडमिन";
-            
-            let welcomeMsg = `नमस्ते ${adminName}, मैं आपकी क्या मदद कर सकती हूँ? कृपया फोटो अपलोड से पहले कंप्रेस जरूर करें।`;
-            botResponse(welcomeMsg);
-        } catch (err) {
-            botResponse("नमस्ते एडमिन, मैं आपकी क्या मदद कर सकती हूँ?");
-        }
-    }
-}
-
-// Confirmation & Helper Functions
+// --- 2. CONFIRMATION SYSTEM ---
 function confirmTopic(key) {
     botResponse(aiBrain[key].ask);
     setTimeout(() => {
         let area = document.getElementById('questions-list');
         area.innerHTML = `
-            <button class="q-btn" style="background:#27ae60; color:white;" onclick="finalAnswer('${key}')">हाँ, यही बताइए</button>
-            <button class="q-btn" onclick="resetMenu()">नहीं, कुछ और</button>
+            <div style="display:flex; gap:5px; margin-top:5px;">
+                <button class="q-btn" style="background:#27ae60; color:white; flex:1;" onclick="finalAnswer('${key}')">हाँ, यही</button>
+                <button class="q-btn" style="flex:1;" onclick="resetMenu()">कुछ और</button>
+            </div>
         `;
-    }, 1500);
+    }, 1000);
 }
 
 function finalAnswer(key) {
@@ -1260,6 +1269,7 @@ function finalAnswer(key) {
     resetMenu();
 }
 
+// --- 3. UI HELPERS ---
 function resetMenu() {
     document.getElementById('questions-list').innerHTML = `
         <button class="q-btn" onclick="openGrp('system')">⚙️ System Control</button>
@@ -1275,10 +1285,11 @@ function openGrp(g) {
         "student": ["student_reg", "student_fees"]
     };
     let l = document.getElementById('questions-list');
-    l.innerHTML = `<b>${g.toUpperCase()} जानकारी</b>`;
+    l.innerHTML = `<b style="font-size:12px; color:#6c5ce7;">${g.toUpperCase()} HELP:</b>`;
     groups[g].forEach(key => {
         if(aiBrain[key]) {
-            l.innerHTML += `<button class="q-btn" onclick="confirmTopic('${key}')">${aiBrain[key].ask.replace("क्या आप ", "").replace(" चाहते हैं?", "")}</button>`;
+            let label = aiBrain[key].ask.replace("क्या आप ", "").replace(" चाहते हैं?", "");
+            l.innerHTML += `<button class="q-btn" onclick="confirmTopic('${key}')">${label}</button>`;
         }
     });
 }
