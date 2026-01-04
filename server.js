@@ -90,34 +90,33 @@ app.post('/api/ai-chat', async (req, res) => {
 
         if (!apiKey) return res.status(400).json({ reply: "API Key missing hai, please settings mein check karein." });
 
-        // Database se context fetch karna
+        // --- PURANA CODE COMMENTED (Duplicate declaration fix) ---
+        /*
         const [students, teachers, admin] = await Promise.all([
             mongoose.model('Student').find().limit(15).select('student_name student_class student_id'),
             mongoose.model('Teacher').find().limit(10).select('teacher_name teacher_id'),
+            mongoose.model('AdminProfile').findOne({})
+        ]);
+        */
+
+        // --- NAYA MERGED DATA FETCH (Isme sliders aur settings bhi hain) ---
+        const [students, teachers, sliders, settings, admin] = await Promise.all([
+            mongoose.model('Student').find().limit(20).select('student_name student_id student_class'),
+            mongoose.model('Teacher').find().limit(10).select('teacher_name teacher_id'),
+            mongoose.model('SliderPhoto').find().limit(5),
+            mongoose.model('SystemConfig').findOne({}),
             mongoose.model('AdminProfile').findOne({})
         ]);
 
         const studentSummary = students.map(s => `${s.student_name}(ID:${s.student_id})`).join(", ");
         const teacherSummary = teachers.map(t => `${t.teacher_name}(ID:${t.teacher_id})`).join(", ");
 
-        // Check if the user is trying to perform an action (Delete/Update)
+        // Action detection logic
         const actionKeywords = ['delete', 'remove', 'update', 'change', 'hatao', 'badlo', 'mitao'];
         const isActionRequest = actionKeywords.some(word => prompt.toLowerCase().includes(word));
 
-       // --- DATABASE JANKARI FETCH KARNA (Instruction ke liye) ---
-const [students, teachers, sliders, settings, admin] = await Promise.all([
-    mongoose.model('Student').find().limit(20).select('student_name student_id student_class'),
-    mongoose.model('Teacher').find().limit(10).select('teacher_name teacher_id'),
-    mongoose.model('SliderPhoto').find().limit(5),
-    mongoose.model('SystemConfig').findOne({}),
-    mongoose.model('AdminProfile').findOne({})
-]);
-
-const studentSummary = students.map(s => `${s.student_name}(ID:${s.student_id})`).join(", ");
-const teacherSummary = teachers.map(t => `${t.teacher_name}(ID:${t.teacher_id})`).join(", ");
-
-// --- MERGED BHARTI SYSTEM INSTRUCTION ---
-let systemInstruction = `
+        // --- MERGED BHARTI SYSTEM INSTRUCTION ---
+        let systemInstruction = `
 Aap Bharti ho, Bal Bharti Coaching Center ki smart Assistant aur Expert Manager. 
 Aapko Admin Dashboard ke sabhi features aur Database ki poori jankari hai.
 
@@ -148,12 +147,11 @@ BHARTI KE KADAK NIYAM (STRICT RULES):
 Abhi ka context: Admin ${admin?.admin_name} baat kar rahe hain.
 `;
 
-
         if (isActionRequest) {
-            systemInstruction += ` 3. User shayad kuch delete ya update karna chahta hai. Aapko admin se kehna hai: "Theek hai, par kya aap confirm hain? (Yes/No)". Bina confirmation ke action suggest na karein.`;
+            systemInstruction += `\n3. User shayad kuch delete ya update karna chahta hai. Aapko admin se kehna hai: "Theek hai, par kya aap confirm hain? (Yes/No)". Bina confirmation ke action suggest na karein.`;
         }
 
-        // --- Model Fallback Logic (Trying multiple models if one fails) ---
+        // --- Model Fallback Logic ---
         let aiResponse = null;
         let lastError = null;
 
@@ -177,10 +175,10 @@ Abhi ka context: Admin ${admin?.admin_name} baat kar rahe hain.
 
                 if (data.choices && data.choices[0]) {
                     aiResponse = data.choices[0].message.content;
-                    break; // Success! Loop se bahar nikal jao
+                    break; 
                 } else if (data.error && data.error.code === 'rate_limit_exceeded') {
                     console.log(`Model ${modelName} limit reached, switching...`);
-                    continue; // Agle model par jao
+                    continue; 
                 }
             } catch (err) {
                 lastError = err;
