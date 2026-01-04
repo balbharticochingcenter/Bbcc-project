@@ -556,35 +556,32 @@
 </footer>
     <script src="adminscript.js"></script>
 
-    <div id="bharti-ai-container">
-    <div id="bharti-launcher" onclick="toggleChat()">
-        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="Bharti AI">
-        <span class="pulse"></span>
-    </div>
-
-    <div id="bharti-chat-window" class="hidden">
-        <div class="chat-header">
-            <div class="ai-info">
-                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="AI">
-                <div>
-                    <strong>Bharti AI</strong>
-                    <small>Online | Expert</small>
-                </div>
+ <div id="bharti-ai-widget">
+    <div id="bharti-chat-window" class="bharti-hidden">
+        <div class="bharti-header">
+            <div class="bharti-avatar-box">
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="Bharti">
+                <div class="bharti-status"></div>
             </div>
-            <button onclick="toggleChat()" class="close-chat">&times;</button>
+            <div class="bharti-info">
+                <strong>Bharti AI</strong>
+                <span>Online Expert</span>
+            </div>
+            <button onclick="toggleBhartiChat()" class="bharti-close">&times;</button>
         </div>
-        
-        <div id="chat-messages" class="chat-messages">
-            <div class="msg ai">Namaste! Main Bharti hoon. Main aapki kaise madad kar sakti hoon?</div>
+        <div id="bharti-messages" class="bharti-body">
+            <div class="bharti-msg ai">Namaste! Main Bharti hoon. BBCC Portal mein aapka swagat hai. Main aapki kaise madad kar sakti hoon?</div>
         </div>
-
-        <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="Kuch puchiye...">
-            <button id="mic-btn" onclick="startListening()"><i class="fas fa-microphone"></i></button>
-            <button id="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <div class="bharti-footer">
+            <input type="text" id="bharti-input" placeholder="Yahan likhein..." onkeypress="if(event.key==='Enter') sendBhartiMessage()">
+            <button id="bharti-mic" onclick="bhartiListen()"><i class="fas fa-microphone"></i></button>
+            <button id="bharti-send" onclick="sendBhartiMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
+    </div>
+    <div id="bharti-launcher" onclick="toggleBhartiChat()">
+        <div class="bharti-pulse"></div>
+        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140037.png" alt="AI">
     </div>
 </div>
-    
 </body>
 </html>
