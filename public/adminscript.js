@@ -1144,40 +1144,34 @@ const aiBrain = {
 };
 
 // --- Updated Bot Interaction Logic ---
-function userSend() {
-    let input = document.getElementById('chat-input');
-    let val = input.value.trim().toLowerCase();
-    if (!val) return;
-
-    showMsg(input.value, 'user');
-    input.value = "";
-
-    let foundKey = null;
-    for (let key in aiBrain) {
-        if (aiBrain[key].keywords.some(k => val.includes(k))) {
-            foundKey = key;
-            break;
-        }
-    }
-
-    if (foundKey) {
-        confirmTopic(foundKey);
-    } else {
-        // अगर कुछ समझ न आए तो डेवलपर का विकल्प दें
-        botResponse("मुझे इसके बारे में जानकारी नहीं है। क्या आप डेवलपर से मदद लेना चाहते हैं?");
-        setTimeout(() => {
-            let area = document.getElementById('questions-list');
-            area.innerHTML = `<button class="q-btn" onclick="confirmTopic('dev_help')">📞 डेवलपर से बात करें</button>
-                             <button class="q-btn" onclick="resetMenu()">❌ नहीं, वापस जाएं</button>`;
-        }, 1500);
-    }
+// --- 1. Voice to Text (Bolne ke liye) ---
+function startVoice() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'hi-IN';
+    recognition.onresult = (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('chat-input').value = text;
+        userSend(); // Turant send karein
+    };
+    recognition.start();
 }
 
-// 3. चैट में // 1. स्मार्ट रिस्पांस फंक्शन (टाइपिंग एनीमेशन के साथ)
-function botResponse(text) {
+// --- 2. Message Display Helper ---
+function showMsg(t, s) {
+    let c = document.getElementById('chat-content');
+    let d = document.createElement('div');
+    d.className = s === 'bot' ? 'bot-msg' : 'user-msg';
+    // AI message ke liye alag class agar styling karni ho
+    if(s === 'ai') d.className = 'ai-msg'; 
+    d.innerText = t;
+    c.appendChild(d);
+    c.scrollTop = c.scrollHeight;
+}
+
+// --- 3. Smart Bot Response (Typing Animation + Voice Output) ---
+function botResponse(text, isAI = false) {
     let content = document.getElementById('chat-content');
     
-    // टाइपिंग इंडिकेटर बनाएँ
     let typingDiv = document.createElement('div');
     typingDiv.id = "typing-status";
     typingDiv.className = "bot-msg";
@@ -1188,28 +1182,21 @@ function botResponse(text) {
     content.appendChild(typingDiv);
     content.scrollTop = content.scrollHeight;
 
-    // 1.2 सेकंड का डिले (Human-like feeling के लिए)
     setTimeout(() => {
         let status = document.getElementById('typing-status');
-        if(status) status.remove(); // टाइपिंग टेक्स्ट हटाएँ
+        if(status) status.remove();
         
-        showMsg(text, 'bot');
-        talk(text);
+        showMsg(text, isAI ? 'ai' : 'bot');
+        
+        // Voice Output (Text-to-Speech)
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'hi-IN';
+        window.speechSynthesis.speak(utterance);
     }, 1200);
 }
 
-// 2. मैसेज डिस्प्ले करना
-function showMsg(t, s) {
-    let c = document.getElementById('chat-content');
-    let d = document.createElement('div');
-    d.className = s === 'bot' ? 'bot-msg' : 'user-msg';
-    d.innerText = t;
-    c.appendChild(d);
-    c.scrollTop = c.scrollHeight;
-}
-
-// 3. टाइपिंग सर्च लॉजिक (Updated with botResponse)
-function userSend() {
+// --- 4. Main Send Function (Updated with Groq AI integration) ---
+async function userSend() {
     let input = document.getElementById('chat-input');
     let val = input.value.trim().toLowerCase();
     if (!val) return;
@@ -1217,6 +1204,7 @@ function userSend() {
     showMsg(input.value, 'user');
     input.value = "";
 
+    // A. Pehle existing "aiBrain" logic check karein
     let foundKey = null;
     for (let key in aiBrain) {
         if (aiBrain[key].keywords.some(k => val.includes(k))) {
@@ -1226,46 +1214,68 @@ function userSend() {
     }
 
     if (foundKey) {
+        // Purana manual logic
         confirmTopic(foundKey);
     } else {
-        let error = "माफ़ कीजिये, मैं समझ नहीं पाई। क्या आप आईडी, फीस या फोटो के बारे में पूछना चाहते हैं? या डेवलपर को कॉल करें: " + devCall;
-        // यहाँ भी टाइपिंग एनीमेशन का उपयोग करें
-        setTimeout(() => { botResponse(error); }, 400);
+        // B. Agar manual keywords nahi mile, toh Groq AI se puchein
+        try {
+            const res = await fetch('/api/ai-chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    prompt: val, 
+                    context: "Admin panel features: Teacher registration, Student management, Fees tracking, System settings." 
+                })
+            });
+            const data = await res.json();
+            
+            // AI Assistant Action Logic (Auto Open Groups)
+            if(val.includes("student") || val.includes("छात्र")) {
+                setTimeout(() => { openGrp('student'); }, 1500);
+            }
+            if(val.includes("teacher") || val.includes("शिक्षक")) {
+                setTimeout(() => { openGrp('teacher'); }, 1500);
+            }
+
+            // AI ka reply dikhayein
+            botResponse(data.reply || "माफ़ कीजिये, मैं अभी जवाब नहीं दे पा रही हूँ।", true);
+
+        } catch (err) {
+            botResponse("सर्वर से संपर्क नहीं हो पा रहा है। कृपया इंटरनेट चेक करें।");
+        }
     }
 }
 
-// 4. कन्फर्मेशन सिस्टम (Updated with botResponse)
+// --- 5. Confirmation System ---
 function confirmTopic(key) {
     let item = aiBrain[key];
-    // पहले बटन एरिया को साफ करें ताकि यूजर दोबारा क्लिक न करे
     document.getElementById('questions-list').innerHTML = "सोच रही हूँ...";
     
     setTimeout(() => {
-        botResponse(item.ask); // टाइपिंग के साथ सवाल पूछेगा
+        botResponse(item.ask); 
         
-        // जवाब देने के बाद 'हाँ/नहीं' के बटन दिखाएँ
         setTimeout(() => {
             let area = document.getElementById('questions-list');
             area.innerHTML = `
                 <button class="q-btn" style="background:#27ae60; color:white; border:none;" onclick="finalAnswer('${key}')">हाँ, यही बताइए</button>
                 <button class="q-btn" onclick="resetMenu()">नहीं, कुछ और</button>
             `;
-        }, 1300); // botResponse के खत्म होने का इंतज़ार
+        }, 1300);
     }, 300);
 }
 
-// 5. फाइनल जवाब - Step-by-Step (Updated with botResponse)
+// --- 6. Final Answer Step-by-Step ---
 function finalAnswer(key) {
     let steps = aiBrain[key].steps;
     showMsg("हाँ, बताइए कैसे होगा?", 'user');
     
     setTimeout(() => {
-        botResponse(steps); // टाइपिंग के साथ पूरा तरीका बताएगा
+        botResponse(steps); 
         resetMenu();
     }, 500);
 }
 
-// 6. मेनू रिसेट करना
+// --- 7. Menu Reset ---
 function resetMenu() {
     document.getElementById('questions-list').innerHTML = `
         <button class="q-btn" onclick="openGrp('system')">⚙️ System Control</button>
@@ -1275,7 +1285,7 @@ function resetMenu() {
     `;
 }
 
-// 7. कैटेगरी ग्रुप्स
+// --- 8. Category Groups ---
 function openGrp(g) {
     const groups = {
         "system": ["admin_id", "password", "coaching_name"],
@@ -1290,18 +1300,32 @@ function openGrp(g) {
     });
 }
 
-// 8. चैट टॉगल (Open/Close)
-function toggleChat() {
+// --- 9. Chat Toggle (Admin Name fetch karne ke saath) ---
+async function toggleChat() {
     let b = document.getElementById('chat-box');
     let isOpening = b.style.display !== 'flex';
     b.style.display = isOpening ? 'flex' : 'none';
     
     if(isOpening) {
-        // शुरुआत में भी टाइपिंग अहसास के साथ स्वागत
-        botResponse("नमस्ते एडमिन, मैं आपकी क्या मदद कर सकती हूँ? कृपया फोटो अपलोड से पहले कंप्रेस जरूर करें।");
+        try {
+            // Database se settings mangwayein jisme admin_name hai
+            const res = await fetch('/api/get-settings');
+            const settings = await res.json();
+            
+            // Agar admin_name milta hai toh wo use karein, nahi toh sirf 'एडमिन'
+            let adminName = settings.admin_name || "एडमिन";
+            
+            let welcomeMsg = `नमस्ते ${adminName}, मैं आपकी क्या मदद कर सकती हूँ? कृपया फोटो अपलोड से पहले कंप्रेस जरूर करें।`;
+            
+            // Bot response function ko call karein (Typing + Voice logic iske andar pehle se hai)
+            botResponse(welcomeMsg);
+            
+        } catch (err) {
+            console.error("Error fetching admin name:", err);
+            botResponse("नमस्ते एडमिन, मैं आपकी क्या मदद कर सकती हूँ?");
+        }
     }
 }
-
 
 const groq_key = document.getElementById('set-groq-key').value;
 // Fir isse fetch body mein bhej dein
