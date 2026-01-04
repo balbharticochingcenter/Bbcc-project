@@ -377,8 +377,8 @@ input, select {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 45px;
-    height: 45px;
+    width: 65px;
+    height: 65px;
     background: var(--user-bubble);
     border-radius: 50%;
     box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
@@ -390,7 +390,7 @@ input, select {
     z-index: 10001;
 }
 #bharti-launcher img {
-    width: 30px; 
+    width: 50px; 
 }
 #bharti-launcher:hover {
     transform: scale(1.1);
