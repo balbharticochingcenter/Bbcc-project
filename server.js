@@ -90,29 +90,43 @@ app.get('/admin', (req, res) => {
 
 // --- NEW: AI Chat Route (Database se key lene wala) ---
 // --- Updated AI Chat Route for "Bharti" - Bal Bharti Coaching Center ---
+// --- Updated AI Chat Route for "Bharti" - Comprehensive Support ---
 app.post('/api/ai-chat', async (req, res) => {
-    const { prompt, context } = req.body;
+    const { prompt } = req.body;
 
     try {
-        // 1. Database se configuration aur API Key nikalna
+        // 1. Database se API Key aur Configuration fetch karna
         const config = await SystemConfig.findOne();
         const apiKey = config ? config.groq_key : null;
 
-        // API Key check
         if (!apiKey || apiKey.trim() === "") {
             return res.status(400).json({ 
-                error: "API Key database mein nahi mili! Kripya Admin Panel > System Settings mein Groq Key save karein." 
+                error: "API Key missing! Admin Panel > System Settings mein Groq Key save karein." 
             });
         }
 
-        // 2. Students ka live data nikalna taaki Bharti fees aur details bata sake
-        // Hum student_name, id, fees aur paid_months nikal rahe hain
-        const allStudents = await Student.find({}, 'student_name student_id fees paid_months');
+        // 2. Data Fetching (Parallel fetching for speed)
+        const [allStudents, allTeachers, allClasses, adminProfile] = await Promise.all([
+            Student.find({}, 'student_name student_id fees paid_months student_class parent_name'),
+            Teacher.find({}, 'teacher_name teacher_id salary paid_months classes subjects'),
+            ClassConfig.find({}, 'class_name subjects'),
+            AdminProfile.findOne({}, 'admin_name admin_mobile')
+        ]);
+
+        // 3. Summarizing Data for AI Context
         const studentSummary = allStudents.map(s => 
-            `- ${s.student_name} (ID: ${s.student_id}): Total Fees ₹${s.fees}, Paid Months Count: ${s.paid_months ? s.paid_months.length : 0}`
+            `- ${s.student_name} (ID: ${s.student_id}): Class ${s.student_class}, Fees ₹${s.fees}, Paid Months: ${s.paid_months.length}, Parent: ${s.parent_name}`
         ).join("\n");
 
-        // 3. Groq API ko call karna (Bharti Personality ke saath)
+        const teacherSummary = allTeachers.map(t => 
+            `- ${t.teacher_name} (ID: ${t.teacher_id}): Salary ₹${t.salary}, Paid Months: ${t.paid_months.length}, Subjects: ${t.subjects.join(", ")}`
+        ).join("\n");
+
+        const classSummary = allClasses.map(c => 
+            `- Class ${c.class_name}: Subjects (${Array.from(c.subjects.keys()).join(", ")})`
+        ).join("\n");
+
+        // 4. Groq API Call
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -120,31 +134,52 @@ app.post('/api/ai-chat', async (req, res) => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile", // Latest Fast Model
+                model: "llama-3.3-70b-versatile",
                 messages: [
                     { 
                         role: "system", 
                         content: `Aapka naam "Bharti" hai. Aap "Bal Bharti Coaching Center" ki official AI Assistant hain. 
                         
-                        Abhi aap ADMIN PANEL par hain, isliye aapko Admin (Sir/Ma'am) ki har tarah se madad karni hai. Aapke paas sabhi students ka access hai.
+                        CONTEXT: Aap ADMIN PANEL par hain. Admin Name: ${adminProfile?.admin_name || "Sir/Ma'am"}.
                         
-                        PORTAL DATA (STUDENTS):
+                        --- DATA ACCESS ---
+                        STUDENTS:
                         ${studentSummary}
                         
-                        NIYAM (RULES):
-                        1. Hamesha apna parichay "Namaste! Main Bal Bharti Coaching Center ki assistant Bharti hoon" se dein (sirf shuruat mein).
-                        2. Admin ko fees due, student details aur portal chalane ke tarike dosti se batayein.
-                        3. Privacy ka bahana na banayein kyunki Admin ke paas sab dekhne ka haq hai.
-                        4. Agar koi student fees nahi bhara hai (paid months kam hain), toh Admin ko politely batayein.
-                        5. Natural Hindi-English (Hinglish) mein baat karein.`
+                        TEACHERS:
+                        ${teacherSummary}
+                        
+                        CLASSES & SUBJECTS:
+                        ${classSummary}
+                        
+                        --- RULES ---
+                        1. Intro: "Namaste! Main Bal Bharti Coaching Center ki assistant Bharti hoon." (Sirf pehli baar).
+                        2. Students: Agar koi student ki fees check karne ko kahe, toh uske 'Paid Months' dekhein. 12 mahine se kam matlab fees pending hai.
+                        3. Teachers: Unki salary payment status (Paid Months) aur subjects ki jankari dein.
+                        4. Privacy: Admin ko poora data dikhayein, kuch mat chhupayein.
+                        5. Confusion: Agar ek hi naam ke teacher aur student ho, toh dono ki details dein.
+                        6. Tone: Respectful, helpful aur Hinglish mein baat karein.`
                     },
                     { role: "user", content: prompt }
                 ],
-                temperature: 0.7,
-                max_tokens: 1024
+                temperature: 0.6,
+                max_tokens: 1200
             })
         });
 
+        const data = await response.json();
+        
+        if (data.error) {
+            return res.status(500).json({ error: "Groq API Error: " + data.error.message });
+        }
+
+        res.json({ reply: data.choices[0].message.content });
+
+    } catch (err) {
+        console.error("Bharti AI Error:", err);
+        res.status(500).json({ error: "Server Error: " + err.message });
+    }
+});
         // 4. Response handle karna
         const data = await response.json();
         
