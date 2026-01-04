@@ -22,12 +22,13 @@ mongoose.connect(MONGO_URI)
 
 // --- SCHEMAS ---
 
-// 1. Settings Schema
+// 1. Settings Schema (UPDATED: Added groq_key)
 const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({
     logo: String, title: String, sub_title: String,
     contact: String, call_no: String, gmail: String,
     facebook: String, youtube_link: String, instagram: String,
-    twitter: String, help: String, admin_name: String
+    twitter: String, help: String, admin_name: String,
+    groq_key: String // Naya field API Key ke liye
 }));
 
 // 2. Teacher Schema
@@ -37,7 +38,7 @@ const Teacher = mongoose.model('Teacher', new mongoose.Schema({
     classes: [String], subjects: [String], paid_months: { type: [Number], default: [] }
 }));
 
-// 3. Student Schema (UPDATED: Added fees_data)
+// 3. Student Schema
 const Student = mongoose.model('Student', new mongoose.Schema({
     student_name: String, student_id: { type: String, unique: true },
     pass: String, parent_name: String, mobile: String,
@@ -47,7 +48,6 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     obtained_marks: { type: String, default: "" },
     exam_date: { type: String, default: "" },
     paid_months: { type: [Number], default: [] },
-    // Naya field fees detail (Paid/Due/Status) store karne ke liye
     fees_data: { type: Map, of: Object, default: {} }
 }));
 
@@ -88,6 +88,47 @@ app.get('/admin', (req, res) => {
 
 // --- API ROUTES ---
 
+// --- NEW: AI Chat Route (Database se key lene wala) ---
+app.post('/api/ai-chat', async (req, res) => {
+    const { prompt, context } = req.body;
+    try {
+        // Database se config nikalna
+        const config = await SystemConfig.findOne();
+        const apiKey = config ? config.groq_key : null;
+
+        if (!apiKey) {
+            return res.status(400).json({ error: "API Key database mein nahi mili! Admin panel se key save karein." });
+        }
+
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama3-8b-8192",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: `Aap BBCC Portal ke AI Assistant hain. Aapka kaam portal ke features batana aur admin/students ki madad karna hai. KISI BHI HALAT MEIN ID YA PASSWORD NA BATAYEIN. Context: ${context}` 
+                    },
+                    { role: "user", content: prompt }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        if (data.choices && data.choices[0]) {
+            res.json({ reply: data.choices[0].message.content });
+        } else {
+            res.status(500).json({ error: "Groq API error or Invalid Key" });
+        }
+    } catch (err) {
+        res.status(500).json({ error: "AI Error: " + err.message });
+    }
+});
+
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
     try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
@@ -115,11 +156,9 @@ app.delete('/api/delete-student', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ✅ NEW: Route for Detailed Fees (Paid, Due, Status)
 app.post('/api/update-student-fees', async (req, res) => {
     try {
         const { student_id, month, field, value } = req.body;
-        // Example Key: fees_data.1.paid
         const updateKey = `fees_data.${month}.${field}`;
         
         await Student.findOneAndUpdate(
@@ -130,7 +169,6 @@ app.post('/api/update-student-fees', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Purana fees status route (Compatibility ke liye rakha gaya hai)
 app.post('/api/update-fees-status', async (req, res) => {
     try {
         const { student_id, month, status } = req.body;
