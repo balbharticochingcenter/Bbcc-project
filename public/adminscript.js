@@ -1356,7 +1356,7 @@ function bhartiListen() {
     if (!isListening) {
         recognition.start();
     }
-    } 
+    
 ////OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NEW BOTON STU DAS BORD  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
 document.getElementById("openStudentDashboardBtn").onclick = () => {
@@ -1364,7 +1364,7 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
     prepareDashboardFilters();
 };
 
-/--------------------------------------------------------------------------
+/////--------------------------------------------------------------------------
     function prepareDashboardFilters() {
     const clsSel = document.getElementById('dash_class');
     const yearSel = document.getElementById('dash_year');
@@ -1378,7 +1378,7 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
         yearSel.innerHTML += `<option value="${y}">${y}</option>`;
     }
 }
-/--------------------------------------------------------------------
+////--------------------------------------------------------------------
     async function loadDashboardStudents() {
     const cls = document.getElementById('dash_class').value;
     const year = document.getElementById('dash_year').value;
@@ -1417,7 +1417,7 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
         </tr>`;
     });
 }
-/--------------------------------------------------
+////--------------------------------------------------
     async function saveDashStudent(id, btn) {
     const row = btn.closest('tr');
     const inputs = row.querySelectorAll('input');
@@ -1438,7 +1438,7 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
 
     alert("Saved");
 }
-/----------------------------------------------------------------------
+////----------------------------------------------------------------------
     async function deleteDashStudent(id) {
     if(!confirm("Delete student?")) return;
     await fetch('/api/delete-student', {
@@ -1448,7 +1448,7 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
     });
     loadDashboardStudents();
 }
-/----------------------------------------------------------------------
+////----------------------------------------------------------------------
     async function deleteLoadedClass() {
     if(!confirm("DELETE FULL LOADED CLASS DATA?")) return;
 
@@ -1464,10 +1464,10 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
     alert("All deleted");
     document.getElementById('dashboardBody').innerHTML="";
 }
-/------------------------------------------------------------------
+/////------------------------------------------------------------------
     function openFeesPopup(id){
     document.getElementById("studentDataModal").style.display="block";
     loadStudentFeesOnly(id);
 }
-/--------------------------------------------------------------------
+////--------------------------------------------------------------------
     
