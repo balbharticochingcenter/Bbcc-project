@@ -1300,51 +1300,43 @@ async function sendBhartiMessage() {
 let recognition;
 let isListening = false;
 
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-
-    recognition.lang = 'hi-IN';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-        isListening = true;
-        console.log("🎤 Mic ON");
-    };
-
-    recognition.onend = () => {
-        isListening = false;
-        console.log("🎤 Mic OFF");
-    };
-
-    recognition.onerror = (e) => {
-        console.error("Mic Error:", e);
-        isListening = false;
-    };
-
-    recognition.onresult = (event) => {
-        const voiceText = event.results[0][0].transcript;
-        console.log("🎙️ Heard:", voiceText);
-
-        // Mic se aaya text input box me daal do
-        document.getElementById('bharti-input').value = voiceText;
-
-        // Auto send
-        sendBhartiMessage();
-    };
-} else {
-    alert("❌ Aapka browser mic support nahi karta");
-}
-document.getElementById('bharti-mic-btn').onclick = () => {
-    if (!recognition) {
-        alert("Mic supported nahi hai");
+function bhartiListen() {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert("Speech Recognition supported nahi hai. Chrome use karo.");
         return;
     }
 
-    if (isListening) {
-        recognition.stop();
-    } else {
+    if (!recognition) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'hi-IN';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            isListening = true;
+            console.log("🎤 Mic started");
+        };
+
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            console.log("🎙️ Bola gaya:", text);
+            document.getElementById("bharti-input").value = text;
+            sendBhartiMessage();
+        };
+
+        recognition.onerror = (e) => {
+            console.error("Mic error:", e);
+            isListening = false;
+        };
+
+        recognition.onend = () => {
+            isListening = false;
+            console.log("🎤 Mic stopped");
+        };
+    }
+
+    if (!isListening) {
         recognition.start();
     }
-};
+}
