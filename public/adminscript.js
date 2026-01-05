@@ -1401,16 +1401,21 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
             <td><img src="${s.photo}" width="40"
                 onclick="openFeesExcelPopup('${s.student_id}')"></td>
 
-            <td><input value="${s.student_name}"></td>
-            <td>${s.student_id}</td>
-            <td><input value="${s.pass}"></td>
-            <td>${s.student_class}</td>
-            <td>${s.joining_date}</td>
-            <td><input value="${s.fees}" style="width:70px;"></td>
-            <td><input type="date" value="${s.exam_date||''}"></td>
-            <td><input value="${s.total_marks||''}" style="width:60px;"></td>
-            <td><input value="${s.obtained_marks||''}" style="width:60px;"></td>
-            <td>${calculateDivision(s.obtained_marks, s.total_marks)}</td>
+           <td>
+  <input type="hidden" value="${s.student_id}">
+  ${s.student_id}
+</td>
+<td><input value="${s.student_name}"></td>
+<td><input value="${s.pass||''}"></td>
+<td>${s.student_class}</td>
+<td><input type="date" value="${s.joining_date||''}"></td>
+<td><input value="${s.fees||''}"></td>
+<td>
+  <input type="date" value="${s.exam_date||''}">
+  <button onclick="this.previousElementSibling.value=''">❌</button>
+</td>
+<td><input value="${s.total_marks||''}"></td>
+<td><input value="${s.obtained_marks||''}"></td>
 
             <td><button onclick="saveDashStudent('${s.student_id}', this)">💾</button></td>
             <td><button onclick="deleteDashStudent('${s.student_id}')">🗑</button></td>
@@ -1418,26 +1423,27 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
     });
 }
 ////--------------------------------------------------
-    async function saveDashStudent(id, btn) {
+  async function saveDashStudent(id, btn){
     const row = btn.closest('tr');
     const inputs = row.querySelectorAll('input');
 
-    await fetch('/api/update-student-data', {
+    await fetch('/api/update-student-data',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
+        body:JSON.stringify({
             student_id:id,
-            student_name:inputs[0].value,
-            pass:inputs[1].value,
-            fees:inputs[2].value,
-            exam_date:inputs[3].value,
-            total_marks:inputs[4].value,
-            obtained_marks:inputs[5].value
+            student_name:inputs[1].value,
+            pass:inputs[2].value,
+            joining_date:inputs[3].value,
+            fees:inputs[4].value,
+            exam_date:inputs[5].value || "",
+            total_marks:inputs[6].value,
+            obtained_marks:inputs[7].value
         })
     });
-
-    alert("Saved");
+    alert("Updated");
 }
+
 ////----------------------------------------------------------------------
     async function deleteDashStudent(id) {
     if(!confirm("Delete student?")) return;
@@ -1497,7 +1503,7 @@ function prepareFeesFilters(){
     const y = document.getElementById('fees_year');
     const m = document.getElementById('fees_month');
 
-    y.innerHTML = '';
+    y.innerHTML = `<option value="all">All Years</option>`;
     m.innerHTML = '<option value="">All Months</option>';
 
     const cy = new Date().getFullYear();
@@ -1522,27 +1528,40 @@ async function loadFeesExcel(){
     const body = document.getElementById('feesExcelBody');
     body.innerHTML = "";
 
-    for (let m=1; m<=12; m++) {
-        if(monthFilter && m!=monthFilter) continue;
+    const startYear = new Date(s.joining_date).getFullYear();
+    const endYear = new Date().getFullYear();
 
-        const data = s.fees_data?.[`${year}-${m}`] || {};
-        const paid = data.paid || 0;
-        const fees = Number(s.fees);
-        const due = fees - paid;
+    for(let y=startYear; y<=endYear; y++){
+        if(year!=="all" && Number(year)!==y) continue;
 
-        body.innerHTML += `
-        <tr>
-            <td>${year}-${m}</td>
-            <td>${fees}</td>
-            <td><input value="${paid}" style="width:70px"></td>
-            <td>${due}</td>
-            <td>${due<=0?"✅ Paid":"❌ Due"}</td>
-            <td>
-              <button onclick="saveMonthlyFees('${year}-${m}', this)">💾</button>
-            </td>
-        </tr>`;
+        for(let m=1; m<=12; m++){
+            if(monthFilter && m!=monthFilter) continue;
+
+            const key = `${y}-${m}`;
+            const data = s.fees_data?.[key] || {};
+            const paid = Number(data.paid || 0);
+            const fees = Number(s.fees);
+            const due = fees - paid;
+
+            body.innerHTML += `
+            <tr>
+                <td>${key}</td>
+                <td>${fees}</td>
+                <td>
+                  <input value="${paid}" 
+                         oninput="autoDue(this, ${fees})"
+                         style="width:70px">
+                </td>
+                <td class="dueCell">${due}</td>
+                <td>${due<=0?"✅ Paid":"❌ Due"}</td>
+                <td>
+                  <button onclick="saveMonthlyFees('${key}', this)">💾</button>
+                </td>
+            </tr>`;
+        }
     }
 }
+
 /////----------------------------------------------------
 async function saveMonthlyFees(key, btn){
     const paid = btn.closest('tr').querySelector('input').value;
@@ -1560,6 +1579,14 @@ async function saveMonthlyFees(key, btn){
     alert("Updated");
     loadFeesExcel();
 }
+
+////////-----------------------------------------------
+function autoDue(input, fees){
+    const paid = Number(input.value||0);
+    const due = fees - paid;
+    input.closest('tr').querySelector('.dueCell').innerText = due;
+}
+
 ///-------------------------------------------------------------------
 function callNow(num){
     window.location.href = `tel:${num}`;
