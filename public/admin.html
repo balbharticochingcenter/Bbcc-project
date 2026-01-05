@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - BBCC</title>
+    <title>admin dasbord</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
     <link rel="stylesheet" href="admin.css">
@@ -21,27 +21,7 @@
     <button onclick="logoutAdmin()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
 </header>
 <div class="dashboard">
-<div class="compressor-box" style="margin: 20px auto; max-width: 900px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #6c5ce7;">
-    <h3 style="text-align: center; color: #2d3436; margin-bottom: 15px;"><i class="fas fa-tools"></i> Image Auto-Crop & Compressor</h3>
-    
-    <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center;">
-        <input type="file" id="compInput" accept="image/*" style="border: 2px dashed #6c5ce7; padding: 10px; border-radius: 8px;">
-        
-        <select id="compType" style="padding: 12px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold;">
-            <option value="logo">AS LOGO (Square Crop)</option>
-            <option value="banner">AS BANNER (Wide Crop)</option>
-            <option value="photo">AS PHOTO (Only Compress)</option>
-        </select>
 
-        <button onclick="processImage()" style="background: #6c5ce7; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;">
-            <i class="fas fa-file-download"></i> Process & Download
-        </button>
-    </div>
-    <p id="compStatus" style="text-align: center; margin-top: 10px; font-weight: 500; color: #636e72;"></p>
-    <canvas id="compCanvas" style="display:none;"></canvas>
-</div>
-    
-    
     <div class="button-group" data-label="System Control">
         <button id="openAdminProfileBtn" class="btn-primary" style="background: #34495e;">
             <i class="fas fa-user-shield"></i> Admin Profile
@@ -59,15 +39,7 @@
     </div>
 
     <div class="button-group" data-label="Teacher Management">
-        <button id="openTeacherBtn" class="btn-primary" style="background: #e84393;">
-            <i class="fas fa-user-plus"></i> Teacher Reg
-        </button>
-        <button id="openTeacherDataBtn" class="btn-primary" style="background: #00cec9;">
-            <i class="fas fa-file-invoice-dollar"></i> Salary/Data
-        </button>
-        <button id="openUpdateBtn" class="btn-primary" style="background: #fdcb6e; color: #000;">
-            <i class="fas fa-edit"></i> Update/Delete
-        </button>
+          
     </div>
 
     <div class="button-group" data-label="Student Management">
@@ -103,125 +75,7 @@
         </div>
     </div>
 
-    <div id="teacherModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <form id="teacherForm">
-                <h3>New Teacher Registration</h3>
-                <input type="text" name="teacher_name" id="t_name" placeholder="Full Name" required>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" name="teacher_id" id="t_id" placeholder="ID" readonly style="flex:1;">
-                    <input type="text" name="pass" id="t_pass" placeholder="Password" readonly style="flex:1;">
-                </div>
-                <input type="text" name="mobile" placeholder="Mobile Number">
-                <input type="file" id="t_photo" accept="image/*">
-                <input type="number" name="salary" placeholder="Monthly Salary (Amount)">
-                <input type="date" name="joining_date">
-                <button type="submit" class="btn-update">Register Teacher</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="dataModal" class="modal">
-    <div class="modal-content" style="max-width: 1100px; width: 95%;">
-        <span class="close">&times;</span>
-        <h3 style="color: var(--primary-glow); margin-bottom: 20px;">
-            <i class="fas fa-file-invoice-dollar"></i> Teacher Salary & Records
-        </h3>
-        
-        <div id="teacherTableBody"></div> 
-    </div>
-</div>
-
-    <div id="updateModal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
-            <span class="close">&times;</span>
-            <h3>Search, Update or Delete</h3>
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <input type="text" id="search_tid" placeholder="Enter Teacher ID">
-               <button type="button" onclick="searchTeacher()" class="btn-primary" style="margin:0; background: linear-gradient(135deg, #0984e3, #00cec9); box-shadow: 0 4px 15px rgba(9, 132, 227, 0.4); border: none;">
-    <i class="fas fa-search"></i> Search
-</button>
-            </div>
-            
-            <form id="updateForm">
-                <input type="hidden" name="teacher_id" id="up_id">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <input type="text" name="teacher_name" id="up_name" placeholder="Name">
-                    <div style="grid-column: span 2; display: flex; align-items: center; gap: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 10px;">
-    <div>
-        <label style="font-size: 12px; font-weight: bold;">Current Photo:</label><br>
-        <img id="up_tview_photo" src="https://via.placeholder.com/80" style="width: 80px; height: 80px; border-radius: 5px; border: 2px solid #ddd; object-fit: cover;">
-    </div>
-    <div style="flex:1;">
-        <label style="font-size: 12px; font-weight: bold;">Update Teacher Photo:</label>
-        <input type="file" id="up_tphoto" accept="image/*" style="font-size: 12px;">
-    </div>
-</div>
-                    <input type="text" name="mobile" id="up_mobile" placeholder="Mobile">
-                    <input type="text" name="pass" id="up_pass" placeholder="Password">
-                    <input type="number" name="salary" id="up_salary" placeholder="Salary Amount">
-                </div>
-
-                <p><b>Assign Classes:</b></p>
-                <div class="checkbox-container" id="up_classes_div">
-                    <label><input type="checkbox" name="classes" value="1st"> 1st</label>
-                    <label><input type="checkbox" name="classes" value="2nd"> 2nd</label>
-                    <label><input type="checkbox" name="classes" value="3rd"> 3rd</label>
-                    <label><input type="checkbox" name="classes" value="4th"> 4th</label>
-                    <label><input type="checkbox" name="classes" value="5th"> 5th</label>
-                    <label><input type="checkbox" name="classes" value="6th"> 6th</label>
-                    <label><input type="checkbox" name="classes" value="7th"> 7th</label>
-                    <label><input type="checkbox" name="classes" value="8th"> 8th</label>
-                    <label><input type="checkbox" name="classes" value="9th"> 9th</label>
-                    <label><input type="checkbox" name="classes" value="10th"> 10th</label>
-                    <label><input type="checkbox" name="classes" value="I.A."> I.A.</label>
-                    <label><input type="checkbox" name="classes" value="I.Sc."> I.Sc.</label>
-                    <label><input type="checkbox" name="classes" value="I.Com."> I.Com.</label>
-                    <label><input type="checkbox" name="classes" value="B.A."> B.A.</label>
-                    <label><input type="checkbox" name="classes" value="B.Sc."> B.Sc.</label>
-                    <label><input type="checkbox" name="classes" value="B.Com."> B.Com.</label>
-                </div>
-
-                <p><b>Assign Subjects:</b></p>
-                <div class="checkbox-container" id="up_subjects_div">
-                    <label><input type="checkbox" name="subjects" value="Hindi"> Hindi</label>
-                    <label><input type="checkbox" name="subjects" value="English"> English</label>
-                    <label><input type="checkbox" name="subjects" value="Maths"> Maths</label>
-                    <label><input type="checkbox" name="subjects" value="Sanskrit"> Sanskrit</label>
-                    <label><input type="checkbox" name="subjects" value="Science"> Science</label>
-                    <label><input type="checkbox" name="subjects" value="Social Science"> Social Science</label>
-                    <label><input type="checkbox" name="subjects" value="Physics"> Physics</label>
-                    <label><input type="checkbox" name="subjects" value="Chemistry"> Chemistry</label>
-                    <label><input type="checkbox" name="subjects" value="Biology"> Biology</label>
-                    <label><input type="checkbox" name="subjects" value="History"> History</label>
-                    <label><input type="checkbox" name="subjects" value="Geography"> Geography</label>
-                    <label><input type="checkbox" name="subjects" value="Economics"> Economics</label>
-                    <label><input type="checkbox" name="subjects" value="Accountancy"> Accountancy</label>
-                    <label><input type="checkbox" name="subjects" value="Business Studies"> Business Studies</label>
-                    <label><input type="checkbox" name="subjects" value="Philosophy"> Philosophy</label>
-                </div>
-
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    <button type="submit" class="btn-update" style="background:#2ecc71;">Save Changes</button>
-                    <button type="button" onclick="deleteTeacher()" class="btn-update" style="background:#e74c3c;">Delete Account</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="profileModal" class="modal">
-        <div class="modal-content" style="text-align: center; max-width: 400px;">
-            <span class="close" onclick="document.getElementById('profileModal').style.display='none'">&times;</span>
-            <div id="profileData"></div>
-        </div>
-    </div>
     
-
-    
-
-
-
 <div id="classSystemModal" class="modal">
     <div class="modal-content" style="max-width: 800px; text-align: center;">
         <span class="close" onclick="closeModal('classSystemModal')">&times;</span>
