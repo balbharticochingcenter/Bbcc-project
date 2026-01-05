@@ -268,3 +268,19 @@ function compressImage(file,cb){
   };
   r.readAsDataURL(file);
 }
+// ================= MODAL CLOSE FIX =================
+document.querySelectorAll('.close').forEach(btn=>{
+  btn.onclick = () => {
+    const modal = btn.closest('.modal');
+    if(modal) modal.style.display = "none";
+  };
+});
+
+// background click se bhi close
+window.onclick = (e) => {
+  document.querySelectorAll('.modal').forEach(m=>{
+    if(e.target === m){
+      m.style.display = "none";
+    }
+  });
+};
