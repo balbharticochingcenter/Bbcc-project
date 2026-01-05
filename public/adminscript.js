@@ -420,11 +420,11 @@ document.getElementById('s_name').oninput = (e) => {
     }
 };
 
-document.getElementById("openStudentBtn").onclick = () => document.getElementById("studentModal").style.display = "block";
-document.getElementById("openStudentDataBtn").onclick = () => { 
-    document.getElementById("studentDataModal").style.display = "block"; 
+//                        document.getElementById("openStudentBtn").onclick = () => document.getElementById("studentModal").style.display = "block";
+//                               document.getElementById("openStudentDataBtn").onclick = () => { 
+  //                              document.getElementById("studentDataModal").style.display = "block"; 
     
-};
+//                                     };
 
 // // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
 // // --- UPDATED: Load Student Data with Class Filter, Photo, and Detailed Month Breakdown ---
