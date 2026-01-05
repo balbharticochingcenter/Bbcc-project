@@ -18,6 +18,8 @@ const edit_mobile = document.getElementById("edit_mobile");
 const edit_parent_mobile = document.getElementById("edit_parent_mobile");
 const edit_photo_preview = document.getElementById("edit_photo_preview");
 const edit_photo_file = document.getElementById("edit_photo_file");
+const fees_year = document.getElementById("fees_year");
+const fees_month = document.getElementById("fees_month");
 
 // ================= SECURITY =================
 (function checkAuth(){
@@ -176,7 +178,25 @@ async function deleteDashStudent(id){
 // ================= FEES =================
 let currentFeesStudent=null;
 
-function prepareFeesFilters(){ /* future safe */ }
+function prepareFeesFilters(){
+  // YEAR
+  fees_year.innerHTML = '<option value="">Select Year</option>';
+  const currentYear = new Date().getFullYear();
+  for(let y=currentYear; y>=2018; y--){
+    fees_year.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+
+  // MONTH
+  fees_month.innerHTML = '<option value="">Select Month</option>';
+  const months = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+  months.forEach((m,i)=>{
+    fees_month.innerHTML += `<option value="${i+1}">${m}</option>`;
+  });
+}
+
 
 async function openFeesExcelPopup(id){
   currentFeesStudent=id;
