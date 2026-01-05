@@ -101,6 +101,7 @@ async function loadDashboardStudents(){
     s.student_class===cls &&
     new Date(s.joining_date).getFullYear()==yr
   );
+document.getElementById("dashTotal").innerText = students.length;
 
   dashboardBody.innerHTML="";
   students.forEach(s=>{
@@ -310,8 +311,18 @@ async function openStudentEditPopup(id){
   edit_parent_mobile.value=s.parent_mobile;
 }
 
-async function updateStudentProfile(){
-  await fetch(API+'/api/update-student-profile',{
+const file = edit_photo_file.files[0];
+
+if(file){
+  compressImage(file, async imgData=>{
+    await saveStudentProfile(imgData);
+  });
+}else{
+  await saveStudentProfile(null);
+}
+
+async function saveStudentProfile(photo){
+  await fetch(API+'/api/update-student-data',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -320,13 +331,15 @@ async function updateStudentProfile(){
       student_name:edit_name.value,
       parent_name:edit_parent.value,
       mobile:edit_mobile.value,
-      parent_mobile:edit_parent_mobile.value
+      parent_mobile:edit_parent_mobile.value,
+      photo
     })
   });
 
-  alert("Student Updated");
+  alert("Student Updated Successfully ✅");
   studentEditModal.style.display="none";
 }
+
 //======================================================================
 // ================= SAVE FEES ROW =================
 async function saveFeesRow(btn){
@@ -360,4 +373,26 @@ async function saveFeesRow(btn){
   });
 
   loadFeesExcel();
+}
+function compressImage(file, callback){
+  const img = new Image();
+  const reader = new FileReader();
+
+  reader.onload = e => {
+    img.src = e.target.result;
+  };
+
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 150;
+    canvas.height = 150;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, 150, 150);
+
+    const data = canvas.toDataURL('image/jpeg', 0.3); // 👈 high compression
+    callback(data);
+  };
+
+  reader.readAsDataURL(file);
 }
