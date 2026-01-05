@@ -552,7 +552,8 @@ input, select {
 }
 
 #bharti-send {
-    color: var(--primary-color);
+     color: #6366f1;
+    font-weight: bold;
 }
 
 #bharti-mic.active {
