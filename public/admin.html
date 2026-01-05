@@ -1,141 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>admin dasbord</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
-    <link rel="stylesheet" href="admin.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBCC Admin Dashboard</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+<link rel="stylesheet" href="admin.css">
 </head>
+
 <body onload="initDashboard()">
 
-    <header class="magical-header">
-    <div class="logo-container">
-        <img id="db-logo" src="" alt="Logo" class="ring-logo">
-    </div>
-    <div class="title-container">
-        <h1 id="db-title" class="glow-text">Loading...</h1>
-        <span id="db-subtitle" class="sub-text"></span>
-    </div>
-    <button onclick="logoutAdmin()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+<header class="magical-header">
+  <div class="logo-container">
+    <img id="db-logo" class="ring-logo">
+  </div>
+  <div class="title-container">
+    <h1 id="db-title">Loading...</h1>
+    <span id="db-subtitle"></span>
+  </div>
+  <button onclick="logoutAdmin()" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </button>
 </header>
+
 <div class="dashboard">
-
-    <div class="button-group" data-label="System Control">
-        
-        
-       
-    </div>
-
-    <div class="button-group" data-label="Teacher Management">
-          
-    </div>
-
-    <div class="button-group" data-label="Student Management">
-       <button id="openStudentDashboardBtn" class="btn-primary" 
-style="background:#2ecc71; display:none;">
-    📊 Student Dashboard
-</button>
-    </div>
+  <div class="button-group" data-label="Student Management">
+    <button id="openStudentDashboardBtn"
+      class="btn-primary"
+      style="background:#2ecc71;display:none;">
+      📊 Student Dashboard
+    </button>
+  </div>
 </div>
 
+<!-- ================= STUDENT DASHBOARD ================= -->
 <div id="studentDashboardModal" class="modal">
-  <div class="modal-content" style="max-width:95%;">
-
+  <div class="modal-content" style="max-width:95%">
     <span class="close">&times;</span>
     <h3>📊 Student Dashboard (Excel View)</h3>
 
-    <!-- FILTER ROW -->
-    <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <select id="dash_class">
-            <option value="">Select Class</option>
-        </select>
-
-        <select id="dash_year">
-            <option value="">Select Year</option>
-        </select>
-
-        <button onclick="loadDashboardStudents()">Load</button>
-        <button onclick="deleteLoadedClass()">🗑 Delete Loaded Class</button>
-    </div>
-<div id="dashTotalBox" style="margin:10px;font-weight:bold;">
-  Total Students: <span id="dashTotal">0</span>
-</div>
-
-    <!-- TABLE -->
-    <div style="overflow:auto; max-height:70vh;">
-        <table border="1" width="100%" id="dashboardTable">
-            <thead>
-                <tr>
-                    <th>Photo</th>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Pass</th>
-                    <th>Class</th>
-                    <th>DOJ</th>
-                    <th>Fees</th>
-                    <th>Exam Date</th>
-                    <th>Total</th>
-                    <th>Obt</th>
-                    <th>Div</th>
-                    <th>Save</th>
-                    <th>Delete</th>
-                </tr>
-            </thead>
-            <tbody id="dashboardBody"></tbody>
-        </table>
+    <div style="display:flex;gap:10px;margin-bottom:10px;">
+      <select id="dash_class"></select>
+      <select id="dash_year"></select>
+      <button onclick="loadDashboardStudents()">Load</button>
+      <button onclick="deleteLoadedClass()">🗑 Delete Loaded Class</button>
     </div>
 
+    <div style="margin:10px;font-weight:bold;">
+      Total Students: <span id="dashTotal">0</span>
+    </div>
+
+    <div style="overflow:auto;max-height:70vh">
+      <table border="1" width="100%">
+        <thead>
+          <tr>
+            <th>Photo</th><th>ID</th><th>Name</th><th>Pass</th>
+            <th>Class</th><th>DOJ</th><th>Fees</th>
+            <th>Exam</th><th>Total</th><th>Obt</th>
+            <th>Div</th><th>Save</th><th>Delete</th>
+          </tr>
+        </thead>
+        <tbody id="dashboardBody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
+<!-- ================= FEES MODAL ================= -->
 <div id="feesExcelModal" class="modal">
-  <div class="modal-content" style="max-width:90%;">
-
-    <span class="close" onclick="closeFeesExcel()">&times;</span>
+  <div class="modal-content" style="max-width:90%">
+    <span class="close">&times;</span>
     <h3>📒 Student Monthly Fees Tracker</h3>
 
-    <!-- STUDENT BASIC INFO -->
-    <div id="feesStudentInfo" style="margin-bottom:10px;"></div>
+    <div id="feesStudentInfo"></div>
 
-    <!-- FILTER -->
-    <div style="display:flex; gap:10px; margin-bottom:10px;">
-        <select id="fees_year"></select>
-        <select id="fees_month"></select>
-        <button onclick="loadFeesExcel()">Load</button>
+    <div style="display:flex;gap:10px;margin:10px 0">
+      <select id="fees_year"></select>
+      <select id="fees_month"></select>
+      <button onclick="loadFeesExcel()">Load</button>
     </div>
 
-    <!-- TABLE -->
     <table border="1" width="100%">
-        <thead>
-            <tr>
-                <th>Month</th>
-                <th>Fees</th>
-                <th>Paid</th>
-                <th>Due</th>
-                <th>Status</th>
-                <th>Save</th>
-            </tr>
-        </thead>
-        <div style="margin-top:10px;font-weight:bold">
-  Total Paid: ₹<span id="totalPaid">0</span> |
-  Total Due: ₹<span id="totalDue">0</span>
-</div>
-
-        <tbody id="feesExcelBody"></tbody>
-        
+      <thead>
+        <tr>
+          <th>Month</th><th>Fees</th><th>Paid</th>
+          <th>Due</th><th>Status</th><th>Save</th>
+        </tr>
+      </thead>
+      <tbody id="feesExcelBody"></tbody>
     </table>
 
+    <div style="margin-top:10px;font-weight:bold">
+      Total Paid: ₹<span id="totalPaid">0</span> |
+      Total Due: ₹<span id="totalDue">0</span>
+    </div>
   </div>
 </div>
-   <div id="studentEditModal" class="modal">
-  <div class="modal-content" style="max-width:400px;">
-    <span class="close">&times;</span>
 
+<!-- ================= STUDENT EDIT ================= -->
+<div id="studentEditModal" class="modal">
+  <div class="modal-content" style="max-width:400px">
+    <span class="close">&times;</span>
     <h3>✏️ Edit Student</h3>
-<img id="edit_photo_preview" width="80" style="border-radius:50%"><br>
-<input type="file" id="edit_photo_file" accept="image/*">
+
+    <img id="edit_photo_preview" width="80" style="border-radius:50%"><br>
+    <input type="file" id="edit_photo_file" accept="image/*"><br><br>
 
     <input id="edit_id" disabled><br><br>
     <input id="edit_class" placeholder="Class"><br><br>
@@ -147,17 +118,17 @@ style="background:#2ecc71; display:none;">
     <button onclick="updateStudentProfile()">✅ Update</button>
   </div>
 </div>
- 
+
 <footer class="magical-footer">
-    <div class="social-icons">
-        <a id="foot-whatsapp" href="#"><i class="fab fa-whatsapp"></i></a>
-        <a id="foot-facebook" href="#"><i class="fab fa-facebook"></i></a>
-        <a id="foot-gmail" href="#"><i class="fas fa-envelope"></i></a>
-        <a id="foot-call" href="#"><i class="fas fa-phone-alt"></i></a>
-    </div>
-    <p id="foot-help" style="font-size: 14px; color: #a29bfe;"></p>
-    <p style="margin-top: 10px; font-size: 12px; opacity: 0.6;">&copy; 2024 BBCC Portal | Designed for Excellence</p>
+  <div class="social-icons">
+    <a id="foot-whatsapp"><i class="fab fa-whatsapp"></i></a>
+    <a id="foot-facebook"><i class="fab fa-facebook"></i></a>
+    <a id="foot-gmail"><i class="fas fa-envelope"></i></a>
+    <a id="foot-call"><i class="fas fa-phone-alt"></i></a>
+  </div>
+  <p id="foot-help"></p>
 </footer>
-    <script src="adminscript.js"></script>
+
+<script src="adminscript.js"></script>
 </body>
 </html>
