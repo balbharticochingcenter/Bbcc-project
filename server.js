@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const fetch = require('node-fetch');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -9,9 +11,7 @@ const app = express();
 
 // --- MIDDLEWARE ---
 app.use(cors());
-app.use(bodyParser.json({ limit: '20mb' })); 
-
-// Static files serve karne ke liye
+app.use(bodyParser.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- MONGODB CONNECTION ---
@@ -22,29 +22,41 @@ mongoose.connect(MONGO_URI)
     .catch(err => console.error("❌ DB Error:", err));
 
 // --- SCHEMAS ---
-
 const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({
     logo: String, title: String, sub_title: String,
     contact: String, call_no: String, gmail: String,
     facebook: String, youtube_link: String, instagram: String,
     twitter: String, help: String, admin_name: String,
-    groq_key: String 
+    groq_key: String
 }));
 
 const Teacher = mongoose.model('Teacher', new mongoose.Schema({
-    teacher_name: String, mobile: String, teacher_id: { type: String, unique: true },
-    pass: String, photo: String, salary: String, joining_date: String,
-    classes: [String], subjects: [String], paid_months: { type: [Number], default: [] }
+    teacher_name: String,
+    mobile: String,
+    teacher_id: { type: String, unique: true },
+    pass: String,
+    photo: String,
+    salary: String,
+    joining_date: String,
+    classes: [String],
+    subjects: [String],
+    paid_months: { type: [Number], default: [] }
 }));
 
 const Student = mongoose.model('Student', new mongoose.Schema({
-    student_name: String, student_id: { type: String, unique: true },
-    pass: String, parent_name: String, mobile: String,
-    parent_mobile: String, student_class: String, fees: String,
-    joining_date: String, total_marks: { type: String, default: "" },
-    photo: String, 
+    student_name: String,
+    student_id: { type: String, unique: true },
+    pass: String,
+    parent_name: String,
+    mobile: String,
+    parent_mobile: String,
+    student_class: String,
+    fees: String,
+    joining_date: String,
+    total_marks: { type: String, default: "" },
     obtained_marks: { type: String, default: "" },
     exam_date: { type: String, default: "" },
+    photo: String,
     paid_months: { type: [Number], default: [] },
     fees_data: { type: Map, of: Object, default: {} }
 }));
@@ -57,7 +69,7 @@ const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
 }));
 
 const SliderPhoto = mongoose.model('SliderPhoto', new mongoose.Schema({
-    photo: String, 
+    photo: String,
     upload_date: { type: Date, default: Date.now }
 }));
 
@@ -69,134 +81,200 @@ const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
 }));
 
 // --- HTML ROUTES ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+app.get('/', (req, res) =>
+    res.sendFile(path.join(__dirname, 'public', 'login.html'))
+);
+app.get('/admin', (req, res) =>
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'))
+);
 
-
-
-// AI Chat Models Priority List (Auto-Fallback logic ke liye)
+// --- AI CONFIG ---
 const AI_MODELS = [
-    "llama-3.1-8b-instant",        // Fast aur High Limit
-    "meta-llama/llama-4-scout-17b-16e-instruct", // High Tokens
-    "llama-3.3-70b-versatile",    // Smart but Low Limit
-    "qwen/qwen3-32b"              // Backup
+    "llama-3.1-8b-instant",
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "llama-3.3-70b-versatile",
+    "qwen/qwen3-32b"
 ];
 
+const FORBIDDEN_WORDS = ['delete', 'drop', 'remove', 'truncate'];
+
+// --- AI CHAT API ---
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt } = req.body;
+
     try {
         const config = await SystemConfig.findOne();
-        const apiKey = config ? config.groq_key : null;
+        const apiKey = config?.groq_key;
 
-        if (!apiKey) return res.status(400).json({ reply: "API Key missing hai, please settings mein check karein." });
+        if (!apiKey) {
+            return res.json({ reply: "API Key missing hai, settings check karein." });
+        }
 
-        // --- PURANA CODE COMMENTED (Duplicate declaration fix) ---
-        /*
-        const [students, teachers, admin] = await Promise.all([
-            mongoose.model('Student').find().limit(15).select('student_name student_class student_id'),
-            mongoose.model('Teacher').find().limit(10).select('teacher_name teacher_id'),
-            mongoose.model('AdminProfile').findOne({})
-        ]);
-        */
-
-        // --- NAYA MERGED DATA FETCH (Isme sliders aur settings bhi hain) ---
         const [students, teachers, sliders, settings, admin] = await Promise.all([
-            mongoose.model('Student').find().limit(20).select('student_name student_id student_class'),
-            mongoose.model('Teacher').find().limit(10).select('teacher_name teacher_id'),
-            mongoose.model('SliderPhoto').find().limit(5),
-            mongoose.model('SystemConfig').findOne({}),
-            mongoose.model('AdminProfile').findOne({})
+            Student.find().limit(20).select('student_name student_id student_class'),
+            Teacher.find().limit(10).select('teacher_name teacher_id'),
+            SliderPhoto.find().limit(5),
+            SystemConfig.findOne({}),
+            AdminProfile.findOne({})
         ]);
 
-        const studentSummary = students.map(s => `${s.student_name}(ID:${s.student_id})`).join(", ");
-        const teacherSummary = teachers.map(t => `${t.teacher_name}(ID:${t.teacher_id})`).join(", ");
+        const studentSummary = students.map(
+            s => `${s.student_name}(ID:${s.student_id})`
+        ).join(", ");
 
-        // Action detection logic
+        const teacherSummary = teachers.map(
+            t => `${t.teacher_name}(ID:${t.teacher_id})`
+        ).join(", ");
+
         const actionKeywords = ['delete', 'remove', 'update', 'change', 'hatao', 'badlo', 'mitao'];
-        const isActionRequest = actionKeywords.some(word => prompt.toLowerCase().includes(word));
+        const isActionRequest = actionKeywords.some(w =>
+            prompt.toLowerCase().includes(w)
+        );
 
-        // --- MERGED BHARTI SYSTEM INSTRUCTION ---
         let systemInstruction = `
-Aap Bharti ho, Bal Bharti Coaching Center ki smart Assistant aur Expert Manager. 
-Aapko Admin Dashboard ke sabhi features aur Database ki poori jankari hai.
+Aap Bharti ho, Bal Bharti Coaching Center ki Assistant.
+Aap ek  ADMIN ASSISTANT ki tarah kaam karti ho.
 
-DATABASE & CONTEXT:
-1. Students: Inka data 'Student' collection mein hai. List: [${studentSummary}]
-2. Teachers: Inka data 'Teacher' collection mein hai. List: [${teacherSummary}]
-3. Slider: Website ki home photos 'SliderPhoto' collection mein hain.
-4. Settings: Coaching ka naam, contact aur API keys 'SystemConfig' mein hain.
-5. Admin: Admin ka naam ${admin?.admin_name || "Santosh"} hai.
+DATABASE (MONGODB DETAILS):
 
-DASHBOARD FEATURES (Buttons):
-- Image Compressor: Photos crop aur compress karne ke liye.
-- System Settings: Coaching details/API Key badalne ke liye.
-- Slider: Home screen ki photos manage karne ke liye.
-- Management: Teacher/Student ka data, salary, aur fees ke liye.
-- Results: Class-wise marksheet update karne ke liye.
+1️⃣ Student Collection (Student):
+- student_name
+- student_id (unique)
+- pass
+- parent_name
+- mobile
+- parent_mobile
+- student_class
+- fees
+- joining_date
+- total_marks
+- obtained_marks
+- exam_date
+- photo
+- paid_months (array)
+- fees_data (month-wise fees object)
 
-BHARTI KE KADAK NIYAM (STRICT RULES):
-1. LANGUAGE: Sirf HINDI ka upyog karein. English script ya Hinglish bilkul nahi.
-2. POINT-TO-POINT: "Aur batao" ya "Kaise ho" jaise shabd na bole. Seedha jawab dein.
-3. VOICE COMMANDS (MAHATVAPOORN):
-   - Agar user kahe kisi ko UPDATE/SEARCH karna hai, toh jawab ke ant mein likhein: [UPDATE_STUDENT: ID] ya [UPDATE_TEACHER: ID].
-   - Agar user koi Modal kholne ko kahe, toh likhein: [OPEN_MODAL: modalID].
-   (Modal IDs: studentModal, teacherModal, systemModal, studentDataModal, dataModal, sliderModal, adminProfileModal, classSystemModal).
-4. ACTION CLARITY: Slider matlab website photos, Student matlab bacche. Dono ko mix na karein.
-5. CONFIRMATION: Kuch bhi badalne se pehle "Kya aap nishchit hain?" zaroor puchein.
+Current Students:
+${studentSummary}
 
-Abhi ka context: Admin ${admin?.admin_name} baat kar rahe hain.
+2️⃣ Teacher Collection (Teacher):
+- teacher_name
+- teacher_id (unique)
+- mobile
+- pass
+- photo
+- salary
+- joining_date
+- classes (array)
+- subjects (array)
+- paid_months (array)
+
+Current Teachers:
+${teacherSummary}
+
+3️⃣ AdminProfile Collection:
+- admin_name
+- admin_userid
+- admin_pass
+- admin_mobile
+
+4️⃣ SystemConfig Collection:
+- logo
+- title
+- sub_title
+- contact
+- call_no
+- gmail
+- facebook
+- youtube_link
+- instagram
+- twitter
+- help
+- admin_name
+
+
+5️⃣ SliderPhoto Collection:
+- photo
+- upload_date
+
+6️⃣ ClassConfig Collection:
+- class_name
+- banner
+- intro_video
+- subjects (subject-wise chapters)
+
+
+STRICT RULES:
+1. Sirf HINDI mein jawab dena.
+2. Seedha aur kaam ka jawab.
+3. Bina admin confirmation ke koi change suggest nahi.
+4. Modal open karne ke liye hi likhna: [OPEN_MODAL: modalID]
+5. Student aur Slider ko kabhi mix nahi karna.
 `;
 
         if (isActionRequest) {
-            systemInstruction += `\n3. User shayad kuch delete ya update karna chahta hai. Aapko admin se kehna hai: "Theek hai, par kya aap confirm hain? (Yes/No)". Bina confirmation ke action suggest na karein.`;
+            systemInstruction += `
+User koi action chahta hai.
+Pehle poochhna: "Kya aap nishchit hain? (Yes/No)"
+`;
         }
 
-        // --- Model Fallback Logic ---
         let aiResponse = null;
-        let lastError = null;
 
-        for (const modelName of AI_MODELS) {
+        for (const model of AI_MODELS) {
             try {
-                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: modelName,
-                        messages: [
-                            { role: "system", content: systemInstruction },
-                            { role: "user", content: prompt }
-                        ],
-                        max_tokens: 250,
-                        temperature: 0.7
-                    })
-                });
+                const response = await fetch(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model,
+                            messages: [
+                                { role: "system", content: systemInstruction },
+                                { role: "user", content: prompt }
+                            ],
+                            max_tokens: 350,
+                            temperature: 0.7
+                        })
+                    }
+                );
+
+                if (response.status === 429) continue;
 
                 const data = await response.json();
-
-                if (data.choices && data.choices[0]) {
+                if (data.choices?.[0]) {
                     aiResponse = data.choices[0].message.content;
-                    break; 
-                } else if (data.error && data.error.code === 'rate_limit_exceeded') {
-                    console.log(`Model ${modelName} limit reached, switching...`);
-                    continue; 
+                    break;
                 }
-            } catch (err) {
-                lastError = err;
+            } catch {
                 continue;
             }
         }
 
-        if (aiResponse) {
-            res.json({ reply: aiResponse });
-        } else {
-            res.json({ reply: "Maaf kijiye, abhi saare AI models busy hain. Kripya 5 minute baad koshish karein." });
+        if (!aiResponse) {
+            return res.json({ reply: "AI busy hai, baad mein koshish karein." });
         }
+
+        if (FORBIDDEN_WORDS.some(w => aiResponse.toLowerCase().includes(w))) {
+            aiResponse =
+                "⚠️ Main sirf madad karti hoon. Delete ya update dashboard se manually karein.";
+        }
+
+        res.json({ reply: aiResponse });
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ reply: "Technical error! Database ya API connect nahi ho pa raha." });
+        res.status(500).json({ reply: "Server error." });
     }
 });
+
+
+
+
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
     try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
