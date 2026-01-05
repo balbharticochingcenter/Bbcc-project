@@ -232,32 +232,56 @@ function prepareFeesFilters(){
   });
 }
 ////-==========================================================
+// ================= FEES EXCEL LOADER (FIXED) =================
 async function loadFeesExcel(){
-  const y=document.getElementById("fees_year").value;
-  const m=document.getElementById("fees_month").value;
+  const year=document.getElementById("fees_year").value;
+  const month=document.getElementById("fees_month").value;
 
-  const res=await fetch(API+'/api/get-fees');
-  let data=await res.json();
+  const students=await (await fetch(API+'/api/get-students')).json();
+  const s=students.find(x=>x.student_id===currentFeesStudent);
 
-  data=data.filter(f=>f.student_id===currentFeesStudent);
-
-  if(y) data=data.filter(f=>new Date(f.month).getFullYear()==y);
-  if(m) data=data.filter(f=>new Date(f.month).getMonth()+1==m);
+  if(!s || !s.fees_data){
+    feesExcelBody.innerHTML="<tr><td colspan='6'>No fees data</td></tr>";
+    return;
+  }
 
   feesExcelBody.innerHTML="";
 
-  data.forEach(f=>{
+  const join=new Date(s.joining_date);
+  const now=new Date();
+
+  let y=join.getFullYear();
+  let m=join.getMonth();
+
+  while(new Date(y,m)<=now){
+
+    const key=`${y}-${String(m+1).padStart(2,'0')}`;
+    const row=s.fees_data[key] || {};
+
+    // 🔍 FILTER
+    if(year && Number(year)!==y){ m++; if(m>11){m=0;y++;} continue; }
+    if(month && Number(month)!==(m+1)){ m++; if(m>11){m=0;y++;} continue; }
+
+    const fees=Number(row.fees||s.fees||0);
+    const paid=Number(row.paid||0);
+    const due=fees-paid;
+
     feesExcelBody.innerHTML+=`
 <tr>
-<td>${new Date(f.month).toLocaleString('default',{month:'long'})}</td>
-<td>${f.fees}</td>
-<td>${f.paid}</td>
-<td>${f.fees - f.paid}</td>
-<td>${f.paid>=f.fees?'Paid':'Due'}</td>
-<td><button>💾</button></td>
+<td>${new Date(y,m).toLocaleString('default',{month:'long'})} ${y}</td>
+<td>${fees}</td>
+<td>${paid}</td>
+<td>${due}</td>
+<td>${paid>=fees?'Paid':'Due'}</td>
+<td>
+  <button onclick="saveFees('${key}',this)">💾</button>
+</td>
 </tr>`;
-  });
+
+    m++; if(m>11){m=0;y++;}
+  }
 }
+
 ///=============================================================
 async function openStudentEditPopup(id){
   studentEditModal.style.display="block";
@@ -291,3 +315,23 @@ async function updateStudentProfile(){
   studentEditModal.style.display="none";
 }
 //======================================================================
+// ================= SAVE FEES =================
+async function saveFees(monthKey,btn){
+  const tr=btn.closest('tr');
+  const paid=prompt("Enter paid amount");
+
+  if(paid===null) return;
+
+  await fetch(API+'/api/update-student-fees',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      student_id:currentFeesStudent,
+      month:monthKey,
+      field:'paid',
+      value:paid
+    })
+  });
+
+  loadFeesExcel();
+}
