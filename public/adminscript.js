@@ -1353,10 +1353,10 @@ function bhartiListen() {
         };
     }
 
-    if (!isListening) {
-        recognition.start();
-    }
-    
+    recognition.onend = function() {
+        isListening = false;
+    };
+} 
 ////OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO NEW BOTON STU DAS BORD  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
 document.getElementById("openStudentDashboardBtn").onclick = () => {
