@@ -121,7 +121,7 @@ document.getElementById("teacherForm").onsubmit = async (e) => {
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
     const photo = document.getElementById('t_photo').files[0];
-    if (photo) data.photo = await toBase64(photo);
+    if (photo) data.photo = await compressImageTo5KB(photo);
 
     const res = await fetch('/api/teacher-reg', {
         method: 'POST',
@@ -262,7 +262,7 @@ document.getElementById("updateForm").onsubmit = async (e) => {
     const updatePhotoFile = document.getElementById('up_tphoto').files[0];
     if(updatePhotoFile) {
         // Agar nayi file select ki hai to use Base64 mein badlein
-        data.photo = await convertToBase64(updatePhotoFile); 
+        data.photo = await compressImageTo5KB(updatePhotoFile);
     } else {
         // Agar nayi file select nahi ki, to purani photo (jo preview mein dikh rahi hai) wahi rehne dein
         data.photo = document.getElementById('up_tview_photo').src;
@@ -328,7 +328,7 @@ document.getElementById("adminForm").onsubmit = async (e) => {
     
     const logo = document.getElementById('logoInput').files[0];
     if (logo) {
-        data.logo = await toBase64(logo);
+        data.logo = await compressImageTo5KB(logo);
     }
     
     try {
@@ -360,9 +360,53 @@ document.getElementById("adminForm").onsubmit = async (e) => {
 function convertToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.readAsDataURL(file);
+        
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
+    });
+}
+// ================= UNIVERSAL IMAGE COMPRESSOR (≈5KB) =================
+async function compressImageTo5KB(file, maxKB = 6) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = function (e) {
+            const img = new Image();
+            img.src = e.target.result;
+
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                let width = img.width;
+                let height = img.height;
+
+                const MAX_SIZE = 300;
+                if (width > height && width > MAX_SIZE) {
+                    height = height * (MAX_SIZE / width);
+                    width = MAX_SIZE;
+                } else if (height > MAX_SIZE) {
+                    width = width * (MAX_SIZE / height);
+                    height = MAX_SIZE;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                let quality = 0.4;
+                let base64;
+
+                do {
+                    base64 = canvas.toDataURL('image/jpeg', quality);
+                    quality -= 0.05;
+                } while ((base64.length / 1024) > maxKB && quality > 0.1);
+
+                resolve(base64);
+            };
+        };
+        reader.onerror = reject;
     });
 }
 
@@ -573,7 +617,8 @@ document.getElementById("studentForm").onsubmit = async (e) => {
     // Photo processing
     const photoFile = document.getElementById('s_photo').files[0];
     if(photoFile) {
-        data.photo = await convertToBase64(photoFile);
+        data.photo = await compressImageTo5KB(photoFile);
+
     }
 
     try {
@@ -632,7 +677,7 @@ document.getElementById("studentUpdateForm").onsubmit = async (e) => {
     // Nayi photo check karein
     const updatePhotoFile = document.getElementById('up_sphoto').files[0];
     if(updatePhotoFile) {
-        data.photo = await convertToBase64(updatePhotoFile);
+        data.photo = await compressImageTo5KB(updatePhotoFile);
     } else {
         // Agar nayi photo select nahi ki, to purani hi rehne dein
         data.photo = document.getElementById('up_sview_photo').src;
@@ -770,10 +815,7 @@ async function uploadSliderPhoto() {
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
     btn.disabled = true;
-
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const base64Photo = e.target.result;
+        const base64Photo = await compressImageTo5KB(file);
 
         try {
             const response = await fetch('/api/add-slider', {
@@ -942,7 +984,7 @@ document.getElementById('classDetailsForm').onsubmit = async (e) => {
 
     // Agar nayi photo select ki hai to use Base64 mein badlein
     if (bannerFile) {
-        bannerBase64 = await toBase64(bannerFile);
+        bannerBase64 = await compressImageTo5KB(bannerFile);
     } else {
         // Agar nayi photo nahi hai, to preview wali purani photo hi rehne dein
         const preview = document.getElementById('banner-preview');
@@ -1108,225 +1150,139 @@ function processImage() {
     };
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
-// --- BHARTI AI SYSTEM ---
 
-function toggleBhartiChat() {
-    document.getElementById('bharti-chat-window').classList.toggle('bharti-hidden');
+// ================= BHARTI AI CONTROL STATE =================
+let bhartiPendingAction = null;
+
+function bhartiAskConfirm(type, payload) {
+    bhartiPendingAction = { type, payload };
+    return "⚠️ Confirm karein: YES ya NO likhiye.";
 }
 
-// 1. Speak Function (Real Female Voice)
-// --- UPDATED HUMAN-LIKE VOICE SYSTEM ---
+function bhartiHandleConfirm(userText) {
+    if (!bhartiPendingAction) return null;
 
-// --- HYBRID VOICE SYSTEM (SWAP LOGIC) ---
+    const txt = userText.toLowerCase();
+    if (!txt.includes("yes") && !txt.includes("no")) return null;
 
+    if (txt.includes("no")) {
+        bhartiPendingAction = null;
+        return "❌ Action cancel kar diya gaya.";
+    }
+
+    const { type, payload } = bhartiPendingAction;
+    bhartiPendingAction = null;
+
+    if (type === "OPEN_MODAL") {
+        const allowed = [
+            "systemModal",
+            "teacherModal",
+            "updateModal",
+            "studentModal",
+            "studentUpdateModal",
+            "classSystemModal"
+        ];
+        if (allowed.includes(payload)) {
+            const el = document.getElementById(payload);
+            if (el) el.style.display = "block";
+            return "✅ Requested form open kar diya gaya.";
+        }
+        return "❌ Ye form allowed nahi hai.";
+    }
+
+    return null;
+}
+
+// ================= BHARTI AI SYSTEM =================
+
+function toggleBhartiChat() {
+    document.getElementById('bharti-chat-window')
+        .classList.toggle('bharti-hidden');
+}
+
+// ---------- VOICE ----------
 function bhartiSpeak(text) {
     if (!text) return;
+    text = text.replace(/[\[\]\*\#\:\_]/g, '').trim();
 
-    // 1. Pehle purani awaz band karein
     if (window.responsiveVoice && responsiveVoice.isPlaying()) {
         responsiveVoice.cancel();
     }
     window.speechSynthesis.cancel();
 
-    // 2. Try Karein ResponsiveVoice (Best Female Voice)
     if (window.responsiveVoice) {
         responsiveVoice.speak(text, "Hindi Female", {
-            pitch: 1, 
-            rate: 1, 
-            onstart: () => console.log("ResponsiveVoice shuru hua"),
-            onerror: function(e) {
-                console.warn("ResponsiveVoice fail hua, swapping to System Voice...");
-                fallbackToSystemVoice(text); // Swap logic
-            }
+            pitch: 1,
+            rate: 1,
+            onerror: () => fallbackToSystemVoice(text)
         });
     } else {
-        // Agar library load hi nahi hui toh direct system voice
         fallbackToSystemVoice(text);
     }
 }
 
-// 3. Swap Function: Jo browser ki inbuilt voice use karega
 function fallbackToSystemVoice(text) {
     const speech = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-
-    // Indian Female Voice dhundhna
-    const femaleVoice = voices.find(voice => 
-        (voice.name.includes('Heera') || voice.name.includes('Kalpana') || voice.name.includes('Google Hindi'))
+    const female = voices.find(v =>
+        v.name.includes('Heera') ||
+        v.name.includes('Kalpana') ||
+        v.name.includes('Google Hindi')
     );
-
-    if (femaleVoice) speech.voice = femaleVoice;
-    
+    if (female) speech.voice = female;
     speech.lang = 'hi-IN';
     speech.rate = 0.9;
     speech.pitch = 1.1;
-
     window.speechSynthesis.speak(speech);
 }
 
-// Voices load hone ke liye zaroori hai
 window.speechSynthesis.onvoiceschanged = () => {
     window.speechSynthesis.getVoices();
 };
-// 2. Message Sending Logic
-// Merged Function: Message bhejna, Modal kholna aur Update/Search logic
+
+// ================= CHAT LOGIC =================
 async function sendBhartiMessage() {
     const inputField = document.getElementById('bharti-input');
     const container = document.getElementById('bharti-messages');
     const prompt = inputField.value.trim();
-
     if (!prompt) return;
 
-    // 1. User ka message screen par dikhana
+    // 🔐 CONFIRM CHECK
+    const confirmReply = bhartiHandleConfirm(prompt);
+    if (confirmReply) {
+        container.innerHTML += `<div class="bharti-msg ai">${confirmReply}</div>`;
+        bhartiSpeak(confirmReply);
+        inputField.value = '';
+        return;
+    }
+
+    // USER MESSAGE
     container.innerHTML += `<div class="bharti-msg user">${prompt}</div>`;
     inputField.value = '';
     container.scrollTop = container.scrollHeight;
 
     try {
-        // 2. Backend API ko data bhejna
         const response = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: prompt })
+            body: JSON.stringify({ prompt })
         });
 
         const data = await response.json();
-        let bhartiReply = data.reply || "Maaf kijiye, main connect nahi ho paa rahi hoon.";
+        let reply = data.reply || "Main samajh nahi paayi.";
 
-        // --- COMMAND PROCESSING LOGIC START ---
-
-        // A. Student Update Command ([UPDATE_STUDENT: ID])
-        if (bhartiReply.includes("[UPDATE_STUDENT:")) {
-            const stuMatch = bhartiReply.match(/\[UPDATE_STUDENT:\s*(\w+)\]/);
-            if (stuMatch) {
-                const sid = stuMatch[1];
-                const searchBox = document.getElementById('search_sid');
-                if(searchBox) {
-                    searchBox.value = sid;
-                    searchStudent(); // Aapka search function
-                    document.getElementById('studentUpdateModal').style.display = 'block';
-                }
+        // MODAL COMMAND → CONFIRM
+        if (reply.includes("[OPEN_MODAL:")) {
+            const match = reply.match(/\[OPEN_MODAL:\s*(\w+)\]/);
+            if (match) {
+                reply = bhartiAskConfirm("OPEN_MODAL", match[1]);
             }
-            bhartiReply = bhartiReply.replace(/\[UPDATE_STUDENT:.*?\]/g, "");
         }
 
-        // B. Teacher Update Command ([UPDATE_TEACHER: ID])
-        if (bhartiReply.includes("[UPDATE_TEACHER:")) {
-            const teaMatch = bhartiReply.match(/\[UPDATE_TEACHER:\s*(\w+)\]/);
-            if (teaMatch) {
-                const tid = teaMatch[1];
-                const searchBox = document.getElementById('search_tid');
-                if(searchBox) {
-                    searchBox.value = tid;
-                    searchTeacher(); // Aapka search function
-                    document.getElementById('updateModal').style.display = 'block';
-                }
-            }
-            bhartiReply = bhartiReply.replace(/\[UPDATE_TEACHER:.*?\]/g, "");
-        }
-
-        // C. Normal Modal Open Command ([OPEN_MODAL: modalID])
-        if (bhartiReply.includes("[OPEN_MODAL:")) {
-            const modalMatch = bhartiReply.match(/\[OPEN_MODAL:\s*(\w+)\]/);
-            if (modalMatch) {
-                const modalId = modalMatch[1].trim();
-                const modalElem = document.getElementById(modalId);
-                if (modalElem) modalElem.style.display = 'block';
-            }
-            bhartiReply = bhartiReply.replace(/\[OPEN_MODAL:.*?\]/g, "");
-        }
-
-        // --- COMMAND PROCESSING LOGIC END ---
-
-        // 3. Bharti ka saaf jawab screen par dikhana
-        container.innerHTML += `<div class="bharti-msg ai">${bhartiReply.trim()}</div>`;
-        container.scrollTop = container.scrollHeight;
-
-        // 4. Voice Output (ResponsiveVoice ka upyog)
-        if (window.responsiveVoice) {
-            responsiveVoice.speak(bhartiReply.trim(), "Hindi Female");
-        } else if (typeof bhartiSpeak === 'function') {
-            bhartiSpeak(bhartiReply.trim()); // Agar aapka apna function hai
-        }
+        container.innerHTML += `<div class="bharti-msg ai">${reply}</div>`;
+        bhartiSpeak(reply);
 
     } catch (err) {
-        console.error("Bharti Error:", err);
-        container.innerHTML += `<div class="bharti-msg ai">Server connection error!</div>`;
+        container.innerHTML += `<div class="bharti-msg ai">Server error!</div>`;
     }
 }
-// 3. Voice Recognition (Mic)
-function bhartiListen() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert("Aapka browser voice support nahi karta.");
-        return;
-    }
-
-    const recognition = new SpeechRecognition();
-    const micBtn = document.getElementById('bharti-mic');
-
-    recognition.lang = 'hi-IN';
-    recognition.onstart = () => micBtn.classList.add('active');
-    
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('bharti-input').value = transcript;
-        sendBhartiMessage();
-    };
-
-    recognition.onend = () => micBtn.classList.remove('active');
-    recognition.start();
-}
-const launcher = document.getElementById('bharti-launcher');
-
-let isDragging = false;
-let offsetX, offsetY;
-
-// --- Mouse / Touch Start ---
-const startDrag = (e) => {
-    isDragging = true;
-    launcher.style.cursor = 'grabbing';
-    launcher.style.zIndex = "10005"; // Drag karte waqt aur upar aa jaye
-
-    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-
-    offsetX = clientX - launcher.getBoundingClientRect().left;
-    offsetY = clientY - launcher.getBoundingClientRect().top;
-};
-
-// --- Moving Logic ---
-const dragging = (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
-
-    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-
-    // Nayi position calculate karna
-    let x = clientX - offsetX;
-    let y = clientY - offsetY;
-
-    // Screen se bahar na jaye iske liye limits
-    launcher.style.left = `${x}px`;
-    launcher.style.top = `${y}px`;
-    launcher.style.bottom = 'auto'; // Bottom hatana zaroori hai move ke liye
-    launcher.style.right = 'auto';
-};
-
-// --- Stop Dragging ---
-const stopDrag = () => {
-    isDragging = false;
-    launcher.style.cursor = 'pointer';
-    launcher.style.zIndex = "10001"; // Wapas normal z-index par
-};
-
-// Events Listeners
-launcher.addEventListener('mousedown', startDrag);
-launcher.addEventListener('touchstart', startDrag);
-
-document.addEventListener('mousemove', dragging);
-document.addEventListener('touchmove', dragging);
-
-document.addEventListener('mouseup', stopDrag);
-document.addEventListener('touchend', stopDrag);
