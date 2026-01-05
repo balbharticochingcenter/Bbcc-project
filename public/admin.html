@@ -77,6 +77,10 @@
         <button id="openStudentDataBtn" class="btn-primary" style="background: #2ecc71;">
             <i class="fas fa-user-graduate"></i> Fees/Data
         </button>
+        <button id="openStudentDashboardBtn" class="btn-primary">
+    📊 Student Dashboard
+</button>
+
         <button id="openStudentUpdateBtn" class="btn-primary" style="background: #f1c40f; color: #000;">
             <i class="fas fa-user-edit"></i> Stu. Update
         </button>
@@ -543,6 +547,57 @@
 
 
 
+<div id="studentDashboardModal" class="modal">
+  <div class="modal-content" style="max-width:95%;">
+
+    <span class="close">&times;</span>
+    <h3>📊 Student Dashboard (Excel View)</h3>
+
+    <!-- FILTER ROW -->
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <select id="dash_class">
+            <option value="">Select Class</option>
+        </select>
+
+        <select id="dash_year">
+            <option value="">Select Year</option>
+        </select>
+
+        <button onclick="loadDashboardStudents()">Load</button>
+        <button onclick="deleteLoadedClass()">🗑 Delete Loaded Class</button>
+    </div>
+
+    <!-- TABLE -->
+    <div style="overflow:auto; max-height:70vh;">
+        <table border="1" width="100%" id="dashboardTable">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>ID</th>
+                    <th>Pass</th>
+                    <th>Class</th>
+                    <th>DOJ</th>
+                    <th>Fees</th>
+                    <th>Exam Date</th>
+                    <th>Total</th>
+                    <th>Obt</th>
+                    <th>Div</th>
+                    <th>Save</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody id="dashboardBody"></tbody>
+        </table>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+    
     
     
 <footer class="magical-footer">
