@@ -149,12 +149,7 @@ async function saveDashStudent(id, btn){
     alert("All deleted");
     document.getElementById('dashboardBody').innerHTML="";
 }
-/////------------------------------------------------------------------
-    function openFeesPopup(id){
-    document.getElementById("studentDataModal").style.display="block";
-    loadStudentFeesOnly(id);
-}
-////--------------------------------------------------------------------
+
     
 let currentFeesStudent = null;
 
