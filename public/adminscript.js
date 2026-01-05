@@ -25,14 +25,7 @@ const toBase64 = file => new Promise((resolve, reject) => {
     reader.onerror = error => reject(error);
 });
 
-// --- HELPER: Mahine ka naam nikalne ke liye (Jan-24 format) ---
-function getMonthLabel(joiningDateStr, index) {
-    const date = joiningDateStr ? new Date(joiningDateStr) : new Date();
-    // Index 1 matlab joining month, isliye (index - 1)
-    date.setMonth(date.getMonth() + (index - 1));
-    const options = { month: 'short', year: '2-digit' };
-    return date.toLocaleString('en-US', options).replace(' ', '-');
-}
+
 
 // --- INITIALIZE DASHBOARD ---
 function initDashboard() {
@@ -365,50 +358,7 @@ function convertToBase64(file) {
         reader.onerror = error => reject(error);
     });
 }
-// ================= UNIVERSAL IMAGE COMPRESSOR (≈5KB) =================
-async function compressImageTo5KB(file, maxKB = 6) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
 
-        reader.onload = function (e) {
-            const img = new Image();
-            img.src = e.target.result;
-
-            img.onload = function () {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-
-                let width = img.width;
-                let height = img.height;
-
-                const MAX_SIZE = 300;
-                if (width > height && width > MAX_SIZE) {
-                    height = height * (MAX_SIZE / width);
-                    width = MAX_SIZE;
-                } else if (height > MAX_SIZE) {
-                    width = width * (MAX_SIZE / height);
-                    height = MAX_SIZE;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-
-                let quality = 0.4;
-                let base64;
-
-                do {
-                    base64 = canvas.toDataURL('image/jpeg', quality);
-                    quality -= 0.05;
-                } while ((base64.length / 1024) > maxKB && quality > 0.1);
-
-                resolve(base64);
-            };
-        };
-        reader.onerror = reject;
-    });
-}
 
 // Student ID Auto Generation
 document.getElementById('s_name').oninput = (e) => {
@@ -419,64 +369,6 @@ document.getElementById('s_name').oninput = (e) => {
         document.getElementById('s_pass').value = name.substring(0, 3) + "@" + rand;
     }
 };
-
-//                        document.getElementById("openStudentBtn").onclick = () => document.getElementById("studentModal").style.display = "block";
-//                               document.getElementById("openStudentDataBtn").onclick = () => { 
-  //                              document.getElementById("studentDataModal").style.display = "block"; 
-    
-//                                     };
-
-// // --- UPDATED: Load Student Data with Class Filter, Photo, and Pay/Due Logic ---
-// // --- UPDATED: Load Student Data with Class Filter, Photo, and Detailed Month Breakdown ---
-
-//==========================================================================================================
-async function filterClassForResults() {
-    const selectedClass = document.getElementById('res_class_filter').value;
-    const res = await fetch('/api/get-students');
-    const students = await res.json();
-    const classStudents = students.filter(s => s.student_class === selectedClass);
-    const container = document.getElementById("resultTableBody");
-    container.innerHTML = "";
-    if(classStudents.length === 0) {
-        container.innerHTML = "<tr><td colspan='5' style='color:red;'>No students!</td></tr>";
-        return;
-    }
-    classStudents.forEach(s => {
-        const obt = s.obtained_marks || "";
-        const tot = s.total_marks || "";
-        container.innerHTML += `
-            <tr style="border-bottom:1px solid #ddd; text-align:center;">
-                <td style="padding:12px;"><b>${s.student_id}</b></td>
-                <td>${s.student_name}</td>
-                <td><input type="number" id="obt_${s.student_id}" value="${obt}" style="width:70px;"></td>
-                <td id="div_${s.student_id}">${calculateDivision(obt, tot)}</td>
-                <td><button onclick="saveIndividualResult('${s.student_id}')">Save</button></td>
-            </tr>`;
-    });
-}
-
-function calculateDivision(obt, total) {
-    if(!obt || !total || total == 0) return "---";
-    const per = (parseInt(obt) / parseInt(total)) * 100;
-    if(per >= 60) return "<span style='color:green;'>1st Div</span>";
-    if(per >= 45) return "<span style='color:blue;'>2nd Div</span>";
-    if(per >= 33) return "<span style='color:orange;'>3rd Div</span>";
-    return "<span style='color:red;'>Fail</span>";
-}
-
-async function saveIndividualResult(sid) {
-    const obt = document.getElementById(`obt_${sid}`).value;
-    const total = document.getElementById('bulk_total_marks').value;
-    const exDate = document.getElementById('bulk_exam_date').value;
-    if(!total || !exDate) return alert("Total Marks & Date required!");
-    const res = await fetch('/api/update-student-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ student_id: sid, obtained_marks: obt, total_marks: total, exam_date: exDate })
-    });
-    if(res.ok) document.getElementById(`div_${sid}`).innerHTML = calculateDivision(obt, total);
-}
-
 const adminProfileModal = document.getElementById('adminProfileModal');
 document.getElementById('openAdminProfileBtn').onclick = async () => {
     adminProfileModal.style.display = "block";
@@ -793,80 +685,7 @@ async function loadExistingClassData(cls) {
     }
 }
 
-function processImage() {
-    const fileInput = document.getElementById('compInput');
-    const type = document.getElementById('compType').value;
-    const status = document.getElementById('compStatus');
-    const canvas = document.getElementById('compCanvas');
-    const ctx = canvas.getContext('2d');
 
-    if (!fileInput.files[0]) {
-        alert("Pehle image select karein!");
-        return;
-    }
-
-    status.innerText = "Processing...";
-    const reader = new FileReader();
-    reader.readAsDataURL(fileInput.files[0]);
-
-    reader.onload = function(e) {
-        const img = new Image();
-        img.src = e.target.result;
-
-        img.onload = function() {
-            let targetWidth, targetHeight;
-
-            if (type === 'logo') {
-                // Square Crop for Logo
-                targetWidth = 200;
-                targetHeight = 200;
-            } else if (type === 'banner') {
-                // Wide Crop for Banner
-                targetWidth = 1200;
-                targetHeight = 400;
-            } else {
-                // No crop for Photo, just standard size
-                targetWidth = img.width;
-                targetHeight = img.height;
-                // Scale down if too large to keep under 100kb
-                if(targetWidth > 1500) {
-                    targetHeight = (1500 / targetWidth) * targetHeight;
-                    targetWidth = 1500;
-                }
-            }
-
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
-
-            // Logic to Crop from Center
-            let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
-            
-            if (type !== 'photo') {
-                const aspect = targetWidth / targetHeight;
-                if (img.width / img.height > aspect) {
-                    sourceWidth = img.height * aspect;
-                    sourceX = (img.width - sourceWidth) / 2;
-                } else {
-                    sourceHeight = img.width / aspect;
-                    sourceY = (img.height - sourceHeight) / 2;
-                }
-            }
-
-            ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
-
-            // 0.7 quality ensures it stays around/under 100KB
-            const processedData = canvas.toDataURL('image/jpeg', 0.7);
-            
-            const downloadLink = document.createElement('a');
-            downloadLink.download = `BBCC_${type}_${Date.now()}.jpg`;
-            downloadLink.href = processedData;
-            downloadLink.click();
-
-            status.innerText = "Done! Image Downloaded.";
-            status.style.color = "#27ae60";
-        };
-    };
-}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////boat///////////////
 
 // ================= BHARTI AI CONTROL STATE =================
