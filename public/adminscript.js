@@ -1175,11 +1175,18 @@ function bhartiHandleConfirm(userText) {
     if (type === "OPEN_MODAL") {
         const allowed = [
             "systemModal",
-            "teacherModal",
-            "updateModal",
-            "studentModal",
-            "studentUpdateModal",
-            "classSystemModal"
+    "teacherModal",
+    "updateModal",
+    "studentModal",
+    "studentUpdateModal",
+    "classSystemModal",
+    "adminProfileModal",
+    "sliderModal",
+    "resultModal",
+    "studentDataModal",
+    "dataModal",
+    "profileModal",
+    "classConfigModal"
         ];
         if (allowed.includes(payload)) {
             const el = document.getElementById(payload);
@@ -1251,6 +1258,7 @@ window.speechSynthesis.onvoiceschanged = () => {
 };
 
 // ================= CHAT LOGIC =================
+// ================= CHAT LOGIC =================
 async function sendBhartiMessage() {
     const inputField = document.getElementById('bharti-input');
     const container = document.getElementById('bharti-messages');
@@ -1261,7 +1269,7 @@ async function sendBhartiMessage() {
     const confirmReply = bhartiHandleConfirm(prompt);
     if (confirmReply) {
         container.innerHTML += `<div class="bharti-msg ai">${confirmReply}</div>`;
-        
+        bhartiSpeak(confirmReply);
         inputField.value = '';
         return;
     }
@@ -1279,13 +1287,17 @@ async function sendBhartiMessage() {
         });
 
         const data = await response.json();
-        let reply = data.reply || "Main samajh nahi paayi.";
+        let reply = data.reply || "मैं समझ नहीं पाई।";
 
         // MODAL COMMAND → CONFIRM
         if (reply.includes("[OPEN_MODAL:")) {
             const match = reply.match(/\[OPEN_MODAL:\s*(\w+)\]/);
             if (match) {
-                reply = bhartiAskConfirm("OPEN_MODAL", match[1]);
+                const el = document.getElementById(match[1]);
+if (el) {
+    el.style.display = "block";
+    reply = "✅ खोल दिया गया।";
+}
             }
         }
 
@@ -1293,9 +1305,14 @@ async function sendBhartiMessage() {
         bhartiSpeak(reply);
 
     } catch (err) {
-        container.innerHTML += `<div class="bharti-msg ai">Server error!</div>`;
+        console.error("AI Chat Error:", err);
+        const msg = "माफ़ कीजिए, सर्वर से जवाब नहीं मिल पाया।";
+        container.innerHTML += `<div class="bharti-msg ai">${msg}</div>`;
+        bhartiSpeak(msg);
     }
 }
+
+
 // ================= MIC / VOICE INPUT =================
 let recognition;
 let isListening = false;
