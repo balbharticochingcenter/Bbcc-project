@@ -1399,7 +1399,7 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
         body.innerHTML += `
         <tr>
             <td><img src="${s.photo}" width="40"
-                onclick="openFeesPopup('${s.student_id}')"></td>
+                onclick="openFeesExcelPopup('${s.student_id}')"></td>
 
             <td><input value="${s.student_name}"></td>
             <td>${s.student_id}</td>
@@ -1471,3 +1471,104 @@ document.getElementById("openStudentDashboardBtn").onclick = () => {
 }
 ////--------------------------------------------------------------------
     
+let currentFeesStudent = null;
+
+async function openFeesExcelPopup(student_id) {
+    currentFeesStudent = student_id;
+    document.getElementById("feesExcelModal").style.display = "block";
+
+    const res = await fetch('/api/get-students');
+    const students = await res.json();
+    const s = students.find(x => x.student_id === student_id);
+
+    document.getElementById("feesStudentInfo").innerHTML = `
+        <b>${s.student_name}</b> |
+        Parent: ${s.parent_name} |
+        📞 ${s.mobile}
+        <button onclick="callNow('${s.mobile}')">📞</button>
+        <button onclick="sendSMS('${s.mobile}')">💬</button>
+    `;
+
+    prepareFeesFilters();
+    loadFeesExcel();
+}
+////--------------------------------------------------------
+function prepareFeesFilters(){
+    const y = document.getElementById('fees_year');
+    const m = document.getElementById('fees_month');
+
+    y.innerHTML = '';
+    m.innerHTML = '<option value="">All Months</option>';
+
+    const cy = new Date().getFullYear();
+    for(let i=cy;i>=2018;i--) y.innerHTML += `<option>${i}</option>`;
+
+    const months = [
+      "Jan","Feb","Mar","Apr","May","Jun",
+      "Jul","Aug","Sep","Oct","Nov","Dec"
+    ];
+    months.forEach((mo,i)=>{
+        m.innerHTML += `<option value="${i+1}">${mo}</option>`;
+    });
+}
+//----------------------------------------------------------------------
+async function loadFeesExcel(){
+    const year = document.getElementById('fees_year').value;
+    const monthFilter = document.getElementById('fees_month').value;
+
+    const res = await fetch('/api/get-students');
+    const s = (await res.json()).find(x=>x.student_id===currentFeesStudent);
+
+    const body = document.getElementById('feesExcelBody');
+    body.innerHTML = "";
+
+    for (let m=1; m<=12; m++) {
+        if(monthFilter && m!=monthFilter) continue;
+
+        const data = s.fees_data?.[`${year}-${m}`] || {};
+        const paid = data.paid || 0;
+        const fees = Number(s.fees);
+        const due = fees - paid;
+
+        body.innerHTML += `
+        <tr>
+            <td>${year}-${m}</td>
+            <td>${fees}</td>
+            <td><input value="${paid}" style="width:70px"></td>
+            <td>${due}</td>
+            <td>${due<=0?"✅ Paid":"❌ Due"}</td>
+            <td>
+              <button onclick="saveMonthlyFees('${year}-${m}', this)">💾</button>
+            </td>
+        </tr>`;
+    }
+}
+/////----------------------------------------------------
+async function saveMonthlyFees(key, btn){
+    const paid = btn.closest('tr').querySelector('input').value;
+
+    await fetch('/api/update-student-fees',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            student_id:currentFeesStudent,
+            month:key,
+            field:'paid',
+            value:paid
+        })
+    });
+    alert("Updated");
+    loadFeesExcel();
+}
+///-------------------------------------------------------------------
+function callNow(num){
+    window.location.href = `tel:${num}`;
+}
+function sendSMS(num){
+    window.location.href = `sms:${num}?body=Fees reminder from BBCC`;
+}
+/////---------------------------------------
+function closeFeesExcel(){
+    document.getElementById("feesExcelModal").style.display="none";
+}
+///
