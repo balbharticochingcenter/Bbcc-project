@@ -635,9 +635,9 @@ document.getElementById("studentForm").onsubmit = async (e) => {
     } catch (err) { alert("Error!"); }
 };
 
-document.getElementById("openStudentUpdateBtn").onclick = () => {
-    document.getElementById("studentUpdateModal").style.display = "block";
-};
+//                  document.getElementById("openStudentUpdateBtn").onclick = () => {
+   //                   document.getElementById("studentUpdateModal").style.display = "block";
+//                        };
 
 // --- UPDATED SEARCH WITH PHOTO PREVIEW ---
 async function searchStudent() {
