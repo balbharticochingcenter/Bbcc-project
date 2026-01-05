@@ -1,10 +1,12 @@
 // ================= SECURITY =================
+// Admin login check (frontend level)
 (function checkAuth(){
   if(localStorage.getItem('isAdminLoggedIn')!=='true'){
     location.href='login.html';
   }
 })();
 
+// Admin logout
 function logoutAdmin(){
   if(confirm("Logout?")){
     localStorage.removeItem('isAdminLoggedIn');
@@ -12,17 +14,52 @@ function logoutAdmin(){
   }
 }
 
+// ================= GLOBAL API FIX =================
+// Absolute API path (origin issue fix)
+const API = location.origin;
+
 // ================= INIT =================
+// Dashboard init (page load)
 async function initDashboard(){
-  await loadClassList();
+  await loadClassList();          // load class configs
+  await loadSystemSettings();     // 🔥 logo / title / footer load
+  
+  // 🔥 Student Dashboard button show
+  const btn=document.getElementById("openStudentDashboardBtn");
+  if(btn) btn.style.display="flex";
 }
 
-async function loadClassList(){
-  const res = await fetch('/api/get-all-class-configs');
-  const data = await res.json();
-  window.classList = Object.keys(data);
+// ================= SYSTEM SETTINGS =================
+// Logo, title, subtitle, footer load
+async function loadSystemSettings(){
+  try{
+    const res = await fetch(API + '/api/get-settings');
+    const s = await res.json();
+
+    if(s.logo) document.getElementById("db-logo").src=s.logo;
+    if(s.title) document.getElementById("db-title").innerText=s.title;
+    if(s.sub_title) document.getElementById("db-subtitle").innerText=s.sub_title;
+
+    if(s.facebook) document.getElementById("foot-facebook").href=s.facebook;
+    if(s.gmail) document.getElementById("foot-gmail").href="mailto:"+s.gmail;
+    if(s.call_no) document.getElementById("foot-call").href="tel:"+s.call_no;
+    if(s.help) document.getElementById("foot-help").innerText=s.help;
+
+  }catch(err){
+    console.error("Settings load error",err);
+  }
 }
-/////////--------------------------===========================
+
+// ================= CLASS LIST =================
+// Load all class configs
+async function loadClassList(){
+  const res = await fetch(API + '/api/get-all-class-configs');
+  const data = await res.json();
+  window.classList = Object.keys(data); // global use
+}
+
+// ================= RESULT UTILITY =================
+// Division calculator
 function calculateDivision(obt, total){
   if(!obt || !total) return '-';
   const p = (obt/total)*100;
@@ -33,11 +70,13 @@ function calculateDivision(obt, total){
 }
 
 // ================= STUDENT DASHBOARD =================
+// Open dashboard modal
 document.getElementById("openStudentDashboardBtn").onclick=()=>{
   document.getElementById("studentDashboardModal").style.display="block";
   prepareDashboardFilters();
 };
 
+// Prepare class + year filter
 function prepareDashboardFilters(){
   const cls=document.getElementById('dash_class');
   const year=document.getElementById('dash_year');
@@ -50,14 +89,18 @@ function prepareDashboardFilters(){
   for(let y=cy;y>=2018;y--) year.innerHTML+=`<option>${y}</option>`;
 }
 
+// Load students in dashboard table
 async function loadDashboardStudents(){
   const cls=dash_class.value;
   const yr=dash_year.value;
   if(!cls||!yr) return alert("Class & Year select karo");
 
-  let students=await (await fetch('/api/get-students')).json();
-  students=students.filter(s=>s.student_class===cls &&
-    new Date(s.joining_date).getFullYear()==yr);
+  let students=await (await fetch(API + '/api/get-students')).json();
+
+  students=students.filter(s=>
+    s.student_class===cls &&
+    new Date(s.joining_date).getFullYear()==yr
+  );
 
   dashboardBody.innerHTML="";
   students.forEach(s=>{
@@ -83,9 +126,10 @@ async function loadDashboardStudents(){
   });
 }
 
+// Save dashboard student
 async function saveDashStudent(id,btn){
   const i=btn.closest('tr').querySelectorAll('input');
-  await fetch('/api/update-student-data',{
+  await fetch(API + '/api/update-student-data',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -102,9 +146,10 @@ async function saveDashStudent(id,btn){
   alert("Saved");
 }
 
+// Delete single student
 async function deleteDashStudent(id){
   if(!confirm("Delete?")) return;
-  await fetch('/api/delete-student',{
+  await fetch(API + '/api/delete-student',{
     method:'DELETE',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({student_id:id})
@@ -112,11 +157,12 @@ async function deleteDashStudent(id){
   loadDashboardStudents();
 }
 
+// Delete full loaded class
 async function deleteLoadedClass(){
   if(!confirm("DELETE FULL CLASS?")) return;
   document.querySelectorAll('#dashboardBody tr').forEach(async r=>{
     const id=r.children[1].innerText;
-    await fetch('/api/delete-student',{
+    await fetch(API + '/api/delete-student',{
       method:'DELETE',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({student_id:id})
@@ -126,6 +172,7 @@ async function deleteLoadedClass(){
 }
 
 // ================= MODALS =================
+// Close any modal
 document.querySelectorAll('.close').forEach(c=>{
   c.onclick=()=>c.closest('.modal').style.display="none";
 });
@@ -133,11 +180,12 @@ document.querySelectorAll('.close').forEach(c=>{
 // ================= FEES =================
 let currentFeesStudent=null;
 
+// Open fees excel popup
 async function openFeesExcelPopup(id){
   currentFeesStudent=id;
   feesExcelModal.style.display="block";
 
-  const students=await (await fetch('/api/get-students')).json();
+  const students=await (await fetch(API + '/api/get-students')).json();
   const s=students.find(x=>x.student_id===id);
 
   feesStudentInfo.innerHTML=`
@@ -149,5 +197,14 @@ async function openFeesExcelPopup(id){
   loadFeesExcel();
 }
 
+// Call & SMS helpers
 function callNow(n){location.href=`tel:${n}`;}
 function sendSMS(n){location.href=`sms:${n}?body=Fees reminder from BBCC`;}
+
+// ================= FEES CRASH FIX =================
+// Dummy functions (JS crash prevent)
+function prepareFeesFilters(){}
+function loadFeesExcel(){}
+function closeFeesExcel(){
+  feesExcelModal.style.display="none";
+}
