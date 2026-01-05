@@ -1,12 +1,10 @@
 // ================= SECURITY =================
-// Admin login check (frontend level)
 (function checkAuth(){
   if(localStorage.getItem('isAdminLoggedIn')!=='true'){
     location.href='login.html';
   }
 })();
 
-// Admin logout
 function logoutAdmin(){
   if(confirm("Logout?")){
     localStorage.removeItem('isAdminLoggedIn');
@@ -14,55 +12,46 @@ function logoutAdmin(){
   }
 }
 
-// ================= GLOBAL API FIX =================
-// Absolute API path (origin issue fix)
+// ================= GLOBAL API =================
 const API = location.origin;
 
 // ================= INIT =================
-// Dashboard init (page load)
 async function initDashboard(){
-  await loadClassList();          // load class configs
-  await loadSystemSettings();     // 🔥 logo / title / footer load
-  
-  // 🔥 Student Dashboard button show
+  await loadClassList();
+  await loadSystemSettings();
+
   const btn=document.getElementById("openStudentDashboardBtn");
   if(btn) btn.style.display="flex";
 }
 
 // ================= SYSTEM SETTINGS =================
-// Logo, title, subtitle, footer load
 async function loadSystemSettings(){
   try{
     const res = await fetch(API + '/api/get-settings');
     const s = await res.json();
 
-    if(s.logo) document.getElementById("db-logo").src=s.logo;
-    if(s.title) document.getElementById("db-title").innerText=s.title;
-    if(s.sub_title) document.getElementById("db-subtitle").innerText=s.sub_title;
+    if(s.logo) db_logo.src=s.logo;
+    if(s.title) db_title.innerText=s.title;
+    if(s.sub_title) db_subtitle.innerText=s.sub_title;
 
-    if(s.facebook) document.getElementById("foot-facebook").href=s.facebook;
-    if(s.gmail) document.getElementById("foot-gmail").href="mailto:"+s.gmail;
-    if(s.call_no) document.getElementById("foot-call").href="tel:"+s.call_no;
-    if(s.help) document.getElementById("foot-help").innerText=s.help;
-
-  }catch(err){
-    console.error("Settings load error",err);
-  }
+    if(s.facebook) foot_facebook.href=s.facebook;
+    if(s.gmail) foot_gmail.href="mailto:"+s.gmail;
+    if(s.call_no) foot_call.href="tel:"+s.call_no;
+    if(s.help) foot_help.innerText=s.help;
+  }catch(e){ console.error(e); }
 }
 
 // ================= CLASS LIST =================
-// Load all class configs
 async function loadClassList(){
   const res = await fetch(API + '/api/get-all-class-configs');
   const data = await res.json();
-  window.classList = Object.keys(data); // global use
+  window.classList = Object.keys(data);
 }
 
-// ================= RESULT UTILITY =================
-// Division calculator
-function calculateDivision(obt, total){
-  if(!obt || !total) return '-';
-  const p = (obt/total)*100;
+// ================= RESULT =================
+function calculateDivision(obt,total){
+  if(!obt||!total) return '-';
+  const p=(obt/total)*100;
   if(p>=60) return '1st';
   if(p>=45) return '2nd';
   if(p>=33) return '3rd';
@@ -70,40 +59,34 @@ function calculateDivision(obt, total){
 }
 
 // ================= STUDENT DASHBOARD =================
-// Open dashboard modal
-document.getElementById("openStudentDashboardBtn").onclick=()=>{
-  document.getElementById("studentDashboardModal").style.display="block";
+openStudentDashboardBtn.onclick=()=>{
+  studentDashboardModal.style.display="block";
   prepareDashboardFilters();
 };
 
-// Prepare class + year filter
 function prepareDashboardFilters(){
-  const cls=document.getElementById('dash_class');
-  const year=document.getElementById('dash_year');
+  dash_class.innerHTML='<option value="">Select Class</option>';
+  classList.forEach(c=>dash_class.innerHTML+=`<option>${c}</option>`);
 
-  cls.innerHTML='<option value="">Select Class</option>';
-  classList.forEach(c=>cls.innerHTML+=`<option>${c}</option>`);
-
+  dash_year.innerHTML='<option value="">Select Year</option>';
   const cy=new Date().getFullYear();
-  year.innerHTML='<option value="">Select Year</option>';
-  for(let y=cy;y>=2018;y--) year.innerHTML+=`<option>${y}</option>`;
+  for(let y=cy;y>=2018;y--) dash_year.innerHTML+=`<option>${y}</option>`;
 }
 
-// Load students in dashboard table
 async function loadDashboardStudents(){
-  const cls=dash_class.value;
-  const yr=dash_year.value;
-  if(!cls||!yr) return alert("Class & Year select karo");
+  if(!dash_class.value || !dash_year.value)
+    return alert("Class & Year select karo");
 
-  let students=await (await fetch(API + '/api/get-students')).json();
+  let students = await (await fetch(API+'/api/get-students')).json();
 
-  students=students.filter(s=>
-    s.student_class===cls &&
-    new Date(s.joining_date).getFullYear()==yr
+  students = students.filter(s =>
+    s.student_class===dash_class.value &&
+    new Date(s.joining_date).getFullYear()==dash_year.value
   );
-document.getElementById("dashTotal").innerText = students.length;
 
+  dashTotal.innerText = students.length;
   dashboardBody.innerHTML="";
+
   students.forEach(s=>{
     dashboardBody.innerHTML+=`
 <tr>
@@ -115,8 +98,8 @@ document.getElementById("dashTotal").innerText = students.length;
 <td><input type="date" value="${s.joining_date||''}"></td>
 <td><input value="${s.fees||''}" style="width:70px"></td>
 <td>
-  <input type="date" value="${s.exam_date||''}">
-  <button onclick="this.previousElementSibling.value=''">❌</button>
+ <input type="date" value="${s.exam_date||''}">
+ <button onclick="this.previousElementSibling.value=''">❌</button>
 </td>
 <td><input value="${s.total_marks||''}" style="width:60px"></td>
 <td><input value="${s.obtained_marks||''}" style="width:60px"></td>
@@ -127,10 +110,9 @@ document.getElementById("dashTotal").innerText = students.length;
   });
 }
 
-// Save dashboard student
 async function saveDashStudent(id,btn){
   const i=btn.closest('tr').querySelectorAll('input');
-  await fetch(API + '/api/update-student-data',{
+  await fetch(API+'/api/update-student-data',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -144,159 +126,101 @@ async function saveDashStudent(id,btn){
       obtained_marks:i[6].value
     })
   });
-  alert("Saved");
+  alert("Saved ✅");
 }
-
-// Delete single student
-async function deleteDashStudent(id){
-  if(!confirm("Delete?")) return;
-  await fetch(API + '/api/delete-student',{
-    method:'DELETE',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({student_id:id})
-  });
-  loadDashboardStudents();
-}
-
-// Delete full loaded class
-async function deleteLoadedClass(){
-  if(!confirm("DELETE FULL CLASS?")) return;
-  document.querySelectorAll('#dashboardBody tr').forEach(async r=>{
-    const id=r.children[1].innerText;
-    await fetch(API + '/api/delete-student',{
-      method:'DELETE',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({student_id:id})
-    });
-  });
-  dashboardBody.innerHTML="";
-}
-
-// ================= MODALS =================
-// Close any modal
-document.querySelectorAll('.close').forEach(c=>{
-  c.onclick=()=>c.closest('.modal').style.display="none";
-});
 
 // ================= FEES =================
 let currentFeesStudent=null;
 
-// Open fees excel popup
 async function openFeesExcelPopup(id){
   currentFeesStudent=id;
   feesExcelModal.style.display="block";
 
-  const students=await (await fetch(API + '/api/get-students')).json();
+  const students=await (await fetch(API+'/api/get-students')).json();
   const s=students.find(x=>x.student_id===id);
 
   feesStudentInfo.innerHTML=`
-<img src="${s.photo}" width="60" style="border-radius:50%;cursor:pointer"
- onclick="openStudentEditPopup('${s.student_id}')">
+<img src="${s.photo}" width="60" style="border-radius:50%"
+ onclick="openStudentEditPopup('${id}')">
+<b>${s.student_name}</b> 📞${s.mobile}
+`;
 
-<b>${s.student_name}</b> | Parent:${s.parent_name} 📞${s.mobile}
-<button onclick="callNow('${s.mobile}')">📞</button>
-<button onclick="sendSMS('${s.mobile}')">💬</button>`;
   prepareFeesFilters();
   loadFeesExcel();
 }
 
-// Call & SMS helpers
-function callNow(n){location.href=`tel:${n}`;}
-function sendSMS(n){location.href=`sms:${n}?body=Fees reminder from BBCC`;}
-
-// ================= FEES CRASH FIX =================
-// Dummy functions (JS crash prevent)
-function prepareFeesFilters(){}
-function loadFeesExcel(){}
-function closeFeesExcel(){
-  feesExcelModal.style.display="none";
-}
-// ================= FEES FILTERS (REAL IMPLEMENTATION) =================
-function prepareFeesFilters(){
-  const yearSel=document.getElementById("fees_year");
-  const monthSel=document.getElementById("fees_month");
-
-  yearSel.innerHTML='<option value="">All Years</option>';
-  monthSel.innerHTML='<option value="">All Months</option>';
-
-  const cy=new Date().getFullYear();
-  for(let y=cy;y>=2018;y--){
-    yearSel.innerHTML+=`<option value="${y}">${y}</option>`;
-  }
-
-  const months=[
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
-  ];
-  months.forEach((m,i)=>{
-    monthSel.innerHTML+=`<option value="${i+1}">${m}</option>`;
-  });
-}
-////-==========================================================
-// ================= FEES EXCEL LOADER (EDITABLE) =================
+// ================= FEES EXCEL =================
 async function loadFeesExcel(){
-  const year=document.getElementById("fees_year").value;
-  const month=document.getElementById("fees_month").value;
-
   const students=await (await fetch(API+'/api/get-students')).json();
   const s=students.find(x=>x.student_id===currentFeesStudent);
 
-  if(!s){
-    feesExcelBody.innerHTML="<tr><td colspan='6'>No student found</td></tr>";
-    return;
-  }
-
   feesExcelBody.innerHTML="";
+  let totalPaid=0, totalDue=0;
 
   const join=new Date(s.joining_date);
   const now=new Date();
 
-  let y=join.getFullYear();
-  let m=join.getMonth();
+  let y=join.getFullYear(), m=join.getMonth();
 
   while(new Date(y,m)<=now){
-
     const key=`${y}-${String(m+1).padStart(2,'0')}`;
-    const row=s.fees_data?.[key] || {};
+    const row=s.fees_data?.[key]||{};
+    const fees=row.fees??s.fees??0;
+    const paid=row.paid??0;
+    const due=fees-paid;
 
-    // 🔍 FILTER
-    if(year && Number(year)!==y){ next(); continue; }
-    if(month && Number(month)!==(m+1)){ next(); continue; }
-
-    const feesVal = row.fees ?? s.fees ?? 0;
-    const paidVal = row.paid ?? 0;
-    const dueVal  = feesVal - paidVal;
+    totalPaid+=Number(paid);
+    totalDue+=Number(due);
 
     feesExcelBody.innerHTML+=`
 <tr data-key="${key}">
-  <td>${new Date(y,m).toLocaleString('default',{month:'long'})} ${y}</td>
-
-  <td>
-    <input type="number" value="${feesVal}" style="width:80px">
-  </td>
-
-  <td>
-    <input type="number" value="${paidVal}" style="width:80px">
-  </td>
-
-  <td>${dueVal}</td>
-
-  <td>${paidVal>=feesVal ? 'Paid' : 'Due'}</td>
-
-  <td>
-    <button onclick="saveFeesRow(this)">💾</button>
-  </td>
+<td>${new Date(y,m).toLocaleString('default',{month:'long'})} ${y}</td>
+<td><input value="${fees}"></td>
+<td><input value="${paid}"></td>
+<td>${due}</td>
+<td>${paid>=fees?'Paid':'Due'}</td>
+<td><button onclick="saveFeesRow(this)">💾</button></td>
 </tr>`;
 
-    next();
-  }
-
-  function next(){
     m++; if(m>11){m=0;y++;}
   }
+
+  totalPaidSpan.innerText=totalPaid;
+  totalDueSpan.innerText=totalDue;
 }
 
-///=============================================================
+async function saveFeesRow(btn){
+  const tr=btn.closest('tr');
+  const inputs=tr.querySelectorAll('input');
+  const key=tr.dataset.key;
+
+  await fetch(API+'/api/update-student-fees',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      student_id:currentFeesStudent,
+      month:key,
+      field:'fees',
+      value:inputs[0].value
+    })
+  });
+
+  await fetch(API+'/api/update-student-fees',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      student_id:currentFeesStudent,
+      month:key,
+      field:'paid',
+      value:inputs[1].value
+    })
+  });
+
+  alert("Fees Saved ✅");
+  loadFeesExcel();
+}
+
+// ================= STUDENT EDIT =================
 async function openStudentEditPopup(id){
   studentEditModal.style.display="block";
 
@@ -309,16 +233,19 @@ async function openStudentEditPopup(id){
   edit_parent.value=s.parent_name;
   edit_mobile.value=s.mobile;
   edit_parent_mobile.value=s.parent_mobile;
+  edit_photo_preview.src=s.photo||'';
 }
 
-const file = edit_photo_file.files[0];
+async function updateStudentProfile(){
+  const file=edit_photo_file.files[0];
 
-if(file){
-  compressImage(file, async imgData=>{
-    await saveStudentProfile(imgData);
-  });
-}else{
-  await saveStudentProfile(null);
+  if(file){
+    compressImage(file,img=>{
+      saveStudentProfile(img);
+    });
+  }else{
+    saveStudentProfile(null);
+  }
 }
 
 async function saveStudentProfile(photo){
@@ -336,63 +263,20 @@ async function saveStudentProfile(photo){
     })
   });
 
-  alert("Student Updated Successfully ✅");
+  alert("Student Updated ✅");
   studentEditModal.style.display="none";
 }
 
-//======================================================================
-// ================= SAVE FEES ROW =================
-async function saveFeesRow(btn){
-  const tr = btn.closest('tr');
-  const key = tr.dataset.key;
-
-  const inputs = tr.querySelectorAll('input');
-  const fees = inputs[0].value;
-  const paid = inputs[1].value;
-
-  await fetch(API + '/api/update-student-fees',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      student_id: currentFeesStudent,
-      month: key,
-      field: 'fees',
-      value: fees
-    })
-  });
-
-  await fetch(API + '/api/update-student-fees',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      student_id: currentFeesStudent,
-      month: key,
-      field: 'paid',
-      value: paid
-    })
-  });
-
-  loadFeesExcel();
-}
-function compressImage(file, callback){
-  const img = new Image();
-  const reader = new FileReader();
-
-  reader.onload = e => {
-    img.src = e.target.result;
+// ================= IMAGE COMPRESS =================
+function compressImage(file,cb){
+  const img=new Image();
+  const r=new FileReader();
+  r.onload=e=>img.src=e.target.result;
+  img.onload=()=>{
+    const c=document.createElement('canvas');
+    c.width=c.height=150;
+    c.getContext('2d').drawImage(img,0,0,150,150);
+    cb(c.toDataURL('image/jpeg',0.3)); // <5kb
   };
-
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 150;
-    canvas.height = 150;
-
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, 150, 150);
-
-    const data = canvas.toDataURL('image/jpeg', 0.3); // 👈 high compression
-    callback(data);
-  };
-
-  reader.readAsDataURL(file);
+  r.readAsDataURL(file);
 }
