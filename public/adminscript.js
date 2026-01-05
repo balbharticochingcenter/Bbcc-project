@@ -804,44 +804,43 @@ if (openSliderBtn) {
 }
 
 // 2. Photo Upload aur Database mein Save karna
-async function uploadSliderPhoto() {
+async function uploadSliderPhoto(event) {
     const fileInput = document.getElementById('sliderInput');
     const file = fileInput.files[0];
-    
+
     if (!file) return alert("Please select a photo first!");
 
-    // Loading indicator (optional)
     const btn = event.target;
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+    btn.innerHTML = "Uploading...";
     btn.disabled = true;
+
+    try {
         const base64Photo = await compressImageTo5KB(file);
 
-        try {
-            const response = await fetch('/api/add-slider', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ photo: base64Photo })
-            });
+        const response = await fetch('/api/add-slider', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photo: base64Photo })
+        });
 
-            const result = await response.json();
-            if(result.success) {
-                alert("✅ Photo saved to MongoDB!");
-                fileInput.value = ""; // Input clear karein
-                loadSliderPhotos(); // List refresh karein
-            } else {
-                alert("❌ Upload failed: " + result.error);
-            }
-        } catch (err) {
-            console.error("Error:", err);
-            alert("Server connection error!");
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
+        const result = await response.json();
+        if (result.success) {
+            alert("✅ Photo saved to MongoDB!");
+            fileInput.value = "";
+            loadSliderPhotos();
+        } else {
+            alert("❌ Upload failed!");
         }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+        console.error(err);
+        alert("Server error!");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 }
+
 
 // 3. Database se Photos load karke Dashboard par dikhana
 async function loadSliderPhotos() {
