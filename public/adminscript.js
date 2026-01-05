@@ -22,6 +22,15 @@ async function loadClassList(){
   const data = await res.json();
   window.classList = Object.keys(data);
 }
+/////////--------------------------===========================
+function calculateDivision(obt, total){
+  if(!obt || !total) return '-';
+  const p = (obt/total)*100;
+  if(p>=60) return '1st';
+  if(p>=45) return '2nd';
+  if(p>=33) return '3rd';
+  return 'Fail';
+}
 
 // ================= STUDENT DASHBOARD =================
 document.getElementById("openStudentDashboardBtn").onclick=()=>{
