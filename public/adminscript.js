@@ -232,7 +232,7 @@ function prepareFeesFilters(){
   });
 }
 ////-==========================================================
-// ================= FEES EXCEL LOADER (FIXED) =================
+// ================= FEES EXCEL LOADER (EDITABLE) =================
 async function loadFeesExcel(){
   const year=document.getElementById("fees_year").value;
   const month=document.getElementById("fees_month").value;
@@ -240,8 +240,8 @@ async function loadFeesExcel(){
   const students=await (await fetch(API+'/api/get-students')).json();
   const s=students.find(x=>x.student_id===currentFeesStudent);
 
-  if(!s || !s.fees_data){
-    feesExcelBody.innerHTML="<tr><td colspan='6'>No fees data</td></tr>";
+  if(!s){
+    feesExcelBody.innerHTML="<tr><td colspan='6'>No student found</td></tr>";
     return;
   }
 
@@ -256,28 +256,41 @@ async function loadFeesExcel(){
   while(new Date(y,m)<=now){
 
     const key=`${y}-${String(m+1).padStart(2,'0')}`;
-    const row=s.fees_data[key] || {};
+    const row=s.fees_data?.[key] || {};
 
     // 🔍 FILTER
-    if(year && Number(year)!==y){ m++; if(m>11){m=0;y++;} continue; }
-    if(month && Number(month)!==(m+1)){ m++; if(m>11){m=0;y++;} continue; }
+    if(year && Number(year)!==y){ next(); continue; }
+    if(month && Number(month)!==(m+1)){ next(); continue; }
 
-    const fees=Number(row.fees||s.fees||0);
-    const paid=Number(row.paid||0);
-    const due=fees-paid;
+    const feesVal = row.fees ?? s.fees ?? 0;
+    const paidVal = row.paid ?? 0;
+    const dueVal  = feesVal - paidVal;
 
     feesExcelBody.innerHTML+=`
-<tr>
-<td>${new Date(y,m).toLocaleString('default',{month:'long'})} ${y}</td>
-<td>${fees}</td>
-<td>${paid}</td>
-<td>${due}</td>
-<td>${paid>=fees?'Paid':'Due'}</td>
-<td>
-  <button onclick="saveFees('${key}',this)">💾</button>
-</td>
+<tr data-key="${key}">
+  <td>${new Date(y,m).toLocaleString('default',{month:'long'})} ${y}</td>
+
+  <td>
+    <input type="number" value="${feesVal}" style="width:80px">
+  </td>
+
+  <td>
+    <input type="number" value="${paidVal}" style="width:80px">
+  </td>
+
+  <td>${dueVal}</td>
+
+  <td>${paidVal>=feesVal ? 'Paid' : 'Due'}</td>
+
+  <td>
+    <button onclick="saveFeesRow(this)">💾</button>
+  </td>
 </tr>`;
 
+    next();
+  }
+
+  function next(){
     m++; if(m>11){m=0;y++;}
   }
 }
@@ -315,21 +328,34 @@ async function updateStudentProfile(){
   studentEditModal.style.display="none";
 }
 //======================================================================
-// ================= SAVE FEES =================
-async function saveFees(monthKey,btn){
-  const tr=btn.closest('tr');
-  const paid=prompt("Enter paid amount");
+// ================= SAVE FEES ROW =================
+async function saveFeesRow(btn){
+  const tr = btn.closest('tr');
+  const key = tr.dataset.key;
 
-  if(paid===null) return;
+  const inputs = tr.querySelectorAll('input');
+  const fees = inputs[0].value;
+  const paid = inputs[1].value;
 
-  await fetch(API+'/api/update-student-fees',{
+  await fetch(API + '/api/update-student-fees',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      student_id:currentFeesStudent,
-      month:monthKey,
-      field:'paid',
-      value:paid
+      student_id: currentFeesStudent,
+      month: key,
+      field: 'fees',
+      value: fees
+    })
+  });
+
+  await fetch(API + '/api/update-student-fees',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      student_id: currentFeesStudent,
+      month: key,
+      field: 'paid',
+      value: paid
     })
   });
 
