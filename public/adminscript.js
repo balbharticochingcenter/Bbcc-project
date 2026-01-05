@@ -1,3 +1,24 @@
+// ================= GLOBAL DOM =================
+const dash_class = document.getElementById("dash_class");
+const dash_year = document.getElementById("dash_year");
+const dashTotal = document.getElementById("dashTotal");
+const dashboardBody = document.getElementById("dashboardBody");
+
+const feesExcelModal = document.getElementById("feesExcelModal");
+const feesStudentInfo = document.getElementById("feesStudentInfo");
+const feesExcelBody = document.getElementById("feesExcelBody");
+
+const studentEditModal = document.getElementById("studentEditModal");
+
+const edit_id = document.getElementById("edit_id");
+const edit_class = document.getElementById("edit_class");
+const edit_name = document.getElementById("edit_name");
+const edit_parent = document.getElementById("edit_parent");
+const edit_mobile = document.getElementById("edit_mobile");
+const edit_parent_mobile = document.getElementById("edit_parent_mobile");
+const edit_photo_preview = document.getElementById("edit_photo_preview");
+const edit_photo_file = document.getElementById("edit_photo_file");
+
 // ================= SECURITY =================
 (function checkAuth(){
   if(localStorage.getItem('isAdminLoggedIn')!=='true'){
@@ -30,15 +51,27 @@ async function loadSystemSettings(){
     const res = await fetch(API + '/api/get-settings');
     const s = await res.json();
 
-    if(s.logo) db_logo.src=s.logo;
-    if(s.title) db_title.innerText=s.title;
-    if(s.sub_title) db_subtitle.innerText=s.sub_title;
+    const db_logo = document.getElementById("db-logo");
+    const db_title = document.getElementById("db-title");
+    const db_subtitle = document.getElementById("db-subtitle");
 
-    if(s.facebook) foot_facebook.href=s.facebook;
-    if(s.gmail) foot_gmail.href="mailto:"+s.gmail;
-    if(s.call_no) foot_call.href="tel:"+s.call_no;
-    if(s.help) foot_help.innerText=s.help;
-  }catch(e){ console.error(e); }
+    const foot_facebook = document.getElementById("foot-facebook");
+    const foot_gmail = document.getElementById("foot-gmail");
+    const foot_call = document.getElementById("foot-call");
+    const foot_help = document.getElementById("foot-help");
+
+    if(s.logo && db_logo) db_logo.src = s.logo;
+    if(s.title && db_title) db_title.innerText = s.title;
+    if(s.sub_title && db_subtitle) db_subtitle.innerText = s.sub_title;
+
+    if(s.facebook && foot_facebook) foot_facebook.href = s.facebook;
+    if(s.gmail && foot_gmail) foot_gmail.href = "mailto:"+s.gmail;
+    if(s.call_no && foot_call) foot_call.href = "tel:"+s.call_no;
+    if(s.help && foot_help) foot_help.innerText = s.help;
+
+  }catch(e){
+    console.error("Settings load error:", e);
+  }
 }
 
 // ================= CLASS LIST =================
@@ -59,8 +92,8 @@ function calculateDivision(obt,total){
 }
 
 // ================= STUDENT DASHBOARD =================
-openStudentDashboardBtn.onclick=()=>{
-  studentDashboardModal.style.display="block";
+document.getElementById("openStudentDashboardBtn").onclick = () => {
+  document.getElementById("studentDashboardModal").style.display="block";
   prepareDashboardFilters();
 };
 
@@ -129,8 +162,21 @@ async function saveDashStudent(id,btn){
   alert("Saved ✅");
 }
 
+// ================= DELETE STUDENT (MISSING) =================
+async function deleteDashStudent(id){
+  if(!confirm("Delete student?")) return;
+  await fetch(API+'/api/delete-student',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ student_id:id })
+  });
+  loadDashboardStudents();
+}
+
 // ================= FEES =================
 let currentFeesStudent=null;
+
+function prepareFeesFilters(){ /* future safe */ }
 
 async function openFeesExcelPopup(id){
   currentFeesStudent=id;
@@ -165,12 +211,12 @@ async function loadFeesExcel(){
   while(new Date(y,m)<=now){
     const key=`${y}-${String(m+1).padStart(2,'0')}`;
     const row=s.fees_data?.[key]||{};
-    const fees=row.fees??s.fees??0;
-    const paid=row.paid??0;
+    const fees=Number(row.fees ?? s.fees ?? 0);
+    const paid=Number(row.paid ?? 0);
     const due=fees-paid;
 
-    totalPaid+=Number(paid);
-    totalDue+=Number(due);
+    totalPaid+=paid;
+    totalDue+=due;
 
     feesExcelBody.innerHTML+=`
 <tr data-key="${key}">
@@ -185,86 +231,8 @@ async function loadFeesExcel(){
     m++; if(m>11){m=0;y++;}
   }
 
-  totalPaidSpan.innerText=totalPaid;
-  totalDueSpan.innerText=totalDue;
-}
-
-async function saveFeesRow(btn){
-  const tr=btn.closest('tr');
-  const inputs=tr.querySelectorAll('input');
-  const key=tr.dataset.key;
-
-  await fetch(API+'/api/update-student-fees',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      student_id:currentFeesStudent,
-      month:key,
-      field:'fees',
-      value:inputs[0].value
-    })
-  });
-
-  await fetch(API+'/api/update-student-fees',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      student_id:currentFeesStudent,
-      month:key,
-      field:'paid',
-      value:inputs[1].value
-    })
-  });
-
-  alert("Fees Saved ✅");
-  loadFeesExcel();
-}
-
-// ================= STUDENT EDIT =================
-async function openStudentEditPopup(id){
-  studentEditModal.style.display="block";
-
-  const students=await (await fetch(API+'/api/get-students')).json();
-  const s=students.find(x=>x.student_id===id);
-
-  edit_id.value=s.student_id;
-  edit_class.value=s.student_class;
-  edit_name.value=s.student_name;
-  edit_parent.value=s.parent_name;
-  edit_mobile.value=s.mobile;
-  edit_parent_mobile.value=s.parent_mobile;
-  edit_photo_preview.src=s.photo||'';
-}
-
-async function updateStudentProfile(){
-  const file=edit_photo_file.files[0];
-
-  if(file){
-    compressImage(file,img=>{
-      saveStudentProfile(img);
-    });
-  }else{
-    saveStudentProfile(null);
-  }
-}
-
-async function saveStudentProfile(photo){
-  await fetch(API+'/api/update-student-data',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      student_id:edit_id.value,
-      student_class:edit_class.value,
-      student_name:edit_name.value,
-      parent_name:edit_parent.value,
-      mobile:edit_mobile.value,
-      parent_mobile:edit_parent_mobile.value,
-      photo
-    })
-  });
-
-  alert("Student Updated ✅");
-  studentEditModal.style.display="none";
+  document.getElementById("totalPaid").innerText = totalPaid;
+  document.getElementById("totalDue").innerText = totalDue;
 }
 
 // ================= IMAGE COMPRESS =================
@@ -276,7 +244,7 @@ function compressImage(file,cb){
     const c=document.createElement('canvas');
     c.width=c.height=150;
     c.getContext('2d').drawImage(img,0,0,150,150);
-    cb(c.toDataURL('image/jpeg',0.3)); // <5kb
+    cb(c.toDataURL('image/jpeg',0.3));
   };
   r.readAsDataURL(file);
 }
