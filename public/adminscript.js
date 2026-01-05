@@ -1202,7 +1202,19 @@ function toggleBhartiChat() {
 // ---------- VOICE ----------
 function bhartiSpeak(text) {
     if (!text) return;
-    text = text.replace(/[\[\]\*\#\:\_]/g, '').trim();
+
+    // Same line dobara mat bolna
+    if (text === lastBhartiSpoken) return;
+
+    // Confirm / cancel wale message ko mat bolna
+    if (
+        text.includes("Confirm") ||
+        text.includes("YES") ||
+        text.includes("NO") ||
+        text.includes("cancel")
+    ) return;
+
+    lastBhartiSpoken = text;
 
     if (window.responsiveVoice && responsiveVoice.isPlaying()) {
         responsiveVoice.cancel();
@@ -1210,15 +1222,14 @@ function bhartiSpeak(text) {
     window.speechSynthesis.cancel();
 
     if (window.responsiveVoice) {
-        responsiveVoice.speak(text, "Hindi Female", {
-            pitch: 1,
-            rate: 1,
-            onerror: () => fallbackToSystemVoice(text)
-        });
+        responsiveVoice.speak(text, "Hindi Female");
     } else {
-        fallbackToSystemVoice(text);
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'hi-IN';
+        window.speechSynthesis.speak(u);
     }
 }
+
 
 function fallbackToSystemVoice(text) {
     const speech = new SpeechSynthesisUtterance(text);
@@ -1250,7 +1261,7 @@ async function sendBhartiMessage() {
     const confirmReply = bhartiHandleConfirm(prompt);
     if (confirmReply) {
         container.innerHTML += `<div class="bharti-msg ai">${confirmReply}</div>`;
-        bhartiSpeak(confirmReply);
+        
         inputField.value = '';
         return;
     }
@@ -1285,3 +1296,55 @@ async function sendBhartiMessage() {
         container.innerHTML += `<div class="bharti-msg ai">Server error!</div>`;
     }
 }
+// ================= MIC / VOICE INPUT =================
+let recognition;
+let isListening = false;
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+
+    recognition.lang = 'hi-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        isListening = true;
+        console.log("🎤 Mic ON");
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        console.log("🎤 Mic OFF");
+    };
+
+    recognition.onerror = (e) => {
+        console.error("Mic Error:", e);
+        isListening = false;
+    };
+
+    recognition.onresult = (event) => {
+        const voiceText = event.results[0][0].transcript;
+        console.log("🎙️ Heard:", voiceText);
+
+        // Mic se aaya text input box me daal do
+        document.getElementById('bharti-input').value = voiceText;
+
+        // Auto send
+        sendBhartiMessage();
+    };
+} else {
+    alert("❌ Aapka browser mic support nahi karta");
+}
+document.getElementById('bharti-mic-btn').onclick = () => {
+    if (!recognition) {
+        alert("Mic supported nahi hai");
+        return;
+    }
+
+    if (isListening) {
+        recognition.stop();
+    } else {
+        recognition.start();
+    }
+};
