@@ -59,6 +59,9 @@ style="background:#2ecc71; display:none;">
         <button onclick="loadDashboardStudents()">Load</button>
         <button onclick="deleteLoadedClass()">🗑 Delete Loaded Class</button>
     </div>
+<div id="dashTotalBox" style="margin:10px;font-weight:bold;">
+  Total Students: <span id="dashTotal">0</span>
+</div>
 
     <!-- TABLE -->
     <div style="overflow:auto; max-height:70vh;">
@@ -115,7 +118,13 @@ style="background:#2ecc71; display:none;">
                 <th>Save</th>
             </tr>
         </thead>
+        <div style="margin-top:10px;font-weight:bold">
+  Total Paid: ₹<span id="totalPaid">0</span> |
+  Total Due: ₹<span id="totalDue">0</span>
+</div>
+
         <tbody id="feesExcelBody"></tbody>
+        
     </table>
 
   </div>
@@ -125,6 +134,8 @@ style="background:#2ecc71; display:none;">
     <span class="close">&times;</span>
 
     <h3>✏️ Edit Student</h3>
+<img id="edit_photo_preview" width="80" style="border-radius:50%"><br>
+<input type="file" id="edit_photo_file" accept="image/*">
 
     <input id="edit_id" disabled><br><br>
     <input id="edit_class" placeholder="Class"><br><br>
