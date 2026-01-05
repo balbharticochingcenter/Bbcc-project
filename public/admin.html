@@ -120,7 +120,23 @@ style="background:#2ecc71; display:none;">
 
   </div>
 </div>
-    
+   <div id="studentEditModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close">&times;</span>
+
+    <h3>✏️ Edit Student</h3>
+
+    <input id="edit_id" disabled><br><br>
+    <input id="edit_class" placeholder="Class"><br><br>
+    <input id="edit_name" placeholder="Student Name"><br><br>
+    <input id="edit_parent" placeholder="Parent Name"><br><br>
+    <input id="edit_mobile" placeholder="Mobile"><br><br>
+    <input id="edit_parent_mobile" placeholder="Parent Mobile"><br><br>
+
+    <button onclick="updateStudentProfile()">✅ Update</button>
+  </div>
+</div>
+ 
 <footer class="magical-footer">
     <div class="social-icons">
         <a id="foot-whatsapp" href="#"><i class="fab fa-whatsapp"></i></a>
