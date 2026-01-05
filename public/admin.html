@@ -594,6 +594,39 @@
   </div>
 </div>
 
+<div id="feesExcelModal" class="modal">
+  <div class="modal-content" style="max-width:90%;">
+
+    <span class="close" onclick="closeFeesExcel()">&times;</span>
+    <h3>📒 Student Monthly Fees Tracker</h3>
+
+    <!-- STUDENT BASIC INFO -->
+    <div id="feesStudentInfo" style="margin-bottom:10px;"></div>
+
+    <!-- FILTER -->
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <select id="fees_year"></select>
+        <select id="fees_month"></select>
+        <button onclick="loadFeesExcel()">Load</button>
+    </div>
+
+    <!-- TABLE -->
+    <table border="1" width="100%">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Fees</th>
+                <th>Paid</th>
+                <th>Due</th>
+                <th>Status</th>
+                <th>Save</th>
+            </tr>
+        </thead>
+        <tbody id="feesExcelBody"></tbody>
+    </table>
+
+  </div>
+</div>
 
 
 
