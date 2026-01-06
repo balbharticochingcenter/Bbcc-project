@@ -286,6 +286,38 @@ app.get('/api/get-students', async (req, res) => {
     catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+
+// --- Optimized Search API (ID, Name, or Mobile) ---
+app.post('/api/search-student-result', async (req, res) => {
+    try {
+        const { searchTerm } = req.body; 
+        
+        // Search Filter: Exam Date honi chahiye AND (ID ya Name ya Mobile match hona chahiye)
+        const student = await Student.findOne({
+            $and: [
+                { exam_date: { $ne: "" } }, 
+                {
+                    $or: [
+                        { student_id: searchTerm },
+                        { student_name: { $regex: searchTerm, $options: 'i' } }, 
+                        { mobile: searchTerm },
+                        { parent_mobile: searchTerm }
+                    ]
+                }
+            ]
+        });
+
+        if (student) {
+            res.json({ success: true, student });
+        } else {
+            res.json({ success: false, message: "❌ Result nahi mila! Ya toh Details galat hain ya Exam Date update nahi hui." });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+
 app.post('/api/update-student-data', async (req, res) => {
     try { await Student.findOneAndUpdate({ student_id: req.body.student_id }, req.body); res.json({ success: true }); }
     catch (err) { res.status(500).json({ error: err.message }); }
