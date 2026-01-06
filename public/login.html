@@ -110,65 +110,74 @@
         </div>
     </footer>
 
-    <div id="resultModal" class="modal">
-        <div class="modal-content 3d-card">
-            <span class="close-button">&times;</span>
-            <h3>Search Student Result</h3>
-            <div class="search-form-group">
-                <label for="searchStudentId">Student ID:</label>
-                <input type="text" id="searchStudentId" placeholder="Enter Student ID">
-                <button id="searchStudentBtn" class="btn 3d-button">Search</button>
+<div id="resultModal" class="modal">
+    <div class="modal-content 3d-card">
+        <span class="close-button">&times;</span>
+        <h3>Search Student Result</h3>
+        <div class="search-form-group">
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">ID se search karein ya Name + Mobile se</p>
+            
+            <label>Student ID or Name:</label>
+            <input type="text" id="searchStudentId" placeholder="Enter ID or Full Name">
+            
+            <label style="margin-top:10px; display:block;">Mobile Number (Student/Parent):</label>
+            <input type="text" id="searchMobile" placeholder="Enter Mobile Number">
+            
+            <button id="searchStudentBtn" class="btn 3d-button" style="margin-top:15px; width:100%;">Search Result</button>
+        </div>
+        
+        <p id="searchMessage" class="error-message"></p>
+
+        <div id="studentResultDisplay" class="student-result-display" style="display: none;">
+            <div class="result-header">
+                <h2 style="color: #4a90e2;">Bal Bharti Coaching Center</h2>
+                <p>Test Examination Result</p>
             </div>
-            <p id="searchMessage" class="error-message"></p>
-            <div id="studentResultDisplay" class="student-result-display" style="display: none;">
-    <div class="result-header">
-        <h2 style="color: #4a90e2;">Bal Bharti Coaching Center </h2>
-        <p>Test Examination Result</p>
-    </div>
-    
-    <div class="result-details">
-        <div class="detail-item">
-            <p>Student Name: <span id="result-student-name"></span></p>
-            <p>Student ID: <span id="result-student-id"></span></p>
-            <p>Guardian Name: <span id="result-parent-name"></span></p>
-            <p>Class: <span id="result-student-class"></span></p>
-        </div>
-        <div class="result-photo-container">
-            <img id="result-student-photo" src="" alt="Student">
-        </div>
-    </div>
+            
+            <div class="result-details">
+                <div class="detail-item">
+                    <p>Name: <span id="result-student-name"></span></p>
+                    <p>ID: <span id="result-student-id"></span></p>
+                    <p>Guardian: <span id="result-parent-name"></span></p>
+                    <p>Class: <span id="result-student-class"></span></p>
+                </div>
+                <div class="result-photo-container">
+                    <img id="result-student-photo" src="" alt="Student">
+                </div>
+            </div>
 
-    <table class="marks-table">
-    <thead>
-        <tr>
-            <th>Exam Date</th>
-            <th>Subject</th> <th>Max Marks</th>
-            <th>Obtained</th>
-            <th>Percentage</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><span id="result-exam-date"></span></td>
-            <td><span id="result-exam-subject"></span></td> <td><span id="result-total-marks"></span></td>
-            <td><span id="result-obtained-marks"></span></td>
-            <td><span id="result-percentage"></span>%</td>
-        </tr>
-    </tbody>
-</table>
-    <div style="margin-top: 30px; text-align: right;">
-       
-        <p style="margin-right: 20px;"> Director Name </p>
-        <p style="margin-right: 20px;"> Jagannath sir  </p>
-    </div>
+            <table class="marks-table">
+                <thead>
+                    <tr>
+                        <th>Exam Date</th>
+                        <th>Subject</th>
+                        <th>Max Marks</th>
+                        <th>Obtained</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span id="result-exam-date"></span></td>
+                        <td><span id="result-exam-subject"></span></td>
+                        <td><span id="result-total-marks"></span></td>
+                        <td><span id="result-obtained-marks"></span></td>
+                        <td><span id="result-percentage"></span>%</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 30px; text-align: right;">
+                <p>Director: <b>Jagannath Sir</b></p>
+            </div>
 
-    <div class="download-buttons" style="margin-top: 20px; text-align: center;">
-        <button id="downloadPdfBtn" class="btn">Download PDF</button>
-        <button id="downloadJpgBtn" class="btn" style="background: #28a745;">Download JPG</button>
+            <div class="download-buttons">
+                <button id="downloadPdfBtn" class="btn">Download PDF</button>
+                <button id="downloadJpgBtn" class="btn" style="background: #28a745;">Download JPG</button>
+            </div>
+        </div>
     </div>
 </div>
-        </div>
-    </div>
 
     <div id="regModal" class="modal">
         <div class="modal-content 3d-card" style="max-width: 500px; padding: 25px; border-radius: 15px; position: relative;">
