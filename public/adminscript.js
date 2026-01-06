@@ -550,3 +550,107 @@ function handleImgError(img) {
     img.onerror = null; 
     img.src = DEFAULT_AVATAR;
 }
+//////////=============================================class result dasbord ==============================
+
+// Modal Open aur Filters taiyar karna
+function openClassExamModal() {
+    document.getElementById("classExamModal").style.display = "block";
+    const clsSelect = document.getElementById("exam_dash_class");
+    const yrSelect = document.getElementById("exam_dash_year");
+
+    clsSelect.innerHTML = '<option value="">Select Class</option>';
+    window.classList.forEach(c => clsSelect.innerHTML += `<option>${c}</option>`);
+
+    yrSelect.innerHTML = '<option value="">Select Year</option>';
+    const cy = new Date().getFullYear();
+    for (let y = cy; y >= 2018; y--) yrSelect.innerHTML += `<option>${y}</option>`;
+}
+
+// Students Load karna
+async function loadExamStudents() {
+    const cls = document.getElementById("exam_dash_class").value;
+    const yr = document.getElementById("exam_dash_year").value;
+    if (!cls || !yr) return;
+
+    let students = await (await fetch(API + '/api/get-students')).json();
+    students = students.filter(s => s.student_class === cls && new Date(s.joining_date).getFullYear() == yr);
+
+    const body = document.getElementById("examDashboardBody");
+    body.innerHTML = "";
+
+    students.forEach(s => {
+        body.innerHTML += `
+        <tr data-id="${s.student_id}">
+            <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" style="border-radius:4px;"></td>
+            <td><b>${s.student_name}</b><br><small>${s.student_id}</small></td>
+            <td><input type="date" class="row-date" value="${s.exam_date || ''}"></td>
+            <td><input type="text" class="row-subject" value="${s.parent_mobile || ''}" placeholder="Subject"></td> <td><input type="number" class="row-total" value="${s.total_marks || ''}" style="width:60px"></td>
+            <td><input type="number" class="row-obt" value="${s.obtained_marks || ''}" style="width:60px" oninput="updateRowDiv(this)"></td>
+            <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
+        </tr>`;
+    });
+}
+
+// Bulk Apply Button Logic
+function applyBulkSettings() {
+    const sub = document.getElementById("bulk_subject").value;
+    const total = document.getElementById("bulk_total_marks").value;
+    const date = document.getElementById("bulk_exam_date").value;
+
+    document.querySelectorAll("#examDashboardBody tr").forEach(row => {
+        if (sub) row.querySelector(".row-subject").value = sub;
+        if (total) row.querySelector(".row-total").value = total;
+        if (date) row.querySelector(".row-date").value = date;
+    });
+}
+
+// Division auto update on typing marks
+function updateRowDiv(input) {
+    const row = input.closest('tr');
+    const obt = input.value;
+    const total = row.querySelector(".row-total").value;
+    row.querySelector(".row-div").innerText = calculateDivision(obt, total);
+}
+
+// PUBLIC RESULT: Sabka data update karna
+async function saveAllResults() {
+    if(!confirm("Kya aap sabhi students ka result update karna chahte hain?")) return;
+    
+    const rows = document.querySelectorAll("#examDashboardBody tr");
+    for (let row of rows) {
+        const data = {
+            student_id: row.dataset.id,
+            exam_date: row.querySelector(".row-date").value,
+            total_marks: row.querySelector(".row-total").value,
+            obtained_marks: row.querySelector(".row-obt").value
+        };
+        await fetch(API + '/api/update-student-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    }
+    alert("Sabhi Results Update ho gaye! ✅");
+}
+
+// CANCEL EXAM: Sabka data clear karna
+async function cancelAllExams() {
+    if(!confirm("CAUTION: Kya aap puri class ka exam data delete karna chahte hain?")) return;
+
+    const rows = document.querySelectorAll("#examDashboardBody tr");
+    for (let row of rows) {
+        const data = {
+            student_id: row.dataset.id,
+            exam_date: "",
+            total_marks: "",
+            obtained_marks: ""
+        };
+        await fetch(API + '/api/update-student-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    }
+    alert("Exam data clear kar diya gaya! 🗑️");
+    loadExamStudents();
+}
