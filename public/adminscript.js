@@ -570,28 +570,41 @@ function openClassExamModal() {
 async function loadExamStudents() {
     const cls = document.getElementById("exam_dash_class").value;
     const yr = document.getElementById("exam_dash_year").value;
+    
+    // Agar dono filter select nahi hain to function yahi ruk jayega
     if (!cls || !yr) return;
 
-    let students = await (await fetch(API + '/api/get-students')).json();
-    students = students.filter(s => s.student_class === cls && new Date(s.joining_date).getFullYear() == yr);
+    try {
+        let response = await fetch(API + '/api/get-students');
+        let students = await response.json();
 
-    const body = document.getElementById("examDashboardBody");
-    body.innerHTML = "";
+        // Filter: Class aur Year ke hisab se
+        students = students.filter(s => 
+            s.student_class === cls && 
+            new Date(s.joining_date).getFullYear() == yr
+        );
 
-   students.forEach(s => {
-    body.innerHTML += `
-    <tr data-id="${s.student_id}">
-        <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" style="border-radius:4px;"></td>
-        <td><b>${s.student_name}</b><br><small>${s.student_id}</small></td>
-        <td><input type="date" class="row-date" value="${s.exam_date || ''}"></td>
-        
-        <td><input type="text" class="row-subject" value="${s.exam_subject || ''}" placeholder="Subject"></td>
-        
-        <td><input type="number" class="row-total" value="${s.total_marks || ''}" style="width:60px"></td>
-        <td><input type="number" class="row-obt" value="${s.obtained_marks || ''}" style="width:60px" oninput="updateRowDiv(this)"></td>
-        <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
-    </tr>`;
-});
+        const body = document.getElementById("examDashboardBody");
+        body.innerHTML = ""; // Purana data saaf karne ke liye
+
+        students.forEach(s => {
+            body.innerHTML += `
+            <tr data-id="${s.student_id}">
+                <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" style="border-radius:4px;"></td>
+                <td><b>${s.student_name}</b><br><small>${s.student_id}</small></td>
+                <td><input type="date" class="row-date" value="${s.exam_date || ''}"></td>
+                
+                <td><input type="text" class="row-subject" value="${s.exam_subject || ''}" placeholder="Subject"></td>
+                
+                <td><input type="number" class="row-total" value="${s.total_marks || ''}" style="width:60px"></td>
+                <td><input type="number" class="row-obt" value="${s.obtained_marks || ''}" style="width:60px" oninput="updateRowDiv(this)"></td>
+                <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
+            </tr>`;
+        });
+    } catch (error) {
+        console.error("Data load karne mein error:", error);
+    }
+} 
 // Bulk Apply Button Logic
 function applyBulkSettings() {
     const sub = document.getElementById("bulk_subject").value;
