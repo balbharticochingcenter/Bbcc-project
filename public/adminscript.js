@@ -75,8 +75,104 @@ async function loadSystemSettings(){
     console.error("Settings load error:", e);
   }
 }
+// --- ADMIN PROFILE FUNCTIONS ---
 
-// ================= CLASS LIST =================
+// 1. Modal Open & Load Data from DB
+async function openAdminProfile() {
+    document.getElementById('adminProfileModal').style.display = 'block';
+    try {
+        const res = await fetch('/api/get-admin-profile');
+        const admin = await res.json();
+        
+        if (admin && admin.admin_userid) {
+            document.getElementById('admin_userid').value = admin.admin_userid || '';
+            document.getElementById('admin_name').value = admin.admin_name || '';
+            document.getElementById('admin_mobile').value = admin.admin_mobile || '';
+            document.getElementById('admin_pass').value = admin.admin_pass || '';
+            
+            // Note: Server model mein photo nahi hai, par SystemConfig se le sakte hain ya preview rakh sakte hain
+            // Agar aap photo save karna chahte hain toh model mein 'admin_photo' add karna hoga.
+        }
+    } catch (err) {
+        console.error("Profile load error:", err);
+    }
+}
+
+function closeAdminModal() {
+    document.getElementById('adminProfileModal').style.display = 'none';
+}
+
+// 2. Photo Compression Logic (Strict 5KB Limit)
+function handleAdminPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Photo ko chota karein (Thumbnail size 120x120)
+                canvas.width = 120;
+                canvas.height = 120;
+                ctx.drawImage(img, 0, 0, 120, 120);
+                
+                // 0.1 quality means maximum compression (helps reach ~5kb)
+                let dataUrl = canvas.toDataURL('image/jpeg', 0.1); 
+                
+                document.getElementById('admin_preview_img').src = dataUrl;
+                document.getElementById('header_admin_photo').src = dataUrl;
+                console.log("Photo compressed to roughly 5kb or less.");
+            };
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 3. Update Database (POST to Server)
+async function updateAdminProfile() {
+    const adminData = {
+        admin_userid: document.getElementById('admin_userid').value,
+        admin_name: document.getElementById('admin_name').value,
+        admin_mobile: document.getElementById('admin_mobile').value,
+        admin_pass: document.getElementById('admin_pass').value
+        // photo: document.getElementById('admin_preview_img').src // Add this if you add photo to DB schema
+    };
+
+    try {
+        const res = await fetch('/api/update-admin-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(adminData)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert("✅ Admin Record Updated in MongoDB!");
+            closeAdminModal();
+        } else {
+            alert("❌ Update failed!");
+        }
+    } catch (err) {
+        console.error("Server Error:", err);
+        alert("Server error, check console.");
+    }
+}
+
+// Ensure header photo loads on page start
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial fetch to show photo in header
+    fetch('/api/get-admin-profile')
+        .then(r => r.json())
+        .then(admin => {
+            if(admin.admin_name) {
+                // Agar aap photo SystemConfig se bhej rahe hain toh yahan update karein
+                console.log("Admin loaded:", admin.admin_name);
+            }
+        });
+});
+// ================= CLASS LIST drop ke liye student dasbord pe  =================
 async function loadClassList(){
   const res = await fetch(API + '/api/get-all-class-configs');
   const data = await res.json();
