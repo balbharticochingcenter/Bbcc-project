@@ -1,15 +1,14 @@
-body { margin: 0; background: #f0f0f0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
-.bharti-container { width: 450px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+body { margin: 0; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Segoe UI', sans-serif; }
+.bharti-container { width: 400px; background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); overflow: hidden; }
 
-#threejs-canvas-container { 
-    width: 100%; height: 350px; 
-    background: radial-gradient(circle, #ffffff, #a1c4fd); 
-}
+#canvas-container { width: 100%; height: 300px; background: linear-gradient(#81d4fa, #ffffff); }
 
-.ui-panel { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-.chat-box { height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 10px; font-size: 14px; }
+.ui-panel { padding: 15px; }
+.controls { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; font-size: 12px; }
+.chat-box { height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 10px; margin-bottom: 10px; background: #fafafa; }
 .input-area { display: flex; gap: 5px; }
 input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
 button { padding: 8px 15px; border-radius: 20px; border: none; background: #007bff; color: white; cursor: pointer; }
 #mic-btn { background: #ff4757; }
-select { border-radius: 5px; padding: 5px; border: 1px solid #ccc; }
+#voice-toggle.off { background: #6c757d; }
+select { padding: 5px; border-radius: 5px; border: 1px solid #ccc; }
