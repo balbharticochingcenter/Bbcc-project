@@ -807,17 +807,21 @@ async function openSystemConfig() {
 }
 
 // 2. DATA UPDATE: Naya data save karna
+
 async function saveSystemConfig() {
-    // Button ko disable karein taaki baar baar click na ho
-    const btn = event.target;
-    btn.innerText = "Updating...";
-    btn.disabled = true;
+    // 1. Button ko sahi se pakadne ka tareika
+    const btn = document.querySelector("#systemConfigModal button[onclick='saveSystemConfig()']");
+    
+    if(btn) {
+        btn.innerText = "Updating...";
+        btn.disabled = true;
+    }
 
     const config = {
         title: document.getElementById('cfg_title').value,
         sub_title: document.getElementById('cfg_subtitle').value,
         contact: document.getElementById('cfg_contact').value,
-        call_no: document.getElementById('cfg_call_no').value, // Check karein ye ID HTML mein hai ya nahi
+        call_no: document.getElementById('cfg_call_no').value,
         gmail: document.getElementById('cfg_gmail').value,
         facebook: document.getElementById('cfg_facebook').value,
         youtube_link: document.getElementById('cfg_youtube').value,
@@ -825,7 +829,7 @@ async function saveSystemConfig() {
     };
 
     try {
-        const res = await fetch('/api/update-settings', {
+        const res = await fetch(API + '/api/update-settings', { // Yahan 'API' variable use karein jo aapne upar define kiya hai
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(config)
@@ -837,14 +841,16 @@ async function saveSystemConfig() {
             alert("✅ Settings Database mein save ho gayi hain!");
             location.reload();
         } else {
-            alert("❌ Server ne mana kar diya: " + result.error);
+            alert("❌ Error: " + (result.error || "Unknown Error"));
         }
     } catch (err) {
         console.error("Fetch Error:", err);
-        alert("❌ Connection Error: Server tak baat nahi pahonch rahi.");
+        alert("❌ Server connection fail ho gaya.");
     } finally {
-        btn.innerText = "💾 Update Settings";
-        btn.disabled = false;
+        if(btn) {
+            btn.innerText = "💾 Update Settings";
+            btn.disabled = false;
+        }
     }
 }
 // 3. SLIDER LOGIC: Crop (200x200) and Compress (5KB)
