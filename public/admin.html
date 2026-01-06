@@ -122,56 +122,6 @@
   </div>
 </div>
 
-<div id="classExamModal" class="modal" style="display:none;">
-    <div class="modal-content" style="width: 90%; max-width: 1000px;">
-        <span class="close" onclick="this.closest('.modal').style.display='none'">&times;</span>
-        <h2>📝 Bulk Exam Management</h2>
-        
-        <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
-            <div>
-                <label>Class:</label><br>
-                <select id="exam_dash_class" onchange="loadExamStudents()"></select>
-            </div>
-            <div>
-                <label>Year:</label><br>
-                <select id="exam_dash_year" onchange="loadExamStudents()"></select>
-            </div>
-            <div>
-                <label>Subject Name:</label><br>
-                <input type="text" id="bulk_subject" placeholder="e.g. Maths / Final Exam">
-            </div>
-            <div>
-                <label>Total Marks:</label><br>
-                <input type="number" id="bulk_total_marks" placeholder="100">
-            </div>
-            <div>
-                <label>Exam Date:</label><br>
-                <input type="date" id="bulk_exam_date">
-            </div>
-            <button onclick="applyBulkSettings()" style="background:#00b894; color:white;">Apply to All</button>
-        </div>
-
-        <table border="1" style="width:100%; border-collapse: collapse; text-align: center;">
-            <thead>
-                <tr style="background:#dfe6e9;">
-                    <th>Photo</th>
-                    <th>ID & Name</th>
-                    <th>Exam Date</th>
-                    <th>Subject</th>
-                    <th>Total Marks</th>
-                    <th>Obtained Marks</th>
-                    <th>Division</th>
-                </tr>
-            </thead>
-            <tbody id="examDashboardBody"></tbody>
-        </table>
-
-        <div style="margin-top:20px; display:flex; gap:10px;">
-            <button onclick="saveAllResults()" style="background:#0984e3; color:white; padding:10px 20px;">📢 Public Result (Save All)</button>
-            <button onclick="cancelAllExams()" style="background:#d63031; color:white; padding:10px 20px;">🚫 Cancel Exam (Clear All)</button>
-        </div>
-    </div>
-</div>
 
 <div id="classExamModal" class="modal" style="display:none;">
     <div class="modal-content" style="width: 90%; max-width: 1000px;">
