@@ -623,6 +623,7 @@ async function saveAllResults() {
             exam_date: row.querySelector(".row-date").value,
             total_marks: row.querySelector(".row-total").value,
             obtained_marks: row.querySelector(".row-obt").value
+          exam_subject: row.querySelector(".row-subject").value
         };
         await fetch(API + '/api/update-student-data', {
             method: 'POST',
