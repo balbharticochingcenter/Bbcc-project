@@ -96,10 +96,6 @@ const AI_MODELS = [
     "llama-3.3-70b-versatile",
     "qwen/qwen3-32b"
 ];
-
-const FORBIDDEN_WORDS = ['delete', 'drop', 'remove', 'truncate'];
-
-// --- AI CHAT API ---
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt } = req.body;
 
@@ -107,174 +103,53 @@ app.post('/api/ai-chat', async (req, res) => {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
 
-        if (!apiKey) {
-            return res.json({ reply: "API Key missing hai, settings check karein." });
-        }
+        if (!apiKey) return res.json({ reply: "System error: API key not found." });
 
-        const [students, teachers, sliders, settings, admin] = await Promise.all([
-            Student.find().limit(20).select('student_name student_id student_class'),
-            Teacher.find().limit(10).select('teacher_name teacher_id'),
-            SliderPhoto.find().limit(5),
-            SystemConfig.findOne({}),
-            AdminProfile.findOne({})
+        // Only fetch helpful data, no sensitive admin info
+        const [students, teachers, classConfigs] = await Promise.all([
+            Student.find().limit(10).select('student_name student_class'),
+            Teacher.find().limit(5).select('teacher_name'),
+            ClassConfig.find().select('class_name subjects')
         ]);
 
-        const studentSummary = students.map(
-            s => `${s.student_name}(ID:${s.student_id})`
-        ).join(", ");
+        const systemInstruction = `
+Aap "Bharti" hain, Bal Bharti Coaching Center ki Digital Sahayak.
+Aapka kaam sirf STUDENTS ki help karna aur coaching ke features samjhana hai.
 
-        const teacherSummary = teachers.map(
-            t => `${t.teacher_name}(ID:${t.teacher_id})`
-        ).join(", ");
+KHYAL RAKHEIN:
+1. Aap koi bhi data DELETE, UPDATE ya CHANGE nahi kar sakte.
+2. Agar koi puche ki change kaise karein, toh unhe step-by-step Dashboard ka rasta batayein.
+3. Aapke paas Database ka direct control nahi hai.
+4. Sirf HINDI mein baat karein.
+5. Soft aur helpful tone rakhein.
 
-        const actionKeywords = ['delete', 'remove', 'update', 'change', 'hatao', 'badlo', 'mitao'];
-        const isActionRequest = actionKeywords.some(w =>
-            prompt.toLowerCase().includes(w)
-        );
-
-        let systemInstruction = `
-Aap Bharti ho, Bal Bharti Coaching Center ki Assistant.
-Aap ek  ADMIN ASSISTANT ki tarah kaam karti ho.
-
-DATABASE (MONGODB DETAILS):
-
-1️⃣ Student Collection (Student):
-- student_name
-- student_id (unique)
-- pass
-- parent_name
-- mobile
-- parent_mobile
-- student_class
-- fees
-- joining_date
-- total_marks
-- obtained_marks
-- exam_date
-- photo
-- paid_months (array)
-- fees_data (month-wise fees object)
-
-Current Students:
-${studentSummary}
-
-2️⃣ Teacher Collection (Teacher):
-- teacher_name
-- teacher_id (unique)
-- mobile
-- pass
-- photo
-- salary
-- joining_date
-- classes (array)
-- subjects (array)
-- paid_months (array)
-
-Current Teachers:
-${teacherSummary}
-
-3️⃣ AdminProfile Collection:
-- admin_name
-- admin_userid
-- admin_pass
-- admin_mobile
-
-4️⃣ SystemConfig Collection:
-- logo
-- title
-- sub_title
-- contact
-- call_no
-- gmail
-- facebook
-- youtube_link
-- instagram
-- twitter
-- help
-- admin_name
-
-
-5️⃣ SliderPhoto Collection:
-- photo
-- upload_date
-
-6️⃣ ClassConfig Collection:
-- class_name
-- banner
-- intro_video
-- subjects (subject-wise chapters)
-
-
-STRICT RULES:
-1. Sirf HINDI mein jawab dena.
-2. Seedha aur kaam ka jawab.
-3. Bina admin confirmation ke koi change suggest nahi.
-4. Modal open karne ke liye hi likhna: [OPEN_MODAL: modalID]
-5. Student aur Slider ko kabhi mix nahi karna.
+AVAILABLE INFO:
+- Students: ${students.map(s => s.student_name).join(", ")}
+- Classes available: ${classConfigs.map(c => c.class_name).join(", ")}
+- App Features: Admission form, Fees checking, Exam results, Video lectures.
 `;
 
-        if (isActionRequest) {
-            systemInstruction += `
-User koi action chahta hai.
-Pehle poochhna: "Kya aap nishchit hain? (Yes/No)"
-`;
-        }
+        // Fetch from Groq
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: AI_MODELS[0],
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 300
+            })
+        });
 
-        let aiResponse = null;
-
-        for (const model of AI_MODELS) {
-            try {
-                const response = await fetch(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${apiKey}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            model,
-                            messages: [
-                                { role: "system", content: systemInstruction },
-                                { role: "user", content: prompt }
-                            ],
-                            max_tokens: 350,
-                            temperature: 0.7
-                        })
-                    }
-                );
-
-                if (response.status === 429) continue;
-
-                const data = await response.json();
-                if (data.choices?.[0]) {
-                    aiResponse = data.choices[0].message.content;
-                    break;
-                }
-            } catch {
-                continue;
-            }
-        }
-
-        if (!aiResponse) {
-            return res.json({ reply: "AI busy hai, baad mein koshish karein." });
-        }
-
-        if (FORBIDDEN_WORDS.some(w => aiResponse.toLowerCase().includes(w))) {
-            aiResponse =
-                "⚠️ Main sirf madad karti hoon. Delete ya update dashboard se manually karein.";
-        }
-
-        res.json({ reply: aiResponse });
+        const data = await response.json();
+        res.json({ reply: data.choices[0].message.content });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ reply: "Server error." });
+        res.status(500).json({ reply: "Maaf kijiye, abhi network issue hai." });
     }
 });
-
-
-
 
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
