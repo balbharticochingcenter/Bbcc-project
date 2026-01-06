@@ -2,39 +2,32 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Talk to Bharti - Bal Bharti Coaching</title>
+    <title>3D Bharti AI - Bal Bharti Coaching</title>
     <link rel="stylesheet" href="bharti.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.js"></script>
 </head>
 <body>
+    <div class="bharti-container">
+        <div id="threejs-canvas-container"></div>
 
-    <div class="bharti-main-container">
-        <div class="avatar-stage">
-            <div id="threejs-canvas-container">
-                </div>
-            </div>
-
-        <div class="bharti-ui">
-            <div class="controls-row">
-                <select id="voice-select" title="Voice Badlein"></select>
+        <div class="ui-panel">
+            <div class="controls">
+                <select id="voice-select"></select>
                 <button id="voice-toggle" class="on">Voice: ON</button>
             </div>
-
-            <div id="chat-display" class="chat-display">
-                <p class="bot-text">Namaste! Main Bharti hoon. Main aapki kya madad kar sakti hoon?</p>
+            <div id="chat-box" class="chat-box">
+                <p class="bot">Namaste! Main Bharti hoon. Puchiye kya janna hai?</p>
             </div>
-
-            <div class="input-row">
-                <input type="text" id="user-input" placeholder="Kuch puchiye...">
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="Yahan likhein...">
                 <button id="mic-btn">🎤</button>
                 <button id="send-btn">Bhejein</button>
             </div>
         </div>
     </div>
-
     <script src="bharti.js"></script>
 </body>
 </html>
