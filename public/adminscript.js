@@ -622,8 +622,8 @@ async function saveAllResults() {
             student_id: row.dataset.id,
             exam_date: row.querySelector(".row-date").value,
             total_marks: row.querySelector(".row-total").value,
-            obtained_marks: row.querySelector(".row-obt").value
-          exam_subject: row.querySelector(".row-subject").value
+            obtained_marks: row.querySelector(".row-obt").value,
+            exam_subject: row.querySelector(".row-subject").value // Naya field
         };
         await fetch(API + '/api/update-student-data', {
             method: 'POST',
@@ -631,7 +631,7 @@ async function saveAllResults() {
             body: JSON.stringify(data)
         });
     }
-    alert("Sabhi Results Update ho gaye! ✅");
+    alert("Result Published Successfully! ✅");
 }
 
 // CANCEL EXAM: Sabka data clear karna
