@@ -784,3 +784,93 @@ async function cancelAllExams() {
     alert("Exam data clear kar diya gaya! 🗑️");
     loadExamStudents();
 }
+// --- MODAL CONTROLS ---
+function openModal(id) { document.getElementById(id).style.display = 'block'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// --- SYSTEM CONFIG LOGIC ---
+async function saveSystemConfig() {
+    const config = {
+        title: document.getElementById('cfg_title').value,
+        sub_title: document.getElementById('cfg_subtitle').value,
+        contact: document.getElementById('cfg_contact').value,
+        gmail: document.getElementById('cfg_gmail').value,
+        facebook: document.getElementById('cfg_facebook').value,
+        youtube_link: document.getElementById('cfg_youtube').value,
+        instagram: document.getElementById('cfg_insta').value
+    };
+
+    const res = await fetch('/api/update-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+    });
+    const data = await res.json();
+    if(data.success) {
+        alert("✅ Settings updated successfully!");
+        location.reload();
+    }
+}
+
+// --- SLIDER PHOTO LOGIC (CROP & COMPRESS) ---
+let finalSliderBase64 = "";
+
+function previewAndCropSlider(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.getElementById('cropCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 200x200 size mein draw karna (Center Crop Logic)
+                let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
+                if (img.width > img.height) {
+                    sourceWidth = img.height;
+                    sourceX = (img.width - img.height) / 2;
+                } else {
+                    sourceHeight = img.width;
+                    sourceY = (img.height - img.width) / 2;
+                }
+
+                ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, 200, 200);
+                
+                // Compress to 5KB: Quality 0.1 se 0.3 ke beech rakhein
+                finalSliderBase64 = canvas.toDataURL('image/jpeg', 0.2); 
+                
+                document.getElementById('slider_crop_preview').src = finalSliderBase64;
+                document.getElementById('sliderPreviewContainer').style.display = 'block';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+async function uploadSlider() {
+    if(!finalSliderBase64) return alert("Pehle photo select karein");
+
+    const res = await fetch('/api/add-slider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo: finalSliderBase64 })
+    });
+    
+    if(await res.json()) {
+        alert("✅ Slider added!");
+        loadSliders(); // Refresh list
+    }
+}
+
+async function loadSliders() {
+    const res = await fetch('/api/get-sliders');
+    const sliders = await res.json();
+    const container = document.getElementById('existingSliders');
+    container.innerHTML = sliders.map(s => `
+        <div style="position:relative;">
+            <img src="${s.photo}" style="width:80px; height:80px; border-radius:5px; border:1px solid #ddd;">
+            <button onclick="deleteSlider('${s._id}')" style="position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer;">&times;</button>
+        </div>
+    `).join('');
+}
