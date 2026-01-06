@@ -103,51 +103,67 @@ app.post('/api/ai-chat', async (req, res) => {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
 
-        if (!apiKey) return res.json({ reply: "System error: API key not found." });
+        if (!apiKey) return res.json({ reply: "System error: Bharti ki yaadassht (API Key) nahi mil rahi hai." });
 
-        // Only fetch helpful data, no sensitive admin info
+        // Database se live info nikalna taki Bharti update rahe
         const [students, teachers, classConfigs] = await Promise.all([
             Student.find().limit(10).select('student_name student_class'),
-            Teacher.find().limit(5).select('teacher_name'),
-            ClassConfig.find().select('class_name subjects')
+            Teacher.find().limit(10).select('teacher_name specialty'),
+            ClassConfig.find().select('class_name subjects description')
         ]);
 
+        // Bharti ko training dena (System Instructions)
         const systemInstruction = `
-Aap "Bharti" hain, Bal Bharti Coaching Center ki Digital Sahayak.
-Aapka kaam sirf STUDENTS ki help karna aur coaching ke features samjhana hai.
+Aapka Naam: "Bharti" (Digital Sahayak, Bal Bharti Coaching Center).
+Aapka Vyaktitv: Aap hamesha "Aap" kehkar respect se baat karti hain. Aap soft-spoken, intelligent aur helpful hain.
+
+Aapka Kaam:
+1. Coaching ke har feature ko samjhana (Admission, Results, Fees, Teachers).
+2. Jitna pucha jaye utna hi point-to-point samjhana. Agar user ko samajh na aaye, toh naye aur asaan tarike se samjhana.
+3. Agar koi sawal coaching se bahar ka ho (Jaise General Knowledge, Maths, ya Science), toh uska jawab ek expert teacher ki tarah dena.
+4. Admin Dashboard ki baatein (Passwords, Keys, Delete options) bilkul nahi batani.
+
+LIVE DATA (Aapke coaching ki jaankari):
+- Classes: ${classConfigs.map(c => `${c.class_name} (Subjects: ${c.subjects})`).join(" | ")}
+- Teachers: ${teachers.map(t => t.teacher_name).join(", ")}
+- Top Students: ${students.map(s => s.student_name).join(", ")}
+- Website Features: 3D Slider, Login Modal, Student Registration Form, Searchable Results (ID/Mobile), Teachers Ring Section, Video Lectures.
 
 KHYAL RAKHEIN:
-1. Aap koi bhi data DELETE, UPDATE ya CHANGE nahi kar sakte.
-2. Agar koi puche ki change kaise karein, toh unhe step-by-step Dashboard ka rasta batayein.
-3. Aapke paas Database ka direct control nahi hai.
-4. Sirf HINDI mein baat karein.
-5. Soft aur helpful tone rakhein.
-
-AVAILABLE INFO:
-- Students: ${students.map(s => s.student_name).join(", ")}
-- Classes available: ${classConfigs.map(c => c.class_name).join(", ")}
-- App Features: Admission form, Fees checking, Exam results, Video lectures.
+- Sirf HINDI mein baat karein.
+- User ko "Aap" kahein.
+- Agar koi system change mangne ki koshish kare, toh kahein "Maaf kijiye, main sirf ek sahayak hoon, changes ke liye aap office ya dashboard ka istemal karein."
 `;
 
-        // Fetch from Groq
+        // Groq AI se response lena
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            headers: { 
+                "Authorization": `Bearer ${apiKey}`, 
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify({
-                model: AI_MODELS[0],
+                model: "llama3-70b-8192", // Powerful model for better understanding
                 messages: [
                     { role: "system", content: systemInstruction },
                     { role: "user", content: prompt }
                 ],
-                max_tokens: 300
+                temperature: 0.7, // Creativity balance
+                max_tokens: 500
             })
         });
 
         const data = await response.json();
-        res.json({ reply: data.choices[0].message.content });
+        
+        if (data.choices && data.choices[0]) {
+            res.json({ reply: data.choices[0].message.content });
+        } else {
+            res.json({ reply: "Maaf kijiye, main abhi kuch samajh nahi pa rahi hoon. Phir se puchiye?" });
+        }
 
     } catch (err) {
-        res.status(500).json({ reply: "Maaf kijiye, abhi network issue hai." });
+        console.error("AI Error:", err);
+        res.status(500).json({ reply: "Maaf kijiye, abhi mera server thoda thak gaya hai. Ek minute baad baat karte hain?" });
     }
 });
 
