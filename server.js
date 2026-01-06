@@ -56,12 +56,11 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     total_marks: { type: String, default: "" },
     obtained_marks: { type: String, default: "" },
     exam_date: { type: String, default: "" },
-    exam_subject: { type: String, default: "" }
-    photo: String,
+    exam_subject: { type: String, default: "" }, 
+    photo: String,                               
     paid_months: { type: [Number], default: [] },
     fees_data: { type: Map, of: Object, default: {} }
 }));
-
 const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
     admin_name: String,
     admin_userid: { type: String, unique: true },
