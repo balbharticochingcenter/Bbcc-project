@@ -287,36 +287,48 @@ app.get('/api/get-students', async (req, res) => {
 });
 
 
-// --- Optimized Search API (ID, Name, or Mobile) ---
+// --- Merged & Powerful Search API (ID OR Name + Mobile) ---
 app.post('/api/search-student-result', async (req, res) => {
     try {
-        const { searchTerm } = req.body; 
-        
-        // Search Filter: Exam Date honi chahiye AND (ID ya Name ya Mobile match hona chahiye)
-        const student = await Student.findOne({
+        const { searchTerm, mobileSearch } = req.body; 
+
+        // 1. Agar user ne sirf ID daali hai aur mobile wala box khali chhoda hai
+        if (searchTerm && !mobileSearch) {
+            const studentById = await Student.findOne({ 
+                student_id: searchTerm, 
+                exam_date: { $ne: "" } 
+            });
+            if (studentById) return res.json({ success: true, student: studentById });
+        }
+
+        // 2. Agar Name aur Mobile dono daale gaye hain (Flexible Search)
+        // Ye tab kaam karega jab upar wala ID match nahi hoga ya mobileSearch field bhari hogi
+        const studentByNameMobile = await Student.findOne({
             $and: [
-                { exam_date: { $ne: "" } }, 
+                { exam_date: { $ne: "" } }, // Exam date update honi chahiye
+                { student_name: { $regex: new RegExp(searchTerm, 'i') } }, // Case-insensitive Name
                 {
                     $or: [
-                        { student_id: searchTerm },
-                        { student_name: { $regex: searchTerm, $options: 'i' } }, 
-                        { mobile: searchTerm },
-                        { parent_mobile: searchTerm }
+                        { mobile: mobileSearch },      // Student Mobile
+                        { parent_mobile: mobileSearch } // Parent Mobile
                     ]
                 }
             ]
         });
 
-        if (student) {
-            res.json({ success: true, student });
+        if (studentByNameMobile) {
+            res.json({ success: true, student: studentByNameMobile });
         } else {
-            res.json({ success: false, message: "❌ Result nahi mila! Ya toh Details galat hain ya Exam Date update nahi hui." });
+            res.json({ 
+                success: false, 
+                message: "❌ Result nahi mila! Sahi ID daalein ya Name aur Mobile ka sahi combination." 
+            });
         }
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        console.error("Search Error:", err);
+        res.status(500).json({ success: false, error: "Server Error" });
     }
 });
-
 
 app.post('/api/update-student-data', async (req, res) => {
     try { await Student.findOneAndUpdate({ student_id: req.body.student_id }, req.body); res.json({ success: true }); }
