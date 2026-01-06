@@ -164,15 +164,18 @@ async function saveDashStudent(id,btn){
   alert("Saved ✅");
 }
 
-// ================= DELETE STUDENT (MISSING) =================
+// ================= DELETE STUDENT=================
 async function deleteDashStudent(id){
-  if(!confirm("Delete student?")) return;
-  await fetch(API+'/api/delete-student',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ student_id:id })
-  });
-  loadDashboardStudents();
+  if(!confirm("Kya aap is student ko delete karna chahte hain?")) return;
+  
+  await fetch(API + '/api/delete-student', {
+    method: 'POST', // Backend ke naye method se match karein
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ student_id: id })
+  });
+
+  alert("Student Deleted! 🗑️");
+  loadDashboardStudents(); // List refresh karne ke liye
 }
 
 // ================= FEES =================
