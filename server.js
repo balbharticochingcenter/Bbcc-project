@@ -314,6 +314,15 @@ app.post('/api/update-fees-status', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.delete('/api/delete-class/:className', async (req, res) => {
+    try {
+        const { className } = req.params;
+        await Student.deleteMany({ student_class: className });
+        res.json({ success: true, message: `Class ${className} ke sabhi students delete kar diye gaye hain.` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 // --- B. TEACHER API ---
 app.post('/api/teacher-reg', async (req, res) => {
     try { const t = new Teacher(req.body); await t.save(); res.json({ success: true }); }
