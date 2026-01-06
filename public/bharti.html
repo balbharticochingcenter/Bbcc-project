@@ -2,27 +2,27 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>3D Bharti AI - Bal Bharti Coaching</title>
+    <title>3D Bharti AI - Zero Asset Version</title>
     <link rel="stylesheet" href="bharti.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.js"></script>
 </head>
 <body>
     <div class="bharti-container">
-        <div id="threejs-canvas-container"></div>
+        <div id="canvas-container"></div>
 
         <div class="ui-panel">
             <div class="controls">
+                <label>Awaaz Chunein:</label>
                 <select id="voice-select"></select>
                 <button id="voice-toggle" class="on">Voice: ON</button>
             </div>
+            
             <div id="chat-box" class="chat-box">
-                <p class="bot">Namaste! Main Bharti hoon. Puchiye kya janna hai?</p>
+                <p class="bot"><b>Bharti:</b> Namaste! Main bina kisi external file ke 3D mein haazir hoon. Puchiye kya janna hai?</p>
             </div>
+
             <div class="input-area">
-                <input type="text" id="user-input" placeholder="Yahan likhein...">
+                <input type="text" id="user-input" placeholder="Kuch likhein...">
                 <button id="mic-btn">🎤</button>
                 <button id="send-btn">Bhejein</button>
             </div>
