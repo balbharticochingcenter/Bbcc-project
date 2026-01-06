@@ -96,67 +96,61 @@ const AI_MODELS = [
     "llama-3.3-70b-versatile",
     "qwen/qwen3-32b"
 ];
-// Server ke top par ek memory object banayein (Ya sessions use karein)
-let chatHistory = {}; 
+let chatHistory = {};
 
 app.post('/api/ai-chat', async (req, res) => {
-    const { prompt, userId } = req.body; // userId front-end se bhejenge
+    const { prompt, userId } = req.body;
     const id = userId || "default";
 
     try {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
-        if (!apiKey) return res.json({ reply: "API Key missing!" });
+        if (!apiKey) return res.json({ reply: "System error hai." });
 
-        // 1. Memory Logic: Purani baatein yaad rakhne ke liye
         if (!chatHistory[id]) chatHistory[id] = [];
-        
-        // Live DB Info
-        const [students, classConfigs] = await Promise.all([
-            Student.countDocuments(),
-            ClassConfig.find().select('class_name -_id')
-        ]);
 
         const systemInstruction = {
             role: "system",
-            content: `Aapka naam Bharti hai. Bal Bharti Coaching ki assistant hain. 
-            Sirf HINDI mein baat karein. Respect dein. Hamare paas ${students} students hain. 
-            Short aur sweet jawab dein. Special characters (*, #, _) bilkul use na karein.`
+            content: publicKnowledge
         };
 
-        // History maintain karein (Last 10 messages)
-        const messages = [systemInstruction, ...chatHistory[id], { role: "user", content: prompt }];
+        const messages = [
+            systemInstruction,
+            ...chatHistory[id],
+            { role: "user", content: prompt }
+        ];
 
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
                 model: "llama-3.1-8b-instant",
-                messages: messages,
-                temperature: 0.7,
+                messages,
+                temperature: 0.6,
                 max_tokens: 300
             })
         });
 
         const data = await response.json();
-        let aiReply = data.choices[0].message.content;
+        let reply = data.choices[0].message.content;
 
-        // 2. Special Characters Hatane ka logic (Voice ke liye safai)
-        aiReply = aiReply.replace(/[#*_~`>]/g, ""); 
+        reply = reply.replace(/[#*_~`>]/g, "");
 
-        // Memory mein save karein
         chatHistory[id].push({ role: "user", content: prompt });
-        chatHistory[id].push({ role: "assistant", content: aiReply });
+        chatHistory[id].push({ role: "assistant", content: reply });
 
-        // History limit (taki server crash na ho)
         if (chatHistory[id].length > 10) chatHistory[id].shift();
 
-        res.json({ reply: aiReply });
+        res.json({ reply });
 
     } catch (err) {
-        res.status(500).json({ reply: "Network error!" });
+        res.status(500).json({ reply: "Network error aayi hai." });
     }
 });
+
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
     try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
