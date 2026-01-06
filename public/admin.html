@@ -172,111 +172,57 @@
         </div>
     </div>
 </div>
-Step 2: AdminScript.js mein ye code niche add karein
-JavaScript
 
-// Modal Open aur Filters taiyar karna
-function openClassExamModal() {
-    document.getElementById("classExamModal").style.display = "block";
-    const clsSelect = document.getElementById("exam_dash_class");
-    const yrSelect = document.getElementById("exam_dash_year");
+<div id="classExamModal" class="modal" style="display:none;">
+    <div class="modal-content" style="width: 90%; max-width: 1000px;">
+        <span class="close" onclick="this.closest('.modal').style.display='none'">&times;</span>
+        <h2>📝 Bulk Exam Management</h2>
+        
+        <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            <div>
+                <label>Class:</label><br>
+                <select id="exam_dash_class" onchange="loadExamStudents()"></select>
+            </div>
+            <div>
+                <label>Year:</label><br>
+                <select id="exam_dash_year" onchange="loadExamStudents()"></select>
+            </div>
+            <div>
+                <label>Subject Name:</label><br>
+                <input type="text" id="bulk_subject" placeholder="e.g. Maths / Final Exam">
+            </div>
+            <div>
+                <label>Total Marks:</label><br>
+                <input type="number" id="bulk_total_marks" placeholder="100">
+            </div>
+            <div>
+                <label>Exam Date:</label><br>
+                <input type="date" id="bulk_exam_date">
+            </div>
+            <button onclick="applyBulkSettings()" style="background:#00b894; color:white;">Apply to All</button>
+        </div>
 
-    clsSelect.innerHTML = '<option value="">Select Class</option>';
-    window.classList.forEach(c => clsSelect.innerHTML += `<option>${c}</option>`);
+        <table border="1" style="width:100%; border-collapse: collapse; text-align: center;">
+            <thead>
+                <tr style="background:#dfe6e9;">
+                    <th>Photo</th>
+                    <th>ID & Name</th>
+                    <th>Exam Date</th>
+                    <th>Subject</th>
+                    <th>Total Marks</th>
+                    <th>Obtained Marks</th>
+                    <th>Division</th>
+                </tr>
+            </thead>
+            <tbody id="examDashboardBody"></tbody>
+        </table>
 
-    yrSelect.innerHTML = '<option value="">Select Year</option>';
-    const cy = new Date().getFullYear();
-    for (let y = cy; y >= 2018; y--) yrSelect.innerHTML += `<option>${y}</option>`;
-}
-
-// Students Load karna
-async function loadExamStudents() {
-    const cls = document.getElementById("exam_dash_class").value;
-    const yr = document.getElementById("exam_dash_year").value;
-    if (!cls || !yr) return;
-
-    let students = await (await fetch(API + '/api/get-students')).json();
-    students = students.filter(s => s.student_class === cls && new Date(s.joining_date).getFullYear() == yr);
-
-    const body = document.getElementById("examDashboardBody");
-    body.innerHTML = "";
-
-    students.forEach(s => {
-        body.innerHTML += `
-        <tr data-id="${s.student_id}">
-            <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" style="border-radius:4px;"></td>
-            <td><b>${s.student_name}</b><br><small>${s.student_id}</small></td>
-            <td><input type="date" class="row-date" value="${s.exam_date || ''}"></td>
-            <td><input type="text" class="row-subject" value="${s.parent_mobile || ''}" placeholder="Subject"></td> <td><input type="number" class="row-total" value="${s.total_marks || ''}" style="width:60px"></td>
-            <td><input type="number" class="row-obt" value="${s.obtained_marks || ''}" style="width:60px" oninput="updateRowDiv(this)"></td>
-            <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
-        </tr>`;
-    });
-}
-
-// Bulk Apply Button Logic
-function applyBulkSettings() {
-    const sub = document.getElementById("bulk_subject").value;
-    const total = document.getElementById("bulk_total_marks").value;
-    const date = document.getElementById("bulk_exam_date").value;
-
-    document.querySelectorAll("#examDashboardBody tr").forEach(row => {
-        if (sub) row.querySelector(".row-subject").value = sub;
-        if (total) row.querySelector(".row-total").value = total;
-        if (date) row.querySelector(".row-date").value = date;
-    });
-}
-
-// Division auto update on typing marks
-function updateRowDiv(input) {
-    const row = input.closest('tr');
-    const obt = input.value;
-    const total = row.querySelector(".row-total").value;
-    row.querySelector(".row-div").innerText = calculateDivision(obt, total);
-}
-
-// PUBLIC RESULT: Sabka data update karna
-async function saveAllResults() {
-    if(!confirm("Kya aap sabhi students ka result update karna chahte hain?")) return;
-    
-    const rows = document.querySelectorAll("#examDashboardBody tr");
-    for (let row of rows) {
-        const data = {
-            student_id: row.dataset.id,
-            exam_date: row.querySelector(".row-date").value,
-            total_marks: row.querySelector(".row-total").value,
-            obtained_marks: row.querySelector(".row-obt").value
-        };
-        await fetch(API + '/api/update-student-data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-    }
-    alert("Sabhi Results Update ho gaye! ✅");
-}
-
-// CANCEL EXAM: Sabka data clear karna
-async function cancelAllExams() {
-    if(!confirm("CAUTION: Kya aap puri class ka exam data delete karna chahte hain?")) return;
-
-    const rows = document.querySelectorAll("#examDashboardBody tr");
-    for (let row of rows) {
-        const data = {
-            student_id: row.dataset.id,
-            exam_date: "",
-            total_marks: "",
-            obtained_marks: ""
-        };
-        await fetch(API + '/api/update-student-data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-    }
-    alert("Exam data clear kar diya gaya! 🗑️");
-    loadExamStudents();
-}
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button onclick="saveAllResults()" style="background:#0984e3; color:white; padding:10px 20px;">📢 Public Result (Save All)</button>
+            <button onclick="cancelAllExams()" style="background:#d63031; color:white; padding:10px 20px;">🚫 Cancel Exam (Clear All)</button>
+        </div>
+    </div>
+</div>
 
   
 <footer class="magical-footer">
