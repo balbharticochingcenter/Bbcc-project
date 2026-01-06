@@ -230,42 +230,51 @@ async function openFeesExcelPopup(id){
 
 // ================= FEES EXCEL =================
 async function loadFeesExcel(){
-  const students=await (await fetch(API+'/api/get-students')).json();
-  const s=students.find(x=>x.student_id===currentFeesStudent);
+    const students = await (await fetch(API + '/api/get-students')).json();
+    const s = students.find(x => x.student_id === currentFeesStudent);
 
-  feesExcelBody.innerHTML="";
-  let totalPaid=0, totalDue=0;
+    feesExcelBody.innerHTML = "";
+    let totalPaid = 0, totalDue = 0;
 
-  const join=new Date(s.joining_date);
-  const now=new Date();
+    const join = new Date(s.joining_date);
+    const now = new Date();
 
-  let y=join.getFullYear(), m=join.getMonth();
+    let y = join.getFullYear(), m = join.getMonth();
 
-  while(new Date(y,m)<=now){
-    const key=`${y}-${String(m+1).padStart(2,'0')}`;
-    const row=s.fees_data?.[key]||{};
-    const fees=Number(row.fees ?? s.fees ?? 0);
-    const paid=Number(row.paid ?? 0);
-    const due=fees-paid;
+    while(new Date(y, m) <= now){
+        const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+        const row = s.fees_data?.[key] || {};
+        const fees = Number(row.fees ?? s.fees ?? 0);
+        const paid = Number(row.paid ?? 0);
+        const due = fees - paid;
 
-    totalPaid+=paid;
-    totalDue+=due;
+        totalPaid += paid;
+        totalDue += due;
 
-    feesExcelBody.innerHTML+=`
-<tr data-key="${key}">
-<td>${new Date(y,m).toLocaleString('default',{month:'long'})} ${y}</td>
-<td><input value="${fees}"></td>
-<td><input value="${paid}"></td>
-<td>${due}</td>
-<td>${paid>=fees?'Paid':'Due'}</td>
-<td><button onclick="saveFeesRow(this)">💾</button></td>
-</tr>`;
+        // Color Logic: Paid hai to Green Badge, Due hai to Red Badge
+        const statusClass = paid >= fees ? 'status-paid' : 'status-due';
+        const statusText = paid >= fees ? 'Paid' : 'Due';
+        const dueColor = due > 0 ? '#e74c3c' : '#27ae60';
 
-    m++; if(m>11){m=0;y++;}
-  }
+        feesExcelBody.innerHTML += `
+            <tr data-key="${key}">
+                <td>${new Date(y, m).toLocaleString('default', {month: 'long'})} ${y}</td>
+                <td><input type="number" value="${fees}" style="width:80px"></td>
+                <td><input type="number" value="${paid}" style="width:80px"></td>
+                <td><b style="color: ${dueColor}">${due}</b></td>
+                <td><span class="${statusClass}">${statusText}</span></td>
+                <td>
+                    <button onclick="saveFeesRow(this)" style="padding: 5px 10px;">
+                        💾 Save
+                    </button>
+                </td>
+            </tr>`;
 
-  document.getElementById("totalPaid").innerText = totalPaid;
-  document.getElementById("totalDue").innerText = totalDue;
+        m++; if(m > 11){ m = 0; y++; }
+    }
+
+    document.getElementById("totalPaid").innerText = totalPaid;
+    document.getElementById("totalDue").innerText = totalDue;
 }
 
 // ================= IMAGE COMPRESS =================
