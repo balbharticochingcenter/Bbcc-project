@@ -125,7 +125,7 @@ async function loadDashboardStudents(){
   students.forEach(s=>{
     dashboardBody.innerHTML+=`
 <tr>
-// Is line ko replace karein:
+
 <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" onclick="openFeesExcelPopup('${s.student_id}')" style="cursor:pointer; border-radius:4px;"></td>
 <td>${s.student_id}</td>
 <td><input value="${s.student_name||''}"></td>
