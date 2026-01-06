@@ -1,77 +1,91 @@
-const sendBtn = document.getElementById('send-btn');
-const micBtn = document.getElementById('mic-btn');
+const voiceSelect = document.getElementById('voice-select');
+const voiceToggle = document.getElementById('voice-toggle');
+const chatDisplay = document.getElementById('chat-display');
+const bhartiBody = document.getElementById('bharti-body');
 const userInput = document.getElementById('user-input');
-const chatBox = document.getElementById('chat-box');
-const avatar = document.getElementById('bharti-visual');
 
-// --- BHARTI KI AAWAZ (Speech Synthesis) ---
-function bhartiSpeak(text) {
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = 'hi-IN';
-    speech.rate = 1;
+let isVoiceOn = true;
+let synth = window.speechSynthesis;
+let voices = [];
+
+// 1. Voice Load Karna (Hindi Filters)
+function loadVoices() {
+    voices = synth.getVoices();
+    // Sirf Hindi ya acchi sounding female voices filter karein
+    const hindiVoices = voices.filter(v => v.lang.includes('hi') || v.name.includes('Google'));
     
-    // Animation Start
-    speech.onstart = () => avatar.classList.add('speaking');
-    // Animation End
-    speech.onend = () => avatar.classList.remove('speaking');
-    
-    window.speechSynthesis.speak(speech);
+    voiceSelect.innerHTML = hindiVoices.map(v => 
+        `<option value="${v.name}">${v.name} (${v.lang})</option>`
+    ).join('');
 }
 
-// --- VOICE RECOGNITION (STT) ---
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (SpeechRecognition) {
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'hi-IN';
-
-    micBtn.onclick = () => {
-        recognition.start();
-        micBtn.innerText = "🛑";
-    };
-
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        userInput.value = transcript;
-        micBtn.innerText = "🎤";
-        sendMessage();
-    };
+if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
 }
 
-// --- SEND MESSAGE TO BACKEND ---
-async function sendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return;
+// 2. Bharti ka Bolna
+function speak(text) {
+    if (!isVoiceOn) return;
 
-    // Append User Message
-    chatBox.innerHTML += `<div class="msg user">${message}</div>`;
+    synth.cancel(); // Purani aawaaz band karein
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Selected voice set karein
+    const selectedVoice = voices.find(v => v.name === voiceSelect.value);
+    if (selectedVoice) utterance.voice = selectedVoice;
+    
+    utterance.pitch = 1.2; // Thodi ladki jaisi aawaaz ke liye
+    utterance.rate = 1.0;
+
+    utterance.onstart = () => bhartiBody.classList.add('is-talking');
+    utterance.onend = () => bhartiBody.classList.remove('is-talking');
+
+    synth.speak(utterance);
+}
+
+// 3. Voice ON/OFF Toggle
+voiceToggle.onclick = () => {
+    isVoiceOn = !isVoiceOn;
+    voiceToggle.innerText = isVoiceOn ? "Voice: ON" : "Voice: OFF";
+    voiceToggle.className = isVoiceOn ? "on" : "off";
+    if (!isVoiceOn) synth.cancel();
+};
+
+// 4. API se Connect Karna
+async function handleChat() {
+    const msg = userInput.value.trim();
+    if (!msg) return;
+
+    chatDisplay.innerHTML += `<p><b>Aap:</b> ${msg}</p>`;
     userInput.value = "";
-    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
         const response = await fetch('/api/ai-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: message })
+            body: JSON.stringify({ prompt: msg })
         });
-
         const data = await response.json();
-        const reply = data.reply;
-
-        // Append Bot Message
-        chatBox.innerHTML += `<div class="msg bot">${reply}</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
         
-        // Bharti Bolegi
-        bhartiSpeak(reply);
-
-    } catch (error) {
-        chatBox.innerHTML += `<div class="msg bot">Maaf kijiye, kuch error aa gaya hai.</div>`;
+        chatDisplay.innerHTML += `<p style="color:blue"><b>Bharti:</b> ${data.reply}</p>`;
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        
+        speak(data.reply);
+    } catch (e) {
+        console.error("Error:", e);
     }
 }
 
-sendBtn.onclick = sendMessage;
+document.getElementById('send-btn').onclick = handleChat;
 
-// Enter key support
-userInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendMessage();
-});
+// Speech to Text (Mic)
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (Recognition) {
+    const rec = new Recognition();
+    rec.lang = 'hi-IN';
+    document.getElementById('mic-btn').onclick = () => rec.start();
+    rec.onresult = (e) => {
+        userInput.value = e.results[0][0].transcript;
+        handleChat();
+    };
+}
