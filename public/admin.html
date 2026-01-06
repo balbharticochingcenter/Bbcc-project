@@ -187,10 +187,54 @@
                 <label>Year:</label><br>
                 <select id="exam_dash_year" onchange="loadExamStudents()"></select>
             </div>
-            <div>
-                <label>Subject Name:</label><br>
-                <input type="text" id="bulk_subject" placeholder="e.g. Maths / Final Exam">
-            </div>
+           <div>
+    <label>Subject Name:</label><br>
+    <input type="text" id="bulk_subject" list="globalSubjectList" placeholder="Type or Select Subject" style="padding:8px; border:1px solid #ccc; border-radius:4px; width:200px;">
+    
+    <datalist id="globalSubjectList">
+        <option value="Hindi">
+        <option value="English">
+        <option value="Maths">
+        <option value="Science">
+        <option value="Social Science">
+        <option value="Sanskrit">
+        <option value="Physics">
+        <option value="Chemistry">
+        <option value="Biology">
+        <option value="History">
+        <option value="Geography">
+        <option value="Civics">
+        <option value="Economics">
+        
+        <option value="Computer Science">
+        <option value="Information Technology">
+        <option value="Coding/Programming">
+        <option value="Artificial Intelligence">
+        
+        <option value="Accountancy">
+        <option value="Business Studies">
+        <option value="Philosophy">
+        <option value="Psychology">
+        <option value="Sociology">
+        <option value="Political Science">
+        <option value="Home Science">
+        
+        <option value="General Knowledge (GK)">
+        <option value="Moral Science">
+        <option value="Drawing/Art">
+        <option value="Physical Education">
+        <option value="Music">
+        <option value="Environmental Science (EVS)">
+        <option value="Urdu">
+        <option value="Arabic">
+        <option value="French">
+        
+        <option value="Unit Test - 1">
+        <option value="Half Yearly Exam">
+        <option value="Final Exam">
+        <option value="Weekly Test">
+    </datalist>
+</div>
             <div>
                 <label>Total Marks:</label><br>
                 <input type="number" id="bulk_total_marks" placeholder="100">
