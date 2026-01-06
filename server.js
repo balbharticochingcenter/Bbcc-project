@@ -291,39 +291,47 @@ app.get('/api/get-students', async (req, res) => {
 app.post('/api/search-student-result', async (req, res) => {
     try {
         const { searchTerm, mobileSearch } = req.body; 
-
-        // 1. Agar user ne sirf ID daali hai aur mobile wala box khali chhoda hai
+        
+        // 1. Agar user ID se search kar raha hai (ID usually numbers mein hoti hai)
+        // Hum check kar rahe hain ki kya mobile khali hai aur searchTerm ek ID format hai
         if (searchTerm && !mobileSearch) {
+            // Check karein ki kya ye ID hai (example: BBCC101 ya sirf numbers)
+            // Agar aap chahte hain ki ID ke liye mobile na maange, toh ye block chalega
             const studentById = await Student.findOne({ 
                 student_id: searchTerm, 
                 exam_date: { $ne: "" } 
             });
-            if (studentById) return res.json({ success: true, student: studentById });
+            
+            if (studentById) {
+                return res.json({ success: true, student: studentById });
+            } else {
+                // Agar ID match nahi hui, toh ho sakta hai user ne naam dala ho bina mobile ke
+                return res.json({ success: false, message: "❌ Agar aap Naam se search kar rahe hain, toh Mobile Number daalna zaroori hai!" });
+            }
         }
 
-        // 2. Agar Name aur Mobile dono daale gaye hain (Flexible Search)
-        // Ye tab kaam karega jab upar wala ID match nahi hoga ya mobileSearch field bhari hogi
-        const studentByNameMobile = await Student.findOne({
-            $and: [
-                { exam_date: { $ne: "" } }, // Exam date update honi chahiye
-                { student_name: { $regex: new RegExp(searchTerm, 'i') } }, // Case-insensitive Name
-                {
-                    $or: [
-                        { mobile: mobileSearch },      // Student Mobile
-                        { parent_mobile: mobileSearch } // Parent Mobile
-                    ]
-                }
-            ]
-        });
-
-        if (studentByNameMobile) {
-            res.json({ success: true, student: studentByNameMobile });
-        } else {
-            res.json({ 
-                success: false, 
-                message: "❌ Result nahi mila! Sahi ID daalein ya Name aur Mobile ka sahi combination." 
+        // 2. Agar Name aur Mobile dono daale gaye hain (Proper Secure Search)
+        if (searchTerm && mobileSearch) {
+            const studentByNameMobile = await Student.findOne({
+                $and: [
+                    { exam_date: { $ne: "" } },
+                    { student_name: { $regex: new RegExp(searchTerm, 'i') } },
+                    {
+                        $or: [
+                            { mobile: mobileSearch },
+                            { parent_mobile: mobileSearch }
+                        ]
+                    }
+                ]
             });
+
+            if (studentByNameMobile) {
+                return res.json({ success: true, student: studentByNameMobile });
+            }
         }
+
+        res.json({ success: false, message: "❌ Details match nahi hui. Sahi Name aur Mobile daalein." });
+
     } catch (err) {
         console.error("Search Error:", err);
         res.status(500).json({ success: false, error: "Server Error" });
