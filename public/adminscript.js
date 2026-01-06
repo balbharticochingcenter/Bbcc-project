@@ -627,45 +627,64 @@ function updateRowDiv(input) {
 }
 
 // PUBLIC RESULT: Sabka data update karna
+// PUBLIC RESULT: Sabka data update karna (Fast Method)
 async function saveAllResults() {
     if(!confirm("Kya aap sabhi students ka result update karna chahte hain?")) return;
     
     const rows = document.querySelectorAll("#examDashboardBody tr");
-    for (let row of rows) {
+    const updatePromises = []; // Sari requests yahan store hongi
+
+    rows.forEach(row => {
         const data = {
             student_id: row.dataset.id,
             exam_date: row.querySelector(".row-date").value,
             total_marks: row.querySelector(".row-total").value,
             obtained_marks: row.querySelector(".row-obt").value,
-            exam_subject: row.querySelector(".row-subject").value // Naya field
+            exam_subject: row.querySelector(".row-subject").value
         };
-        await fetch(API + '/api/update-student-data', {
+        
+        // Request ko queue mein daal rahe hain
+        const p = fetch(API + '/api/update-student-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
+        updatePromises.push(p);
+    });
+
+    try {
+        await Promise.all(updatePromises); // Sabko ek saath save karega
+        alert("Result Published Successfully! ✅");
+        loadExamStudents(); // Table refresh
+    } catch (e) {
+        alert("Kuch error aaya, kripya check karein.");
     }
-    alert("Result Published Successfully! ✅");
 }
 
-// CANCEL EXAM: Sabka data clear karna
+// CANCEL EXAM: Sabka data clear karna (Subject bhi clear karega)
 async function cancelAllExams() {
     if(!confirm("CAUTION: Kya aap puri class ka exam data delete karna chahte hain?")) return;
 
     const rows = document.querySelectorAll("#examDashboardBody tr");
-    for (let row of rows) {
+    const clearPromises = [];
+
+    rows.forEach(row => {
         const data = {
             student_id: row.dataset.id,
             exam_date: "",
             total_marks: "",
-            obtained_marks: ""
+            obtained_marks: "",
+            exam_subject: "" // Subject ko bhi khali karega
         };
-        await fetch(API + '/api/update-student-data', {
+        const p = fetch(API + '/api/update-student-data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-    }
+        clearPromises.push(p);
+    });
+
+    await Promise.all(clearPromises);
     alert("Exam data clear kar diya gaya! 🗑️");
     loadExamStudents();
 }
