@@ -96,6 +96,7 @@ const AI_MODELS = [
     "llama-3.3-70b-versatile",
     "qwen/qwen3-32b"
 ];
+
 let chatHistory = {};
 
 app.post('/api/ai-chat', async (req, res) => {
@@ -105,13 +106,15 @@ app.post('/api/ai-chat', async (req, res) => {
     try {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
-        if (!apiKey) return res.json({ reply: "System error hai." });
+        if (!apiKey) {
+            return res.json({ reply: "❌ System error hai. API key missing." });
+        }
 
         if (!chatHistory[id]) chatHistory[id] = [];
 
         const systemInstruction = {
             role: "system",
-            content: publicKnowledge
+            content: publicKnowledge   // 👈 aapka existing system prompt
         };
 
         const messages = [
@@ -120,36 +123,76 @@ app.post('/api/ai-chat', async (req, res) => {
             { role: "user", content: prompt }
         ];
 
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
-                messages,
-                temperature: 0.6,
-                max_tokens: 300
-            })
-        });
+        let reply = null;
+        let lastError = null;
 
-        const data = await response.json();
-        let reply = data.choices[0].message.content;
+        // 🔁 AUTO MODEL SWITCH LOOP
+        for (let model of AI_MODELS) {
+            try {
+                console.log("🤖 Trying model:", model);
 
+                const response = await fetch(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${apiKey}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: model,              // 👈 dynamic model
+                            messages,
+                            temperature: 0.6,
+                            max_tokens: 300
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                // ❌ Invalid response check
+                if (!data?.choices?.[0]?.message?.content) {
+                    throw new Error("Empty response from model");
+                }
+
+                reply = data.choices[0].message.content;
+                console.log("✅ Success with model:", model);
+                break; // ✅ success → stop loop
+
+            } catch (err) {
+                console.error(`❌ Model failed: ${model}`, err.message);
+                lastError = err;
+            }
+        }
+
+        // ❌ Agar koi bhi model kaam nahi kiya
+        if (!reply) {
+            return res.status(500).json({
+                reply: "⚠️ Sabhi AI models fail ho gaye. Thodi der baad try karein."
+            });
+        }
+
+        // 🔹 Cleaning (existing logic preserved)
         reply = reply.replace(/[#*_~`>]/g, "");
 
+        // 🔹 Memory save (existing logic preserved)
         chatHistory[id].push({ role: "user", content: prompt });
         chatHistory[id].push({ role: "assistant", content: reply });
 
-        if (chatHistory[id].length > 10) chatHistory[id].shift();
+        if (chatHistory[id].length > 10) {
+            chatHistory[id].shift();
+        }
 
         res.json({ reply });
 
     } catch (err) {
-        res.status(500).json({ reply: "Network error aayi hai." });
+        console.error("🔥 AI Chat Fatal Error:", err);
+        res.status(500).json({
+            reply: "🌐 Network error aayi hai. Server check karein."
+        });
     }
 });
+
 
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
