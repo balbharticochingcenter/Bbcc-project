@@ -63,6 +63,7 @@ const Student = mongoose.model('Student', new mongoose.Schema({
 }));
 const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
     admin_name: String,
+    admin_photo: String,
     admin_userid: { type: String, unique: true },
     admin_pass: String,
     admin_mobile: String
