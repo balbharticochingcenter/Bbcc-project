@@ -789,6 +789,31 @@ function openModal(id) { document.getElementById(id).style.display = 'block'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
 // --- SYSTEM CONFIG LOGIC ---
+// --- MODAL KHOLTE WAQT DATA LOAD KARNA ---
+async function openSystemConfig() {
+    openModal('systemConfigModal');
+    
+    try {
+        // Database se current settings lana
+        const res = await fetch('/api/get-settings');
+        const data = await res.json();
+
+        if (data) {
+            // HTML inputs mein data bharna
+            document.getElementById('cfg_title').value = data.title || "";
+            document.getElementById('cfg_subtitle').value = data.sub_title || "";
+            document.getElementById('cfg_contact').value = data.contact || "";
+            document.getElementById('cfg_gmail').value = data.gmail || "";
+            document.getElementById('cfg_facebook').value = data.facebook || "";
+            document.getElementById('cfg_youtube').value = data.youtube_link || "";
+            document.getElementById('cfg_insta').value = data.instagram || "";
+        }
+    } catch (err) {
+        console.error("Settings load karne mein error:", err);
+    }
+}
+
+// --- SYSTEM SETTINGS UPDATE KARNA ---
 async function saveSystemConfig() {
     const config = {
         title: document.getElementById('cfg_title').value,
@@ -800,18 +825,30 @@ async function saveSystemConfig() {
         instagram: document.getElementById('cfg_insta').value
     };
 
-    const res = await fetch('/api/update-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-    });
-    const data = await res.json();
-    if(data.success) {
-        alert("✅ Settings updated successfully!");
-        location.reload();
+    try {
+        const res = await fetch('/api/update-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        
+        const result = await res.json();
+        if (result.success) {
+            alert("✅ Database Update Ho Gaya!");
+            location.reload(); // Page refresh taaki header/footer update ho jaye
+        } else {
+            alert("❌ Update fail ho gaya.");
+        }
+    } catch (err) {
+        alert("Server Error: " + err.message);
     }
 }
 
+// --- SLIDER LOAD KARNA (Modal khulne par) ---
+async function openSliderManager() {
+    openModal('sliderModal');
+    loadSliders(); // Yeh function database se purani photos dikhayega
+}
 // --- SLIDER PHOTO LOGIC (CROP & COMPRESS) ---
 let finalSliderBase64 = "";
 
