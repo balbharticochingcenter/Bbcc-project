@@ -103,39 +103,23 @@ app.post('/api/ai-chat', async (req, res) => {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
 
-        if (!apiKey) return res.json({ reply: "System error: Bharti ki yaadassht (API Key) nahi mil rahi hai." });
+        // Agar API Key nahi hai toh user ko batao
+        if (!apiKey) {
+            return res.json({ reply: "Bharti Error: Admin ne AI Key setup nahi ki hai. Dashboard mein 'groq_key' check karein." });
+        }
 
-        // Database se live info nikalna taki Bharti update rahe
+        // Live Database info fetch karna
         const [students, teachers, classConfigs] = await Promise.all([
-            Student.find().limit(10).select('student_name student_class'),
-            Teacher.find().limit(10).select('teacher_name specialty'),
-            ClassConfig.find().select('class_name subjects description')
+            Student.countDocuments(), // Sirf count lein taaki load kam ho
+            Teacher.find().select('teacher_name -_id'),
+            ClassConfig.find().select('class_name -_id')
         ]);
 
-        // Bharti ko training dena (System Instructions)
-        const systemInstruction = `
-Aapka Naam: "Bharti" (Digital Sahayak, Bal Bharti Coaching Center).
-Aapka Vyaktitv: Aap hamesha "Aap" kehkar respect se baat karti hain. Aap soft-spoken, intelligent aur helpful hain.
+        const systemInstruction = `Aapka naam Bharti hai. Aap Bal Bharti Coaching Center ki digital assistant hain. 
+Respect se baat karein. Humare paas ${students} students aur expert teachers jaise ${teachers.map(t=>t.teacher_name).join(", ")} hain. 
+Hum ${classConfigs.map(c=>c.class_name).join(", ")} ki taiyari karate hain. HINDI mein jawab dein.`;
 
-Aapka Kaam:
-1. Coaching ke har feature ko samjhana (Admission, Results, Fees, Teachers).
-2. Jitna pucha jaye utna hi point-to-point samjhana. Agar user ko samajh na aaye, toh naye aur asaan tarike se samjhana.
-3. Agar koi sawal coaching se bahar ka ho (Jaise General Knowledge, Maths, ya Science), toh uska jawab ek expert teacher ki tarah dena.
-4. Admin Dashboard ki baatein (Passwords, Keys, Delete options) bilkul nahi batani.
-
-LIVE DATA (Aapke coaching ki jaankari):
-- Classes: ${classConfigs.map(c => `${c.class_name} (Subjects: ${c.subjects})`).join(" | ")}
-- Teachers: ${teachers.map(t => t.teacher_name).join(", ")}
-- Top Students: ${students.map(s => s.student_name).join(", ")}
-- Website Features: 3D Slider, Login Modal, Student Registration Form, Searchable Results (ID/Mobile), Teachers Ring Section, Video Lectures.
-
-KHYAL RAKHEIN:
-- Sirf HINDI mein baat karein.
-- User ko "Aap" kahein.
-- Agar koi system change mangne ki koshish kare, toh kahein "Maaf kijiye, main sirf ek sahayak hoon, changes ke liye aap office ya dashboard ka istemal karein."
-`;
-
-        // Groq AI se response lena
+        // Groq API Call
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: { 
@@ -143,30 +127,35 @@ KHYAL RAKHEIN:
                 "Content-Type": "application/json" 
             },
             body: JSON.stringify({
-                model: "llama3-70b-8192", // Powerful model for better understanding
+                model: "llama-3.1-8b-instant", // Stable and Fast Model
                 messages: [
                     { role: "system", content: systemInstruction },
                     { role: "user", content: prompt }
                 ],
-                temperature: 0.7, // Creativity balance
-                max_tokens: 500
+                temperature: 0.7,
+                max_tokens: 300
             })
         });
 
         const data = await response.json();
-        
+
+        // Debugging: Console par check karein ki Groq kya error de raha hai
+        if (data.error) {
+            console.error("Groq API Error:", data.error);
+            return res.json({ reply: "Groq API Error: " + data.error.message });
+        }
+
         if (data.choices && data.choices[0]) {
             res.json({ reply: data.choices[0].message.content });
         } else {
-            res.json({ reply: "Maaf kijiye, main abhi kuch samajh nahi pa rahi hoon. Phir se puchiye?" });
+            res.json({ reply: "Maaf kijiye, main abhi process nahi kar pa rahi hoon. Kya aap dobara puchenge?" });
         }
 
     } catch (err) {
-        console.error("AI Error:", err);
-        res.status(500).json({ reply: "Maaf kijiye, abhi mera server thoda thak gaya hai. Ek minute baad baat karte hain?" });
+        console.error("Critical AI Error:", err);
+        res.status(500).json({ reply: "Network error: Connection nahi ban paa raha hai." });
     }
 });
-
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
     try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
