@@ -107,14 +107,14 @@ app.post('/api/ai-chat', async (req, res) => {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
         if (!apiKey) {
-            return res.json({ reply: "❌ System error hai. API key missing." });
+            return res.json({ reply: "System error hai." });
         }
 
         if (!chatHistory[id]) chatHistory[id] = [];
 
         const systemInstruction = {
             role: "system",
-            content: publicKnowledge   // 👈 aapka existing system prompt
+            content: publicKnowledge
         };
 
         const messages = [
@@ -124,12 +124,12 @@ app.post('/api/ai-chat', async (req, res) => {
         ];
 
         let reply = null;
-        let lastError = null;
 
-        // 🔁 AUTO MODEL SWITCH LOOP
-        for (let model of AI_MODELS) {
+        // 🔁 AUTO MODEL + TIMEOUT SAFE SWITCH
+        for (const model of AI_MODELS) {
             try {
-                console.log("🤖 Trying model:", model);
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 12000);
 
                 const response = await fetch(
                     "https://api.groq.com/openai/v1/chat/completions",
@@ -140,42 +140,36 @@ app.post('/api/ai-chat', async (req, res) => {
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify({
-                            model: model,              // 👈 dynamic model
+                            model,
                             messages,
                             temperature: 0.6,
                             max_tokens: 300
-                        })
+                        }),
+                        signal: controller.signal
                     }
                 );
 
+                clearTimeout(timeout);
+
                 const data = await response.json();
 
-                // ❌ Invalid response check
                 if (!data?.choices?.[0]?.message?.content) {
-                    throw new Error("Empty response from model");
+                    throw new Error("Empty response");
                 }
 
                 reply = data.choices[0].message.content;
-                console.log("✅ Success with model:", model);
-                break; // ✅ success → stop loop
-
+                break; // ✅ success
             } catch (err) {
-                console.error(`❌ Model failed: ${model}`, err.message);
-                lastError = err;
+                continue; // ❌ try next model
             }
         }
 
-        // ❌ Agar koi bhi model kaam nahi kiya
         if (!reply) {
-            return res.status(500).json({
-                reply: "⚠️ Sabhi AI models fail ho gaye. Thodi der baad try karein."
-            });
+            reply = "AI abhi busy hai, thodi der baad try karein.";
         }
 
-        // 🔹 Cleaning (existing logic preserved)
         reply = reply.replace(/[#*_~`>]/g, "");
 
-        // 🔹 Memory save (existing logic preserved)
         chatHistory[id].push({ role: "user", content: prompt });
         chatHistory[id].push({ role: "assistant", content: reply });
 
@@ -186,12 +180,10 @@ app.post('/api/ai-chat', async (req, res) => {
         res.json({ reply });
 
     } catch (err) {
-        console.error("🔥 AI Chat Fatal Error:", err);
-        res.status(500).json({
-            reply: "🌐 Network error aayi hai. Server check karein."
-        });
+        res.json({ reply: "AI abhi busy hai, thodi der baad try karein." });
     }
 });
+
 
 
 // --- A. STUDENT API ---
