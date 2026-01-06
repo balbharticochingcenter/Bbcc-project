@@ -1,6 +1,4 @@
 const fs = require('fs');
-
-
 require('dotenv').config();
 
 const fetch = require('node-fetch');
@@ -12,19 +10,19 @@ const path = require('path');
 
 const app = express();
 
-// --- MIDDLEWARE ---
+// ---------------- MIDDLEWARE ----------------
 app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- MONGODB CONNECTION ---
+// ---------------- MONGODB ----------------
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://balbharticochingcenter_db_user:6mPWwKglys8ii8O2@cluster0.g0w0fgn.mongodb.net/BBCC_Portal?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(MONGO_URI)
-    .then(() => console.log("✅ BBCC Database Connected!"))
+    .then(() => console.log("✅ Database Connected"))
     .catch(err => console.error("❌ DB Error:", err));
 
-// --- SCHEMAS ---
+// ---------------- SCHEMAS ----------------
 const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({
     logo: String, title: String, sub_title: String,
     contact: String, call_no: String, gmail: String,
@@ -59,11 +57,12 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     total_marks: { type: String, default: "" },
     obtained_marks: { type: String, default: "" },
     exam_date: { type: String, default: "" },
-    exam_subject: { type: String, default: "" }, 
-    photo: String,                               
+    exam_subject: { type: String, default: "" },
+    photo: String,
     paid_months: { type: [Number], default: [] },
     fees_data: { type: Map, of: Object, default: {} }
 }));
+
 const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
     admin_name: String,
     admin_photo: String,
@@ -84,16 +83,16 @@ const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
     subjects: { type: Map, of: [String] }
 }));
 
-// --- HTML ROUTES ---
+// ---------------- HTML ROUTES ----------------
 app.get('/', (req, res) =>
     res.sendFile(path.join(__dirname, 'public', 'login.html'))
 );
+
 app.get('/admin', (req, res) =>
     res.sendFile(path.join(__dirname, 'public', 'admin.html'))
 );
-const publicKnowledge = fs.readFileSync(path.join(__dirname, 'publicKnowledge.txt'), 'utf8');
 
-// --- AI CONFIG ---
+// ---------------- AI CONFIG ----------------
 const AI_MODELS = [
     "llama-3.1-8b-instant",
     "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -103,6 +102,7 @@ const AI_MODELS = [
 
 let chatHistory = {};
 
+// ---------------- AI CHAT API ----------------
 app.post('/api/ai-chat', async (req, res) => {
     const { prompt, userId } = req.body;
     const id = userId || "default";
@@ -110,11 +110,24 @@ app.post('/api/ai-chat', async (req, res) => {
     try {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
+
         if (!apiKey) {
-            return res.json({ reply: "System error hai." });
+            return res.json({ reply: "API key set nahi hai." });
         }
 
         if (!chatHistory[id]) chatHistory[id] = [];
+
+        // ✅ SAFE publicKnowledge loader
+        let publicKnowledge = "You are a helpful assistant.";
+
+        try {
+            publicKnowledge = fs.readFileSync(
+                path.join(__dirname, 'publicKnowledge.txt'),
+                'utf8'
+            );
+        } catch (e) {
+            console.log("⚠ publicKnowledge.txt missing, default prompt used");
+        }
 
         const systemInstruction = {
             role: "system",
@@ -129,7 +142,6 @@ app.post('/api/ai-chat', async (req, res) => {
 
         let reply = null;
 
-        // 🔁 AUTO MODEL + TIMEOUT SAFE SWITCH
         for (const model of AI_MODELS) {
             try {
                 const controller = new AbortController();
@@ -158,19 +170,18 @@ app.post('/api/ai-chat', async (req, res) => {
                 const data = await response.json();
 
                 if (!data?.choices?.[0]?.message?.content) {
-                    throw new Error("Empty response");
+                    throw new Error("Empty AI response");
                 }
 
                 reply = data.choices[0].message.content;
-                break; // ✅ success
+                break;
+
             } catch (err) {
-                continue; // ❌ try next model
+                continue;
             }
         }
 
-        if (!reply) {
-            reply = "AI abhi busy hai, thodi der baad try karein.";
-        }
+        if (!reply) reply = "AI busy hai, thodi der baad try karein.";
 
         reply = reply.replace(/[#*_~`>]/g, "");
 
@@ -184,7 +195,7 @@ app.post('/api/ai-chat', async (req, res) => {
         res.json({ reply });
 
     } catch (err) {
-        res.json({ reply: "AI abhi busy hai, thodi der baad try karein." });
+        res.json({ reply: "Server error" });
     }
 });
 
