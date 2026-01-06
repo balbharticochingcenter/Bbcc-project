@@ -40,8 +40,51 @@
     </button>
     <button onclick="openClassExamModal()" style="background:#6c5ce7; color:white; padding:10px;">📊 Class Exam Dashboard</button>
   </div>
+  <div class="button-group" data-label="Administrative Controls">
+    <button onclick="openModal('systemConfigModal')" style="background:#e67e22; color:white;">
+        <i class="fas fa-cogs"></i> System Settings
+    </button>
+    <button onclick="openModal('sliderModal')" style="background:#34495e; color:white;">
+        <i class="fas fa-images"></i> Slider Management
+    </button>
+</div>
+</div>
+<div id="systemConfigModal" class="modal">
+    <div class="modal-content" style="max-width:500px">
+        <span class="close" onclick="closeModal('systemConfigModal')">&times;</span>
+        <h3>⚙️ System Configuration</h3>
+        <div style="text-align: left; display: grid; gap: 10px;">
+            <label>Coaching Title:</label> <input type="text" id="cfg_title">
+            <label>Sub-Title:</label> <input type="text" id="cfg_subtitle">
+            <label>Contact No:</label> <input type="text" id="cfg_contact">
+            <label>Gmail:</label> <input type="text" id="cfg_gmail">
+            <label>Facebook Link:</label> <input type="text" id="cfg_facebook">
+            <label>YouTube Link:</label> <input type="text" id="cfg_youtube">
+            <label>Instagram Link:</label> <input type="text" id="cfg_insta">
+            <button onclick="saveSystemConfig()" style="background:#2ecc71; color:white; padding:10px;">Update Settings</button>
+        </div>
+    </div>
 </div>
 
+<div id="sliderModal" class="modal">
+    <div class="modal-content" style="max-width:600px">
+        <span class="close" onclick="closeModal('sliderModal')">&times;</span>
+        <h3>🖼️ Manage Front-Page Sliders</h3>
+        
+        <div style="border: 2px dashed #ccc; padding: 20px; margin-bottom: 20px;">
+            <input type="file" id="slider_file" accept="image/*" onchange="previewAndCropSlider(this)">
+            <p style="font-size: 12px; color: #666;">Size: 200x200 (Auto-compressed to 5KB)</p>
+            <canvas id="cropCanvas" width="200" height="200" style="border:1px solid #000; display:none; margin: 10px auto;"></canvas>
+            <div id="sliderPreviewContainer" style="display:none;">
+                <img id="slider_crop_preview" style="width:200px; height:200px; object-fit:cover; border:2px solid #6c5ce7;">
+                <br><button onclick="uploadSlider()" style="background:#6c5ce7; color:white; margin-top:10px;">Upload This Photo</button>
+            </div>
+        </div>
+
+        <div id="existingSliders" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+            </div>
+    </div>
+</div>
 <!-- ================= STUDENT DASHBOARD ================= -->
 <div id="studentDashboardModal" class="modal">
   <div class="modal-content" style="max-width:95%">
