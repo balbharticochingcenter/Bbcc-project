@@ -789,68 +789,50 @@ function openModal(id) { document.getElementById(id).style.display = 'block'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
 // --- SYSTEM CONFIG LOGIC ---
-// --- MODAL KHOLTE WAQT DATA LOAD KARNA ---
+// 1. DATA LOAD: Modal khulne par DB se data laana
 async function openSystemConfig() {
-    openModal('systemConfigModal');
-    
-    try {
-        // Database se current settings lana
-        const res = await fetch('/api/get-settings');
-        const data = await res.json();
-
-        if (data) {
-            // HTML inputs mein data bharna
-            document.getElementById('cfg_title').value = data.title || "";
-            document.getElementById('cfg_subtitle').value = data.sub_title || "";
-            document.getElementById('cfg_contact').value = data.contact || "";
-            document.getElementById('cfg_gmail').value = data.gmail || "";
-            document.getElementById('cfg_facebook').value = data.facebook || "";
-            document.getElementById('cfg_youtube').value = data.youtube_link || "";
-            document.getElementById('cfg_insta').value = data.instagram || "";
-        }
-    } catch (err) {
-        console.error("Settings load karne mein error:", err);
+    document.getElementById('systemConfigModal').style.display = 'block';
+    const res = await fetch('/api/get-settings');
+    const data = await res.json();
+    if (data) {
+        document.getElementById('cfg_title').value = data.title || "";
+        document.getElementById('cfg_subtitle').value = data.sub_title || "";
+        document.getElementById('cfg_contact').value = data.contact || "";
+        document.getElementById('cfg_call_no').value = data.call_no || "";
+        document.getElementById('cfg_gmail').value = data.gmail || "";
+        document.getElementById('cfg_facebook').value = data.facebook || "";
+        document.getElementById('cfg_youtube').value = data.youtube_link || "";
+        document.getElementById('cfg_insta').value = data.instagram || "";
     }
 }
 
-// --- SYSTEM SETTINGS UPDATE KARNA ---
+// 2. DATA UPDATE: Naya data save karna
 async function saveSystemConfig() {
     const config = {
         title: document.getElementById('cfg_title').value,
         sub_title: document.getElementById('cfg_subtitle').value,
         contact: document.getElementById('cfg_contact').value,
+        call_no: document.getElementById('cfg_call_no').value,
         gmail: document.getElementById('cfg_gmail').value,
         facebook: document.getElementById('cfg_facebook').value,
         youtube_link: document.getElementById('cfg_youtube').value,
         instagram: document.getElementById('cfg_insta').value
     };
 
-    try {
-        const res = await fetch('/api/update-settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(config)
-        });
-        
-        const result = await res.json();
-        if (result.success) {
-            alert("✅ Database Update Ho Gaya!");
-            location.reload(); // Page refresh taaki header/footer update ho jaye
-        } else {
-            alert("❌ Update fail ho gaya.");
-        }
-    } catch (err) {
-        alert("Server Error: " + err.message);
+    const res = await fetch('/api/update-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+    });
+    const result = await res.json();
+    if(result.success) {
+        alert("✅ Settings Saved Successfully!");
+        location.reload();
     }
 }
 
-// --- SLIDER LOAD KARNA (Modal khulne par) ---
-async function openSliderManager() {
-    openModal('sliderModal');
-    loadSliders(); // Yeh function database se purani photos dikhayega
-}
-// --- SLIDER PHOTO LOGIC (CROP & COMPRESS) ---
-let finalSliderBase64 = "";
+// 3. SLIDER LOGIC: Crop (200x200) and Compress (5KB)
+let tempSliderBase64 = "";
 
 function previewAndCropSlider(input) {
     if (input.files && input.files[0]) {
@@ -860,23 +842,15 @@ function previewAndCropSlider(input) {
             img.onload = function() {
                 const canvas = document.getElementById('cropCanvas');
                 const ctx = canvas.getContext('2d');
+                // Center Crop to 200x200
+                const size = Math.min(img.width, img.height);
+                const x = (img.width - size) / 2;
+                const y = (img.height - size) / 2;
+                ctx.drawImage(img, x, y, size, size, 0, 0, 200, 200);
                 
-                // 200x200 size mein draw karna (Center Crop Logic)
-                let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
-                if (img.width > img.height) {
-                    sourceWidth = img.height;
-                    sourceX = (img.width - img.height) / 2;
-                } else {
-                    sourceHeight = img.width;
-                    sourceY = (img.height - img.width) / 2;
-                }
-
-                ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, 200, 200);
-                
-                // Compress to 5KB: Quality 0.1 se 0.3 ke beech rakhein
-                finalSliderBase64 = canvas.toDataURL('image/jpeg', 0.2); 
-                
-                document.getElementById('slider_crop_preview').src = finalSliderBase64;
+                // Compression logic to stay near 5KB (Quality 0.1 - 0.2)
+                tempSliderBase64 = canvas.toDataURL('image/jpeg', 0.2); 
+                document.getElementById('slider_crop_preview').src = tempSliderBase64;
                 document.getElementById('sliderPreviewContainer').style.display = 'block';
             };
             img.src = e.target.result;
@@ -886,18 +860,24 @@ function previewAndCropSlider(input) {
 }
 
 async function uploadSlider() {
-    if(!finalSliderBase64) return alert("Pehle photo select karein");
-
+    if(!tempSliderBase64) return;
     const res = await fetch('/api/add-slider', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo: finalSliderBase64 })
+        body: JSON.stringify({ photo: tempSliderBase64 })
     });
-    
-    if(await res.json()) {
-        alert("✅ Slider added!");
-        loadSliders(); // Refresh list
+    const data = await res.json();
+    if(data.success) {
+        alert("Photo Added!");
+        loadSliders(); 
+        document.getElementById('sliderPreviewContainer').style.display = 'none';
     }
+}
+
+// 4. LOAD & DELETE SLIDERS
+async function openSliderManager() {
+    document.getElementById('sliderModal').style.display = 'block';
+    loadSliders();
 }
 
 async function loadSliders() {
@@ -905,9 +885,16 @@ async function loadSliders() {
     const sliders = await res.json();
     const container = document.getElementById('existingSliders');
     container.innerHTML = sliders.map(s => `
-        <div style="position:relative;">
-            <img src="${s.photo}" style="width:80px; height:80px; border-radius:5px; border:1px solid #ddd;">
-            <button onclick="deleteSlider('${s._id}')" style="position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; cursor:pointer;">&times;</button>
+        <div style="position:relative; width:100px; height:100px; border-radius:8px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
+            <img src="${s.photo}" style="width:100%; height:100%; object-fit:cover;">
+            <button onclick="deleteSlider('${s._id}')" style="position:absolute; top:2px; right:2px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer;">&times;</button>
         </div>
     `).join('');
+}
+
+async function deleteSlider(id) {
+    if(!confirm("Delete this photo?")) return;
+    const res = await fetch(`/api/delete-slider/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if(data.success) loadSliders();
 }
