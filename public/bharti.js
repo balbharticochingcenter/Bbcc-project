@@ -1,153 +1,131 @@
-let scene, camera, renderer, bodyGroup, leftArm, rightArm, head;
+let scene, camera, renderer, model, mixer, idleAction, talkingAction;
 let isTalking = false;
 let clock = new THREE.Clock();
 
-// --- 1. 3D Body (Pehle wala same logic) ---
+// --- 1. 3D INITIALIZATION (Direct Link Version) ---
 function init3D() {
     const container = document.getElementById('canvas-container');
-    if(!container) return;
-    
     scene = new THREE.Scene();
+    
+    // Camera settings
     camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 1.5, 3);
+    camera.position.set(0, 1.3, 2.5); // Focus on upper body
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(1, 1, 2);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    // Lights (Zaroori hai model dikhne ke liye)
+    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+    const dLight = new THREE.DirectionalLight(0xffffff, 1);
+    dLight.position.set(1, 1, 2);
+    scene.add(dLight);
 
-    bodyGroup = new THREE.Group();
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.3), new THREE.MeshStandardMaterial({ color: 0x3498db }));
-    torso.position.y = 0.8;
-    bodyGroup.add(torso);
+    // --- DIRECT 3D MODEL LINK ---
+    // Hum ek universal human model link use kar rahe hain
+    const modelUrl = 'https://models.readyplayer.me/64db6e5e8e80629618b76251.glb'; 
 
-    head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
-    head.position.y = 1.35;
-    bodyGroup.add(head);
+    const loader = new THREE.GLTFLoader();
+    loader.load(modelUrl, (gltf) => {
+        model = gltf.scene;
+        model.position.y = -1.1; 
+        scene.add(model);
 
-    const armGeo = new THREE.BoxGeometry(0.15, 0.6, 0.15);
-    const armMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
-    leftArm = new THREE.Mesh(armGeo, armMat);
-    leftArm.position.set(-0.4, 0.8, 0);
-    bodyGroup.add(leftArm);
+        // Animations settings
+        mixer = new THREE.AnimationMixer(model);
+        
+        // Agar model mein animations inbuilt hain toh wo load hongi
+        if (gltf.animations.length > 0) {
+            idleAction = mixer.clipAction(gltf.animations[0]);
+            idleAction.play();
+        }
+        
+        animate();
+    }, 
+    (xhr) => { console.log((xhr.loaded / xhr.total * 100) + '% loaded'); },
+    (error) => { console.error('Error loading 3D model:', error); });
 
-    rightArm = new THREE.Mesh(armGeo, armMat);
-    rightArm.position.set(0.4, 0.8, 0);
-    bodyGroup.add(rightArm);
+    // --- MOUSE MOVE / ROTATION ---
+    let isDragging = false;
+    let previousMouseX = 0;
 
-    scene.add(bodyGroup);
-    animate();
+    container.onmousedown = (e) => { isDragging = true; };
+    window.onmouseup = (e) => { isDragging = false; };
+    window.onmousemove = (e) => {
+        if (isDragging && model) {
+            let deltaX = e.clientX - previousMouseX;
+            model.rotation.y += deltaX * 0.01; // Screen pe move/rotate karne ke liye
+        }
+        previousMouseX = e.clientX;
+    };
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    let time = Date.now() * 0.002;
-    bodyGroup.position.y = Math.sin(time) * 0.05;
-    if (isTalking) {
-        head.scale.y = 1 + Math.sin(time * 10) * 0.1;
-        leftArm.rotation.z = Math.sin(time * 5) * 0.5;
-        rightArm.rotation.z = -Math.sin(time * 5) * 0.5;
-    } else {
-        head.scale.y = 1; leftArm.rotation.z = 0; rightArm.rotation.z = 0;
+    const delta = clock.getDelta();
+    if (mixer) mixer.update(delta);
+
+    // Simple breathing movement agar animation nahi mili toh
+    if (model && !isTalking) {
+        model.position.y = -1.1 + Math.sin(Date.now() * 0.002) * 0.02;
     }
+    
+    // Talking effect (Head shake)
+    if (isTalking && model) {
+        model.rotation.y += Math.sin(Date.now() * 0.01) * 0.02;
+    }
+
     renderer.render(scene, camera);
 }
 
-// --- 2. ADVANCED VOICE LOGIC ---
+// --- 2. VOICE LOGIC (Bharti 1, Bharti 2...) ---
+const synth = window.speechSynthesis;
 const voiceSelect = document.getElementById('voice-select');
 const voiceToggle = document.getElementById('voice-toggle');
-const synth = window.speechSynthesis;
-let isVoiceOn = true; 
+let isVoiceOn = true;
 
 function loadVoices() {
-    // Duniya ki saari available voices fetch karein
     const allVoices = synth.getVoices();
-    
-    // Filter: Hindi (hi), India (IN), aur Female sounding names
-    const bhartiVoices = allVoices.filter(v => 
-        v.lang.includes('hi') || 
-        v.lang.includes('IN') || 
-        v.name.toLowerCase().includes('female') ||
-        v.name.toLowerCase().includes('google') ||
-        v.name.toLowerCase().includes('microsoft')
-    );
-
-    // Dropdown update karein (Sirf "Bharti 1, Bharti 2..." dikhega)
-    voiceSelect.innerHTML = bhartiVoices.map((v, index) => 
-        `<option value="${v.name}">Bharti ${index + 1}</option>`
-    ).join('');
+    const bhartiVoices = allVoices.filter(v => v.lang.includes('hi') || v.lang.includes('IN') || v.name.includes('Google'));
+    voiceSelect.innerHTML = bhartiVoices.map((v, i) => `<option value="${v.name}">Bharti ${i + 1}</option>`).join('');
 }
 
-// Chrome aur mobile browsers ke liye zaroori event
 if (speechSynthesis.onvoiceschanged !== undefined) {
     speechSynthesis.onvoiceschanged = loadVoices;
 }
 
 function speak(text) {
-    // Sabse pehle purani aawaaz kaato
     synth.cancel();
-
-    // Check: Agar voice off hai toh return ho jao
-    if (!isVoiceOn) {
-        console.log("Voice is OFF, only text displayed.");
-        return;
-    }
+    if (!isVoiceOn) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Dropdown se selected voice set karein
-    const selectedVoiceName = voiceSelect.value;
-    const voices = synth.getVoices();
-    const actualVoice = voices.find(v => v.name === selectedVoiceName);
-    
-    if (actualVoice) {
-        utterance.voice = actualVoice;
-    }
+    const actualVoice = synth.getVoices().find(v => v.name === voiceSelect.value);
+    if (actualVoice) utterance.voice = actualVoice;
 
-    // Voice Settings
-    utterance.lang = 'hi-IN';
-    utterance.pitch = 1.1; 
-    utterance.rate = 1.0;
-
-    // Animations sync
     utterance.onstart = () => { isTalking = true; };
     utterance.onend = () => { isTalking = false; };
-    utterance.onerror = () => { isTalking = false; };
-
     synth.speak(utterance);
 }
 
-// --- 3. VOICE TOGGLE FIX ---
-voiceToggle.onclick = function() {
-    isVoiceOn = !isVoiceOn; // Variable change karein
-    
-    if (isVoiceOn) {
-        this.innerText = "Voice: ON";
-        this.style.background = "#4caf50"; // Green for ON
-        this.classList.remove('off');
-    } else {
-        this.innerText = "Voice: OFF";
-        this.style.background = "#6c757d"; // Gray for OFF
-        this.classList.add('off');
-        synth.cancel(); // Turant bolna band karein
-        isTalking = false; // Animation bhi band karein
+// Voice Toggle Fix
+voiceToggle.onclick = () => {
+    isVoiceOn = !isVoiceOn;
+    voiceToggle.innerText = isVoiceOn ? "Voice: ON" : "Voice: OFF";
+    if (!isVoiceOn) {
+        synth.cancel();
+        isTalking = false;
     }
 };
 
-// --- 4. CHAT HANDLER ---
+// --- 3. CHAT HANDLER ---
 async function handleChat() {
     const input = document.getElementById('user-input');
     const chatBox = document.getElementById('chat-box');
     const msg = input.value.trim();
     if(!msg) return;
 
-    chatBox.innerHTML += `<div class="user-msg"><b>Aap:</b> ${msg}</div>`;
+    chatBox.innerHTML += `<div><b>Aap:</b> ${msg}</div>`;
     input.value = "";
-    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
         const res = await fetch('/api/ai-chat', {
@@ -156,26 +134,13 @@ async function handleChat() {
             body: JSON.stringify({ prompt: msg })
         });
         const data = await res.json();
-        
-        chatBox.innerHTML += `<div class="bot-msg" style="color:blue"><b>Bharti:</b> ${data.reply}</div>`;
+        chatBox.innerHTML += `<div style="color:blue"><b>Bharti:</b> ${data.reply}</div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
-        
-        // Bharti bolegi
         speak(data.reply);
     } catch(e) {
-        chatBox.innerHTML += `<p><b>Bharti:</b> Connection error.</p>`;
+        chatBox.innerHTML += `<div><b>Bharti:</b> Error!</div>`;
     }
 }
 
-// Enter key support
-document.getElementById('user-input').addEventListener("keypress", (e) => {
-    if (e.key === "Enter") handleChat();
-});
-
 document.getElementById('send-btn').onclick = handleChat;
-
-// Initialize
-window.onload = () => {
-    init3D();
-    loadVoices();
-};
+window.onload = init3D;
