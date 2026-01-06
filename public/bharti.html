@@ -2,32 +2,33 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>3D Bharti AI - Zero Asset Version</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bharti AI - Full Screen</title>
     <link rel="stylesheet" href="bharti.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <div class="bharti-container">
+
+    <div class="main-wrapper">
         <div id="canvas-container"></div>
 
-        <div class="ui-panel">
-            <div class="controls">
-                <label>Awaaz Chunein:</label>
-                <select id="voice-select"></select>
-                <button id="voice-toggle" class="on">Voice: ON</button>
-            </div>
-            
+        <div class="chat-overlay">
             <div id="chat-box" class="chat-box">
-                <p class="bot"><b>Bharti:</b> Namaste! Main bina kisi external file ke 3D mein haazir hoon. Puchiye kya janna hai?</p>
+                <p class="bot"><b>Bharti:</b> Namaste! Main Bharti hoon. Main aapki kaise madad kar sakti hoon?</p>
             </div>
 
-            <div class="input-area">
-                <input type="text" id="user-input" placeholder="Kuch likhein...">
-                <button id="mic-btn">🎤</button>
-                <button id="send-btn">Bhejein</button>
+            <div class="ui-controls">
+                <select id="voice-select" class="custom-select"></select>
+                <div class="input-row">
+                    <input type="text" id="user-input" placeholder="Yahan likhein ya Mic use karein...">
+                    <button id="mic-btn" title="Bol kar batayein">🎤</button>
+                    <button id="send-btn">Bhejein</button>
+                </div>
+                <button id="voice-toggle" class="toggle-btn">Voice: ON</button>
             </div>
         </div>
     </div>
+
     <script src="bharti.js"></script>
 </body>
 </html>
