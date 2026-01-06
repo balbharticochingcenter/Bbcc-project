@@ -96,64 +96,65 @@ const AI_MODELS = [
     "llama-3.3-70b-versatile",
     "qwen/qwen3-32b"
 ];
+// Server ke top par ek memory object banayein (Ya sessions use karein)
+let chatHistory = {}; 
+
 app.post('/api/ai-chat', async (req, res) => {
-    const { prompt } = req.body;
+    const { prompt, userId } = req.body; // userId front-end se bhejenge
+    const id = userId || "default";
 
     try {
         const config = await SystemConfig.findOne();
         const apiKey = config?.groq_key;
+        if (!apiKey) return res.json({ reply: "API Key missing!" });
 
-        // Agar API Key nahi hai toh user ko batao
-        if (!apiKey) {
-            return res.json({ reply: "Bharti Error: Admin ne AI Key setup nahi ki hai. Dashboard mein 'groq_key' check karein." });
-        }
-
-        // Live Database info fetch karna
-        const [students, teachers, classConfigs] = await Promise.all([
-            Student.countDocuments(), // Sirf count lein taaki load kam ho
-            Teacher.find().select('teacher_name -_id'),
+        // 1. Memory Logic: Purani baatein yaad rakhne ke liye
+        if (!chatHistory[id]) chatHistory[id] = [];
+        
+        // Live DB Info
+        const [students, classConfigs] = await Promise.all([
+            Student.countDocuments(),
             ClassConfig.find().select('class_name -_id')
         ]);
 
-        const systemInstruction = `Aapka naam Bharti hai. Aap Bal Bharti Coaching Center ki digital assistant hain. 
-Respect se baat karein. Humare paas ${students} students aur expert teachers jaise ${teachers.map(t=>t.teacher_name).join(", ")} hain. 
-Hum ${classConfigs.map(c=>c.class_name).join(", ")} ki taiyari karate hain. HINDI mein jawab dein.`;
+        const systemInstruction = {
+            role: "system",
+            content: `Aapka naam Bharti hai. Bal Bharti Coaching ki assistant hain. 
+            Sirf HINDI mein baat karein. Respect dein. Hamare paas ${students} students hain. 
+            Short aur sweet jawab dein. Special characters (*, #, _) bilkul use na karein.`
+        };
 
-        // Groq API Call
+        // History maintain karein (Last 10 messages)
+        const messages = [systemInstruction, ...chatHistory[id], { role: "user", content: prompt }];
+
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { 
-                "Authorization": `Bearer ${apiKey}`, 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-                model: "llama-3.1-8b-instant", // Stable and Fast Model
-                messages: [
-                    { role: "system", content: systemInstruction },
-                    { role: "user", content: prompt }
-                ],
+                model: "llama-3.1-8b-instant",
+                messages: messages,
                 temperature: 0.7,
                 max_tokens: 300
             })
         });
 
         const data = await response.json();
+        let aiReply = data.choices[0].message.content;
 
-        // Debugging: Console par check karein ki Groq kya error de raha hai
-        if (data.error) {
-            console.error("Groq API Error:", data.error);
-            return res.json({ reply: "Groq API Error: " + data.error.message });
-        }
+        // 2. Special Characters Hatane ka logic (Voice ke liye safai)
+        aiReply = aiReply.replace(/[#*_~`>]/g, ""); 
 
-        if (data.choices && data.choices[0]) {
-            res.json({ reply: data.choices[0].message.content });
-        } else {
-            res.json({ reply: "Maaf kijiye, main abhi process nahi kar pa rahi hoon. Kya aap dobara puchenge?" });
-        }
+        // Memory mein save karein
+        chatHistory[id].push({ role: "user", content: prompt });
+        chatHistory[id].push({ role: "assistant", content: aiReply });
+
+        // History limit (taki server crash na ho)
+        if (chatHistory[id].length > 10) chatHistory[id].shift();
+
+        res.json({ reply: aiReply });
 
     } catch (err) {
-        console.error("Critical AI Error:", err);
-        res.status(500).json({ reply: "Network error: Connection nahi ban paa raha hai." });
+        res.status(500).json({ reply: "Network error!" });
     }
 });
 // --- A. STUDENT API ---
