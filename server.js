@@ -1,3 +1,6 @@
+const fs = require('fs');
+const { AbortController } = require('abort-controller');
+
 require('dotenv').config();
 
 const fetch = require('node-fetch');
@@ -88,6 +91,7 @@ app.get('/', (req, res) =>
 app.get('/admin', (req, res) =>
     res.sendFile(path.join(__dirname, 'public', 'admin.html'))
 );
+const publicKnowledge = fs.readFileSync(path.join(__dirname, 'publicKnowledge.txt'), 'utf8');
 
 // --- AI CONFIG ---
 const AI_MODELS = [
