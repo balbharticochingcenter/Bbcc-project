@@ -143,14 +143,14 @@ searchStudentBtn.onclick = async () => {
     if(document.getElementById('loader')) document.getElementById('loader').style.display = 'flex';
     
     try {
-        const res = await fetch('/api/search-student-result', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                searchTerm: nameOrId, 
-                mobileSearch: mobileNum 
-            })
-        });
+       const res = await fetch('/api/search-student-result', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+        searchTerm: nameOrId, // Yahan ID ya Name jayega
+        mobileSearch: mobileNum // Yahan Mobile Number jayega
+    })
+});
         
         const data = await res.json();
 
