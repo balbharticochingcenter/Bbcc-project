@@ -746,3 +746,66 @@ body {
 
 .marks-table th { background: #f0f4f8; }
 
+/* Floating Container */
+.bharti-float-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Floating Button Base */
+.bharti-float-btn {
+    width: 60px;
+    height: 60px;
+    background-color: #00b4db;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+    animation: bounce-up-down 2s infinite ease-in-out; /* Up-down animation */
+}
+
+.bharti-float-btn img {
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+}
+
+/* Tooltip Text (Talk to Bharti) */
+.tooltip-text {
+    visibility: hidden;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    position: absolute;
+    bottom: 75px; /* Button ke upar dikhega */
+    white-space: nowrap;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+/* Hover Effects */
+.bharti-float-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.bharti-float-container:hover .bharti-float-btn {
+    transform: scale(1.1);
+    animation-play-state: paused; /* Hover par animation ruk jayegi */
+}
+
+/* Up-Down Movement Animation */
+@keyframes bounce-up-down {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
