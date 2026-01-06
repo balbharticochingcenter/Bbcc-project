@@ -113,108 +113,125 @@ document.addEventListener('DOMContentLoaded', async () => {
         finally { loader.style.display = 'none'; }
     });
 
-    // --- 3. Result Modal & Search Logic ---
+// --- 3. Result Modal & Search Logic (Merged & Improved) ---
     studentResultBtn.onclick = () => resultModal.style.display = 'flex';
     
     document.querySelectorAll('.close-button').forEach(btn => {
         btn.onclick = () => {
             resultModal.style.display = 'none';
             regModal.style.display = 'none';
-            // Agar class modal ya login modal button isi class ko use kar rahe hain
             if(loginModal) loginModal.style.display = 'none';
         }
     });
 
-   searchStudentBtn.onclick = async () => {
-    const id = searchStudentIdInput.value;
-    if (!id) return;
-    searchMessage.textContent = "Searching...";
-    
-    try {
-        const res = await fetch('/api/get-students');
-        const students = await res.json();
-        const s = students.find(item => item.student_id === id);
-
-        if (s && s.exam_date) {
-            searchMessage.textContent = "";
-            studentResultDisplay.style.display = 'block';
-
-            // Basic Details Fill Karna
-            document.getElementById('result-student-name').textContent = s.student_name;
-            document.getElementById('result-student-id').textContent = s.student_id;
-            document.getElementById('result-parent-name').textContent = s.parent_name;
-            document.getElementById('result-student-class').textContent = s.student_class;
-            document.getElementById('result-exam-date').textContent = s.exam_date;
-            document.getElementById('result-total-marks').textContent = s.total_marks;
-            document.getElementById('result-obtained-marks').textContent = s.obtained_marks;
-
-            // Percentage Calculate Karna
-            const obtained = parseFloat(s.obtained_marks) || 0;
-            const total = parseFloat(s.total_marks) || 0;
-            const percentage = total > 0 ? ((obtained / total) * 100).toFixed(2) : "0";
-            document.getElementById('result-percentage').textContent = percentage;
-
-            // Photo Set Karna
-            const img = document.getElementById('result-student-photo');
-            if(s.photo) {
-                img.src = s.photo;
-                img.style.display = 'block';
-            } else {
-                img.src = 'https://via.placeholder.com/120x140?text=No+Photo';
-                img.style.display = 'block';
-            }
-
-            // --- PDF Download Logic (Sirf isi student ke liye) ---
-            downloadPdfBtn.onclick = async () => {
-                const { jsPDF } = window.jspdf;
-                const element = document.getElementById('studentResultDisplay');
-                
-                // Download buttons ko hide karna taaki PDF mein na aayein
-                const btns = element.querySelector('.download-buttons');
-                btns.style.display = 'none';
-
-                html2canvas(element, { 
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff" // Background white rakhega
-                }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                    
-                    pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-                    pdf.save(`Marksheet_${s.student_id}.pdf`);
-                    
-                    btns.style.display = 'flex'; // Download ke baad button wapas dikhayein
-                });
-            };
-
-            // --- JPG Download Logic ---
-            downloadJpgBtn.onclick = async () => {
-                const element = document.getElementById('studentResultDisplay');
-                const btns = element.querySelector('.download-buttons');
-                btns.style.display = 'none';
-
-                html2canvas(element, { scale: 2 }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `Marksheet_${s.student_id}.jpg`;
-                    link.href = canvas.toDataURL("image/jpeg", 0.9);
-                    link.click();
-                    btns.style.display = 'flex';
-                });
-            };
-
-        } else {
-            searchMessage.textContent = "❌ Result not found or Exam pending!";
-            studentResultDisplay.style.display = 'none';
+    // Smart Search Logic: ID, Name, or Mobile
+    searchStudentBtn.onclick = async () => {
+        const searchTerm = searchStudentIdInput.value.trim();
+        if (!searchTerm) {
+            searchMessage.textContent = "ID, Name ya Mobile Number bhariye!";
+            return;
         }
-    } catch (err) { 
-        console.error(err);
-        searchMessage.textContent = "❌ Search failed!"; 
+        
+        searchMessage.textContent = "Searching...";
+        if(typeof loader !== 'undefined') loader.style.display = 'flex';
+        
+        try {
+            // Naye API ko call kar rahe hain jo backend mein search handle karega
+            const res = await fetch('/api/search-student-result', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ searchTerm })
+            });
+            
+            const data = await res.json();
+
+            if (data.success) {
+                const s = data.student;
+                searchMessage.textContent = "";
+                studentResultDisplay.style.display = 'block';
+
+                // UI mein Data Fill Karna
+                document.getElementById('result-student-name').textContent = s.student_name;
+                document.getElementById('result-student-id').textContent = s.student_id;
+                document.getElementById('result-parent-name').textContent = s.parent_name;
+                document.getElementById('result-student-class').textContent = s.student_class;
+                document.getElementById('result-exam-date').textContent = s.exam_date || "N/A";
+                document.getElementById('result-exam-subject').textContent = s.exam_subject || "General";
+                document.getElementById('result-total-marks').textContent = s.total_marks;
+                document.getElementById('result-obtained-marks').textContent = s.obtained_marks;
+
+                // Percentage calculation
+                const obtained = parseFloat(s.obtained_marks) || 0;
+                const total = parseFloat(s.total_marks) || 0;
+                const percentage = total > 0 ? ((obtained / total) * 100).toFixed(2) : "0";
+                document.getElementById('result-percentage').textContent = percentage;
+
+                // Student Photo Handling
+                const img = document.getElementById('result-student-photo');
+                if(s.photo) {
+                    img.src = s.photo;
+                } else {
+                    img.src = 'https://via.placeholder.com/120x140?text=No+Photo';
+                }
+                img.style.display = 'block';
+                
+                // Download Buttons ko setup karna
+                setupDownloadButtons(s.student_id);
+
+            } else {
+                searchMessage.textContent = data.message || "❌ Result not found or Exam pending!";
+                studentResultDisplay.style.display = 'none';
+            }
+        } catch (err) {
+            console.error(err);
+            searchMessage.textContent = "❌ Connection error!";
+        } finally {
+            if(typeof loader !== 'undefined') loader.style.display = 'none';
+        }
+    };
+
+    // Download Functionality (PDF & JPG)
+    function setupDownloadButtons(stuId) {
+        // PDF Download
+        downloadPdfBtn.onclick = async () => {
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById('studentResultDisplay');
+            const btns = element.querySelector('.download-buttons');
+            
+            btns.style.display = 'none'; // Hide buttons for clean capture
+
+            html2canvas(element, { 
+                scale: 2, 
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+                pdf.save(`Marksheet_${stuId}.pdf`);
+                btns.style.display = 'flex';
+            });
+        };
+        
+        // JPG Download
+        downloadJpgBtn.onclick = async () => {
+            const element = document.getElementById('studentResultDisplay');
+            const btns = element.querySelector('.download-buttons');
+            
+            btns.style.display = 'none';
+
+            html2canvas(element, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Marksheet_${stuId}.jpg`;
+                link.href = canvas.toDataURL("image/jpeg", 0.9);
+                link.click();
+                btns.style.display = 'flex';
+            });
+        };
     }
-};
     // --- 4. Registration Logic ---
     if(regBtn) regBtn.onclick = () => regModal.style.display = "block";
     if(closeReg) closeReg.onclick = () => regModal.style.display = "none";
