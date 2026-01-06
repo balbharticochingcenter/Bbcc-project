@@ -291,9 +291,14 @@ app.post('/api/update-student-data', async (req, res) => {
     catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.delete('/api/delete-student', async (req, res) => {
-    try { await Student.findOneAndDelete({ student_id: req.body.student_id }); res.json({ success: true }); }
-    catch (err) { res.status(500).json({ error: err.message }); }
+
+app.post('/api/delete-student', async (req, res) => {
+    try { 
+        const { student_id } = req.body;
+        await Student.findOneAndDelete({ student_id: student_id }); 
+        res.json({ success: true }); 
+    }
+    catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.post('/api/update-student-fees', async (req, res) => {
