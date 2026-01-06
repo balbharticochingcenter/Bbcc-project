@@ -284,3 +284,186 @@ window.onclick = (e) => {
     }
   });
 };
+////=============================================
+async function saveFeesRow(btn) {
+    const row = btn.closest('tr');
+    const key = row.dataset.key; // Example: "2024-05"
+    const inputs = row.querySelectorAll('input');
+    const fees = inputs[0].value;
+    const paid = inputs[1].value;
+
+    const res = await fetch(API + '/api/update-student-fees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            student_id: currentFeesStudent,
+            month: key,
+            field: 'fees', // save multiple fields one by one or modify API
+            value: fees
+        })
+    });
+    
+    // Paid update
+    await fetch(API + '/api/update-student-fees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            student_id: currentFeesStudent,
+            month: key,
+            field: 'paid',
+            value: paid
+        })
+    });
+
+    alert("Fees Updated ✅");
+    loadFeesExcel();
+}
+////=====================================================================
+async function updateStudentProfile() {
+    const data = {
+        student_id: document.getElementById("edit_id").value,
+        student_name: document.getElementById("edit_name").value,
+        student_class: document.getElementById("edit_class").value,
+        parent_name: document.getElementById("edit_parent").value,
+        mobile: document.getElementById("edit_mobile").value,
+        parent_mobile: document.getElementById("edit_parent_mobile").value
+    };
+
+    // Photo agar change hui ho toh
+    const file = document.getElementById("edit_photo_file").files[0];
+    if (file) {
+        compressImage(file, async (base64) => {
+            data.photo = base64;
+            await sendUpdate(data);
+        });
+    } else {
+        await sendUpdate(data);
+    }
+}
+
+async function sendUpdate(data) {
+    const res = await fetch(API + '/api/update-student-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    if (res.ok) {
+        alert("Profile Updated!");
+        location.reload();
+    }
+}
+//////////////////////////////////////////////////////////////////////////////
+async function openStudentEditPopup(id) {
+    const students = await (await fetch(API + '/api/get-students')).json();
+    const s = students.find(x => x.student_id === id);
+
+    document.getElementById("edit_id").value = s.student_id;
+    document.getElementById("edit_name").value = s.student_name;
+    document.getElementById("edit_class").value = s.student_class;
+    document.getElementById("edit_parent").value = s.parent_name;
+    document.getElementById("edit_mobile").value = s.mobile;
+    document.getElementById("edit_parent_mobile").value = s.parent_mobile;
+    document.getElementById("edit_photo_preview").src = s.photo;
+
+    document.getElementById("studentEditModal").style.display = "block";
+}
+
+///////////////////////////////////////////////////////////////////////
+// 1. Loaded Class ko delete karne ka function
+async function deleteLoadedClass() {
+    const className = dash_class.value;
+    if (!className) return alert("Pehle class select karein!");
+
+    if (confirm(`Kya aap nishchit hain ki aap Class ${className} ke SARE students ko delete karna chahte hain?`)) {
+        try {
+            const res = await fetch(`${API}/api/delete-class/${className}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                loadDashboardStudents(); // List refresh karne ke liye
+            }
+        } catch (e) {
+            alert("Delete karne mein error aaya.");
+        }
+    }
+}
+
+// 2. Fees Row ko save karne ka function
+async function saveFeesRow(btn) {
+    const row = btn.closest('tr');
+    const key = row.dataset.key; // Example: "2024-05"
+    const inputs = row.querySelectorAll('input');
+    const feesVal = inputs[0].value;
+    const paidVal = inputs[1].value;
+
+    // Fees amount update
+    await fetch(API + '/api/update-student-fees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: currentFeesStudent, month: key, field: 'fees', value: feesVal })
+    });
+
+    // Paid amount update
+    await fetch(API + '/api/update-student-fees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: currentFeesStudent, month: key, field: 'paid', value: paidVal })
+    });
+
+    alert("Fees Data Saved ✅");
+    loadFeesExcel(); // Re-calculate totals
+}
+
+// 3. Student Profile Edit karne ka function
+async function openStudentEditPopup(id) {
+    const students = await (await fetch(API + '/api/get-students')).json();
+    const s = students.find(x => x.student_id === id);
+
+    if(!s) return alert("Student nahi mila");
+
+    document.getElementById("edit_id").value = s.student_id;
+    document.getElementById("edit_name").value = s.student_name || "";
+    document.getElementById("edit_class").value = s.student_class || "";
+    document.getElementById("edit_parent").value = s.parent_name || "";
+    document.getElementById("edit_mobile").value = s.mobile || "";
+    document.getElementById("edit_parent_mobile").value = s.parent_mobile || "";
+    document.getElementById("edit_photo_preview").src = s.photo || "";
+
+    document.getElementById("studentEditModal").style.display = "block";
+}
+
+// 4. Student Data Update (Submit) function
+async function updateStudentProfile() {
+    const data = {
+        student_id: document.getElementById("edit_id").value,
+        student_name: document.getElementById("edit_name").value,
+        student_class: document.getElementById("edit_class").value,
+        parent_name: document.getElementById("edit_parent").value,
+        mobile: document.getElementById("edit_mobile").value,
+        parent_mobile: document.getElementById("edit_parent_mobile").value
+    };
+
+    const file = document.getElementById("edit_photo_file").files[0];
+    
+    const sendData = async (finalData) => {
+        const res = await fetch(API + '/api/update-student-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalData)
+        });
+        if (res.ok) {
+            alert("Student Profile Updated! ✅");
+            document.getElementById("studentEditModal").style.display = "none";
+            loadDashboardStudents(); 
+        }
+    };
+
+    if (file) {
+        compressImage(file, (base64) => {
+            data.photo = base64;
+            sendData(data);
+        });
+    } else {
+        sendData(data);
+    }
+}
