@@ -125,7 +125,8 @@ async function loadDashboardStudents(){
   students.forEach(s=>{
     dashboardBody.innerHTML+=`
 <tr>
-<td><img src="${s.photo}" width="40" onclick="openFeesExcelPopup('${s.student_id}')"></td>
+// Is line ko replace karein:
+<td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" onclick="openFeesExcelPopup('${s.student_id}')" style="cursor:pointer; border-radius:4px;"></td>
 <td>${s.student_id}</td>
 <td><input value="${s.student_name||''}"></td>
 <td><input value="${s.pass||''}"></td>
@@ -208,14 +209,23 @@ async function openFeesExcelPopup(id){
   const students=await (await fetch(API+'/api/get-students')).json();
   const s=students.find(x=>x.student_id===id);
 
-  feesStudentInfo.innerHTML=`
-<img src="${s.photo}" width="60" style="border-radius:50%"
- onclick="openStudentEditPopup('${id}')">
-<b>${s.student_name}</b> 📞${s.mobile}
-`;
+  feesStudentInfo.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="${s.photo || ''}" width="70" height="70" 
+                 style="border-radius:50%; cursor:pointer; object-fit: cover; border: 2px solid #ddd;" 
+                 onerror="handleImgError(this)" 
+                 onclick="openStudentEditPopup('${id}')">
+            <div>
+                <b style="font-size: 1.2em; color: #2c3e50;">${s.student_name}</b> (ID: ${s.student_id})<br>
+                <span>📞 Student: ${s.mobile || 'N/A'}</span><br>
+                <span style="color: #555;">👨‍👩‍👦 Parent: <b>${s.parent_name || 'N/A'}</b></span><br>
+                <span>📱 Parent Mob: ${s.parent_mobile || 'N/A'}</span>
+            </div>
+        </div>
+    `;
 
-  prepareFeesFilters();
-  loadFeesExcel();
+    prepareFeesFilters();
+    loadFeesExcel();
 }
 
 // ================= FEES EXCEL =================
@@ -469,4 +479,65 @@ async function updateStudentProfile() {
     } else {
         sendData(data);
     }
+}
+////==========================================================================================
+function downloadStudentExcel() {
+    const rows = document.querySelectorAll("#dashboardBody tr");
+    if (rows.length === 0) return alert("Pehle data load karein!");
+
+    let csv = "ID,Name,Pass,Class,Joining Date,Fees,Exam Date,Total,Obtained,Division\n";
+    
+    rows.forEach(row => {
+        const cols = row.querySelectorAll("td");
+        const inputs = row.querySelectorAll("input");
+        
+        // Data extract kar rahe hain
+        const id = cols[1].innerText;
+        const name = inputs[0].value;
+        const pass = inputs[1].value;
+        const cls = cols[4].innerText;
+        const doj = inputs[2].value;
+        const fees = inputs[3].value;
+        const exam = inputs[4].value;
+        const total = inputs[5].value;
+        const obt = inputs[6].value;
+        const div = cols[10].innerText;
+
+        csv += `${id},${name},${pass},${cls},${doj},${fees},${exam},${total},${obt},${div}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `Students_${dash_class.value}_${dash_year.value}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+function downloadFeesExcel() {
+    const rows = document.querySelectorAll("#feesExcelBody tr");
+    if (rows.length === 0) return alert("Pehle data load karein!");
+
+    let csv = "Month,Monthly Fees,Paid,Due,Status\n";
+    rows.forEach(row => {
+        const cols = row.querySelectorAll("td");
+        const inputs = row.querySelectorAll("input");
+        csv += `${cols[0].innerText},${inputs[0].value},${inputs[1].value},${cols[3].innerText},${cols[4].innerText}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Fees_Report.csv`;
+    a.click();
+}
+// adminscript.js ke bilkul niche ye copy-paste karein
+const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+function handleImgError(img) {
+    img.onerror = null; 
+    img.src = DEFAULT_AVATAR;
 }
