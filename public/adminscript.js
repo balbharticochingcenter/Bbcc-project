@@ -808,29 +808,45 @@ async function openSystemConfig() {
 
 // 2. DATA UPDATE: Naya data save karna
 async function saveSystemConfig() {
+    // Button ko disable karein taaki baar baar click na ho
+    const btn = event.target;
+    btn.innerText = "Updating...";
+    btn.disabled = true;
+
     const config = {
         title: document.getElementById('cfg_title').value,
         sub_title: document.getElementById('cfg_subtitle').value,
         contact: document.getElementById('cfg_contact').value,
-        call_no: document.getElementById('cfg_call_no').value,
+        call_no: document.getElementById('cfg_call_no').value, // Check karein ye ID HTML mein hai ya nahi
         gmail: document.getElementById('cfg_gmail').value,
         facebook: document.getElementById('cfg_facebook').value,
         youtube_link: document.getElementById('cfg_youtube').value,
         instagram: document.getElementById('cfg_insta').value
     };
 
-    const res = await fetch('/api/update-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-    });
-    const result = await res.json();
-    if(result.success) {
-        alert("✅ Settings Saved Successfully!");
-        location.reload();
+    try {
+        const res = await fetch('/api/update-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        
+        const result = await res.json();
+        
+        if(result.success) {
+            alert("✅ Settings Database mein save ho gayi hain!");
+            location.reload();
+        } else {
+            alert("❌ Server ne mana kar diya: " + result.error);
+        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        alert("❌ Connection Error: Server tak baat nahi pahonch rahi.");
+    } finally {
+        btn.innerText = "💾 Update Settings";
+        btn.disabled = false;
     }
 }
-
 // 3. SLIDER LOGIC: Crop (200x200) and Compress (5KB)
 let tempSliderBase64 = "";
 
