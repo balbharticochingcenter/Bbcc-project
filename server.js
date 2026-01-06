@@ -442,6 +442,14 @@ app.get('/api/get-sliders', async (req, res) => {
     catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.delete('/api/delete-slider/:id', async (req, res) => {
+    try {
+        await SliderPhoto.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: "Photo deleted!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 app.post('/api/save-class-config', async (req, res) => {
     try { await ClassConfig.findOneAndUpdate({ class_name: req.body.class_name }, req.body, { upsert: true }); res.json({ success: true }); }
     catch (err) { res.status(500).json({ error: err.message }); }
