@@ -578,19 +578,20 @@ async function loadExamStudents() {
     const body = document.getElementById("examDashboardBody");
     body.innerHTML = "";
 
-    students.forEach(s => {
-        body.innerHTML += `
-        <tr data-id="${s.student_id}">
-            <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" style="border-radius:4px;"></td>
-            <td><b>${s.student_name}</b><br><small>${s.student_id}</small></td>
-            <td><input type="date" class="row-date" value="${s.exam_date || ''}"></td>
-            <td><input type="text" class="row-subject" value="${s.parent_mobile || ''}" placeholder="Subject"></td> <td><input type="number" class="row-total" value="${s.total_marks || ''}" style="width:60px"></td>
-            <td><input type="number" class="row-obt" value="${s.obtained_marks || ''}" style="width:60px" oninput="updateRowDiv(this)"></td>
-            <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
-        </tr>`;
-    });
-}
-
+   students.forEach(s => {
+    body.innerHTML += `
+    <tr data-id="${s.student_id}">
+        <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" style="border-radius:4px;"></td>
+        <td><b>${s.student_name}</b><br><small>${s.student_id}</small></td>
+        <td><input type="date" class="row-date" value="${s.exam_date || ''}"></td>
+        
+        <td><input type="text" class="row-subject" value="${s.exam_subject || ''}" placeholder="Subject"></td>
+        
+        <td><input type="number" class="row-total" value="${s.total_marks || ''}" style="width:60px"></td>
+        <td><input type="number" class="row-obt" value="${s.obtained_marks || ''}" style="width:60px" oninput="updateRowDiv(this)"></td>
+        <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
+    </tr>`;
+});
 // Bulk Apply Button Logic
 function applyBulkSettings() {
     const sub = document.getElementById("bulk_subject").value;
