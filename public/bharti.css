@@ -1,63 +1,15 @@
-body {
-    margin: 0; background: #e0e0e0;
-    font-family: 'Arial', sans-serif;
-    display: flex; justify-content: center; align-items: center; height: 100vh;
+body { margin: 0; background: #f0f0f0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
+.bharti-container { width: 450px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+
+#threejs-canvas-container { 
+    width: 100%; height: 350px; 
+    background: radial-gradient(circle, #ffffff, #a1c4fd); 
 }
 
-.bharti-main-container {
-    width: 400px; background: #fff; border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2); overflow: hidden;
-    display: flex; /* For layout */
-    flex-direction: column; /* For stacking avatar and chat UI */
-}
-
-/* Avatar Graphics with Three.js Canvas */
-.avatar-stage {
-    height: 280px;
-    background: radial-gradient(circle, #ffffff, #81d4fa);
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden; /* Canvas ko contain karne ke liye */
-}
-
-#threejs-canvas-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-#threejs-canvas-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
-
-/* UI Elements */
-.bharti-ui {
-    padding: 15px; background: #f9f9f9;
-    flex-grow: 1; /* Take remaining space */
-    display: flex;
-    flex-direction: column;
-}
-
-.chat-display {
-    height: 180px; /* Thoda chhota kiya hai */
-    overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 10px;
-    background: #fff; /* Chat box ka background white */
-}
-.chat-display p { margin: 5px 0; line-height: 1.4; }
-.bot-text { color: #1565c0; }
-
-.controls-row { display: flex; gap: 10px; margin-bottom: 10px; }
-select, button { padding: 8px; border-radius: 5px; border: 1px solid #ccc; cursor: pointer; }
-#voice-toggle.off { background: #ff5252; color: white; }
-#voice-toggle.on { background: #4caf50; color: white; }
-.input-row { display: flex; gap: 5px; margin-top: auto; /* Push to bottom */ }
-input { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ddd; outline: none; }
-#mic-btn, #send-btn { background: #0083b0; color: white; border: none; }
-#mic-btn { background: #ff7043; } /* Mic button ka rang alag rakha */
+.ui-panel { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.chat-box { height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 10px; font-size: 14px; }
+.input-area { display: flex; gap: 5px; }
+input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
+button { padding: 8px 15px; border-radius: 20px; border: none; background: #007bff; color: white; cursor: pointer; }
+#mic-btn { background: #ff4757; }
+select { border-radius: 5px; padding: 5px; border: 1px solid #ccc; }
