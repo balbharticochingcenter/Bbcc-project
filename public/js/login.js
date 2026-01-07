@@ -256,50 +256,76 @@ async function handleImageCompression(file) {
 if(regPhotoInput) {
     regPhotoInput.onchange = (e) => handleImageCompression(e.target.files[0]);
 }
-    studentRegForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerText;
-        submitBtn.innerText = "Processing..."; 
-        submitBtn.disabled = true;
+ studentRegForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // 1. Button UI Handling
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalBtnText = "Register Now"; // Aapka default text
+    btn.innerText = "Saving...";
+    btn.disabled = true;
 
-        const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked')).map(cb => cb.value);
-        const studentId = document.getElementById('regId').value.trim() || "STU" + Math.floor(1000 + Math.random() * 9000);
+    // 2. Generate Unique ID (Year + Month + Random)
+    // Isse duplicate ID ka khatra khatam ho jayega
+    const datePart = new Date().toISOString().slice(2, 7).replace('-', ''); // e.g., 2601
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
+    const generatedId = "STU" + datePart + randomPart;
 
-        const formData = {
-            student_name: document.getElementById('regName').value,
-            parent_name: document.getElementById('regParent').value,
-            mobile: document.getElementById('regMobile').value,
-            parent_mobile: document.getElementById('regParentMobile').value,
-            student_class: selectedClasses.join(', '),
-            joining_date: document.getElementById('regDate').value,
-            student_id: studentId,
-            pass: document.getElementById('regPass').value,
-            photo: compressedPhotoBase64,
-            fees: "0"
-        };
+    // 3. Collect Form Data
+    const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked')).map(cb => cb.value);
 
-        try {
-            const response = await fetch('/api/student-reg', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await response.json();
-            if (result.success) {
-                alert('✅ Success! Student ID: ' + studentId);
-                regModal.style.display = "none";
-                studentRegForm.reset();
-            } else {
-                alert('❌ Error: ' + (result.error || "Registration failed"));
+    const formData = {
+        student_name: document.getElementById('regName').value,
+        parent_name: document.getElementById('regParent').value,
+        mobile: document.getElementById('regMobile').value,
+        parent_mobile: document.getElementById('regParentMobile').value,
+        student_class: selectedClasses.join(', '),
+        joining_date: document.getElementById('regDate').value,
+        student_id: generatedId,
+        pass: document.getElementById('regPass').value || "123456", // Default pass agar khali ho
+        photo: (typeof compressedPhotoBase64 !== 'undefined') ? compressedPhotoBase64 : "", // Photo optional
+        fees: "0"
+    };
+
+    try {
+        // 4. Send Data to Server
+        const response = await fetch('/api/student-reg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Success Handle
+            alert('✅ Success! Student ID: ' + (result.student_id || generatedId));
+            regModal.style.display = "none";
+            studentRegForm.reset();
+            
+            // Photo variable reset (agar handleImageCompression use ho raha hai)
+            if (typeof compressedPhotoBase64 !== 'undefined') {
+                compressedPhotoBase64 = ""; 
             }
-        } catch (err) { alert('❌ Network Error!'); }
-        finally {
-            submitBtn.innerText = originalBtnText;
-            submitBtn.disabled = false;
-        }
-    });
+            
+            // Preview container hide karna (optional)
+            const previewContainer = document.getElementById('photoPreviewContainer');
+            if (previewContainer) previewContainer.style.display = 'none';
 
+        } else {
+            // Server side error message
+            alert('❌ Error: ' + (result.error || result.message || "Registration failed"));
+        }
+    } catch (err) {
+        // Network or Connection error
+        console.error("Fetch Error:", err);
+        alert('❌ Server connect nahi ho raha! Internet check karein.');
+    } finally {
+        // 5. Button Restore
+        btn.innerText = originalBtnText;
+        btn.disabled = false;
+    }
+});
     // Outside click (Updated to include loginModal)
     window.onclick = (event) => {
         if (event.target == regModal) regModal.style.display = "none";
