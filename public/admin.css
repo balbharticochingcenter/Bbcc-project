@@ -440,3 +440,19 @@ table input {
   border-radius: 12px;
   padding: 20px;
 }
+#modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  overflow-y: auto;
+}
+
+#modal .modal-content {
+  background: #0d6efd; /* BLUE */
+  margin: 40px auto;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 15px;
+  border-radius: 8px;
+}
