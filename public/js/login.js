@@ -256,22 +256,19 @@ async function handleImageCompression(file) {
 if(regPhotoInput) {
     regPhotoInput.onchange = (e) => handleImageCompression(e.target.files[0]);
 }
- studentRegForm.addEventListener('submit', async (e) => {
+studentRegForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    // 1. Button UI Handling
     const btn = e.target.querySelector('button[type="submit"]');
-    const originalBtnText = "Register Now"; // Aapka default text
     btn.innerText = "Saving...";
     btn.disabled = true;
 
-    // 2. Generate Unique ID (Year + Month + Random)
-    // Isse duplicate ID ka khatra khatam ho jayega
-    const datePart = new Date().toISOString().slice(2, 7).replace('-', ''); // e.g., 2601
+    // --- Automatic Unique ID ---
+    const datePart = new Date().toISOString().slice(2,7).replace('-', ''); 
     const randomPart = Math.floor(1000 + Math.random() * 9000);
     const generatedId = "STU" + datePart + randomPart;
 
-    // 3. Collect Form Data
+    // --- Class Selection Fix ---
+    // Sabhi checked checkboxes ki value nikal kar ek string banata hai (e.g., "10th, I.Sc.")
     const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked')).map(cb => cb.value);
 
     const formData = {
@@ -279,50 +276,33 @@ if(regPhotoInput) {
         parent_name: document.getElementById('regParent').value,
         mobile: document.getElementById('regMobile').value,
         parent_mobile: document.getElementById('regParentMobile').value,
-        student_class: selectedClasses.join(', '),
+        student_class: selectedClasses.join(', '), // Yahan data string ban kar jayega
         joining_date: document.getElementById('regDate').value,
         student_id: generatedId,
-        pass: document.getElementById('regPass').value || "123456", // Default pass agar khali ho
-        photo: (typeof compressedPhotoBase64 !== 'undefined') ? compressedPhotoBase64 : "", // Photo optional
+        pass: document.getElementById('regPass').value || "123456",
+        photo: (typeof compressedPhotoBase64 !== 'undefined') ? compressedPhotoBase64 : "",
         fees: "0"
     };
 
     try {
-        // 4. Send Data to Server
         const response = await fetch('/api/student-reg', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
-
         const result = await response.json();
-
         if (result.success) {
-            // Success Handle
-            alert('✅ Success! Student ID: ' + (result.student_id || generatedId));
+            alert('✅ Success! Student ID: ' + result.student_id);
             regModal.style.display = "none";
             studentRegForm.reset();
-            
-            // Photo variable reset (agar handleImageCompression use ho raha hai)
-            if (typeof compressedPhotoBase64 !== 'undefined') {
-                compressedPhotoBase64 = ""; 
-            }
-            
-            // Preview container hide karna (optional)
-            const previewContainer = document.getElementById('photoPreviewContainer');
-            if (previewContainer) previewContainer.style.display = 'none';
-
+            if (typeof compressedPhotoBase64 !== 'undefined') compressedPhotoBase64 = ""; 
         } else {
-            // Server side error message
-            alert('❌ Error: ' + (result.error || result.message || "Registration failed"));
+            alert('❌ Error: ' + result.error);
         }
     } catch (err) {
-        // Network or Connection error
-        console.error("Fetch Error:", err);
-        alert('❌ Server connect nahi ho raha! Internet check karein.');
+        alert('❌ Server connect nahi ho raha!');
     } finally {
-        // 5. Button Restore
-        btn.innerText = originalBtnText;
+        btn.innerText = "Register Now";
         btn.disabled = false;
     }
 });
