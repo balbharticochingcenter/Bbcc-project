@@ -84,10 +84,32 @@ const SliderPhoto = mongoose.model('SliderPhoto', new mongoose.Schema({
 
 const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
     class_name: { type: String, unique: true },
+
     banner: String,
     intro_video: String,
-    subjects: { type: Map, of: [String] }
+
+    subjects: {
+        type: Map,
+        of: {
+            notes: [String],   // base64 pdf
+            videos: [String]   // youtube links
+        }
+    }
 }));
+app.get('/api/get-all-subjects', (req, res) => {
+    res.json([
+        "Hindi","English","Math","Science","Social Science",
+        "Physics","Chemistry","Biology",
+        "History","Geography","Civics","Economics",
+        "Computer","IT","GK","Sanskrit","Urdu",
+        "Accounts","Business Studies",
+        "Political Science","Psychology",
+        "Philosophy","Sociology",
+        "Botany","Zoology",
+        "Statistics","Reasoning"
+    ]);
+});
+
 
 // ---------------- HTML ROUTES ----------------
 app.get('/', (req, res) =>
@@ -610,18 +632,25 @@ app.delete('/api/delete-slider/:id', async (req, res) => {
     }
 });
 app.post('/api/save-class-config', async (req, res) => {
-    try { await ClassConfig.findOneAndUpdate({ class_name: req.body.class_name }, req.body, { upsert: true }); res.json({ success: true }); }
-    catch (err) { res.status(500).json({ error: err.message }); }
+    try {
+        await ClassConfig.findOneAndUpdate(
+            { class_name: req.body.class_name },
+            req.body,
+            { upsert: true }
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.get('/api/get-all-class-configs', async (req, res) => {
-    try {
-        const configs = await ClassConfig.find();
-        const configMap = {};
-        configs.forEach(conf => { configMap[conf.class_name] = conf; });
-        res.json(configMap);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    const data = await ClassConfig.find();
+    const map = {};
+    data.forEach(c => map[c.class_name] = c);
+    res.json(map);
 });
+
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
