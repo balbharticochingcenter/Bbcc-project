@@ -55,28 +55,28 @@
     </button>
     
 </div>
+  <div class="button-group" data-label="📘 Class Management  ">
+<div id="classCards"></div>
+ </div>
+</div>
+ <div id="modal" class="modal">
+  <div class="modal-box">
+
+    <h3 id="modalTitle"></h3>
+
+    <label>Class Banner</label>
+    <input type="file" id="bannerInput">
+
+    <label>Intro YouTube Video</label>
+    <input type="text" id="introVideo">
+
+    <h4>Subjects</h4>
+    <div id="subjectList"></div>
+
+    <button onclick="saveClass()">Save</button>
+    <button onclick="closeModal()">Close</button>
+
   </div>
-<h2>📘 Class Management</h2>
-
-<div id="classContainer"></div>
-  
-
-  <div id="classModal" class="modal">
-    <div class="modal-content">
-        <h3 id="modalTitle"></h3>
-
-        <label>Class Banner</label>
-        <input type="file" id="bannerInput">
-
-        <label>YouTube Intro</label>
-        <input type="text" id="videoInput">
-
-        <label>Notes PDF</label>
-        <input type="file" id="pdfInput">
-
-        <button onclick="saveClassDetail()">Save</button>
-        <button onclick="closeModal()">Close</button>
-    </div>
 </div>
 <div id="systemConfigModal" class="modal">
     <div class="modal-content" style="max-width:500px">
