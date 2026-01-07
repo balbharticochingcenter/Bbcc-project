@@ -401,3 +401,41 @@ table input {
   padding: 5px;
   margin: 2px 0;
 }
+body { font-family: Arial; background: #f4f4f4; }
+
+.class-card {
+    background: #fff;
+    padding: 15px;
+    margin: 10px;
+    display: inline-block;
+    width: 160px;
+    border-radius: 6px;
+}
+
+.class-card button {
+    width: 100%;
+    padding: 6px;
+    background: #0a8;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.class-card input {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+}
+
+.modal-content {
+    background: white;
+    width: 300px;
+    padding: 15px;
+    margin: 10% auto;
+}
