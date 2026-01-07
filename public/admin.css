@@ -402,8 +402,6 @@ table input {
   margin: 2px 0;
 }
 
-
-
 .card {
   width:180px;
   background:#fff;
@@ -418,25 +416,8 @@ table input {
   height:100px;
   object-fit:cover;
 }
-
-
-
-#modal {
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
-}
-
-.modal-box {
-  background:#fff;
-  width:500px;
-  margin:5% auto;
-  padding:15px;
-}
-
 .subject-box {
   border:1px solid #ccc;
   padding:8px;
-  margin:8px 0;
+  margin:10px 0;
 }
