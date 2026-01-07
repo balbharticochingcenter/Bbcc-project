@@ -30,6 +30,12 @@ const SystemConfig = mongoose.model('SystemConfig', new mongoose.Schema({
     twitter: String, help: String, admin_name: String,
     groq_key: String
 }));
+const ClassFee = mongoose.model('ClassFee', new mongoose.Schema({
+    class_name: { type: String, unique: true },
+    monthly_fees: String
+}));
+
+
 
 const Teacher = mongoose.model('Teacher', new mongoose.Schema({
     teacher_name: String,
@@ -377,6 +383,31 @@ Main sirf yahi bolungi:
     } catch (err) {
         res.json({ reply: "Server error aaya hai." });
     }
+});
+////////////////////////////////////////////////////////////////////////
+app.get('/api/get-all-classes', (req, res) => {
+    res.json([
+        "1st","2nd","3rd","4th","5th",
+        "6th","7th","8th","9th","10th",
+        "I.A.","I.Sc","I.Com",
+        "B.A.","B.Sc","B.Com"
+    ]);
+});
+app.post('/api/update-class-fees', async (req, res) => {
+    try {
+        const { class_name, monthly_fees } = req.body;
+        await ClassFee.findOneAndUpdate(
+            { class_name },
+            { monthly_fees },
+            { upsert: true }
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+app.get('/api/get-class-fees', async (req, res) => {
+    res.json(await ClassFee.find());
 });
 
 
