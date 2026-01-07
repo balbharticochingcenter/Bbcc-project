@@ -267,16 +267,24 @@ studentRegForm.addEventListener('submit', async (e) => {
     const randomPart = Math.floor(1000 + Math.random() * 9000);
     const generatedId = "STU" + datePart + randomPart;
 
-    // --- Class Selection Fix ---
-    // Sabhi checked checkboxes ki value nikal kar ek string banata hai (e.g., "10th, I.Sc.")
-    const selectedClasses = Array.from(document.querySelectorAll('input[name="regClass"]:checked')).map(cb => cb.value);
+  
+    const selectedClass = document.getElementById('regClass').value; // <-- UPDATE
+
+    if (!selectedClass) { // <-- validation add
+        alert("Class select karna zaroori hai");
+        btn.innerText = "Register Now";
+        btn.disabled = false;
+        return;
+    }
 
     const formData = {
         student_name: document.getElementById('regName').value,
         parent_name: document.getElementById('regParent').value,
         mobile: document.getElementById('regMobile').value,
         parent_mobile: document.getElementById('regParentMobile').value,
-        student_class: selectedClasses.join(', '), // Yahan data string ban kar jayega
+
+        student_class: selectedClass, // <-- UPDATE (ab single class sahi jayegi)
+
         joining_date: document.getElementById('regDate').value,
         student_id: generatedId,
         pass: document.getElementById('regPass').value || "123456",
@@ -295,7 +303,7 @@ studentRegForm.addEventListener('submit', async (e) => {
             alert('✅ Success! Student ID: ' + result.student_id);
             regModal.style.display = "none";
             studentRegForm.reset();
-            if (typeof compressedPhotoBase64 !== 'undefined') compressedPhotoBase64 = ""; 
+            compressedPhotoBase64 = "";
         } else {
             alert('❌ Error: ' + result.error);
         }
