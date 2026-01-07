@@ -1030,3 +1030,73 @@ async function rejectStudent(id) {
     alert("❌ Student Rejected & Data Deleted");
     loadPendingRegistrations();
 }
+let selectedClass = "";
+let bannerBase64 = "";
+let pdfBase64 = "";
+
+fetch('/api/get-all-classes')
+.then(res => res.json())
+.then(classes => {
+    classes.forEach(cls => {
+        document.getElementById('classContainer').innerHTML += `
+        <div class="class-card">
+            <button onclick="openClass('${cls}')">${cls}</button>
+            <input placeholder="Fees"
+                onblur="saveFees('${cls}', this.value)">
+        </div>`;
+    });
+});
+
+function saveFees(className, fees) {
+    fetch('/api/update-class-fees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ class_name: className, monthly_fees: fees })
+    });
+}
+
+// ---------- CLASS DETAIL ----------
+function openClass(cls) {
+    selectedClass = cls;
+    document.getElementById('modalTitle').innerText = cls;
+    document.getElementById('classModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('classModal').style.display = 'none';
+}
+
+// ---------- IMAGE COMPRESS ----------
+document.getElementById('bannerInput').onchange = e => {
+    const file = e.target.files[0];
+    const img = new Image();
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 200;
+        canvas.getContext('2d').drawImage(img, 0, 0, 200, 200);
+        bannerBase64 = canvas.toDataURL('image/jpeg', 0.4);
+    };
+    img.src = URL.createObjectURL(file);
+};
+
+// ---------- PDF ----------
+document.getElementById('pdfInput').onchange = e => {
+    const reader = new FileReader();
+    reader.onload = () => pdfBase64 = reader.result;
+    reader.readAsDataURL(e.target.files[0]);
+};
+
+// ---------- SAVE ----------
+function saveClassDetail() {
+    fetch('/api/save-class-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            class_name: selectedClass,
+            banner: bannerBase64,
+            intro_video: document.getElementById('videoInput').value,
+            notes: [{ title: "Notes", pdf: pdfBase64 }]
+        })
+    }).then(() => alert("Saved"));
+}
