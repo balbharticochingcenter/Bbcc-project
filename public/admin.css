@@ -373,11 +373,13 @@ table input {
     box-shadow: 0 6px 20px rgba(108, 92, 231, 0.6);
 }
 .pending-box {
-  background: #fff8e1;
-  border: 2px solid #f1c40f;
+ background: #1a1a1a; /* Halka black background */
+  border: 2px solid #f1c40f; /* Yellow border (Gold look) */
+  color: #ffffff; /* Text color white taaki dark bg pe dikhe */
   padding: 15px;
   margin: 15px;
   border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
 .pending-card {
