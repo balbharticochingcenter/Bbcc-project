@@ -943,16 +943,33 @@ async function loadPendingRegistrations() {
             <img src="${s.photo || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}">
 
             <div style="flex:1">
-                <input value="${s.student_name}" id="name_${s.student_id}">
-                <input value="${s.pass}" id="pass_${s.student_id}">
-                <input value="${s.student_class}" id="class_${s.student_id}">
-                <input value="${s.parent_name}" id="parent_${s.student_id}">
-                <input value="${s.parent_mobile}" id="pmobile_${s.student_id}">
-                <input value="${s.mobile}" id="mobile_${s.student_id}">
-                <input value="${s.joining_date}" id="doj_${s.student_id}">
+                <label>Student Name</label>
+                <input id="student_name_${s.student_id}" value="${s.student_name || ''}">
+
+                <label>Student ID</label>
+                <input value="${s.student_id}" disabled>
+
+                <label>Password</label>
+                <input id="pass_${s.student_id}" value="${s.pass || ''}">
+
+                <label>Class</label>
+                <input id="class_${s.student_id}" value="${s.student_class || ''}">
+
+                <label>Parent Name</label>
+                <input id="parent_name_${s.student_id}" value="${s.parent_name || ''}">
+
+                <label>Student Mobile No.</label>
+                <input id="mobile_${s.student_id}" value="${s.mobile || ''}">
+
+                <label>Parent Mobile No.</label>
+                <input id="parent_mobile_${s.student_id}" value="${s.parent_mobile || ''}">
+
+                <label>Date of Joining</label>
+                <input type="date" id="doj_${s.student_id}" value="${s.joining_date || ''}">
             </div>
 
             <div>
+            <label>Monthly Fees</label>
                 <input placeholder="Fees" id="fees_${s.student_id}">
                 <button onclick="approveStudent('${s.student_id}')"
                  style="background:#2ecc71;color:white;padding:6px;">
