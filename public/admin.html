@@ -53,7 +53,29 @@
     <button onclick="openSliderManager()" style="background:#6c5ce7; color:white;">
         <i class="fas fa-images"></i> Slider Management
     </button>
+    
 </div>
+<h2>📘 Class Management</h2>
+
+<div id="classContainer"></div>
+  
+</div>
+  <div id="classModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle"></h3>
+
+        <label>Class Banner</label>
+        <input type="file" id="bannerInput">
+
+        <label>YouTube Intro</label>
+        <input type="text" id="videoInput">
+
+        <label>Notes PDF</label>
+        <input type="file" id="pdfInput">
+
+        <button onclick="saveClassDetail()">Save</button>
+        <button onclick="closeModal()">Close</button>
+    </div>
 </div>
 <div id="systemConfigModal" class="modal">
     <div class="modal-content" style="max-width:500px">
