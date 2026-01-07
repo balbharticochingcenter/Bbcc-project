@@ -1119,13 +1119,13 @@ function drawSubject(sub){
       onchange="toggleSubject('${sub}',this.checked)">
       ${sub}
     </label>
-    <div id="box-${sub}"></div>`;
+    <div id="box-${safeId(sub)}"></div>
   subjectList.appendChild(div);
   if(checked) toggleSubject(sub,true);
 }
 
 function toggleSubject(sub,on){
-  const box=document.getElementById(`box-${sub}`);
+ const box=document.getElementById(`box-${safeId(sub)}`);
   if(!on){ delete classData.subjects[sub]; box.innerHTML=""; return; }
 
   if(!classData.subjects[sub])
