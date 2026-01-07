@@ -988,12 +988,15 @@ async function approveStudent(id) {
 
     const body = {
         student_id: id,
-        student_name: document.getElementById(`name_${id}`).value,
+
+        student_name: document.getElementById(`student_name_${id}`).value,
         pass: document.getElementById(`pass_${id}`).value,
         student_class: document.getElementById(`class_${id}`).value,
-        parent_name: document.getElementById(`parent_${id}`).value,
-        parent_mobile: document.getElementById(`pmobile_${id}`).value,
+
+        parent_name: document.getElementById(`parent_name_${id}`).value,
         mobile: document.getElementById(`mobile_${id}`).value,
+        parent_mobile: document.getElementById(`parent_mobile_${id}`).value,
+
         joining_date: document.getElementById(`doj_${id}`).value,
         fees: fees
     };
@@ -1005,5 +1008,5 @@ async function approveStudent(id) {
     });
 
     alert("✅ Student Approved & Data Saved");
-    loadPendingRegistrations(); // 🔄 refresh box
+    loadPendingRegistrations();
 }
