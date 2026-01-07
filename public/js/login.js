@@ -268,7 +268,7 @@ studentRegForm.addEventListener('submit', async (e) => {
     const generatedId = "STU" + datePart + randomPart;
 
   
-    const selectedClass = document.getElementById('regClass').value; // <-- UPDATE
+    const selectedClass = document.getElementById('regClassSelect').value;
 
     if (!selectedClass) { // <-- validation add
         alert("Class select karna zaroori hai");
