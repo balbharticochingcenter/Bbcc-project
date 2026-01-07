@@ -372,3 +372,30 @@ table input {
     filter: brightness(1.1);
     box-shadow: 0 6px 20px rgba(108, 92, 231, 0.6);
 }
+.pending-box {
+  background: #fff8e1;
+  border: 2px solid #f1c40f;
+  padding: 15px;
+  margin: 15px;
+  border-radius: 10px;
+}
+
+.pending-card {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px dashed #ccc;
+}
+
+.pending-card img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pending-card input {
+  width: 110px;
+  padding: 5px;
+  margin: 2px 0;
+}
