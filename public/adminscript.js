@@ -923,6 +923,7 @@ async function deleteSlider(id) {
 }
 
 
+// 🔔 Pending Students Load + Approve / Reject Buttons included
 async function loadPendingRegistrations() {
     const res = await fetch('/api/get-students');
     const students = await res.json();
@@ -968,17 +969,25 @@ async function loadPendingRegistrations() {
                 <input type="date" id="doj_${s.student_id}" value="${s.joining_date || ''}">
             </div>
 
-            <div>
-            <label>Monthly Fees</label>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <label>Monthly Fees</label>
                 <input placeholder="Fees" id="fees_${s.student_id}">
+
                 <button onclick="approveStudent('${s.student_id}')"
-                 style="background:#2ecc71;color:white;padding:6px;">
-                 ✔ Approve
+                    style="background:#2ecc71;color:white;padding:6px;border:none;">
+                    ✔ Approve
+                </button>
+
+                <button onclick="rejectStudent('${s.student_id}')"
+                    style="background:#e74c3c;color:white;padding:6px;border:none;">
+                    ❌ Reject
                 </button>
             </div>
         </div>`;
     });
 }
+
+// ✅ APPROVE
 async function approveStudent(id) {
     const fees = document.getElementById(`fees_${id}`).value;
     if (!fees) {
@@ -988,15 +997,12 @@ async function approveStudent(id) {
 
     const body = {
         student_id: id,
-
         student_name: document.getElementById(`student_name_${id}`).value,
         pass: document.getElementById(`pass_${id}`).value,
         student_class: document.getElementById(`class_${id}`).value,
-
         parent_name: document.getElementById(`parent_name_${id}`).value,
         mobile: document.getElementById(`mobile_${id}`).value,
         parent_mobile: document.getElementById(`parent_mobile_${id}`).value,
-
         joining_date: document.getElementById(`doj_${id}`).value,
         fees: fees
     };
@@ -1008,5 +1014,19 @@ async function approveStudent(id) {
     });
 
     alert("✅ Student Approved & Data Saved");
+    loadPendingRegistrations();
+}
+
+// ❌ REJECT (DB se delete)
+async function rejectStudent(id) {
+    if (!confirm("⚠️ Kya aap is student ko reject karna chahte ho? Data permanently delete ho jayega.")) return;
+
+    await fetch('/api/delete-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: id })
+    });
+
+    alert("❌ Student Rejected & Data Deleted");
     loadPendingRegistrations();
 }
