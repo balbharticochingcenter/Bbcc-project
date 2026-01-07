@@ -930,7 +930,7 @@ async function loadPendingRegistrations() {
     const box = document.getElementById('pendingList');
     box.innerHTML = '';
 
-    const pending = students.filter(s => !s.fees || s.fees === "");
+    const pending = students.filter(s => s.fees === "" || s.fees === null || s.fees === 0 || s.fees === "0");
 
     if (pending.length === 0) {
         box.innerHTML = "<p>✅ Koi pending registration nahi hai</p>";
