@@ -382,8 +382,32 @@ Main sirf yahi bolungi:
 
 // --- A. STUDENT API ---
 app.post('/api/student-reg', async (req, res) => {
-    try { const s = new Student(req.body); await s.save(); res.json({ success: true }); }
-    catch (err) { res.status(500).json({ error: err.message }); }
+    try {
+        const data = req.body;
+
+        // Backend pe bhi Unique ID check (Safety ke liye)
+        let isUnique = false;
+        let finalId = data.student_id;
+        
+        // Agar ID clash kare toh 1-2 baar retry karega naye random number ke sath
+        while (!isUnique) {
+            const check = await Student.findOne({ student_id: finalId });
+            if (!check) {
+                isUnique = true;
+            } else {
+                finalId = "STU" + Math.floor(100000 + Math.random() * 900000);
+            }
+        }
+
+        data.student_id = finalId;
+        const newStudent = new Student(data);
+        await newStudent.save();
+        
+        res.json({ success: true, student_id: finalId });
+    } catch (err) {
+        console.error("Save Error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 app.get('/api/get-students', async (req, res) => {
