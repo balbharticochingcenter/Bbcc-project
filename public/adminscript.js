@@ -1035,7 +1035,7 @@ let selectedClass = "";
 let bannerBase64 = "";
 let classData = { subjects: {} };
 
-const CLASSES = ["1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"];
+const CLASSES = ["1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","I.A.","I.Sc","I.Com","B.A.","B.Sc","B.Com"];
 
 const classCards = document.getElementById("classCards");
 
