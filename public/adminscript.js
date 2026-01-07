@@ -1033,149 +1033,143 @@ async function rejectStudent(id) {
 
 let selectedClass = "";
 let bannerBase64 = "";
-let classData = { subjects: {} };
-
-const CLASSES = ["1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th","I.A.","I.Sc","I.Com","B.A.","B.Sc","B.Com"];
+let classData = { subjects:{} };
+let feeMap = {};
 
 const classCards = document.getElementById("classCards");
 
-// LOAD EXISTING DATA
+fetch('/api/get-class-fees')
+.then(r=>r.json())
+.then(d=> d.forEach(x=> feeMap[x.class_name]=x.monthly_fees));
+
 let classDB = {};
 fetch('/api/get-all-class-configs')
-.then(res => res.json())
-.then(data => {
-    classDB = data;
-    renderClasses();
+.then(r=>r.json())
+.then(d=> { classDB=d; loadClasses(); });
+
+fetch('/api/get-all-classes')
+.then(r=>r.json())
+.then(CLASSES => {
+  window.ALL_CLASSES = CLASSES;
+  loadClasses();
 });
 
-function renderClasses() {
-    CLASSES.forEach(cls => {
-        const banner = classDB[cls]?.banner || "";
-        classCards.innerHTML += `
-          <div class="card">
-            ${banner ? `<img src="${banner}">` : ""}
-            <b>${cls}</b>
-            <button onclick="openModal('${cls}')">Manage</button>
-          </div>`;
-    });
+function loadClasses(){
+  if(!window.ALL_CLASSES) return;
+  classCards.innerHTML="";
+  ALL_CLASSES.forEach(cls=>{
+    const banner = classDB[cls]?.banner || "";
+    classCards.innerHTML+=`
+      <div class="card">
+        ${banner?`<img src="${banner}">`:""}
+        <b>${cls}</b>
+        <input value="${feeMap[cls]||""}" 
+          placeholder="Fees"
+          onblur="saveFees('${cls}',this.value)">
+        <button onclick="openModal('${cls}')">Manage</button>
+      </div>`;
+  });
 }
 
-// OPEN MODAL
-function openModal(cls) {
-    selectedClass = cls;
-    classData = classDB[cls] || { subjects:{} };
-
-    document.getElementById("modalTitle").innerText = cls;
-    document.getElementById("introVideo").value = classData.intro_video || "";
-    document.getElementById("subjectList").innerHTML = "";
-
-    fetch('/api/get-all-subjects')
-    .then(res => res.json())
-    .then(subjects => {
-        subjects.forEach(sub => renderSubject(sub));
-    });
-
-    document.getElementById("modal").style.display = "block";
+function saveFees(cls,val){
+  fetch('/api/update-class-fees',{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({class_name:cls,monthly_fees:val})
+  });
 }
 
-function closeModal() {
-    document.getElementById("modal").style.display = "none";
+function openModal(cls){
+  selectedClass=cls;
+  classData=classDB[cls]||{subjects:{}};
+
+  document.getElementById("modalTitle").innerText=cls;
+  document.getElementById("introVideo").value=classData.intro_video||"";
+  document.getElementById("feesInput").value=feeMap[cls]||"";
+  document.getElementById("subjectList").innerHTML="";
+
+  fetch('/api/get-all-subjects')
+  .then(r=>r.json())
+  .then(subs=> subs.forEach(s=>drawSubject(s)));
+
+  document.getElementById("modal").style.display="block";
 }
 
-// BANNER COMPRESS
-document.getElementById("bannerInput").onchange = e => {
-    const img = new Image();
-    img.onload = () => {
-        const c = document.createElement("canvas");
-        c.width = 200; c.height = 200;
-        c.getContext("2d").drawImage(img,0,0,200,200);
-        bannerBase64 = c.toDataURL("image/jpeg",0.4);
-    };
-    img.src = URL.createObjectURL(e.target.files[0]);
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+
+document.getElementById("bannerInput").onchange=e=>{
+  const img=new Image();
+  img.onload=()=>{
+    const c=document.createElement("canvas");
+    c.width=200;c.height=200;
+    c.getContext("2d").drawImage(img,0,0,200,200);
+    bannerBase64=c.toDataURL("image/jpeg",0.4);
+  };
+  img.src=URL.createObjectURL(e.target.files[0]);
 };
 
-// SUBJECT UI
-function renderSubject(sub) {
-    const checked = classData.subjects[sub];
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <label>
-        <input type="checkbox" ${checked ? "checked":""}
-          onchange="toggleSubject('${sub}', this.checked)">
-        ${sub}
-      </label>
-      <div id="box-${sub}"></div>
-    `;
-    document.getElementById("subjectList").appendChild(div);
-
-    if (checked) toggleSubject(sub,true);
+function drawSubject(sub){
+  const checked=classData.subjects[sub];
+  const div=document.createElement("div");
+  div.innerHTML=`
+    <label>
+      <input type="checkbox" ${checked?"checked":""}
+      onchange="toggleSubject('${sub}',this.checked)">
+      ${sub}
+    </label>
+    <div id="box-${sub}"></div>`;
+  subjectList.appendChild(div);
+  if(checked) toggleSubject(sub,true);
 }
 
-function toggleSubject(sub, show) {
-    const box = document.getElementById(`box-${sub}`);
-    if (!show) {
-        delete classData.subjects[sub];
-        box.innerHTML = "";
-        return;
-    }
+function toggleSubject(sub,on){
+  const box=document.getElementById(`box-${sub}`);
+  if(!on){ delete classData.subjects[sub]; box.innerHTML=""; return; }
 
-    if (!classData.subjects[sub])
-        classData.subjects[sub] = { notes:[], videos:[] };
+  if(!classData.subjects[sub])
+    classData.subjects[sub]={notes:[],videos:[]};
 
-    box.innerHTML = `
-      <div class="subject-box">
-        <b>${sub}</b>
-
-        <div id="notes-${sub}"></div>
-        <button onclick="addNote('${sub}')">➕ Add Note</button>
-
-        <div id="videos-${sub}"></div>
-        <button onclick="addVideo('${sub}')">➕ Add Video</button>
-      </div>
-    `;
-
-    classData.subjects[sub].notes.forEach(()=>addNote(sub,true));
-    classData.subjects[sub].videos.forEach(v=>addVideo(sub,true,v));
+  box.innerHTML=`
+    <div class="subject-box">
+      <b>${sub}</b>
+      <div id="n-${sub}"></div>
+      <button onclick="addNote('${sub}')">Add Note</button>
+      <div id="v-${sub}"></div>
+      <button onclick="addVideo('${sub}')">Add Video</button>
+    </div>`;
 }
 
-// ADD NOTE
-function addNote(sub, load=false) {
-    const input = document.createElement("input");
-    input.type = "file";
-
-    input.onchange = e => {
-        const r = new FileReader();
-        r.onload = () => classData.subjects[sub].notes.push(r.result);
-        r.readAsDataURL(e.target.files[0]);
-    };
-
-    document.getElementById(`notes-${sub}`).appendChild(input);
+function addNote(sub){
+  const i=document.createElement("input");
+  i.type="file";
+  i.onchange=e=>{
+    const r=new FileReader();
+    r.onload=()=>classData.subjects[sub].notes.push(r.result);
+    r.readAsDataURL(e.target.files[0]);
+  };
+  document.getElementById(`n-${sub}`).appendChild(i);
 }
 
-// ADD VIDEO
-function addVideo(sub, load=false, val="") {
-    const input = document.createElement("input");
-    input.placeholder = "YouTube link";
-    input.value = val;
-
-    input.onblur = () => {
-        if (!load) classData.subjects[sub].videos.push(input.value);
-    };
-
-    document.getElementById(`videos-${sub}`).appendChild(input);
+function addVideo(sub){
+  const i=document.createElement("input");
+  i.placeholder="YouTube link";
+  i.onblur=()=>classData.subjects[sub].videos.push(i.value);
+  document.getElementById(`v-${sub}`).appendChild(i);
 }
 
-// SAVE
-function saveClass() {
-    fetch('/api/save-class-config', {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-            class_name: selectedClass,
-            banner: bannerBase64 || classData.banner,
-            intro_video: document.getElementById("introVideo").value,
-            subjects: classData.subjects
-        })
-    }).then(()=>alert("Saved Successfully"));
-}
+function saveAll(){
+  saveFees(selectedClass,document.getElementById("feesInput").value);
 
+  fetch('/api/save-class-config',{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      class_name:selectedClass,
+      banner:bannerBase64||classData.banner,
+      intro_video:document.getElementById("introVideo").value,
+      subjects:classData.subjects
+    })
+  }).then(()=>alert("Saved"));
+}
