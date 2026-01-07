@@ -42,6 +42,7 @@ const API = location.origin;
 async function initDashboard(){
   await loadClassList();
   await loadSystemSettings();
+  loadPendingRegistrations();
 
   const btn=document.getElementById("openStudentDashboardBtn");
   if(btn) btn.style.display="flex";
@@ -919,4 +920,73 @@ async function deleteSlider(id) {
     const res = await fetch(`/api/delete-slider/${id}`, { method: 'DELETE' });
     const data = await res.json();
     if(data.success) loadSliders();
+}
+
+
+async function loadPendingRegistrations() {
+    const res = await fetch('/api/get-students');
+    const students = await res.json();
+
+    const box = document.getElementById('pendingList');
+    box.innerHTML = '';
+
+    const pending = students.filter(s => !s.fees || s.fees === "");
+
+    if (pending.length === 0) {
+        box.innerHTML = "<p>✅ Koi pending registration nahi hai</p>";
+        return;
+    }
+
+    pending.forEach(s => {
+        box.innerHTML += `
+        <div class="pending-card">
+            <img src="${s.photo || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}">
+
+            <div style="flex:1">
+                <input value="${s.student_name}" id="name_${s.student_id}">
+                <input value="${s.pass}" id="pass_${s.student_id}">
+                <input value="${s.student_class}" id="class_${s.student_id}">
+                <input value="${s.parent_name}" id="parent_${s.student_id}">
+                <input value="${s.parent_mobile}" id="pmobile_${s.student_id}">
+                <input value="${s.mobile}" id="mobile_${s.student_id}">
+                <input value="${s.joining_date}" id="doj_${s.student_id}">
+            </div>
+
+            <div>
+                <input placeholder="Fees" id="fees_${s.student_id}">
+                <button onclick="approveStudent('${s.student_id}')"
+                 style="background:#2ecc71;color:white;padding:6px;">
+                 ✔ Approve
+                </button>
+            </div>
+        </div>`;
+    });
+}
+async function approveStudent(id) {
+    const fees = document.getElementById(`fees_${id}`).value;
+    if (!fees) {
+        alert("Fees daalna zaroori hai");
+        return;
+    }
+
+    const body = {
+        student_id: id,
+        student_name: document.getElementById(`name_${id}`).value,
+        pass: document.getElementById(`pass_${id}`).value,
+        student_class: document.getElementById(`class_${id}`).value,
+        parent_name: document.getElementById(`parent_${id}`).value,
+        parent_mobile: document.getElementById(`pmobile_${id}`).value,
+        mobile: document.getElementById(`mobile_${id}`).value,
+        joining_date: document.getElementById(`doj_${id}`).value,
+        fees: fees
+    };
+
+    await fetch('/api/update-student-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+
+    alert("✅ Student Approved & Data Saved");
+    loadPendingRegistrations(); // 🔄 refresh box
 }
