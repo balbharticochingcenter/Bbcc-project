@@ -1110,18 +1110,26 @@ document.getElementById("bannerInput").onchange=e=>{
   img.src=URL.createObjectURL(e.target.files[0]);
 };
 
-function drawSubject(sub){
-  const checked=classData.subjects[sub];
-  const div=document.createElement("div");
-  div.innerHTML=`
+ function drawSubject(sub){
+  const checked = classData.subjects[sub];
+  const div = document.createElement("div");
+
+  div.innerHTML = `
     <label>
-      <input type="checkbox" ${checked?"checked":""}
-      onchange="toggleSubject('${sub}',this.checked)">
+      <input type="checkbox" ${checked ? "checked" : ""}
+        onchange="toggleSubject('${sub}', this.checked)">
       ${sub}
     </label>
     <div id="box-${safeId(sub)}"></div>
-  subjectList.appendChild(div);
-  if(checked) toggleSubject(sub,true);
+  `;
+
+  document.getElementById("subjectList").appendChild(div);
+
+  if (checked) toggleSubject(sub, true);
+}
+
+function safeId(str){
+  return str.replace(/\s+/g,'_').toLowerCase();
 }
 
 function toggleSubject(sub,on){
