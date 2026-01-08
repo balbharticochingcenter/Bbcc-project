@@ -116,17 +116,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 // --- 3. Result Modal & Search Logic (Merged & Improved) ---
     studentResultBtn.onclick = () => resultModal.style.display = 'flex';
     
-    document.querySelectorAll('.close-button').forEach(btn => {
-        btn.onclick = () => {
-            resultModal.style.display = 'none';
-            regModal.style.display = 'none';
-            if(loginModal) loginModal.style.display = 'none';
-        }
-    });
+   document.querySelectorAll('.close-button').forEach(btn => {
+    btn.onclick = (e) => {
+        e.target.closest('.modal').style.display = 'none';
+    }
+});
 
     // Smart Search Logic: ID, Name, or Mobile
 // --- 3. Result Modal & Smart Search Logic ---
-studentResultBtn.onclick = () => resultModal.style.display = 'flex';
 
 searchStudentBtn.onclick = async () => {
     const nameOrId = document.getElementById('searchStudentId').value.trim();
@@ -439,7 +436,7 @@ async function loadClasses() {
         </div>
     `}).join('');
     // login.js ke loadClasses function ke andar container.innerHTML ke niche:
-container.innerHTML += container.innerHTML; // Ye cards ko double kar dega loop ke liye
+//container.innerHTML += container.innerHTML; // Ye cards ko double kar dega loop ke liye
 }
 
 async function openClassModal(className) {
