@@ -1035,8 +1035,11 @@ let selectedClass = "";
 let bannerBase64 = "";
 let classData = { subjects:{} };
 let feeMap = {};
+let ALL_SUBJECTS = [];
 
 const classCards = document.getElementById("classCards");
+
+/* ================= LOAD DATA ================= */
 
 fetch('/api/get-class-fees')
 .then(r=>r.json())
@@ -1045,27 +1048,36 @@ fetch('/api/get-class-fees')
 let classDB = {};
 fetch('/api/get-all-class-configs')
 .then(r=>r.json())
-.then(d=> { classDB=d; loadClasses(); });
+.then(d=>{ classDB=d; loadClasses(); });
 
 fetch('/api/get-all-classes')
 .then(r=>r.json())
-.then(CLASSES => {
+.then(CLASSES=>{
   window.ALL_CLASSES = CLASSES;
   loadClasses();
 });
 
+fetch('/api/get-all-subjects')
+.then(r=>r.json())
+.then(subs=> ALL_SUBJECTS = subs);
+
+/* ================= CLASS CARDS ================= */
+
 function loadClasses(){
   if(!window.ALL_CLASSES) return;
   classCards.innerHTML="";
+
   ALL_CLASSES.forEach(cls=>{
     const banner = classDB[cls]?.banner || "";
-    classCards.innerHTML+=`
+    classCards.innerHTML += `
       <div class="card">
-        ${banner?`<img src="${banner}">`:""}
+        ${banner ? `<img src="${banner}">` : ""}
         <b>${cls}</b>
-        <input value="${feeMap[cls]||""}" 
+
+        <input value="${feeMap[cls]||""}"
           placeholder="Fees"
           onblur="saveFees('${cls}',this.value)">
+
         <button onclick="openModal('${cls}')">Manage</button>
       </div>`;
   });
@@ -1079,18 +1091,20 @@ function saveFees(cls,val){
   });
 }
 
+/* ================= MODAL ================= */
+
 function openModal(cls){
-  selectedClass=cls;
-  classData=classDB[cls]||{subjects:{}};
+  selectedClass = cls;
 
-  document.getElementById("modalTitle").innerText=cls;
-  document.getElementById("introVideo").value=classData.intro_video||"";
-  document.getElementById("feesInput").value=feeMap[cls]||"";
-  document.getElementById("subjectList").innerHTML="";
+  classData = classDB[cls] || {};
+  if(!classData.subjects) classData.subjects = {};
 
-  fetch('/api/get-all-subjects')
-  .then(r=>r.json())
-  .then(subs=> subs.forEach(s=>drawSubject(s)));
+  document.getElementById("modalTitle").innerText = cls;
+  document.getElementById("introVideo").value = classData.intro_video || "";
+  document.getElementById("feesInput").value = feeMap[cls] || "";
+  document.getElementById("subjectList").innerHTML = "";
+
+  ALL_SUBJECTS.forEach(sub => drawSubject(sub));
 
   document.getElementById("modal").style.display="block";
 }
@@ -1099,73 +1113,67 @@ function closeModal(){
   document.getElementById("modal").style.display="none";
 }
 
-document.getElementById("bannerInput").onchange=e=>{
-  const img=new Image();
-  img.onload=()=>{
-    const c=document.createElement("canvas");
-    c.width=200;c.height=200;
-    c.getContext("2d").drawImage(img,0,0,200,200);
-    bannerBase64=c.toDataURL("image/jpeg",0.4);
-  };
-  img.src=URL.createObjectURL(e.target.files[0]);
-};
+/* ================= SUBJECT UI ================= */
 
- function drawSubject(sub){
-  const checked = classData.subjects[sub];
+function drawSubject(sub){
+  const sid = safeId(sub);
+  const checked = !!classData.subjects[sub];
+
   const div = document.createElement("div");
-
   div.innerHTML = `
     <label>
-      <input type="checkbox" ${checked ? "checked" : ""}
-        onchange="toggleSubject('${sub}', this.checked)">
+      <input type="checkbox" ${checked?"checked":""}
+        onchange="toggleSubject('${sub}',this.checked)">
       ${sub}
     </label>
-    <div id="box-${safeId(sub)}"></div>
+    <div id="box-${sid}"></div>
   `;
 
   document.getElementById("subjectList").appendChild(div);
 
-  if (checked) toggleSubject(sub, true);
+  if(checked) renderSubjectBox(sub);
 }
 
-function safeId(str){
-  return str.replace(/\s+/g,'_').toLowerCase();
+function toggleSubject(sub,on){
+  if(on){
+    if(!classData.subjects[sub])
+      classData.subjects[sub]={notes:[],videos:[]};
+    renderSubjectBox(sub);
+  }else{
+    delete classData.subjects[sub];
+    document.getElementById(`box-${safeId(sub)}`).innerHTML="";
+  }
 }
 
-function toggleSubject(sub, on){
+function renderSubjectBox(sub){
   const sid = safeId(sub);
   const box = document.getElementById(`box-${sid}`);
-
-  if(!on){
-    delete classData.subjects[sub];
-    box.innerHTML = "";
-    return;
-  }
-
-  if(!classData.subjects[sub])
-    classData.subjects[sub] = { notes:[], videos:[] };
 
   box.innerHTML = `
     <div class="subject-box">
       <b>${sub}</b>
 
       <div id="n-${sid}"></div>
-      <button onclick="addNote('${sub}')">➕ Add Note</button>
+      <button onclick="addNote('${sub}')">➕ Note</button>
 
       <div id="v-${sid}"></div>
-      <button onclick="addVideo('${sub}')">➕ Add Video</button>
-    </div>
-  `;
+      <button onclick="addVideo('${sub}')">➕ Video</button>
+    </div>`;
 }
 
+/* ================= HELPERS ================= */
+
+function safeId(str){
+  return str.replace(/\s+/g,'_').toLowerCase();
+}
 
 function addNote(sub){
   const sid = safeId(sub);
-  const i = document.createElement("input");
-  i.type = "file";
-  i.onchange = e => {
-    const r = new FileReader();
-    r.onload = () => classData.subjects[sub].notes.push(r.result);
+  const i=document.createElement("input");
+  i.type="file";
+  i.onchange=e=>{
+    const r=new FileReader();
+    r.onload=()=>classData.subjects[sub].notes.push(r.result);
     r.readAsDataURL(e.target.files[0]);
   };
   document.getElementById(`n-${sid}`).appendChild(i);
@@ -1173,12 +1181,13 @@ function addNote(sub){
 
 function addVideo(sub){
   const sid = safeId(sub);
-  const i = document.createElement("input");
-  i.placeholder = "YouTube link";
-  i.onblur = () => classData.subjects[sub].videos.push(i.value);
+  const i=document.createElement("input");
+  i.placeholder="YouTube link";
+  i.onblur=()=>classData.subjects[sub].videos.push(i.value);
   document.getElementById(`v-${sid}`).appendChild(i);
 }
 
+/* ================= SAVE ================= */
 
 function saveAll(){
   saveFees(selectedClass,document.getElementById("feesInput").value);
@@ -1192,5 +1201,8 @@ function saveAll(){
       intro_video:document.getElementById("introVideo").value,
       subjects:classData.subjects
     })
-  }).then(()=>alert("Saved"));
+  }).then(()=>{
+    alert("Saved Successfully ✅");
+    closeModal();
+  });
 }
