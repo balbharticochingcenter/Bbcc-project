@@ -76,3 +76,7 @@ async function updateProfile() {
     });
     alert("Profile Updated");
 }
+function logout() {
+    localStorage.removeItem("studentId");
+    location.href = "/";
+}
