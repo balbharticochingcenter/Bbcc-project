@@ -159,7 +159,7 @@ if (loginType === 'teacher') {
 }
 
 if (loginType === 'student') {
-    window.location.replace('student.html');
+    window.location.replace('/student.html');
     return;
 }
 
