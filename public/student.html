@@ -6,19 +6,21 @@
 </head>
 <body>
 
-
-
-<header>
+<header class="header-bar">
     <div class="ring" id="ringBox">
+        <div class="ring-rotate"></div>
         <img id="ringImage">
         <span id="ringText"></span>
     </div>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
 </header>
 
 <!-- PROFILE MODAL -->
 <div id="profileModal" class="modal">
     <div class="modal-content">
         <h3>Student Profile</h3>
+
         <p><b>Name:</b> <span id="pName"></span></p>
         <p><b>Parent:</b> <span id="pParent"></span></p>
         <p><b>Student Mobile:</b> <span id="pMobile"></span></p>
@@ -27,11 +29,12 @@
 
         <h4>Fees Status</h4>
         <div id="feesBox"></div>
+
         <button onclick="closeProfile()">Close</button>
     </div>
 </div>
 
-<!-- CLASS AREA -->
+<!-- MAIN -->
 <div class="main">
     <div class="viewer" id="viewerBox">
         <p>Select Notes or Video</p>
@@ -39,8 +42,6 @@
 
     <div class="subjects" id="subjectsBox"></div>
 </div>
-
-
 
 <script src="/js/student-premium.js"></script>
 </body>
