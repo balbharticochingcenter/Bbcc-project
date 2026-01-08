@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">   <!-- same header style -->
+    <link rel="stylesheet" href="/css/student.css">
+</head>
+<body>
+
+<!-- ===== HEADER (LOGIN PAGE SE SAME) ===== -->
+<header>
+    <h2>My Institute</h2>
+</header>
+
+<!-- ===== STUDENT DASHBOARD ===== -->
+<div class="student-dashboard">
+
+    <h2>🎓 Student Profile</h2>
+
+    <div class="profile-card">
+        <img id="stuPhoto">
+
+        <p><b>Name:</b> <span id="stuName"></span></p>
+        <p><b>ID:</b> <span id="stuId"></span></p>
+        <p><b>Class:</b> <span id="stuClass"></span></p>
+        <p><b>DOJ:</b> <span id="stuDOJ"></span></p>
+
+        <label>📞 Student Mobile</label>
+        <input id="stuMobile">
+
+        <label>👨‍👩‍👦 Parent Mobile</label>
+        <input id="parentMobile">
+
+        <label>🔑 Password</label>
+        <input id="stuPass" type="password">
+
+        <button onclick="updateProfile()">Update</button>
+    </div>
+
+    <h2>💰 Monthly Fees Tracker</h2>
+    <table>
+        <thead>
+            <tr><th>Month</th><th>Status</th></tr>
+        </thead>
+        <tbody id="feesTable"></tbody>
+    </table>
+
+    <h2>📚 Class Study Material</h2>
+    <div id="materialBox"></div>
+
+</div>
+
+<!-- ===== FOOTER (LOGIN PAGE SE SAME) ===== -->
+<footer>
+    <p>© Institute</p>
+</footer>
+
+<script src="/js/student.js"></script>
+</body>
+</html>
