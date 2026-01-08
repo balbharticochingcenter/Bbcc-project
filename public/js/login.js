@@ -167,30 +167,7 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 
-        // ===== REDIRECT / RESULT =====
-        if (loginType === 'admin') {
-            localStorage.setItem('isAdminLoggedIn', 'true');
-            window.location.href = 'admin';
-        } 
-        else if (loginType === 'student') {
-            loginModal.style.display = 'none';
-            window.location.href = "/student.html";  ////////////////////////////////
-        } 
-        else if (loginType === 'teacher') {
-            alert(`✅ Login Successful as TEACHER!`);
-            loginModal.style.display = 'none';
-        } 
-        else {
-            loginMessage.textContent = "❌ Invalid ID or Password!";
-        }
-
-    } catch (err) {
-        loginMessage.textContent = "❌ Server Error!";
-    } 
-    finally {
-        loader.style.display = 'none';
-    }
-});
+     
 
 // --- 3. Result Modal & Search Logic (Merged & Improved) ---
     studentResultBtn.onclick = () => resultModal.style.display = 'flex';
