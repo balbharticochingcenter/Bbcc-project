@@ -144,20 +144,26 @@ loginForm.addEventListener('submit', async (e) => {
             }
         }
 
-        // ===== REDIRECTION =====
-        loader.style.display = 'none';
+        // ===== REDIRECTION (FIXED) =====
+loader.style.display = 'none';
 
-        if (loginType === 'admin') {
-            location.href = '/admin';
-        } 
-        else if (loginType === 'teacher') {
-            location.href = '/teacher';
-        } 
-        else if (loginType === 'student') {
-            location.href = '/student.html';
-        } 
-        else {
-            loginMessage.textContent = "❌ गलत User ID या Password";
+if (loginType === 'admin') {
+    window.location.replace('/admin');
+    return; // ✅ yahin ruk jao
+}
+
+if (loginType === 'teacher') {
+    window.location.replace('/teacher');
+    return;
+}
+
+if (loginType === 'student') {
+    window.location.replace('/student.html');
+    return;
+}
+
+loginMessage.textContent = "❌ गलत User ID या Password";
+
         }
 
     } catch (err) {
