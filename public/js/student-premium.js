@@ -6,12 +6,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* ===== HEADER + FOOTER ===== */
     const settings = await fetch("/api/get-settings").then(r => r.json());
 
-    siteHeader.innerHTML = `
-        <div class="header-box">
-            <h1>${settings.title || "Institute"}</h1>
-            <p>${settings.sub_title || ""}</p>
+  /* ===== HEADER + LOGO + LOGOUT ===== */
+siteHeader.innerHTML = `
+    <div class="header-bar">
+        <div class="logo-box">
+            <img src="${settings.logo}" class="logo">
+            <div>
+                <h1>${settings.title || "Institute"}</h1>
+                <p>${settings.sub_title || ""}</p>
+            </div>
         </div>
-    `;
+
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+`;
+
 
     siteFooter.innerHTML = `
         <p>📞 ${settings.contact || ""} | ✉ ${settings.gmail || ""}</p>
