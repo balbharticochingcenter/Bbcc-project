@@ -154,7 +154,7 @@ loginForm.addEventListener('submit', async (e) => {
             location.href = '/teacher';
         } 
         else if (loginType === 'student') {
-            location.href = '/student-advanced.html';
+            location.href = '/student.html';
         } 
         else {
             loginMessage.textContent = "❌ गलत User ID या Password";
