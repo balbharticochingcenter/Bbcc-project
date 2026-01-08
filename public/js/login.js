@@ -63,23 +63,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         finally { loader.style.display = 'none'; }
     }
 
-    // --- 2. Login Logic (Updated for Popup) ---
-    // Login Modal Open karne ke liye
-    if(loginBtn) {
-        loginBtn.onclick = () => {
-            loginModal.style.display = 'flex';
-        };
-    }
+// --- 2. Login Logic (Updated for Popup) ---
+if(loginBtn) {
+    loginBtn.onclick = () => {
+        loginModal.style.display = 'flex';
+    };
+}
 
-    // Login Modal Close karne ke liye
-    if(closeLogin) {
-        closeLogin.onclick = () => {
-            loginModal.style.display = 'none';
-            loginMessage.textContent = ""; // Purana error message saaf karne ke liye
-        };
-    }
+if(closeLogin) {
+    closeLogin.onclick = () => {
+        loginModal.style.display = 'none';
+        loginMessage.textContent = "";
+    };
+}
 
-    loginForm.addEventListener('submit', async (e) => {
+loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loader.style.display = 'flex';
 
@@ -114,13 +112,60 @@ document.addEventListener('DOMContentLoaded', async () => {
                 );
 
                 if (student) {
-                    loginType = 'student';
 
-                    // ✅ STUDENT ID SAVE (IMPORTANT)
+                    // 🔴 APPROVAL / FEES CHECK (YAHI ADD KIYA GAYA HAI)
+                    const notApproved =
+                        !student.fees ||
+                        student.fees === "0" ||
+                        !student.paid_months ||
+                        student.paid_months.length === 0;
+
+                    if (notApproved) {
+                        loader.style.display = 'none';
+
+                        showSmoothAlert(
+                            "⚠️ आप अभी अप्रूव नहीं हुए हैं।\nफीस सत्यापन लंबित है।"
+                        );
+
+                        // safety
+                        localStorage.removeItem("studentId");
+
+                        setTimeout(() => {
+                            loginModal.style.display = 'none';
+                        }, 3000);
+
+                        return; // ⛔ login stop
+                    }
+
+                    // ✅ APPROVED STUDENT
+                    loginType = 'student';
                     localStorage.setItem("studentId", student.student_id);
                 }
             }
         }
+
+        // ===== REDIRECTION =====
+        loader.style.display = 'none';
+
+        if (loginType === 'admin') {
+            location.href = '/admin';
+        } 
+        else if (loginType === 'teacher') {
+            location.href = '/teacher';
+        } 
+        else if (loginType === 'student') {
+            location.href = '/student-advanced.html';
+        } 
+        else {
+            loginMessage.textContent = "❌ गलत User ID या Password";
+        }
+
+    } catch (err) {
+        loader.style.display = 'none';
+        loginMessage.textContent = "⚠️ Server Error";
+    }
+});
+
 
         // ===== REDIRECT / RESULT =====
         if (loginType === 'admin') {
