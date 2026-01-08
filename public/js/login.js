@@ -436,7 +436,7 @@ async function loadClasses() {
         </div>
     `}).join('');
     // login.js ke loadClasses function ke andar container.innerHTML ke niche:
-//container.innerHTML += container.innerHTML; // Ye cards ko double kar dega loop ke liye
+container.innerHTML += container.innerHTML; // Ye cards ko double kar dega loop ke liye
 }
 
 async function openClassModal(className) {
