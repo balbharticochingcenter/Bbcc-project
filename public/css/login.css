@@ -809,3 +809,24 @@ body {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-15px); }
 }
+.three-d-card{
+    background:#fff;
+    border-radius:15px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.25);
+    transform-style:preserve-3d;
+}
+
+.three-d-button{
+    background:#4a90e2;
+    color:#fff;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.three-d-button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 25px rgba(74,144,226,0.5);
+}
