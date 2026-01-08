@@ -89,3 +89,10 @@ function logout(){
     localStorage.removeItem("studentId");
     location.href = "/";
 }
+function changePassword(newPass){
+    fetch("/api/change-password",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json"},
+        body:JSON.stringify({id:student.student_id,password:newPass})
+    })
+}
