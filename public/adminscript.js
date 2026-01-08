@@ -23,8 +23,11 @@ const fees_month = document.getElementById("fees_month");
 
 // ================= SECURITY =================
 (function checkAuth(){
-  if(localStorage.getItem('isAdminLoggedIn')!=='true'){
-    location.href='login.html';
+  // ✅ Sirf admin pages par hi chale
+  if (!location.pathname.startsWith('/admin')) return;
+
+  if (localStorage.getItem('isAdminLoggedIn') !== 'true') {
+    location.replace('login.html');
   }
 })();
 
