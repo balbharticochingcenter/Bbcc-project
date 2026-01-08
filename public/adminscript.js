@@ -1132,40 +1132,53 @@ function safeId(str){
   return str.replace(/\s+/g,'_').toLowerCase();
 }
 
-function toggleSubject(sub,on){
- const box=document.getElementById(`box-${safeId(sub)}`);
-  if(!on){ delete classData.subjects[sub]; box.innerHTML=""; return; }
+function toggleSubject(sub, on){
+  const sid = safeId(sub);
+  const box = document.getElementById(`box-${sid}`);
+
+  if(!on){
+    delete classData.subjects[sub];
+    box.innerHTML = "";
+    return;
+  }
 
   if(!classData.subjects[sub])
-    classData.subjects[sub]={notes:[],videos:[]};
+    classData.subjects[sub] = { notes:[], videos:[] };
 
-  box.innerHTML=`
+  box.innerHTML = `
     <div class="subject-box">
       <b>${sub}</b>
-      <div id="n-${sub}"></div>
-      <button onclick="addNote('${sub}')">Add Note</button>
-      <div id="v-${sub}"></div>
-      <button onclick="addVideo('${sub}')">Add Video</button>
-    </div>`;
+
+      <div id="n-${sid}"></div>
+      <button onclick="addNote('${sub}')">➕ Add Note</button>
+
+      <div id="v-${sid}"></div>
+      <button onclick="addVideo('${sub}')">➕ Add Video</button>
+    </div>
+  `;
 }
 
+
 function addNote(sub){
-  const i=document.createElement("input");
-  i.type="file";
-  i.onchange=e=>{
-    const r=new FileReader();
-    r.onload=()=>classData.subjects[sub].notes.push(r.result);
+  const sid = safeId(sub);
+  const i = document.createElement("input");
+  i.type = "file";
+  i.onchange = e => {
+    const r = new FileReader();
+    r.onload = () => classData.subjects[sub].notes.push(r.result);
     r.readAsDataURL(e.target.files[0]);
   };
-  document.getElementById(`n-${sub}`).appendChild(i);
+  document.getElementById(`n-${sid}`).appendChild(i);
 }
 
 function addVideo(sub){
-  const i=document.createElement("input");
-  i.placeholder="YouTube link";
-  i.onblur=()=>classData.subjects[sub].videos.push(i.value);
-  document.getElementById(`v-${sub}`).appendChild(i);
+  const sid = safeId(sub);
+  const i = document.createElement("input");
+  i.placeholder = "YouTube link";
+  i.onblur = () => classData.subjects[sub].videos.push(i.value);
+  document.getElementById(`v-${sid}`).appendChild(i);
 }
+
 
 function saveAll(){
   saveFees(selectedClass,document.getElementById("feesInput").value);
