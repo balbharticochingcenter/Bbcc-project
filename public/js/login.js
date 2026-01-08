@@ -164,7 +164,7 @@ if (loginType === 'student') {
 
 loginMessage.textContent = "❌ गलत User ID या Password";
 
-        }
+        
 
     } catch (err) {
         loader.style.display = 'none';
