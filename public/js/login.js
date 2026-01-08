@@ -598,3 +598,12 @@ if(closeClassBtn) {
         document.getElementById('video-container').innerHTML = ''; 
     };
 }
+function showSmoothAlert(msg) {
+    const box = document.getElementById("alertBox");
+    box.innerText = msg;
+    box.classList.add("show");
+
+    setTimeout(() => {
+        box.classList.remove("show");
+    }, 2500);
+}
