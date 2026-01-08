@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
 :root {
     --primary-color: #4a90e2; /* Blue */
     --secondary-color: #50e3c2; /* Teal */
@@ -10,11 +11,13 @@
     --magical-text-gradient: linear-gradient(45deg, #ff00cc, #3333ff, #00ffcc, #ffcc00);
     --magical-text-gradient-size: 400%;
 }
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
+
 body {
     font-family: 'Roboto', sans-serif;
     background: var(--dark-bg);
@@ -26,6 +29,7 @@ body {
     overflow-x: hidden;
     perspective: 1000px; /* For 3D effects */
 }
+
 /* --- Loader --- */
 .loader-container {
     position: fixed;
@@ -42,6 +46,7 @@ body {
     color: white;
     font-size: 1.2em;
 }
+
 .spinner {
     border: 8px solid rgba(255, 255, 255, 0.3);
     border-top: 8px solid var(--primary-color);
@@ -51,10 +56,12 @@ body {
     animation: spin 1s linear infinite;
     margin-bottom: 15px;
 }
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
 /* --- Header --- */
 .main-header {
     background: var(--light-bg);
@@ -64,6 +71,7 @@ body {
     position: relative;
     z-index: 100;
 }
+
 .header-content {
     display: flex;
     justify-content: space-between;
@@ -71,11 +79,13 @@ body {
     max-width: 1200px;
     margin: 0 auto;
 }
+
 .header-left {
     display: flex;
     align-items: center;
     position: relative;
 }
+
 .logo-container {
     width: 80px;
     height: 80px;
@@ -85,6 +95,7 @@ body {
     align-items: center;
     margin-right: 20px;
 }
+
 .logo-img {
     max-width: 100%;
     max-height: 100%;
@@ -96,6 +107,7 @@ body {
     animation: channelLogoEffect 2s ease-in-out infinite;
     filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
 }
+
 @keyframes channelLogoEffect {
     0% { transform: scale(1); filter: brightness(1); }
     50% { transform: scale(1.1); filter: brightness(1.4) contrast(1.2); }
@@ -110,6 +122,7 @@ body {
     animation: colorChangeRing 10s linear infinite, rotateRing 20s linear infinite;
     z-index: 1;
 }
+
 @keyframes colorChangeRing {
     0% { border-color: #ff0000; }
     14% { border-color: #ff7f00; }
@@ -120,14 +133,17 @@ body {
     85% { border-color: #ee82ee; }
     100% { border-color: #ff0000; }
 }
+
 @keyframes rotateRing {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
 .header-center {
     text-align: center;
     flex-grow: 1;
 }
+
 .magical-text {
     background: linear-gradient(to right, #ff00cc, #3333ff, #00ffcc, #ffcc00, #ff00cc);
     background-size: 200% auto;
@@ -138,11 +154,14 @@ body {
     font-family: 'Orbitron', sans-serif;
     text-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
 }
+
 #header-title { font-size: 2.5em; margin-bottom: 5px; }
 #header-subtitle { font-size: 1.2em; opacity: 0.8; }
+
 @keyframes waterWave {
     to { background-position: 200% center; }
 }
+
 .header-right .result-button {
     color: white;
     padding: 10px 20px;
@@ -155,11 +174,13 @@ body {
     transition: 0.3s;
     animation: glowingBtn 2s infinite;
 }
+
 @keyframes glowingBtn {
     0% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
     50% { box-shadow: 0 0 15px currentColor; }
     100% { box-shadow: 0 0 5px rgba(255,255,255,0.2); }
 }
+
 /* Shine effect inside button */
 .header-right .result-button::after {
     content: '';
@@ -170,13 +191,16 @@ body {
     transform: rotate(30deg);
     animation: shineLine 3s infinite;
 }
+
 @keyframes shineLine {
     0% { left: -60%; }
     100% { left: 120%; }
 }
+
 .header-right .result-button:hover {
     transform: translateY(-3px);
 }
+
 /* --- Main Login Section --- */
 .login-main {
     flex-grow: 1;
@@ -213,9 +237,11 @@ body {
     font-size: 2em;
     font-family: 'Orbitron', sans-serif;
 }
+
 .input-group { margin-bottom: 20px; text-align: left; }
 .input-group label { display: block; margin-bottom: 8px; color: var(--secondary-color); font-weight: bold; }
 .input-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--dark-bg); color: var(--text-color); font-size: 1em; }
+
 .btn {
     background-color: var(--primary-color);
     color: white;
@@ -233,6 +259,7 @@ body {
     color: #000 !important; /* Black text taaki safed par dikhe */
     font-weight: bold;
 }
+
 /* Hover par text color badal sakte hain */
 #studentResultBtn:hover {
     color: #fff !important;
@@ -251,15 +278,18 @@ body {
 }
 .slider-wrapper { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
 .slider-wrapper img { min-width: 100%; height: 100%; object-fit: cover; }
+
 /* --- Teacher Ring Section --- */
 /* Container ko pura wide rakhein */
 .teacher-ring-section { padding: 50px 0; background: #0f0f0f; text-align: center; }
+
 /* Ye main container hai jo screen ke hisab se rahega */
 .ring-container {
     width: 100%;
     overflow: hidden;
     position: relative;
 }
+
 /* Ye wo track hai jo cards ko ek lambi line mein rakhega */
 .ring-track {
     display: flex;
@@ -267,10 +297,12 @@ body {
     gap: 50px; /* Cards ke beech ki doori */
     animation: scroll-left 25s linear infinite; /* Left ki taraf slide karega */
 }
+
 /* Mouse le jane par ruk jaye (Optional) */
 .ring-track:hover {
     animation-play-state: paused;
 }
+
 /* Animation Logic */
 @keyframes scroll-left {
     0% {
@@ -281,6 +313,7 @@ body {
         transform: translateX(-50%); 
     }
 }
+
 /* Teacher Card ka style */
 .teacher-card {
     flex-shrink: 0; /* Card pichke nahi, isliye ye zaroori hai */
@@ -289,6 +322,7 @@ body {
     align-items: center;
     color: white;
 }
+
 .ring-wrapper {
     width: 130px;
     height: 130px;
@@ -301,6 +335,7 @@ body {
     align-items: center;
     justify-content: center;
 }
+
 .ring-wrapper img {
     width: 100%;
     height: 100%;
@@ -309,6 +344,8 @@ body {
     object-fit: cover;
     background: #222;
 }
+
+
 /* --- EXPLORE OUR CLASSES (MAGICAL CARDS) --- */
 .class-config-section {
     width: 100%;
@@ -316,16 +353,19 @@ body {
     background: #0a0a12;
     padding: 60px 0;
 }
+
 .class-cards-grid {
     display: flex;
     gap: 35px;
     width: max-content; /* Content ke hisab se width */
     animation: scrollInfinite 30s linear infinite; /* Right to Left Loop */
 }
+
 /* Mouse lane par animation slow ya pause karne ke liye */
 .class-cards-grid:hover {
     animation-play-state: paused;
 }
+
 @keyframes scrollInfinite {
     0% {
         transform: translateX(0);
@@ -350,7 +390,9 @@ body {
     cursor: pointer;
     flex-shrink: 0;///////////////////////////////////////////////////////////////////////////////////////////
 }
+
 .class-card:hover { transform: translateY(-10px); }
+
 /* Rotating Background for Border */
 .class-card::before {
     content: '';
@@ -360,6 +402,7 @@ body {
     background: linear-gradient(#00ccff, #d400ff);
     animation: rotateMagic 4s linear infinite;
 }
+
 /* Inner Overlay */
 .class-card::after {
     content: '';
@@ -368,7 +411,9 @@ body {
     background: #1a1a2e;
     border-radius: 16px;
 }
+
 @keyframes rotateMagic { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
 /* कार्ड के अंदर का कंटेंट व्यवस्थित करने के लिए */
 .card-inner {
     position: relative;
@@ -382,6 +427,7 @@ body {
     align-items: center;
     justify-content: space-between; /* कंटेंट को ऊपर-नीचे बराबर फैलाएगा */
 }
+
 /* बैनर इमेज की स्टाइल */
 .class-banner-img {
     width: 100%;
@@ -391,6 +437,7 @@ body {
     margin-bottom: 10px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
 /* क्लास का नाम (चमकदार) */
 .class-name-text {
     font-size: 1.6rem;
@@ -399,6 +446,7 @@ body {
     margin: 5px 0;
     text-shadow: 0 0 10px rgba(0, 204, 255, 0.6);
 }
+
 /* बटन की स्टाइल */
 .view-now-btn {
     width: 100%;
@@ -411,11 +459,13 @@ body {
     cursor: pointer;
     transition: 0.3s;
 }
+
 .view-now-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 0 20px rgba(212, 0, 255, 0.6);
 }
 .class-card-icon { font-size: 3rem; color: #00ccff; margin-bottom: 15px; }
+
 /* --- CLASS MODAL (SPLIT DESIGN) --- */
 .class-modal-content {
     background: #fff !important;
@@ -424,11 +474,13 @@ body {
     overflow: hidden;
     color: #333;
 }
+
 .class-modal-body {
     display: flex;
     flex-wrap: wrap;
     min-height: 400px;
 }
+
 .class-modal-left {
     flex: 1;
     background: #000;
@@ -438,16 +490,19 @@ body {
     flex-direction: column;
     gap: 20px;
 }
+
 .class-modal-right {
     flex: 1.2;
     padding: 30px;
     background: #fdfdfd;
 }
+
 #video-container iframe {
     width: 100%;
     border-radius: 10px;
     border: 2px solid #333;
 }
+
 /* Mini Teacher Cards inside Modal */
 #class-teachers-display {
     display: flex;
@@ -455,17 +510,21 @@ body {
     overflow-x: auto;
     padding: 10px 0;
 }
+
 .mini-teacher-card {
     text-align: center;
     min-width: 80px;
 }
+
 .mini-teacher-card img {
     width: 60px; height: 60px;
     border-radius: 50%;
     border: 2px solid #50e3c2;
     object-fit: cover;
 }
+
 .mini-teacher-card span { font-size: 12px; display: block; margin-top: 5px; }
+
 /* Subjects in Modal */
 .subject-list { list-style: none; }
 .subject-list li {
@@ -475,12 +534,14 @@ body {
     border-radius: 8px;
     border-left: 5px solid #4a90e2;
 }
+
 .subject-list a {
     color: #4a90e2;
     text-decoration: none;
     font-weight: bold;
     font-size: 0.9em;
 }
+
 /* --- Common Modal Settings --- */
 .modal {
     display: none;
@@ -490,6 +551,7 @@ body {
     background: rgba(0,0,0,0.8);
     justify-content: center; align-items: center;
 }
+
 .modal-content {
     background: var(--light-bg);
     padding: 30px;
@@ -497,6 +559,7 @@ body {
     width: 90%;
     position: relative;
 }
+
 .close-button {
     position: absolute; top: 10px; right: 20px;
     font-size: 30px; cursor: pointer; color: #ff6b6b;
@@ -510,6 +573,7 @@ body {
     box-shadow: 0 0 30px rgba(74, 144, 226, 0.4);
     color: var(--text-color);
 }
+
 /* Registration ke andar ke boxes aur inputs */
 .form-container-box {
     background: rgba(0, 0, 0, 0.3) !important; /* Semi-transparent dark */
@@ -517,6 +581,7 @@ body {
     padding: 20px;
     border-radius: 12px;
 }
+
 #studentRegForm input, #studentRegForm select {
     background: var(--dark-bg) !important;
     border: 1px solid var(--border-color);
@@ -525,27 +590,32 @@ body {
     margin-bottom: 12px;
     border-radius: 6px;
 }
+
 #studentRegForm input:focus {
     border-color: var(--secondary-color);
     box-shadow: 0 0 8px rgba(80, 227, 194, 0.4);
     outline: none;
 }
+
 /* Class checkboxes ka box */
 .class-checkboxes {
     background: var(--dark-bg) !important;
     border: 1px solid var(--border-color) !important;
     color: #00ffcc; /* Bright color for text */
 }
+
 /* Labels aur headings */
 #regModal h3 {
     color: var(--secondary-color) !important;
     text-shadow: 0 0 10px rgba(80, 227, 194, 0.3);
 }
+
 #studentRegForm label {
     color: var(--primary-color);
     font-size: 14px;
     margin-top: 5px;
 }
+
 /* Photo Preview Box */
 #photoPreviewContainer {
     background: rgba(255, 255, 255, 0.05);
@@ -553,8 +623,10 @@ body {
     border-radius: 8px;
     border: 1px dashed var(--border-color);
 }
+
 /* --- Footer --- */
 .main-footer { background: var(--light-bg); padding: 20px; text-align: center; border-top: 2px solid var(--border-color); }
+
 /* --- Responsive --- */
 @media (max-width: 768px) {
     .class-modal-body { flex-direction: column; }
@@ -567,6 +639,7 @@ body {
     height: 70px;
     perspective: 1000px; /* 3D effect ke liye */
 }
+
 .coin-inner {
     width: 100%;
     height: 100%;
@@ -575,6 +648,7 @@ body {
     transition: transform 1s;
     animation: flipCoin 10s infinite linear; /* Har 3 sec me ghumega */
 }
+
 /* Coin ki dono sides ki common setting */
 .coin-front, .coin-back {
     position: absolute;
@@ -588,16 +662,19 @@ body {
     border: 2px solid #ffd700; /* Sone ke sikke jaisa border */
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
+
 /* Front Side: Jisme logo hai */
 .coin-front {
     background-color: white;
 }
+
 .coin-img {
     width: 90%;
     height: 90%;
     border-radius: 50%;
     object-fit: contain;
 }
+
 /* Back Side: Jisme Admission Open hai */
 .coin-back {
     background: linear-gradient(45deg, #d41414, #ff4b2b);
@@ -605,6 +682,7 @@ body {
     transform: rotateY(180deg); /* Isko ulta rakha hai */
     text-align: center;
 }
+
 .admission-text {
     font-size: 10px;
     font-weight: 800;
@@ -612,6 +690,7 @@ body {
     font-family: sans-serif;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
+
 /* Sikke ghumne ki animation */
 @keyframes flipCoin {
     0% { transform: rotateY(0deg); }
@@ -626,18 +705,21 @@ body {
     position: relative;
     font-family: 'serif';
 }
+
 .result-header {
     text-align: center;
     border-bottom: 2px solid #4a90e2;
     padding-bottom: 10px;
     margin-bottom: 20px;
 }
+
 .result-details {
     display: grid;
     grid-template-columns: 2fr 1fr; /* Info left, Photo right */
     gap: 20px;
     margin-bottom: 20px;
 }
+
 .result-photo-container img {
     width: 120px;
     height: 140px;
@@ -645,21 +727,25 @@ body {
     padding: 2px;
     object-fit: cover;
 }
+
 .detail-item p {
     margin-bottom: 8px;
     font-size: 1.1em;
     border-bottom: 1px dashed #ccc;
 }
+
 .detail-item span {
     font-weight: bold;
     color: #1a1a2e;
 }
+
 /* Table Style for Marks */
 .marks-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
+
 .marks-table th, .marks-table td {
     border: 1px solid #333;
     padding: 10px;
@@ -674,6 +760,7 @@ body {
     font-weight:bold;
 }
 .logout-btn:hover { background:#c62828; }
+
 /* RING */
 .ring {
     width:120px;
@@ -687,6 +774,7 @@ body {
 }
 
 .marks-table th { background: #f0f4f8; }
+
 /* Floating Container */
 .bharti-float-container {
     position: fixed;
@@ -783,6 +871,7 @@ body {
     box-shadow:0 15px 40px rgba(0,0,0,0.25);
     transform-style:preserve-3d;
 }
+
 .three-d-button{
     background:#4a90e2;
     color:#fff;
@@ -823,9 +912,9 @@ body {
 }
 .alert.show {
     bottom: 30px;
+
 .modal-content {
     background:#fff;
     padding:20px;
     width:320px;
     border-radius:10px;
-}
