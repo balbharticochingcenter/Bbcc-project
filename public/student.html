@@ -2,59 +2,55 @@
 <html>
 <head>
     <title>Student Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">   <!-- same header style -->
-    <link rel="stylesheet" href="/css/student.css">
+    <link rel="stylesheet" href="/css/student-premium.css">
 </head>
 <body>
 
-<!-- ===== HEADER (LOGIN PAGE SE SAME) ===== -->
-<header>
-    <h2>My Institute</h2>
-</header>
+<!-- HEADER -->
+<header id="siteHeader"></header>
 
-<!-- ===== STUDENT DASHBOARD ===== -->
-<div class="student-dashboard">
+<!-- MAIN DASHBOARD -->
+<div class="dashboard">
 
-    <h2>🎓 Student Profile</h2>
-
-    <div class="profile-card">
+    <!-- PROFILE -->
+    <section class="card profile">
         <img id="stuPhoto">
+        <div>
+            <h2 id="stuName"></h2>
+            <p>ID: <span id="stuId"></span></p>
+            <p>Class: <span id="stuClass"></span></p>
+            <p>Joining: <span id="stuDOJ"></span></p>
+        </div>
+    </section>
 
-        <p><b>Name:</b> <span id="stuName"></span></p>
-        <p><b>ID:</b> <span id="stuId"></span></p>
-        <p><b>Class:</b> <span id="stuClass"></span></p>
-        <p><b>DOJ:</b> <span id="stuDOJ"></span></p>
+    <!-- CONTACT UPDATE -->
+    <section class="card">
+        <h3>📞 Update Contact</h3>
+        <input id="stuMobile" placeholder="Student Mobile">
+        <input id="parentMobile" placeholder="Parent Mobile">
+        <input id="stuPass" type="password" placeholder="Password">
+        <button onclick="updateProfile()">Update Profile</button>
+    </section>
 
-        <label>📞 Student Mobile</label>
-        <input id="stuMobile">
+    <!-- FEES -->
+    <section class="card">
+        <h3>💰 Fees Status</h3>
+        <table>
+            <tbody id="feesTable"></tbody>
+        </table>
+    </section>
 
-        <label>👨‍👩‍👦 Parent Mobile</label>
-        <input id="parentMobile">
-
-        <label>🔑 Password</label>
-        <input id="stuPass" type="password">
-
-        <button onclick="updateProfile()">Update</button>
-    </div>
-
-    <h2>💰 Monthly Fees Tracker</h2>
-    <table>
-        <thead>
-            <tr><th>Month</th><th>Status</th></tr>
-        </thead>
-        <tbody id="feesTable"></tbody>
-    </table>
-
-    <h2>📚 Class Study Material</h2>
-    <div id="materialBox"></div>
+    <!-- STUDY MATERIAL -->
+    <section class="card">
+        <h3>📚 Study Material</h3>
+        <div id="materialBox"></div>
+    </section>
 
 </div>
 
-<!-- ===== FOOTER (LOGIN PAGE SE SAME) ===== -->
-<footer>
-    <p>© Institute</p>
-</footer>
+<!-- FOOTER -->
+<footer id="siteFooter"></footer>
 
-<script src="/js/student.js"></script>
+<script src="/js/student-premium.js"></script>
 </body>
 </html>
