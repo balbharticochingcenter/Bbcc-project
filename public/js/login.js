@@ -148,7 +148,7 @@ loginForm.addEventListener('submit', async (e) => {
 loader.style.display = 'none';
 
 if (loginType === 'admin') {
-    window.location.replace('/admin');
+    window.location.replace('admin');
     return; // ✅ yahin ruk jao
 }
 
@@ -158,7 +158,7 @@ if (loginType === 'teacher') {
 }
 
 if (loginType === 'student') {
-    window.location.replace('/student.html');
+    window.location.replace('student.html');
     return;
 }
 
