@@ -50,3 +50,33 @@ header { display:flex; justify-content:center; padding:15px; }
     border-radius:10px;
     width:300px;
 }
+.header-bar {
+    max-width: 1100px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    width: 55px;
+    height: 55px;
+    object-fit: contain;
+}
+
+.logout-btn {
+    background: #e63946;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background: #c62828;
+}
