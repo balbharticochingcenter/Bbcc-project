@@ -258,3 +258,100 @@ button[onclick*="delete"] {
     height:60px;
     border-radius:50%;
 }
+/* ================= FOOTER ================= */
+.magical-footer{
+    margin-top:40px;
+    padding:20px;
+    text-align:center;
+    background:rgba(255,255,255,0.05);
+    border-top:1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+}
+
+.social-icons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-bottom:10px;
+}
+
+.social-icons a{
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.social-icons a:hover{
+    color:var(--accent-glow);
+}
+
+#foot-help{
+    font-size:13px;
+    opacity:0.8;
+}
+
+/* ================= ADMIN PROFILE ICON ================= */
+.admin-profile-trigger img{
+    transition:0.3s;
+}
+
+.admin-profile-trigger img:hover{
+    box-shadow:0 0 15px var(--primary-glow);
+    transform: scale(1.05);
+}
+
+/* ================= DASHBOARD BUTTON HOVER ================= */
+.btn-primary{
+    transition:0.3s;
+}
+
+.btn-primary:hover{
+    background:rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+}
+
+/* ================= MODAL CLOSE BUTTON ================= */
+.close{
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.close:hover{
+    color:red;
+    transform:scale(1.2);
+}
+
+/* ================= PENDING REGISTRATION ================= */
+.pending-box h3{
+    color:#f1c40f;
+    margin-bottom:10px;
+}
+
+/* ================= CLASS CARDS WRAPPER ================= */
+#classCards{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+/* ================= TABLE STICKY HEADER ================= */
+table thead th{
+    position:sticky;
+    top:0;
+    background:#ecf0f1;
+    z-index:5;
+}
+
+/* ================= INPUT & SELECT FOCUS ================= */
+input:focus,
+select:focus{
+    outline:none;
+    border-color:var(--primary-glow);
+    box-shadow:0 0 6px var(--primary-glow);
+}
+
+/* ================= BUTTON ACTIVE EFFECT ================= */
+button:active{
+    transform:scale(0.97);
+}
