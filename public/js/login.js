@@ -148,7 +148,8 @@ loginForm.addEventListener('submit', async (e) => {
 loader.style.display = 'none';
 
 if (loginType === 'admin') {
-    window.location.replace('admin');
+    localStorage.setItem("isAdminLoggedIn", "true");
+    window.location.replace('/admin');
     return; // ✅ yahin ruk jao
 }
 
