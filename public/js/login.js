@@ -116,9 +116,7 @@ loginForm.addEventListener('submit', async (e) => {
                     // 🔴 APPROVAL / FEES CHECK (YAHI ADD KIYA GAYA HAI)
                     const notApproved =
                         !student.fees ||
-                        student.fees === "0" ||
-                        !student.paid_months ||
-                        student.paid_months.length === 0;
+                      student.fees === "0";
 
                     if (notApproved) {
                         loader.style.display = 'none';
