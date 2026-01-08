@@ -80,38 +80,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        loader.style.display = 'flex';
-        const userId = document.getElementById('userId').value;
-        const password = document.getElementById('password').value;
-        let loginType = '';
+    e.preventDefault();
+    loader.style.display = 'flex';
 
-        try {
-            const adminRes = await fetch('/api/get-admin-profile');
-            const admin = await adminRes.json();
-            if (admin && admin.admin_userid === userId && admin.admin_pass === password) {
-                loginType = 'admin';
-            }
-            if (!loginType) {
-                const [tRes, sRes] = await Promise.all([fetch('/api/get-teachers'), fetch('/api/get-students')]);
-                const teachers = await tRes.json();
-                const students = await sRes.json();
-                if (teachers.find(t => t.teacher_id === userId && t.pass === password)) loginType = 'teacher';
-                else if (students.find(s => s.student_id === userId && s.pass === password)) loginType = 'student';
-            }
+    const userId = document.getElementById('userId').value;
+    const password = document.getElementById('password').value;
+    let loginType = '';
 
-            if (loginType === 'admin') {
-                localStorage.setItem('isAdminLoggedIn', 'true');
-                window.location.href = 'admin';
-            } else if (loginType) {
-                alert(`✅ Login Successful as ${loginType.toUpperCase()}!`);
-                loginModal.style.display = 'none'; // Login ke baad modal band karein
-            } else {
-                loginMessage.textContent = "❌ Invalid ID or Password!";
+    try {
+        // ===== ADMIN CHECK =====
+        const adminRes = await fetch('/api/get-admin-profile');
+        const admin = await adminRes.json();
+        if (admin && admin.admin_userid === userId && admin.admin_pass === password) {
+            loginType = 'admin';
+        }
+
+        // ===== TEACHER / STUDENT CHECK =====
+        if (!loginType) {
+            const [tRes, sRes] = await Promise.all([
+                fetch('/api/get-teachers'),
+                fetch('/api/get-students')
+            ]);
+
+            const teachers = await tRes.json();
+            const students = await sRes.json();
+
+            if (teachers.find(t => t.teacher_id === userId && t.pass === password)) {
+                loginType = 'teacher';
+            } 
+            else {
+                const student = students.find(
+                    s => s.student_id === userId && s.pass === password
+                );
+
+                if (student) {
+                    loginType = 'student';
+
+                    // ✅ STUDENT ID SAVE (IMPORTANT)
+                    localStorage.setItem("studentId", student.student_id);
+                }
             }
-        } catch (err) { loginMessage.textContent = "❌ Server Error!"; }
-        finally { loader.style.display = 'none'; }
-    });
+        }
+
+        // ===== REDIRECT / RESULT =====
+        if (loginType === 'admin') {
+            localStorage.setItem('isAdminLoggedIn', 'true');
+            window.location.href = 'admin';
+        } 
+        else if (loginType === 'student') {
+            loginModal.style.display = 'none';
+            window.location.href = "/student.html";  ////////////////////////////////
+        } 
+        else if (loginType === 'teacher') {
+            alert(`✅ Login Successful as TEACHER!`);
+            loginModal.style.display = 'none';
+        } 
+        else {
+            loginMessage.textContent = "❌ Invalid ID or Password!";
+        }
+
+    } catch (err) {
+        loginMessage.textContent = "❌ Server Error!";
+    } 
+    finally {
+        loader.style.display = 'none';
+    }
+});
 
 // --- 3. Result Modal & Search Logic (Merged & Improved) ---
     studentResultBtn.onclick = () => resultModal.style.display = 'flex';
