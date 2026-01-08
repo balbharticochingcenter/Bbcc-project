@@ -1,91 +1,74 @@
+let showStudent = false;
+let student;
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     const studentId = localStorage.getItem("studentId");
     if (!studentId) return location.href = "/";
 
-    /* ===== HEADER + FOOTER ===== */
-    const settings = await fetch("/api/get-settings").then(r => r.json());
+    const settings = await fetch("/api/get-settings").then(r=>r.json());
+    const students = await fetch("/api/get-students").then(r=>r.json());
+    student = students.find(s=>s.student_id===studentId);
 
-  /* ===== HEADER + LOGO + LOGOUT ===== */
-siteHeader.innerHTML = `
-    <div class="header-bar">
-        <div class="logo-box">
-            <img src="${settings.logo}" class="logo">
-            <div>
-                <h1>${settings.title || "Institute"}</h1>
-                <p>${settings.sub_title || ""}</p>
-            </div>
-        </div>
+    // 🔄 RING LOGIC
+    setInterval(() => {
+        showStudent = !showStudent;
+        ringImage.src = showStudent ? student.photo : settings.logo;
+        ringText.innerText = showStudent ? "PROFILE" : "";
+    }, 1000);
 
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-`;
+    ringBox.onclick = openProfile;
 
-
-    siteFooter.innerHTML = `
-        <p>📞 ${settings.contact || ""} | ✉ ${settings.gmail || ""}</p>
-    `;
-
-    /* ===== STUDENT DATA ===== */
-    const students = await fetch("/api/get-students").then(r => r.json());
-    const s = students.find(x => x.student_id === studentId);
-
-    stuPhoto.src = s.photo;
-    stuName.innerText = s.student_name;
-    stuId.innerText = s.student_id;
-    stuClass.innerText = s.student_class;
-    stuDOJ.innerText = s.joining_date;
-
-    stuMobile.value = s.mobile || "";
-    parentMobile.value = s.parent_mobile || "";
-    stuPass.value = s.pass;
-
-    /* ===== FEES ===== */
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    feesTable.innerHTML = months.map((m,i)=>`
-        <tr>
-            <td>${m}</td>
-            <td class="${s.paid_months.includes(i+1) ? 'paid' : 'unpaid'}">
-                ${s.paid_months.includes(i+1) ? "PAID" : "UNPAID"}
-            </td>
-        </tr>
-    `).join("");
-
-    /* ===== CLASS MATERIAL (ONLY STUDENT CLASS) ===== */
+    // SUBJECTS
     const classes = await fetch("/api/get-all-class-configs").then(r=>r.json());
-    const cls = classes[s.student_class];
+    const cls = classes[student.student_class];
 
-    let html = "";
-    if (cls?.subjects) {
-        for (let sub in cls.subjects) {
-            html += `<h4>${sub}</h4>`;
-            cls.subjects[sub].videos?.forEach(v =>
-                html += `<a href="${v}" target="_blank">▶ Video</a>`
-            );
-            cls.subjects[sub].notes?.forEach(n =>
-                html += `<a href="${n}" download>📄 Notes</a>`
-            );
-        }
+    for (let sub in cls.subjects) {
+        const div = document.createElement("div");
+        div.className = "subject";
+        div.innerText = sub;
+        div.onclick = () => loadSubject(sub, cls.subjects[sub]);
+        subjectsBox.appendChild(div);
     }
-
-    materialBox.innerHTML = html || "No material available.";
 });
 
-/* ===== UPDATE PROFILE ===== */
-async function updateProfile() {
-    await fetch("/api/update-student-data", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            student_id: localStorage.getItem("studentId"),
-            mobile: stuMobile.value,
-            parent_mobile: parentMobile.value,
-            pass: stuPass.value
-        })
+// PROFILE
+function openProfile() {
+    pName.innerText = student.student_name;
+    pParent.innerText = student.parent_name;
+    pMobile.innerText = student.mobile;
+    pPMobile.innerText = student.parent_mobile;
+    pJoin.innerText = student.joining_date;
+
+    feesBox.innerHTML = "";
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    months.forEach((m,i)=>{
+        const st = student.paid_months.includes(i+1) ? "PAID" : "DUE";
+        feesBox.innerHTML += `<p>${m} : ${st}</p>`;
     });
-    alert("Profile Updated");
+
+    profileModal.style.display="flex";
 }
-function logout() {
-    localStorage.removeItem("studentId");
-    location.href = "/";
+function closeProfile(){ profileModal.style.display="none"; }
+
+// SUBJECT LOAD
+function loadSubject(name, data) {
+    viewerBox.innerHTML = `<h3>${name}</h3>`;
+
+    data.notes?.forEach((n,i)=>{
+        viewerBox.innerHTML += `<button onclick="openPDF('${n}')">Notes ${i+1}</button>`;
+    });
+
+    data.videos?.forEach((v,i)=>{
+        viewerBox.innerHTML += `<button onclick="openVideo('${v}')">Chapter ${i+1}</button>`;
+    });
+}
+
+function openPDF(src){
+    viewerBox.innerHTML = `<iframe src="${src}" frameborder="0"></iframe>`;
+}
+function openVideo(url){
+    const id = url.split("v=")[1];
+    viewerBox.innerHTML = `
+        <iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
 }
