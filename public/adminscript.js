@@ -1204,4 +1204,68 @@ function saveAll(){
   });
 }
 
+////////////////////////////////////////////////////////////HGHGHHHHHHHHHKFTKTKYKKHJLKJ//////////////////////////////
+function openSMSReminderModal() {
+    document.getElementById("smsReminderModal").style.display = "block";
+    loadSMSReminderData();
+}
+
+function closeSMSReminder() {
+    document.getElementById("smsReminderModal").style.display = "none";
+}
+
+async function loadSMSReminderData() {
+    const students = await (await fetch(API + '/api/get-students')).json();
+    const body = document.getElementById("smsReminderBody");
+    body.innerHTML = "";
+
+    const today = new Date();
+
+    students.forEach(s => {
+        if (!s.joining_date || !s.fees) return;
+
+        let join = new Date(s.joining_date);
+        let y = join.getFullYear();
+        let m = join.getMonth();
+
+        while (new Date(y, m) <= today) {
+            const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+            const feesData = s.fees_data?.[key] || {};
+            const fees = Number(feesData.fees ?? s.fees);
+            const paid = Number(feesData.paid ?? 0);
+
+            if (paid < fees) {
+                const monthName = new Date(y, m).toLocaleString('default', { month: 'long', year: 'numeric' });
+
+                body.innerHTML += `
+                <tr>
+                    <td>${s.student_id}</td>
+                    <td>${s.student_name}</td>
+                    <td>${s.student_class}</td>
+                    <td>${monthName}</td>
+                    <td>₹${fees - paid}</td>
+                    <td>${s.parent_mobile || ''}</td>
+                    <td>${s.mobile || ''}</td>
+                    <td>
+                      <textarea style="width:250px;height:60px">
+Dear Parent,
+${s.student_name} (${s.student_class}) ki fees ${monthName} ki pending hai.
+Kindly pay soon.
+                      </textarea>
+                    </td>
+                </tr>`;
+            }
+
+            m++;
+            if (m > 11) { m = 0; y++; }
+        }
+    });
+
+    if (body.innerHTML === "") {
+        body.innerHTML = `<tr><td colspan="8">✅ No pending fees found</td></tr>`;
+    }
+}
+function sendAllSMS() {
+    alert("📩 SMS API integrate karne ke baad yahan se SMS jayega");
+}
 
