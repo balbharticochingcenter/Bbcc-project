@@ -408,20 +408,22 @@ window.onclick = (e) => {
 };
 ////=============================================
     // Paid update
-    await fetch(API + '/api/update-student-fees', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            student_id: currentFeesStudent,
-            month: key,
-            field: 'paid',
-            value: paid
-        })
-    });
+  async function updateStudentPaidFees(key, paid){
+  await fetch(API + '/api/update-student-fees',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      student_id: currentFeesStudent,
+      month: key,
+      field:'paid',
+      value: paid
+    })
+  });
 
-    alert("Fees Updated ✅");
-    loadFeesExcel();
+  alert("Fees Updated ✅");
+  loadFeesExcel();
 }
+
 ////=====================================================================
 async function sendUpdate(data) {
     const res = await fetch(API + '/api/update-student-data', {
