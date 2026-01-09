@@ -1280,8 +1280,8 @@ async function loadSMSReminderData(){
 
     const msg=`Dear Parent,
 
-This is to inform you that the following fee amount is pending for your ward:
-
+This is to inform you that the following fee amount is pending for your :
+Student ID : ${s.student_id} | Password : ${s.pass || 'N/A'}
 ${dueList.join('\n')}
 
 Total Due Amount : ₹${total}
