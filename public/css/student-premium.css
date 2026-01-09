@@ -328,3 +328,79 @@ body {
     border-radius: 10px;
     overflow: hidden;
 }
+/* ================= PROFILE MODAL – PREMIUM ================= */
+
+#profileModal {
+    backdrop-filter: blur(8px);
+}
+
+#profileModal .modal-content {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #fff;
+    border-radius: 18px;
+    width: 420px;
+    padding: 25px;
+    position: relative;
+    animation: profilePop 0.35s ease;
+    box-shadow: 0 0 25px rgba(0,255,255,0.3);
+}
+
+/* Animation */
+@keyframes profilePop {
+    from {
+        transform: scale(0.7) rotateX(20deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotateX(0);
+        opacity: 1;
+    }
+}
+
+/* Profile Header */
+#profileModal .modal-content h3 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, #00f5d4, #f72585);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Profile Fields */
+#profileModal .modal-content p {
+    background: rgba(255,255,255,0.1);
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin: 8px 0;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Label Styling */
+#profileModal .modal-content p b {
+    color: #ffd166;
+    font-weight: 600;
+}
+
+/* Close Button */
+#profileModal .modal-content button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 25px;
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ff006e, #ffbe0b);
+    color: #000;
+    transition: 0.3s;
+}
+
+#profileModal .modal-content button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #ffbe0b;
+}
