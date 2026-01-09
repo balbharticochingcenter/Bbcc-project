@@ -44,6 +44,11 @@
       📊 Student Dashboard
     </button>
     <button onclick="openClassExamModal()" style="background:#6c5ce7; color:white; padding:10px;">📊 Class Exam Dashboard</button>
+    <button onclick="openSMSReminderModal()" 
+        style="background:#0984e3;color:white;">
+ 📩 SMS Reminder
+</button>
+
   </div>
   <div class="button-group" data-label="Administrative Controls">
     <button onclick="openSystemConfig()" style="background:#e67e22; color:white;">
@@ -354,6 +359,40 @@
     </div>
   </div>
 </div>
+
+
+<div id="smsReminderModal" class="modal">
+  <div class="modal-content" style="max-width:95%">
+    <span class="close" onclick="closeSMSReminder()">&times;</span>
+    <h3>📩 Pending Fees SMS Reminder</h3>
+
+    <div style="overflow:auto; max-height:70vh">
+      <table border="1" width="100%">
+        <thead style="background:#f1f2f6">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Class</th>
+            <th>Due Month</th>
+            <th>Fees</th>
+            <th>Parent Mobile</th>
+            <th>Student Mobile</th>
+            <th>SMS Text</th>
+          </tr>
+        </thead>
+        <tbody id="smsReminderBody"></tbody>
+      </table>
+    </div>
+
+    <br>
+    <button onclick="sendAllSMS()" 
+            style="background:#2ecc71;color:white;padding:10px;">
+      📤 Send All SMS
+    </button>
+  </div>
+</div>
+
+  
   
 <footer class="magical-footer">
   <div class="social-icons">
