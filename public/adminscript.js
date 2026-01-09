@@ -1,4 +1,5 @@
 // ================= GLOBAL DOM =================
+let bannerBase64 = "";
 const dash_class = document.getElementById("dash_class");
 const dash_year = document.getElementById("dash_year");
 const dashTotal = document.getElementById("dashTotal");
@@ -982,7 +983,7 @@ async function rejectStudent(id) {
 }
 
 let selectedClass = "";
-let bannerBase64 = "";
+
 let classData = { subjects:{} };
 const saved = localStorage.getItem("classData");
 if(saved){
@@ -1050,6 +1051,7 @@ function saveFees(cls,val){
 
 function openModal(cls){
   selectedClass = cls;
+  currentClass = cls; // ⭐ IMPORTANT (missing tha)
 
   classData = classDB[cls] || {};
   if(!classData.subjects) classData.subjects = {};
@@ -1057,8 +1059,18 @@ function openModal(cls){
   document.getElementById("modalTitle").innerText = cls;
   document.getElementById("introVideo").value = classData.intro_video || "";
   document.getElementById("feesInput").value = feeMap[cls] || "";
-  document.getElementById("subjectList").innerHTML = "";
 
+  // 🔥 BANNER PREVIEW
+  bannerBase64 = classData.banner || "";
+  const preview = document.getElementById("bannerPreview");
+  if (bannerBase64) {
+    preview.src = bannerBase64;
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+  }
+
+  document.getElementById("subjectList").innerHTML = "";
   ALL_SUBJECTS.forEach(sub => drawSubject(sub));
 
   document.getElementById("modal").style.display="block";
@@ -1184,24 +1196,47 @@ function addVideo(sub){
 
 /* ================= SAVE ================= */
 
-function saveAll(){
-  saveFees(selectedClass,document.getElementById("feesInput").value);
+function saveAll() {
+  const data = {
+    class_name: currentClass,
+    banner: bannerBase64,          // ⭐⭐⭐ ADD THIS
+    intro_video: document.getElementById("introVideo").value,
+    fees: document.getElementById("feesInput").value,
+    subjects: subjectsObj
+  };
 
-  fetch('/api/save-class-config',{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      class_name:selectedClass,
-      banner:bannerBase64||classData.banner,
-      intro_video:document.getElementById("introVideo").value,
-      subjects:classData.subjects
-    })
-  }).then(()=>{
-    // ✅ YAHI SAHI JAGAH HAI
-    localStorage.setItem("classData", JSON.stringify(classData));
-    alert("Saved Successfully ✅");
-    closeModal();
-  });
+  fetch('/api/save-class-config', {
+    method: 'POST',
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(() => alert("Class saved successfully ✅"));
+}
+
+function handleBannerUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 400;
+      canvas.height = 180;
+
+      canvas.getContext("2d").drawImage(img, 0, 0, 400, 180);
+
+      bannerBase64 = canvas.toDataURL("image/jpeg", 0.3);
+
+      const preview = document.getElementById("bannerPreview");
+      preview.src = bannerBase64;
+      preview.style.display = "block";
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 ////////////////////////////////////////////////////////////HGHGHHHHHHHHHKFTKTKYKKHJLKJ//////////////////////////////
