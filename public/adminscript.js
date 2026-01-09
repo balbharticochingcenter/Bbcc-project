@@ -407,24 +407,6 @@ window.onclick = (e) => {
   });
 };
 ////=============================================
-async function saveFeesRow(btn) {
-    const row = btn.closest('tr');
-    const key = row.dataset.key; // Example: "2024-05"
-    const inputs = row.querySelectorAll('input');
-    const fees = inputs[0].value;
-    const paid = inputs[1].value;
-
-    const res = await fetch(API + '/api/update-student-fees', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            student_id: currentFeesStudent,
-            month: key,
-            field: 'fees', // save multiple fields one by one or modify API
-            value: fees
-        })
-    });
-    
     // Paid update
     await fetch(API + '/api/update-student-fees', {
         method: 'POST',
@@ -441,28 +423,6 @@ async function saveFeesRow(btn) {
     loadFeesExcel();
 }
 ////=====================================================================
-async function updateStudentProfile() {
-    const data = {
-        student_id: document.getElementById("edit_id").value,
-        student_name: document.getElementById("edit_name").value,
-        student_class: document.getElementById("edit_class").value,
-        parent_name: document.getElementById("edit_parent").value,
-        mobile: document.getElementById("edit_mobile").value,
-        parent_mobile: document.getElementById("edit_parent_mobile").value
-    };
-
-    // Photo agar change hui ho toh
-    const file = document.getElementById("edit_photo_file").files[0];
-    if (file) {
-        compressImage(file, async (base64) => {
-            data.photo = base64;
-            await sendUpdate(data);
-        });
-    } else {
-        await sendUpdate(data);
-    }
-}
-
 async function sendUpdate(data) {
     const res = await fetch(API + '/api/update-student-data', {
         method: 'POST',
@@ -475,21 +435,6 @@ async function sendUpdate(data) {
     }
 }
 //////////////////////////////////////////////////////////////////////////////
-async function openStudentEditPopup(id) {
-    const students = await (await fetch(API + '/api/get-students')).json();
-    const s = students.find(x => x.student_id === id);
-
-    document.getElementById("edit_id").value = s.student_id;
-    document.getElementById("edit_name").value = s.student_name;
-    document.getElementById("edit_class").value = s.student_class;
-    document.getElementById("edit_parent").value = s.parent_name;
-    document.getElementById("edit_mobile").value = s.mobile;
-    document.getElementById("edit_parent_mobile").value = s.parent_mobile;
-    document.getElementById("edit_photo_preview").src = s.photo;
-
-    document.getElementById("studentEditModal").style.display = "block";
-}
-
 ///////////////////////////////////////////////////////////////////////
 // 1. Loaded Class ko delete karne ka function
 async function deleteLoadedClass() {
@@ -1212,6 +1157,7 @@ function addNote(sub){
   i.onchange=e=>{
     const r=new FileReader();
     r.onload=()=>classData.subjects[sub].notes.push(r.result);
+    renderSubjectBox(sub);
     r.readAsDataURL(e.target.files[0]);
   };
   document.getElementById(`n-${sid}`).appendChild(i);
@@ -1249,9 +1195,11 @@ function saveAll(){
       subjects:classData.subjects
     })
   }).then(()=>{
+    // ✅ YAHI SAHI JAGAH HAI
+    localStorage.setItem("classData", JSON.stringify(classData));
     alert("Saved Successfully ✅");
     closeModal();
   });
 }
-localStorage.setItem("classData", JSON.stringify(classData));
-alert("Class data saved");
+
+
