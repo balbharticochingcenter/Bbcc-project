@@ -392,3 +392,145 @@ select:focus{
 button:active{
     transform:scale(0.97);
 }
+/* ===== MODAL BACKGROUND ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+  display: none;
+}
+
+/* ===== MODAL BOX ===== */
+.modal-content {
+  background: #ffffff;
+  margin: 20px auto;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  animation: zoomIn 0.25s ease;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ===== ANIMATION ===== */
+@keyframes zoomIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ===== MODAL TITLE ===== */
+.modal-content h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: #2c3e50;
+}
+
+/* ===== CLOSE BUTTON ===== */
+.modal-content .close {
+  font-size: 26px;
+  cursor: pointer;
+  color: #e74c3c;
+}
+
+/* ===== TOP ACTION BUTTONS ===== */
+.modal-content button {
+  padding: 7px 14px;
+  margin-right: 6px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  background: #3498db;
+  color: #fff;
+}
+
+.modal-content button:hover {
+  background: #2980b9;
+}
+
+/* ===== TABLE ===== */
+#reminderTable {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+#reminderTable th {
+  background: #2c3e50;
+  color: white;
+  padding: 8px;
+  text-align: center;
+}
+
+#reminderTable td {
+  padding: 7px;
+  vertical-align: top;
+}
+
+/* ===== ROW HOVER ===== */
+#reminderTable tr:hover {
+  background: #f1f5f9;
+}
+
+/* ===== STUDENT PHOTO ===== */
+#reminderTable img {
+  border-radius: 50%;
+  border: 1px solid #ddd;
+}
+
+/* ===== DUE MONTH CELL ===== */
+#reminderTable td:nth-child(5) {
+  font-weight: 600;
+  color: #c0392b;
+  line-height: 1.4;
+}
+
+/* ===== TOTAL DUE ===== */
+#reminderTable td:nth-child(6) {
+  font-weight: bold;
+  color: #e74c3c;
+  text-align: center;
+}
+
+/* ===== SMS TEXTBOX ===== */
+.msgBox {
+  resize: vertical;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+/* ===== ACTION COLUMN ===== */
+#reminderTable td:last-child span {
+  cursor: pointer;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+#reminderTable td:last-child span:hover {
+  text-decoration: underline;
+}
+
+/* ===== WHATSAPP COLOR ===== */
+#reminderTable td:last-child span:nth-child(2),
+#reminderTable td:last-child span:nth-child(6) {
+  color: #25d366;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .modal-content {
+    margin: 5px;
+    padding: 10px;
+  }
+
+  #reminderTable {
+    font-size: 11px;
+  }
+
+  .msgBox {
+    width: 200px;
+  }
+}
