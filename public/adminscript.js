@@ -1152,16 +1152,46 @@ function renderSubjectBox(sub){
   const sid = safeId(sub);
   const box = document.getElementById(`box-${sid}`);
 
+  const notes = classData.subjects[sub]?.notes || [];
+  const videos = classData.subjects[sub]?.videos || [];
+
   box.innerHTML = `
     <div class="subject-box">
       <b>${sub}</b>
 
-      <div id="n-${sid}"></div>
-      <button onclick="addNote('${sub}')">➕ Note</button>
+      <div id="n-${sid}">
+        ${notes.map((n,i)=>`
+          <div style="margin:5px 0">
+            📄 Note ${i+1}
+            <a href="${n}" target="_blank">View</a>
+            <button onclick="removeNote('${sub}',${i})">❌</button>
+          </div>
+        `).join("")}
+      </div>
+      <button onclick="addNote('${sub}')">➕ Add Note</button>
 
-      <div id="v-${sid}"></div>
-      <button onclick="addVideo('${sub}')">➕ Video</button>
-    </div>`;
+      <hr>
+
+      <div id="v-${sid}">
+        ${videos.map((v,i)=>`
+          <div style="margin:5px 0">
+            ▶️ <a href="${v}" target="_blank">${v}</a>
+            <button onclick="removeVideo('${sub}',${i})">❌</button>
+          </div>
+        `).join("")}
+      </div>
+      <button onclick="addVideo('${sub}')">➕ Add Video</button>
+    </div>
+  `;
+}
+function removeNote(sub,index){
+  classData.subjects[sub].notes.splice(index,1);
+  renderSubjectBox(sub);
+}
+
+function removeVideo(sub,index){
+  classData.subjects[sub].videos.splice(index,1);
+  renderSubjectBox(sub);
 }
 
 /* ================= HELPERS ================= */
@@ -1184,9 +1214,18 @@ function addNote(sub){
 
 function addVideo(sub){
   const sid = safeId(sub);
-  const i=document.createElement("input");
-  i.placeholder="YouTube link";
-  i.onblur=()=>classData.subjects[sub].videos.push(i.value);
+  const i = document.createElement("input");
+  i.placeholder = "YouTube link";
+  i.style.display = "block";
+  i.style.margin = "5px 0";
+
+  i.onchange = () => {
+    if(i.value){
+      classData.subjects[sub].videos.push(i.value);
+      renderSubjectBox(sub);
+    }
+  };
+
   document.getElementById(`v-${sid}`).appendChild(i);
 }
 
