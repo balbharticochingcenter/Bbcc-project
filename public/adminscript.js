@@ -1037,6 +1037,11 @@ async function rejectStudent(id) {
 let selectedClass = "";
 let bannerBase64 = "";
 let classData = { subjects:{} };
+const saved = localStorage.getItem("classData");
+if(saved){
+  classData = JSON.parse(saved);
+}
+
 let feeMap = {};
 let ALL_SUBJECTS = [];
 
@@ -1248,3 +1253,5 @@ function saveAll(){
     closeModal();
   });
 }
+localStorage.setItem("classData", JSON.stringify(classData));
+alert("Class data saved");
