@@ -404,3 +404,113 @@ body {
     transform: scale(1.05);
     box-shadow: 0 0 15px #ffbe0b;
 }
+/* ================= FEES TRACK – VIP ================= */
+
+#feesModal {
+    backdrop-filter: blur(8px);
+}
+
+/* Main Card */
+#feesModal .modal-content {
+    background: linear-gradient(135deg, #240046, #3c096c, #5a189a);
+    color: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    width: 90%;
+    max-width: 700px;
+    animation: feesPop 0.4s ease;
+    box-shadow: 0 0 30px rgba(173,0,255,0.5);
+}
+
+/* Animation */
+@keyframes feesPop {
+    from {
+        transform: scale(0.7) translateY(40px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Heading */
+#feesModal h3 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, #ffd166, #ff006e, #4cc9f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: magicText 4s infinite linear;
+}
+
+/* Table Styling */
+#feesModal table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255,255,255,0.08);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* Header Row */
+#feesModal thead {
+    background: linear-gradient(90deg, #7209b7, #560bad);
+}
+
+#feesModal th {
+    padding: 10px;
+    font-size: 14px;
+    color: #ffd166;
+    text-transform: uppercase;
+}
+
+/* Table Body */
+#feesModal td {
+    padding: 9px;
+    font-size: 13px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Hover Row Effect */
+#feesModal tbody tr:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.01);
+    transition: 0.2s;
+}
+
+/* PAID / DUE Status Look */
+#feesModal td:last-child {
+    font-weight: bold;
+    border-radius: 20px;
+}
+
+#feesModal td:last-child:contains("PAID") {
+    color: #06d6a0;
+}
+
+#feesModal td:last-child:contains("DUE") {
+    color: #ef476f;
+}
+
+/* Close Button */
+#feesModal button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 30px;
+    border: none;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    background: linear-gradient(45deg, #ffd166, #ff006e);
+    color: #000;
+    transition: 0.3s;
+}
+
+#feesModal button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #ffd166;
+}
