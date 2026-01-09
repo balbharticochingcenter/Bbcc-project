@@ -392,7 +392,7 @@ select:focus{
 button:active{
     transform:scale(0.97);
 }
-/* ===== MODAL BACKGROUND ===== */
+/* ================= MODAL BACKGROUND ================= */
 .modal {
   position: fixed;
   inset: 0;
@@ -401,7 +401,7 @@ button:active{
   display: none;
 }
 
-/* ===== MODAL BOX ===== */
+/* ================= MODAL BOX ================= */
 .modal-content {
   background: #ffffff;
   margin: 20px auto;
@@ -412,27 +412,27 @@ button:active{
   font-family: "Segoe UI", sans-serif;
 }
 
-/* ===== ANIMATION ===== */
+/* ================= ANIMATION ================= */
 @keyframes zoomIn {
   from { transform: scale(0.92); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
 
-/* ===== MODAL TITLE ===== */
+/* ================= TITLE ================= */
 .modal-content h3 {
   margin: 0 0 12px;
   font-size: 20px;
   color: #2c3e50;
 }
 
-/* ===== CLOSE BUTTON ===== */
+/* ================= CLOSE BUTTON ================= */
 .modal-content .close {
   font-size: 26px;
   cursor: pointer;
   color: #e74c3c;
 }
 
-/* ===== TOP ACTION BUTTONS ===== */
+/* ================= TOP BUTTONS ================= */
 .modal-content button {
   padding: 7px 14px;
   margin-right: 6px;
@@ -448,7 +448,7 @@ button:active{
   background: #2980b9;
 }
 
-/* ===== TABLE ===== */
+/* ================= TABLE ================= */
 #reminderTable {
   border-collapse: collapse;
   width: 100%;
@@ -457,7 +457,7 @@ button:active{
 
 #reminderTable th {
   background: #2c3e50;
-  color: white;
+  color: #fff;
   padding: 8px;
   text-align: center;
 }
@@ -467,32 +467,31 @@ button:active{
   vertical-align: top;
 }
 
-/* ===== ROW HOVER ===== */
 #reminderTable tr:hover {
   background: #f1f5f9;
 }
 
-/* ===== STUDENT PHOTO ===== */
+/* ================= PHOTO ================= */
 #reminderTable img {
   border-radius: 50%;
   border: 1px solid #ddd;
 }
 
-/* ===== DUE MONTH CELL ===== */
+/* ================= DUE MONTH ================= */
 #reminderTable td:nth-child(5) {
   font-weight: 600;
   color: #c0392b;
   line-height: 1.4;
 }
 
-/* ===== TOTAL DUE ===== */
+/* ================= TOTAL DUE ================= */
 #reminderTable td:nth-child(6) {
   font-weight: bold;
   color: #e74c3c;
   text-align: center;
 }
 
-/* ===== SMS TEXTBOX ===== */
+/* ================= SMS TEXT BOX ================= */
 .msgBox {
   resize: vertical;
   padding: 6px;
@@ -502,24 +501,51 @@ button:active{
   font-family: monospace;
 }
 
-/* ===== ACTION COLUMN ===== */
+/* ================= ACTION BUTTONS (VIP LOOK) ================= */
 #reminderTable td:last-child span {
-  cursor: pointer;
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 4px 2px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
-  margin-right: 6px;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
-#reminderTable td:last-child span:hover {
-  text-decoration: underline;
+/* ===== SMS BUTTON (BLUE) ===== */
+#reminderTable td:last-child span:nth-of-type(1),
+#reminderTable td:last-child span:nth-of-type(3) {
+  background: #3498db;
 }
 
-/* ===== WHATSAPP COLOR ===== */
-#reminderTable td:last-child span:nth-child(2),
-#reminderTable td:last-child span:nth-child(6) {
-  color: #25d366;
+#reminderTable td:last-child span:nth-of-type(1):hover,
+#reminderTable td:last-child span:nth-of-type(3):hover {
+  background: #1e6fb9;
 }
 
-/* ===== MOBILE RESPONSIVE ===== */
+/* ===== WHATSAPP BUTTON (GREEN) ===== */
+#reminderTable td:last-child span:nth-of-type(2),
+#reminderTable td:last-child span:nth-of-type(4) {
+  background: #25d366;
+}
+
+#reminderTable td:last-child span:nth-of-type(2):hover,
+#reminderTable td:last-child span:nth-of-type(4):hover {
+  background: #1ebe5d;
+}
+
+/* ================= STUDENT / PARENT LABEL ================= */
+#reminderTable td:last-child b {
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 3px;
+  color: #2c3e50;
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
 @media (max-width: 900px) {
   .modal-content {
     margin: 5px;
@@ -533,47 +559,4 @@ button:active{
   .msgBox {
     width: 200px;
   }
-}
-/* ===== ACTION BUTTON LOOK (SMS / WA) ===== */
-#reminderTable td:last-child span {
-  display: inline-block;
-  padding: 5px 10px;
-  margin: 3px 2px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  color: #fff;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-/* ===== SMS BUTTON ===== */
-#reminderTable td:last-child span:nth-child(2),
-#reminderTable td:last-child span:nth-child(5) {
-  background: #3498db; /* Blue */
-}
-
-#reminderTable td:last-child span:nth-child(2):hover,
-#reminderTable td:last-child span:nth-child(5):hover {
-  background: #1e6fb9;
-}
-
-/* ===== WHATSAPP BUTTON ===== */
-#reminderTable td:last-child span:nth-child(3),
-#reminderTable td:last-child span:nth-child(6) {
-  background: #25d366; /* WhatsApp green */
-}
-
-#reminderTable td:last-child span:nth-child(3):hover,
-#reminderTable td:last-child span:nth-child(6):hover {
-  background: #1ebe5d;
-}
-
-/* ===== STUDENT / PARENT LABEL ===== */
-#reminderTable td:last-child b {
-  display: block;
-  margin-top: 6px;
-  margin-bottom: 2px;
-  color: #2c3e50;
 }
