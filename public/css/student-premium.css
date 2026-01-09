@@ -176,3 +176,155 @@ body {
     border-radius: 5px;
     cursor: pointer;
 }
+/* ================= MAGIC HEADER ================= */
+
+/* Animated Gradient Header */
+.header-bar {
+    background: linear-gradient(270deg, #6a00ff, #00c3ff, #00ff9d, #ff00c8);
+    background-size: 800% 800%;
+    animation: magicHeader 10s ease infinite;
+}
+
+@keyframes magicHeader {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Fees Button Sync Glow */
+.fees-btn {
+    background: linear-gradient(45deg, #ff9f1c, #ff006e);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 5px #ff006e; }
+    50% { box-shadow: 0 0 15px #ffbe0b; }
+    100% { box-shadow: 0 0 5px #ff006e; }
+}
+
+/* ================= RING LOGO ================= */
+
+.ring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#ringText {
+    position: static;
+    margin-top: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    animation: textGlow 1.5s infinite alternate;
+}
+
+@keyframes textGlow {
+    from { color: #fff; }
+    to { color: #ffd166; }
+}
+
+/* ================= MAIN SCREEN ================= */
+
+/* Dark Glass Screen */
+.viewer {
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    backdrop-filter: blur(6px);
+}
+
+/* Animated Title */
+.viewer h2 {
+    font-size: clamp(20px, 4vw, 34px);
+    background: linear-gradient(90deg, #ff00c8, #00ffea, #ff9f1c);
+    background-size: 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: magicText 5s infinite linear;
+}
+
+.viewer p {
+    font-size: clamp(14px, 2vw, 18px);
+    opacity: 0.9;
+    animation: fadeGlow 3s infinite alternate;
+}
+
+@keyframes magicText {
+    from { background-position: 0%; }
+    to { background-position: 300%; }
+}
+
+@keyframes fadeGlow {
+    from { color: #ddd; }
+    to { color: #00ffea; }
+}
+
+/* ================= SUBJECT BUTTONS ================= */
+
+.subject {
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+    border-radius: 12px;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+.subject:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #7209b7, #4cc9f0);
+}
+
+/* Dropdown Content */
+.subject-content {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 10px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Notes & Chapter Buttons */
+.subject-content button {
+    width: 100%;
+    background: linear-gradient(45deg, #06d6a0, #118ab2);
+    border-radius: 20px;
+    margin: 5px 0;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.subject-content button:hover {
+    background: linear-gradient(45deg, #ffd166, #ef476f);
+    transform: scale(1.05);
+}
+
+/* ================= FEES MODAL ================= */
+
+#feesModal .modal-content {
+    background: linear-gradient(135deg, #1d2671, #c33764);
+    color: #fff;
+    border-radius: 15px;
+    animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+#feesModal table {
+    background: #fff;
+    color: #000;
+    border-radius: 10px;
+    overflow: hidden;
+}
