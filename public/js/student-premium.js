@@ -5,6 +5,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const studentId = localStorage.getItem("studentId");
     if (!studentId) return location.href = "/";
+viewerBox.innerHTML = `
+  <h2>${settings.title || ""}</h2>
+  <p>${settings.sub_title || ""}</p>
+`;
 
     settings = await fetch("/api/get-settings").then(r=>r.json());
     const students = await fetch("/api/get-students").then(r=>r.json());
@@ -12,7 +16,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!student) return location.href = "/";
 
+
     // 🔄 RING IMAGE SWITCH
+    headerTitle.innerText = settings.title || "";
+headerSub.innerText = settings.sub_title || "";
     ringImage.src = settings.logo || "";
     setInterval(() => {
         showStudent = !showStudent;
@@ -31,7 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const div = document.createElement("div");
         div.className = "subject";
         div.innerText = sub;
-        div.onclick = () => loadSubject(sub, cls.subjects[sub]);
+       div.onclick = () => toggleSubject(div, sub, cls.subjects[sub]);
         subjectsBox.appendChild(div);
     }
 });
@@ -44,31 +51,49 @@ function openProfile() {
     pPMobile.innerText = student.parent_mobile || "";
     pJoin.innerText = student.joining_date || "";
 
-    feesBox.innerHTML = "";
-    const paid = student.paid_months || [];
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-    months.forEach((m,i)=>{
-        const st = paid.includes(i+1) ? "PAID" : "DUE";
-        feesBox.innerHTML += `<p>${m} : ${st}</p>`;
-    });
-
-    profileModal.style.display="flex";
-}
+   
 function closeProfile(){ profileModal.style.display="none"; }
 
-// SUBJECT
-function loadSubject(name, data) {
-    viewerBox.innerHTML = `<h3>${name}</h3>`;
+    function openFees() {
 
-    data.notes?.forEach((n,i)=>{
-        viewerBox.innerHTML += `<button onclick="openPDF('${n}')">Notes ${i+1}</button><br>`;
-    });
+    feesTable.innerHTML = "";
 
-    data.videos?.forEach((v,i)=>{
-        viewerBox.innerHTML += `<button onclick="openVideo('${v}')">Chapter ${i+1}</button><br>`;
-    });
+    const joinDate = new Date(student.joining_date);
+    const monthlyFees = Number(student.fees);
+    const now = new Date();
+
+    let d = new Date(joinDate);
+
+    while (d <= now) {
+
+        const month = d.getMonth() + 1;
+        const year = d.getFullYear();
+        const key = `${year}-${month}`;
+
+        const paid = Number(student.fees_data?.[key]?.paid || 0);
+        const due = monthlyFees - paid;
+        const status = due <= 0 ? "PAID" : "DUE";
+
+        feesTable.innerHTML += `
+          <tr>
+            <td>${d.toLocaleString('default',{month:'long'})} ${year}</td>
+            <td>${monthlyFees}</td>
+            <td>${paid}</td>
+            <td>${due}</td>
+            <td>${status}</td>
+          </tr>
+        `;
+
+        d.setMonth(d.getMonth() + 1);
+    }
+
+    feesModal.style.display = "flex";
 }
+
+function closeFees() {
+    feesModal.style.display = "none";
+}
+
 
 function openPDF(src){
     viewerBox.innerHTML = `<iframe src="${src}" frameborder="0"></iframe>`;
@@ -95,4 +120,25 @@ function changePassword(newPass){
         headers:{ "Content-Type":"application/json"},
         body:JSON.stringify({id:student.student_id,password:newPass})
     })
+}
+function toggleSubject(div, name, data) {
+
+    const old = div.querySelector(".subject-content");
+    if (old) {
+        old.remove();
+        return;
+    }
+
+    const box = document.createElement("div");
+    box.className = "subject-content";
+
+    data.notes?.forEach((n, i) => {
+        box.innerHTML += `<button onclick="openPDF('${n}')">Notes ${i+1}</button><br>`;
+    });
+
+    data.videos?.forEach((v, i) => {
+        box.innerHTML += `<button onclick="openVideo('${v}')">Chapter ${i+1}</button><br>`;
+    });
+
+    div.appendChild(box);
 }
