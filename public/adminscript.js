@@ -1240,48 +1240,51 @@ function handleBannerUpload(input) {
 }
 
 ////////////////////////////////////////////////////////////HGHGHHHHHHHHHKFTKTKYKKHJLKJ//////////////////////////////
-async function loadSMSReminderData() {
-const students = await (await fetch(API + "/api/get-students")).json();
-const body = document.getElementById("smsReminderBody");
-body.innerHTML = "";
-const today = new Date();
 
-students.forEach(s => {
-let dueRows = [];
-let totalDue = 0;
-
-let join = new Date(s.joining_date);
-let y = join.getFullYear();
-let m = join.getMonth();
-
-while (new Date(y, m) <= today) {
-const key = `${y}-${String(m+1).padStart(2,'0')}`;
-const fees = Number(s.fees_data?.[key]?.fees ?? s.fees);
-const paid = Number(s.fees_data?.[key]?.paid ?? 0);
-
-if (paid < fees) {
-const due = fees - paid;
-totalDue += due;
-
-const label = new Date(y,m)
-.toLocaleString('en-IN',{month:'short',year:'2-digit'})
-.toUpperCase();
-
-dueRows.push(`${label} : ₹${due}`);
-}
-m++; if(m>11){m=0;y++;}
+function openSMSReminderModal(){
+  document.getElementById("smsReminderModal").style.display = "block";
+  loadSMSReminderData(); // data load hoga
 }
 
-if (dueRows.length === 0) return;
+function closeSMSReminder(){
+  document.getElementById("smsReminderModal").style.display = "none";
+}
+async function loadSMSReminderData(){
+  const students = await (await fetch(API + "/api/get-students")).json();
+  const body = document.getElementById("smsReminderBody");
+  body.innerHTML = "";
+  const today = new Date();
 
-const smsText =
-`Dear Parent,
+  students.forEach(s=>{
+    let dueList=[];
+    let total=0;
+
+    let d=new Date(s.joining_date);
+    let y=d.getFullYear(), m=d.getMonth();
+
+    while(new Date(y,m)<=today){
+      const key=`${y}-${String(m+1).padStart(2,'0')}`;
+      const fee=Number(s.fees_data?.[key]?.fees ?? s.fees);
+      const paid=Number(s.fees_data?.[key]?.paid ?? 0);
+
+      if(paid<fee){
+        let due=fee-paid;
+        total+=due;
+        let label=new Date(y,m).toLocaleString('en-IN',{month:'short',year:'2-digit'}).toUpperCase();
+        dueList.push(`${label} : ₹${due}`);
+      }
+      m++; if(m>11){m=0;y++;}
+    }
+
+    if(dueList.length===0) return;
+
+    const msg=`Dear Parent,
 
 This is to inform you that the following fee amount is pending for your ward:
 
-${dueRows.join('\n')}
+${dueList.join('\n')}
 
-Total Due Amount : ₹${totalDue}
+Total Due Amount : ₹${total}
 
 Kindly clear the pending fees at the earliest.
 
@@ -1291,19 +1294,19 @@ Website : https://balbharticoachingcenter.onrender.com
 Regards,
 Bal Bharti Coaching Center`;
 
-body.innerHTML += `
+    body.innerHTML+=`
 <tr>
-<td><img src="${s.photo || 'user.png'}" width="40"></td>
+<td><img src="${s.photo||'user.png'}" width="40"></td>
 <td>${s.student_id}</td>
 <td>${s.student_name}</td>
 <td>${s.student_class}</td>
-<td>${dueRows.join('<br>')}</td>
-<td><b>₹${totalDue}</b></td>
+<td>${dueList.join("<br>")}</td>
+<td><b>₹${total}</b></td>
 <td>${s.parent_mobile}</td>
 <td>${s.mobile}</td>
 <td>
 <textarea class="msgBox" data-parent="${s.parent_mobile}" data-student="${s.mobile}"
-style="width:260px;height:160px">${smsText}</textarea>
+style="width:260px;height:160px">${msg}</textarea>
 </td>
 <td>
 <b>Student</b><br>
@@ -1315,27 +1318,34 @@ style="width:260px;height:160px">${smsText}</textarea>
 🟢 <span onclick="sendWA('${s.parent_mobile}',this)">WA</span>
 </td>
 </tr>`;
-});
+  });
 }
 function getMsg(el){
-return el.closest("tr").querySelector(".msgBox").value;
+  return el.closest("tr").querySelector(".msgBox").value;
 }
 
 function sendSMS(num,el){
-window.open(`sms:${num}?body=${encodeURIComponent(getMsg(el))}`);
+  window.open(`sms:${num}?body=${encodeURIComponent(getMsg(el))}`);
 }
 
 function sendWA(num,el){
-window.open(`https://wa.me/91${num}?text=${encodeURIComponent(getMsg(el))}`);
+  window.open(`https://wa.me/91${num}?text=${encodeURIComponent(getMsg(el))}`);
 }
 function sendToAllParents(){
-document.querySelectorAll(".msgBox").forEach(t=>{
-sendSMS(t.dataset.parent,{closest:()=>t.parentElement.parentElement});
-});
+  document.querySelectorAll(".msgBox").forEach(t=>{
+    window.open(`sms:${t.dataset.parent}?body=${encodeURIComponent(t.value)}`);
+  });
 }
 
 function sendToAllStudents(){
-document.querySelectorAll(".msgBox").forEach(t=>{
-sendSMS(t.dataset.student,{closest:()=>t.parentElement.parentElement});
-});
+  document.querySelectorAll(".msgBox").forEach(t=>{
+    window.open(`sms:${t.dataset.student}?body=${encodeURIComponent(t.value)}`);
+  });
 }
+
+function printReminder(){
+  let w=window.open("");
+  w.document.write(document.getElementById("reminderTable").outerHTML);
+  w.print();
+}
+
