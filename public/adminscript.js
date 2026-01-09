@@ -1199,10 +1199,10 @@ function addVideo(sub){
 function saveAll() {
   const data = {
     class_name: currentClass,
-    banner: bannerBase64,          // ⭐⭐⭐ ADD THIS
+    banner: bannerBase64,
     intro_video: document.getElementById("introVideo").value,
     fees: document.getElementById("feesInput").value,
-    subjects: subjectsObj
+    subjects: classData.subjects   // ✅ CORRECT
   };
 
   fetch('/api/save-class-config', {
@@ -1240,67 +1240,102 @@ function handleBannerUpload(input) {
 }
 
 ////////////////////////////////////////////////////////////HGHGHHHHHHHHHKFTKTKYKKHJLKJ//////////////////////////////
-function openSMSReminderModal() {
-    document.getElementById("smsReminderModal").style.display = "block";
-    loadSMSReminderData();
-}
-
-function closeSMSReminder() {
-    document.getElementById("smsReminderModal").style.display = "none";
-}
-
 async function loadSMSReminderData() {
-    const students = await (await fetch(API + '/api/get-students')).json();
-    const body = document.getElementById("smsReminderBody");
-    body.innerHTML = "";
+const students = await (await fetch(API + "/api/get-students")).json();
+const body = document.getElementById("smsReminderBody");
+body.innerHTML = "";
+const today = new Date();
 
-    const today = new Date();
+students.forEach(s => {
+let dueRows = [];
+let totalDue = 0;
 
-    students.forEach(s => {
-        if (!s.joining_date || !s.fees) return;
+let join = new Date(s.joining_date);
+let y = join.getFullYear();
+let m = join.getMonth();
 
-        let join = new Date(s.joining_date);
-        let y = join.getFullYear();
-        let m = join.getMonth();
+while (new Date(y, m) <= today) {
+const key = `${y}-${String(m+1).padStart(2,'0')}`;
+const fees = Number(s.fees_data?.[key]?.fees ?? s.fees);
+const paid = Number(s.fees_data?.[key]?.paid ?? 0);
 
-        while (new Date(y, m) <= today) {
-            const key = `${y}-${String(m + 1).padStart(2, '0')}`;
-            const feesData = s.fees_data?.[key] || {};
-            const fees = Number(feesData.fees ?? s.fees);
-            const paid = Number(feesData.paid ?? 0);
+if (paid < fees) {
+const due = fees - paid;
+totalDue += due;
 
-            if (paid < fees) {
-                const monthName = new Date(y, m).toLocaleString('default', { month: 'long', year: 'numeric' });
+const label = new Date(y,m)
+.toLocaleString('en-IN',{month:'short',year:'2-digit'})
+.toUpperCase();
 
-                body.innerHTML += `
-                <tr>
-                    <td>${s.student_id}</td>
-                    <td>${s.student_name}</td>
-                    <td>${s.student_class}</td>
-                    <td>${monthName}</td>
-                    <td>₹${fees - paid}</td>
-                    <td>${s.parent_mobile || ''}</td>
-                    <td>${s.mobile || ''}</td>
-                    <td>
-                      <textarea style="width:250px;height:60px">
-Dear Parent,
-${s.student_name} (${s.student_class}) ki fees ${monthName} ki pending hai.
-Kindly pay soon.
-                      </textarea>
-                    </td>
-                </tr>`;
-            }
-
-            m++;
-            if (m > 11) { m = 0; y++; }
-        }
-    });
-
-    if (body.innerHTML === "") {
-        body.innerHTML = `<tr><td colspan="8">✅ No pending fees found</td></tr>`;
-    }
+dueRows.push(`${label} : ₹${due}`);
 }
-function sendAllSMS() {
-    alert("📩 SMS API integrate karne ke baad yahan se SMS jayega");
+m++; if(m>11){m=0;y++;}
 }
 
+if (dueRows.length === 0) return;
+
+const smsText =
+`Dear Parent,
+
+This is to inform you that the following fee amount is pending for your ward:
+
+${dueRows.join('\n')}
+
+Total Due Amount : ₹${totalDue}
+
+Kindly clear the pending fees at the earliest.
+
+Contact : 9971095964
+Website : https://balbharticoachingcenter.onrender.com
+
+Regards,
+Bal Bharti Coaching Center`;
+
+body.innerHTML += `
+<tr>
+<td><img src="${s.photo || 'user.png'}" width="40"></td>
+<td>${s.student_id}</td>
+<td>${s.student_name}</td>
+<td>${s.student_class}</td>
+<td>${dueRows.join('<br>')}</td>
+<td><b>₹${totalDue}</b></td>
+<td>${s.parent_mobile}</td>
+<td>${s.mobile}</td>
+<td>
+<textarea class="msgBox" data-parent="${s.parent_mobile}" data-student="${s.mobile}"
+style="width:260px;height:160px">${smsText}</textarea>
+</td>
+<td>
+<b>Student</b><br>
+📩 <span onclick="sendSMS('${s.mobile}',this)">SMS</span>
+🟢 <span onclick="sendWA('${s.mobile}',this)">WA</span>
+<hr>
+<b>Parent</b><br>
+📩 <span onclick="sendSMS('${s.parent_mobile}',this)">SMS</span>
+🟢 <span onclick="sendWA('${s.parent_mobile}',this)">WA</span>
+</td>
+</tr>`;
+});
+}
+function getMsg(el){
+return el.closest("tr").querySelector(".msgBox").value;
+}
+
+function sendSMS(num,el){
+window.open(`sms:${num}?body=${encodeURIComponent(getMsg(el))}`);
+}
+
+function sendWA(num,el){
+window.open(`https://wa.me/91${num}?text=${encodeURIComponent(getMsg(el))}`);
+}
+function sendToAllParents(){
+document.querySelectorAll(".msgBox").forEach(t=>{
+sendSMS(t.dataset.parent,{closest:()=>t.parentElement.parentElement});
+});
+}
+
+function sendToAllStudents(){
+document.querySelectorAll(".msgBox").forEach(t=>{
+sendSMS(t.dataset.student,{closest:()=>t.parentElement.parentElement});
+});
+}
