@@ -650,50 +650,7 @@ app.get('/api/get-all-class-configs', async (req, res) => {
     data.forEach(c => map[c.class_name] = c);
     res.json(map);
 });
-////////////////////////////////////////////////////////
-app.post("/api/send-fee-sms", async (req,res)=>{
-  const { student_mobile, parent_mobile, message } = req.body;
 
-  const API_KEY = "HEwbAFRZ3V5N7v29opufrq8eDlBQJPIm0KzWyia4n6hGStYjXMkDhx2tOwPQzKMXfagTdICRLE97AVir";
-
-  try{
-    // STUDENT SMS
-    await fetch("https://www.fast2sms.com/dev/bulkV2",{
-      method:"POST",
-      headers:{
-        "authorization": API_KEY,
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        route:"q",
-        message: message,
-        language:"english",
-        numbers: student_mobile
-      })
-    });
-
-    // PARENT SMS
-    await fetch("https://www.fast2sms.com/dev/bulkV2",{
-      method:"POST",
-      headers:{
-        "authorization": API_KEY,
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify({
-        route:"q",
-        message: message,
-        language:"english",
-        numbers: parent_mobile
-      })
-    });
-
-    res.json({ success:true });
-
-  }catch(err){
-    res.json({ success:false, error: err.message });
-  }
-});
-///////////////////////////////
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
