@@ -448,5 +448,14 @@ function showSmoothAlert(msg) {
     }, 2500);
 }
 /////////////////////////////
-function openVip(id){document.getElementById(id).style.display='block'}
-function closeVip(id){document.getElementById(id).style.display='none'}
+function openVip(id){document.getElementById(id).style.display="block"}
+function closeVip(id){document.getElementById(id).style.display="none"}
+window.onload=function(){
+ setTimeout(()=>openVip('vipAdmission'),2000)
+}
+function showLang(pid,lang){
+  document.querySelectorAll(`#${pid} .lang-content`).forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(`#${pid} .lang-tabs button`).forEach(b=>b.classList.remove("active"));
+  document.getElementById(pid+"-"+lang).classList.add("active");
+  document.getElementById(pid+"-btn-"+lang).classList.add("active");
+}
