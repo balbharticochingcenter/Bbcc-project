@@ -1404,3 +1404,6 @@ function runAutoSMS(){
     }, i * 3000);
   });
 }
+function openSMSSettings() {
+  document.getElementById("smsApiModal").style.display = "block";
+}
