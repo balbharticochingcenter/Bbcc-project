@@ -1316,6 +1316,12 @@ style="width:260px;height:160px">${msg}</textarea>
 <b>Parent</b><br>
 📩 <span onclick="sendSMS('${s.parent_mobile}',this)">SMS</span>
 🟢 <span onclick="sendWA('${s.parent_mobile}',this)">WA</span>
+<span class="apiBtn"
+ onclick="sendSMSviaAPI(this)"
+ data-student="${s.mobile}"
+ data-parent="${s.parent_mobile}">
+📡 API SMS
+</span>
 </td>
 </tr>`;
   });
@@ -1347,5 +1353,36 @@ function printReminder(){
   let w=window.open("");
   w.document.write(document.getElementById("reminderTable").outerHTML);
   w.print();
+}
+///////////////////////////////////////////
+async function sendSMSviaAPI(el){
+  const msg = el.closest("tr").querySelector(".msgBox").value;
+
+  const data = {
+    student_mobile: el.dataset.student,
+    parent_mobile: el.dataset.parent,
+    message: msg
+  };
+
+  try{
+    el.innerText = "Sending...";
+    const res = await fetch("/api/send-fee-sms",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if(result.success){
+      el.innerText = "✅ Sent";
+    }else{
+      el.innerText = "❌ Failed";
+      alert(result.error);
+    }
+  }catch(err){
+    el.innerText = "❌ Error";
+    alert("Server Error");
+  }
 }
 
