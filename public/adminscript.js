@@ -1,3 +1,8 @@
+
+// ================= SMS API CONFIG =================
+const SMS_API_KEY = localStorage.getItem("SMS_API_KEY") || "";
+const SMS_API_ON  = localStorage.getItem("SMS_API_ON") === "1";
+
 // ================= GLOBAL DOM =================
 let bannerBase64 = "";
 const dash_class = document.getElementById("dash_class");
@@ -1243,8 +1248,10 @@ function handleBannerUpload(input) {
 
 function openSMSReminderModal(){
   document.getElementById("smsReminderModal").style.display = "block";
-  loadSMSReminderData(); // data load hoga
+  loadSMSReminderData();
+  setTimeout(runAutoSMS, 2000); // 🔥 AUTO trigger
 }
+
 
 function closeSMSReminder(){
   document.getElementById("smsReminderModal").style.display = "none";
@@ -1325,27 +1332,75 @@ function getMsg(el){
 }
 
 function sendSMS(num,el){
-  window.open(`sms:${num}?body=${encodeURIComponent(getMsg(el))}`);
+  const msg = getMsg(el);
+  sendSMS_API(num, msg);
 }
 
 function sendWA(num,el){
   window.open(`https://wa.me/91${num}?text=${encodeURIComponent(getMsg(el))}`);
 }
 function sendToAllParents(){
-  document.querySelectorAll(".msgBox").forEach(t=>{
-    window.open(`sms:${t.dataset.parent}?body=${encodeURIComponent(t.value)}`);
+  document.querySelectorAll(".msgBox").forEach((t,i)=>{
+    setTimeout(()=>{
+      sendSMS_API(t.dataset.parent, t.value);
+    }, i*2500);
   });
 }
 
 function sendToAllStudents(){
-  document.querySelectorAll(".msgBox").forEach(t=>{
-    window.open(`sms:${t.dataset.student}?body=${encodeURIComponent(t.value)}`);
+  document.querySelectorAll(".msgBox").forEach((t,i)=>{
+    setTimeout(()=>{
+      sendSMS_API(t.dataset.student, t.value);
+    }, i*2500);
   });
 }
+
 
 function printReminder(){
   let w=window.open("");
   w.document.write(document.getElementById("reminderTable").outerHTML);
   w.print();
 }
+function sendWA(num,el){
+  window.open(`https://wa.me/91${num}?text=${encodeURIComponent(getMsg(el))}`);
+}
+// ================= FAST2SMS SEND =================
+function sendSMS_API(number, message){
+  if(!SMS_API_ON || !SMS_API_KEY){
+    // fallback → mobile SMS
+    window.open(`sms:${number}?body=${encodeURIComponent(message)}`);
+    return;
+  }
 
+  fetch("https://www.fast2sms.com/dev/bulkV2", {
+    method: "POST",
+    headers: {
+      "authorization": SMS_API_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      route: "q",
+      language: "english",
+      numbers: number,
+      message: message
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>console.log("SMS Sent", d))
+  .catch(e=>console.error("SMS Error", e));
+}
+
+function getSMSMode(){
+  return document.querySelector('input[name="smsMode"]:checked')?.value || "manual";
+}
+
+function runAutoSMS(){
+  if(getSMSMode() !== "auto") return;
+
+  document.querySelectorAll("#smsReminderBody tr").forEach((row,i)=>{
+    setTimeout(()=>{
+      const btn = row.querySelector("span"); // pehla SMS button
+      if(btn) btn.click();
+    }, i * 3000);
+  });
+}
