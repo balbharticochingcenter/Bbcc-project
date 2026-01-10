@@ -447,3 +447,6 @@ function showSmoothAlert(msg) {
         box.classList.remove("show");
     }, 2500);
 }
+/////////////////////////////
+function openVip(id){document.getElementById(id).style.display='block'}
+function closeVip(id){document.getElementById(id).style.display='none'}
