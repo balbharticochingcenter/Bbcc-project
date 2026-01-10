@@ -384,7 +384,7 @@ studentRegForm.addEventListener('submit', async (e) => {
     loadSystemSettings();
     fetchSliderPhotos();
     loadTeacherRing();
-    loadClasses(); 
+    
 });
 
 // --- GLOBAL FUNCTIONS --- (Inmein koi badlav nahi kiya gaya)
@@ -437,117 +437,7 @@ async function loadTeacherRing() {
     } catch (err) { console.error("Teacher Ring Error:", err); }
 }
 
-async function loadClasses() {
-    const classList = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "I.A.", "I.Sc.", "I.Com.", "B.A.", "B.Sc.", "B.Com."];
-    const container = document.getElementById('class-cards-container');
-    if (!container) return;
 
-    let classConfigs = {};
-    try {
-        const res = await fetch('/api/get-all-class-configs');
-        classConfigs = await res.json();
-    } catch (e) { console.log("Class configs not available yet"); }
-
-    container.innerHTML = classList.map(className => {
-        const bannerImg = (classConfigs[className] && classConfigs[className].banner) 
-                          ? classConfigs[className].banner 
-                          : "https://via.placeholder.com/300x150?text=Class+" + className;
-
-        return `
-        <div class="class-card" onclick="openClassModal('${className}')">
-            <div class="card-inner">
-                <img src="${bannerImg}" class="class-banner-img" alt="Class Banner">
-                <div class="class-card-icon"><i class="fas fa-university"></i></div>
-                <h3 class="class-name-text">Class ${className}</h3>
-                <p>Click to explore subjects.</p>
-                <button class="view-now-btn">View Now</button>
-            </div>
-        </div>
-    `}).join('');
-    // login.js ke loadClasses function ke andar container.innerHTML ke niche:
-container.innerHTML += container.innerHTML; // Ye cards ko double kar dega loop ke liye
-}
-
-async function openClassModal(className) {
-    const modal = document.getElementById('classDetailModal');
-    const videoContainer = document.getElementById('video-container');
-    const subjectListContainer = document.getElementById('subject-list-container');
-    const teacherDisplay = document.getElementById('class-teachers-display');
-    const modalTitle = document.getElementById('modal-class-title');
-
-    modalTitle.innerText = "Class: " + className;
-    modal.style.display = 'flex';
-    videoContainer.innerHTML = "Loading...";
-    subjectListContainer.innerHTML = "Loading...";
-
-    try {
-        const response = await fetch(`/api/get-class-config/${className}`);
-        const config = await response.json();
-
-        if (response.ok && config) {
-            if (config.intro_video) {
-                let videoUrl = config.intro_video;
-                if (videoUrl.includes("watch?v=")) {
-                    videoUrl = videoUrl.replace("watch?v=", "embed/");
-                } else if (videoUrl.includes("youtu.be/")) {
-                    videoUrl = videoUrl.replace("youtu.be/", "www.youtube.com/embed/");
-                }
-                let separator = videoUrl.includes('?') ? '&' : '?';
-                let finalSrc = `${videoUrl}${separator}autoplay=1&mute=1&rel=0&enablejsapi=1`;
-
-                videoContainer.innerHTML = `
-                    <iframe width="100%" height="200" src="${finalSrc}" 
-                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen></iframe>`;
-            } else {
-                videoContainer.innerHTML = `<div class="no-data">No Intro Video Available</div>`;
-            }
-
-            if (config.subjects && Object.keys(config.subjects).length > 0) {
-                let html = '<ul class="subject-list" style="list-style: none; padding: 0;">';
-                for (const subject of Object.keys(config.subjects)) {
-                    html += `<li style="margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; font-size: 16px; font-weight: 500;">
-                                <i class="fas fa-check-circle" style="color: #28a745; margin-right: 10px;"></i>
-                                ${subject}
-                             </li>`;
-                }
-                html += '</ul>';
-                subjectListContainer.innerHTML = html;
-            } else {
-                subjectListContainer.innerHTML = "<p>No subject info added yet.</p>";
-            }
-        } else {
-            videoContainer.innerHTML = "No configuration found.";
-            subjectListContainer.innerHTML = "Admin update pending for " + className;
-        }
-
-        const tRes = await fetch('/api/get-teachers');
-        const teachers = await tRes.json();
-        const filteredTeachers = teachers.filter(t => t.classes && t.classes.includes(className));
-
-        if (filteredTeachers.length > 0) {
-            teacherDisplay.innerHTML = filteredTeachers.map(t => `
-                <div class="mini-teacher-card">
-                    <img src="${t.photo || 'default-teacher.png'}" alt="${t.teacher_name}">
-                    <span>${t.teacher_name}</span>
-                </div>
-            `).join('');
-        } else {
-            teacherDisplay.innerHTML = "Not assigned";
-        }
-    } catch (err) {
-        subjectListContainer.innerHTML = "Error loading data.";
-        videoContainer.innerHTML = "Error loading video.";
-    }
-}
-
-const closeClassBtn = document.getElementById('closeClassModal');
-if(closeClassBtn) {
-    closeClassBtn.onclick = () => {
-        document.getElementById('classDetailModal').style.display = 'none';
-        document.getElementById('video-container').innerHTML = ''; 
-    };
-}
 function showSmoothAlert(msg) {
     const box = document.getElementById("alertBox");
     box.innerText = msg;
