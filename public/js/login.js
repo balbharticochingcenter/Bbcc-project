@@ -70,12 +70,7 @@ if(loginBtn) {
     };
 }
 
-if(closeLogin) {
-    closeLogin.onclick = () => {
-        loginModal.style.display = 'none';
-        loginMessage.textContent = "";
-    };
-}
+
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -175,7 +170,9 @@ loginMessage.textContent = "❌ गलत User ID या Password";
      
 
 // --- 3. Result Modal & Search Logic (Merged & Improved) ---
+    if (studentResultBtn) {
     studentResultBtn.onclick = () => resultModal.style.display = 'flex';
+}
     
    document.querySelectorAll('.close-button').forEach(btn => {
     btn.onclick = (e) => {
@@ -382,36 +379,7 @@ studentRegForm.addEventListener('submit', async (e) => {
         }
     };
 
-    // --- 5. Download Logic ---
-    async function getCaptureElement() {
-        const clone = studentResultDisplay.cloneNode(true);
-        clone.style.padding = "20px"; clone.style.background = "white"; clone.style.color = "black";
-        clone.querySelector('.download-buttons').remove();
-        detailedResultContent.innerHTML = "";
-        detailedResultContent.appendChild(clone);
-        return detailedResultContent;
-    }
-
-    downloadJpgBtn.onclick = async () => {
-        const el = await getCaptureElement();
-        html2canvas(el).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `Result_${document.getElementById('result-student-id').innerText}.jpg`;
-            link.href = canvas.toDataURL("image/jpeg");
-            link.click();
-        });
-    };
-
-    downloadPdfBtn.onclick = async () => {
-        const { jsPDF } = window.jspdf;
-        const el = await getCaptureElement();
-        html2canvas(el).then(canvas => {
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, 190, 0);
-            pdf.save(`Result_${document.getElementById('result-student-id').innerText}.pdf`);
-        });
-    };
-
+    
     // --- Initial Load Functions ---
     loadSystemSettings();
     fetchSliderPhotos();
