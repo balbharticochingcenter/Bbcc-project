@@ -51,7 +51,10 @@
     <button onclick="openSystemConfig()" style="background:#e67e22; color:white;">
         <i class="fas fa-cogs"></i> System Settings
     </button>
-    
+    <button onclick="openSMSSettings()" style="background:#00cec9;color:#000;">
+  📡 SMS API Settings
+</button>
+
     <button onclick="openSliderManager()" style="background:#6c5ce7; color:white;">
         <i class="fas fa-images"></i> Slider Management
     </button>
@@ -369,6 +372,13 @@
     <span onclick="closeSMSReminder()" style="float:right;cursor:pointer;font-size:22px;">&times;</span>
 
     <h3>📩 Pending Fees Reminder</h3>
+<div style="margin:10px 0;padding:8px;background:#f1f2f6;border-radius:6px;">
+  <b>SMS Mode:</b>
+  <label><input type="radio" name="smsMode" value="manual" checked> Manual</label>
+  <label style="margin-left:10px;">
+    <input type="radio" name="smsMode" value="auto"> Auto
+  </label>
+</div>
 
     <!-- 🔘 BUTTONS INSIDE POPUP -->
     <div style="margin-bottom:10px;">
@@ -400,7 +410,25 @@
 </div>
 
 
+<div id="smsApiModal" class="modal">
+  <div class="modal-content" style="max-width:400px;">
+    <span class="close" onclick="closeModal('smsApiModal')">&times;</span>
+    <h3>📡 SMS API Configuration</h3>
 
+    <label>FAST2SMS API Key</label>
+    <input type="text" id="sms_api_key" placeholder="Enter API Key">
+
+    <label>
+      <input type="checkbox" id="sms_api_enabled">
+      Enable API SMS (Auto)
+    </label>
+
+    <button onclick="saveSMSApi()" style="margin-top:10px;">Save</button>
+  </div>
+</div>
+
+
+  
   
 <footer class="magical-footer">
   <div class="social-icons">
