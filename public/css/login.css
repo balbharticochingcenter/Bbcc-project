@@ -740,3 +740,13 @@ body {
     display: block;
     animation: slideAlert 0.5s ease;
 }
+@keyframes slideAlert {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
