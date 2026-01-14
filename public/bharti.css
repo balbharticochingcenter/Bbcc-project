@@ -230,3 +230,77 @@ html,body{
         margin-left:auto;
     }
 }
+/* ===============================
+   MOBILE BOTTOM CUT FIX (AI SAFE)
+   =============================== */
+
+/* Dynamic viewport fix */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Use modern mobile-safe viewport */
+.main-wrapper{
+    min-height: 100dvh;      /* Mobile dynamic height */
+    height: 100%;
+}
+
+/* Chat overlay never cut */
+.chat-overlay{
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+}
+
+/* Controls always visible */
+.ui-controls{
+    position: sticky;
+    bottom: 0;
+    margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* Chat box height auto adjusts */
+.chat-box{
+    max-height: calc(100dvh - 220px);
+    overflow-y: auto;
+}
+
+/* INPUT ROW mobile safe */
+.input-row{
+    flex-wrap: nowrap;
+}
+
+/* Buttons shrink on small screens */
+@media(max-width:600px){
+    #send-btn,
+    #mic-btn,
+    .toggle-btn{
+        padding:10px 12px;
+        font-size:14px;
+        border-radius:12px;
+    }
+
+    #user-input{
+        padding:10px 12px;
+        font-size:14px;
+    }
+
+    .ui-controls{
+        padding:12px;
+        border-radius:16px;
+    }
+}
+
+/* Extra small phones */
+@media(max-width:380px){
+    .chat-box{
+        max-height: calc(100dvh - 200px);
+    }
+}
+
+/* Prevent iOS bottom cut */
+@supports(padding: env(safe-area-inset-bottom)){
+    .chat-overlay{
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+}
