@@ -789,7 +789,7 @@ body{
 }
 
 /* Mobile safe */
-@media(max-width:768px){
+@media(max-width:1000px){
     .bharti-float-btn{
         width: 55px;
         height: 55px;
