@@ -666,3 +666,43 @@ body {
 }
 .lang-content{display:none}
 .lang-content.active{display:block}
+.slider-btn{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(0,0,0,0.6);
+    color:#fff;
+    border:none;
+    padding:10px 15px;
+    font-size:24px;
+    cursor:pointer;
+    z-index:10;
+}
+.slider-btn.prev{ left:10px; }
+.slider-btn.next{ right:10px; }
+.error-message{
+    color:#ff6b6b;
+    font-size:14px;
+    margin-top:10px;
+}
+.bharti-float-container{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    z-index:5000;
+}
+.bharti-float-btn img{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    box-shadow:0 0 15px rgba(0,255,255,0.6);
+}
+.tooltip-text{
+    position:absolute;
+    right:70px;
+    background:#000;
+    color:#fff;
+    padding:5px 10px;
+    border-radius:5px;
+    font-size:12px;
+}
