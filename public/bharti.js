@@ -2,7 +2,7 @@
 const sessionID = Math.random().toString(36).slice(2);
 
 // THREE.JS
-let scene, camera, renderer, head, leftArm;
+let scene, camera, renderer, core, ring;
 let isTalking = false;
 let isVoiceOn = true;
 
@@ -13,93 +13,103 @@ function init3D() {
     const container = document.getElementById("canvas-container");
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
+    scene.background = null; // CSS handles BG
 
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
-    camera.position.set(0,1.6,4);
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 4);
 
-    renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
 
-    const light = new THREE.PointLight(0xffffff,1);
-    light.position.set(0,5,5);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0x404040,2));
+    // Lights
+    scene.add(new THREE.AmbientLight(0x00ffff, 1.2));
+    const pLight = new THREE.PointLight(0x7b2cff, 2, 10);
+    pLight.position.set(2, 2, 3);
+    scene.add(pLight);
 
-    const skin = new THREE.MeshStandardMaterial({ color:0xffdbac });
-    const bodyMat = new THREE.MeshStandardMaterial({ color:0x3498db });
+    // AI CORE (Orb)
+    const coreMat = new THREE.MeshStandardMaterial({
+        color: 0x00ffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: 0.6,
+        transparent: true,
+        opacity: 0.85
+    });
 
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.8,1.2,0.4), bodyMat);
-    body.position.y = 0.6;
-    scene.add(body);
+    core = new THREE.Mesh(
+        new THREE.SphereGeometry(0.6, 64, 64),
+        coreMat
+    );
+    scene.add(core);
 
-    head = new THREE.Mesh(new THREE.SphereGeometry(0.3,32,32), skin);
-    head.position.y = 1.6;
-    scene.add(head);
-
-    leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.8,0.2), skin);
-    leftArm.position.set(-0.6,1,0);
-    scene.add(leftArm);
+    // Energy Ring
+    ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.9, 0.03, 16, 100),
+        new THREE.MeshBasicMaterial({ color: 0xff2fd6 })
+    );
+    ring.rotation.x = Math.PI / 2;
+    scene.add(ring);
 
     animate();
 }
 
-function animate(){
+function animate() {
     requestAnimationFrame(animate);
-    const t = Date.now()*0.002;
+    const t = Date.now() * 0.002;
 
-    head.position.y = 1.6 + Math.sin(t)*0.02;
+    core.rotation.y += 0.003;
+    ring.rotation.z -= 0.01;
 
-    if(isTalking){
-        head.scale.y = 1 + Math.sin(t*15)*0.05;
-        leftArm.rotation.x = Math.sin(t*5)*0.3;
+    if (isTalking) {
+        core.scale.setScalar(1 + Math.sin(t * 10) * 0.08);
+        core.material.emissiveIntensity = 1;
     } else {
-        head.scale.y = 1;
-        leftArm.rotation.x = 0;
+        core.scale.setScalar(1);
+        core.material.emissiveIntensity = 0.5;
     }
 
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
 }
 
 // VOICE
 const voiceSelect = document.getElementById("voice-select");
 
-function loadVoices(){
-    const voices = synth.getVoices().filter(v=>v.lang.includes("hi")||v.lang.includes("IN"));
-    voiceSelect.innerHTML = voices.map(v=>`<option value="${v.name}">${v.name}</option>`).join("");
+function loadVoices() {
+    const voices = synth.getVoices().filter(v => v.lang.includes("hi") || v.lang.includes("IN"));
+    voiceSelect.innerHTML = voices.map(v =>
+        `<option value="${v.name}">${v.name}</option>`
+    ).join("");
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 
-function speak(text){
-    if(!isVoiceOn) return;
+function speak(text) {
+    if (!isVoiceOn) return;
     synth.cancel();
 
-    const clean = text.replace(/[#*_~`>]/g,"");
-    const u = new SpeechSynthesisUtterance(clean);
-
-    u.voice = synth.getVoices().find(v=>v.name===voiceSelect.value);
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = synth.getVoices().find(v => v.name === voiceSelect.value);
     u.lang = "hi-IN";
-    u.onstart = ()=>isTalking=true;
-    u.onend = ()=>isTalking=false;
+    u.onstart = () => isTalking = true;
+    u.onend = () => isTalking = false;
 
     synth.speak(u);
 }
 
 // CHAT
-async function handleChat(){
+async function handleChat() {
     const input = document.getElementById("user-input");
     const box = document.getElementById("chat-box");
     const msg = input.value.trim();
-    if(!msg) return;
+    if (!msg) return;
 
     box.innerHTML += `<p class="user"><b>Aap:</b> ${msg}</p>`;
     input.value = "";
 
-    const res = await fetch("/api/ai-chat",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ prompt:msg, userId:sessionID })
+    const res = await fetch("/api/ai-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: msg, userId: sessionID })
     });
 
     const data = await res.json();
@@ -111,22 +121,19 @@ async function handleChat(){
 
 // MIC
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(SpeechRecognition){
+if (SpeechRecognition) {
     const rec = new SpeechRecognition();
     rec.lang = "hi-IN";
 
-    document.getElementById("mic-btn").onclick = ()=>{
-        rec.start();
-    };
-
-    rec.onresult = e=>{
+    document.getElementById("mic-btn").onclick = () => rec.start();
+    rec.onresult = e => {
         document.getElementById("user-input").value = e.results[0][0].transcript;
         handleChat();
     };
 }
 
 // TOGGLE
-document.getElementById("voice-toggle").onclick = function(){
+document.getElementById("voice-toggle").onclick = function () {
     isVoiceOn = !isVoiceOn;
     this.textContent = isVoiceOn ? "Voice: ON" : "Voice: OFF";
     this.classList.toggle("off");
@@ -134,11 +141,11 @@ document.getElementById("voice-toggle").onclick = function(){
 };
 
 document.getElementById("send-btn").onclick = handleChat;
-document.getElementById("user-input").addEventListener("keydown",e=>{
-    if(e.key==="Enter") handleChat();
+document.getElementById("user-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") handleChat();
 });
 
-window.onload = ()=>{
+window.onload = () => {
     init3D();
     loadVoices();
 };
