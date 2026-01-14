@@ -1,99 +1,161 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body, html {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: Segoe UI, sans-serif;
+/* =========================
+   GLOBAL RESET
+========================= */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+html,body{
+    width:100%;
+    height:100%;
+    font-family:system-ui, sans-serif;
+    background:#0b0f1a;
+    overflow:hidden;
 }
 
-.main-wrapper {
-    width: 100vw;
-    height: 100vh;
-    background: black;
-    position: relative;
+/* =========================
+   MAIN WRAPPER
+========================= */
+.main-wrapper{
+    position:relative;
+    width:100%;
+    height:100vh;
+    overflow:hidden;
 }
 
-#canvas-container {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
+/* =========================
+   THREE.JS CANVAS
+========================= */
+#canvas-container{
+    position:fixed;
+    inset:0;
+    z-index:1;
 }
 
-.chat-overlay {
-    position: absolute;
-    bottom: 25px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 600px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+/* =========================
+   BACKGROUND WAVES (VOICE FEEL)
+========================= */
+.main-wrapper::before{
+    content:"";
+    position:absolute;
+    inset:-50%;
+    background:
+        radial-gradient(circle at 30% 30%,rgba(0,255,255,.12),transparent 40%),
+        radial-gradient(circle at 70% 70%,rgba(0,140,255,.15),transparent 45%);
+    animation:bgWave 8s linear infinite;
+    z-index:0;
 }
 
-.chat-box {
-    height: 220px;
-    overflow-y: auto;
-    background: rgba(255,255,255,0.92);
-    padding: 18px;
-    border-radius: 20px;
+@keyframes bgWave{
+    0%{transform:rotate(0deg) scale(1);}
+    50%{transform:rotate(180deg) scale(1.1);}
+    100%{transform:rotate(360deg) scale(1);}
 }
 
-.bot { color: #0047ab; }
-.user { text-align: right; }
-
-.ui-controls { display: flex; flex-direction: column; gap: 10px; }
-
-.input-row {
-    display: flex;
-    gap: 10px;
+/* =========================
+   CHAT OVERLAY
+========================= */
+.chat-overlay{
+    position:absolute;
+    inset:0;
+    z-index:5;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:14px;
+    pointer-events:auto;
 }
 
-input {
-    flex: 1;
-    padding: 14px;
-    border-radius: 30px;
-    border: none;
-    font-size: 16px;
+/* =========================
+   CHAT BOX
+========================= */
+.chat-box{
+    max-height:45vh;
+    overflow-y:auto;
+    padding:16px;
+    background:rgba(10,20,40,.75);
+    backdrop-filter:blur(10px);
+    border-radius:14px;
+    box-shadow:0 0 25px rgba(0,200,255,.25);
+    animation:fadeUp .8s ease;
 }
 
-button {
-    border-radius: 30px;
-    border: none;
-    padding: 12px 20px;
-    cursor: pointer;
-    font-weight: bold;
-    background: #007bff;
-    color: white;
+/* Smooth text entry feel */
+.chat-box p{
+    margin-bottom:10px;
+    line-height:1.5;
+    animation:typeFade .4s ease;
 }
 
-#mic-btn { background: #ff4757; }
-
-#mic-btn.recording {
-    animation: pulse 1s infinite;
+@keyframes typeFade{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
 }
 
-.toggle-btn {
-    align-self: center;
-    background: #28a745;
+.bot{
+    color:#7efcff;
+    text-shadow:0 0 10px rgba(126,252,255,.6);
 }
 
-.toggle-btn.off {
-    background: #6c757d;
+.user{
+    color:#fff;
 }
 
-.custom-select {
-    padding: 10px;
-    border-radius: 10px;
-    background: #111;
-    color: white;
-    border: none;
+/* =========================
+   UI CONTROLS
+========================= */
+.ui-controls{
+    margin-top:10px;
+    background:rgba(15,25,50,.8);
+    backdrop-filter:blur(8px);
+    padding:12px;
+    border-radius:14px;
+    box-shadow:0 0 20px rgba(0,150,255,.2);
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+/* =========================
+   SELECT
+========================= */
+.custom-select{
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:none;
+    background:#0e1c3a;
+    color:#fff;
+    margin-bottom:8px;
 }
+
+/* =========================
+   INPUT ROW
+========================= */
+.input-row{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+}
+
+#user-input{
+    flex:1;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+    background:#081428;
+    color:#fff;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+#send-btn,
+#mic-btn,
+.toggle-btn{
+    padding:10px 14px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:linear-gradient(135deg,#00eaff,#0066ff);
+    color:#fff;
+    box-shadow:0 0 12px rgba(0,200,255,.6);
