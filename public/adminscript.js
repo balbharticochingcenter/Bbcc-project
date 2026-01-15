@@ -36,9 +36,9 @@ const classCards = document.getElementById("classCards");
     }
 })();
 
-/**
- * Logout Admin User
- */
+/////
+///// Logout Admin User
+//////
 function logoutAdmin(){
     if(confirm("Are you sure you want to logout?")){
         localStorage.removeItem('isAdminLoggedIn');
@@ -47,9 +47,9 @@ function logoutAdmin(){
 }
 
 // ================= INITIALIZATION =================
-/**
- * Initialize Dashboard
- */
+/////
+///// Initialize Dashboard
+//////
 async function initDashboard(){
     try {
         await loadSystemSettings();
@@ -78,9 +78,9 @@ async function initDashboard(){
     }
 }
 
-/**
- * Load System Statistics
- */
+/////
+///// Load System Statistics
+//////
 async function loadStats() {
     try {
         const [studentsRes, teachersRes] = await Promise.all([
@@ -109,9 +109,9 @@ async function loadStats() {
 }
 
 // ================= SYSTEM SETTINGS =================
-/**
- * Load System Settings from Database
- */
+/////
+///// Load System Settings from Database
+//////
 async function loadSystemSettings(){
     try{
         const res = await fetch(API + '/api/get-settings');
@@ -144,9 +144,9 @@ async function loadSystemSettings(){
 }
 
 // ================= ADMIN PROFILE MANAGEMENT =================
-/**
- * Open Admin Profile Modal
- */
+/////
+///// Open Admin Profile Modal
+//////
 async function openAdminProfile() {
     try {
         document.getElementById('adminProfileModal').style.display = 'block';
@@ -165,9 +165,9 @@ async function openAdminProfile() {
     }
 }
 
-/**
- * Handle Admin Photo Upload and Compression
- */
+/////
+///// Handle Admin Photo Upload and Compression
+//////
 function handleAdminPhoto(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -197,9 +197,9 @@ function handleAdminPhoto(input) {
     }
 }
 
-/**
- * Update Admin Profile in Database
- */
+/////
+///// Update Admin Profile in Database
+//////
 async function updateAdminProfile() {
     const adminData = {
         admin_userid: document.getElementById('admin_userid').value,
@@ -229,18 +229,18 @@ async function updateAdminProfile() {
 }
 
 // ================= CLASS MANAGEMENT =================
-/**
- * Load Class List for Dropdowns
- */
+/////
+///// Load Class List for Dropdowns
+//////
 async function loadClassList(){
     const res = await fetch(API + '/api/get-all-class-configs');
     const data = await res.json();
     window.classList = Object.keys(data);
 }
 
-/**
- * Load Class Cards
- */
+/////
+///// Load Class Cards
+//////
 function loadClasses(){
     if(!window.ALL_CLASSES) return;
     classCards.innerHTML = "";
@@ -264,9 +264,9 @@ function loadClasses(){
     });
 }
 
-/**
- * Open Class Management Modal
- */
+/////
+///// Open Class Management Modal
+//////
 function openClassModal(cls){
     selectedClass = cls;
     currentClass = cls;
@@ -295,9 +295,9 @@ function openClassModal(cls){
     document.getElementById("classModal").style.display = "block";
 }
 
-/**
- * Save Class Configuration
- */
+/////
+///// Save Class Configuration
+//////
 function saveAll() {
     const data = {
         class_name: currentClass,
@@ -323,9 +323,9 @@ function saveAll() {
     });
 }
 
-/**
- * Handle Banner Upload
- */
+/////
+///// Handle Banner Upload
+//////
 function handleBannerUpload(input) {
     const file = input.files[0];
     if (!file) return;
@@ -351,9 +351,9 @@ function handleBannerUpload(input) {
     reader.readAsDataURL(file);
 }
 
-/**
- * Draw Subject UI
- */
+/////
+///// Draw Subject UI
+//////
 function drawSubject(sub){
     const sid = safeId(sub);
     const checked = !!classData.subjects[sub];
@@ -375,9 +375,9 @@ function drawSubject(sub){
     if (checked) renderSubjectBox(sub);
 }
 
-/**
- * Toggle Subject Selection
- */
+/////
+///// Toggle Subject Selection
+//////
 function toggleSubject(sub, on){
     if(on){
         if(!classData.subjects[sub])
@@ -389,9 +389,9 @@ function toggleSubject(sub, on){
     }
 }
 
-/**
- * Render Subject Details Box
- */
+/////
+///// Render Subject Details Box
+//////
 function renderSubjectBox(sub){
     const sid = safeId(sub);
     const box = document.getElementById(`box-${sid}`);
@@ -444,9 +444,9 @@ function renderSubjectBox(sub){
     `;
 }
 
-/**
- * Add Note to Subject
- */
+/////
+///// Add Note to Subject
+//////
 function addNote(sub){
     const sid = safeId(sub);
     const input = document.createElement("input");
@@ -472,9 +472,9 @@ function addNote(sub){
     document.body.removeChild(input);
 }
 
-/**
- * Add Video to Subject
- */
+/////
+///// Add Video to Subject
+//////
 function addVideo(sub){
     const sid = safeId(sub);
     const url = prompt("Enter YouTube video URL:");
@@ -487,9 +487,9 @@ function addVideo(sub){
     }
 }
 
-/**
- * Remove Note from Subject
- */
+/////
+///// Remove Note from Subject
+//////
 function removeNote(sub, index){
     if(confirm("Are you sure you want to remove this note?")){
         classData.subjects[sub].notes.splice(index, 1);
@@ -498,9 +498,9 @@ function removeNote(sub, index){
     }
 }
 
-/**
- * Remove Video from Subject
- */
+/////
+///// Remove Video from Subject
+//////
 function removeVideo(sub, index){
     if(confirm("Are you sure you want to remove this video?")){
         classData.subjects[sub].videos.splice(index, 1);
@@ -509,9 +509,9 @@ function removeVideo(sub, index){
     }
 }
 
-/**
- * Save Class Fees
- */
+/////
+///// Save Class Fees
+//////
 function saveFees(cls, val){
     fetch('/api/update-class-fees', {
         method: "POST",
@@ -526,17 +526,17 @@ function saveFees(cls, val){
 }
 
 // ================= STUDENT DASHBOARD =================
-/**
- * Open Student Dashboard Modal
- */
+/////
+///// Open Student Dashboard Modal
+//////
 function openStudentDashboard() {
     document.getElementById("studentDashboardModal").style.display = "block";
     prepareDashboardFilters();
 }
 
-/**
- * Prepare Dashboard Filters
- */
+/////
+///// Prepare Dashboard Filters
+//////
 function prepareDashboardFilters(){
     dash_class.innerHTML = '<option value="">Select Class</option>';
     if (window.classList) {
@@ -550,9 +550,9 @@ function prepareDashboardFilters(){
     }
 }
 
-/**
- * Load Dashboard Students
- */
+/////
+///// Load Dashboard Students
+//////
 async function loadDashboardStudents(){
     if(!dash_class.value || !dash_year.value) {
         showNotification("Please select class and year", "warning");
@@ -632,9 +632,9 @@ async function loadDashboardStudents(){
     }
 }
 
-/**
- * Save Student Data from Dashboard
- */
+/////
+///// Save Student Data from Dashboard
+//////
 async function saveDashStudent(id, btn){
     const row = btn.closest('tr');
     const inputs = row.querySelectorAll('.form-input');
@@ -671,9 +671,9 @@ async function saveDashStudent(id, btn){
     }
 }
 
-/**
- * Delete Student
- */
+/////
+///// Delete Student
+//////
 async function deleteDashStudent(id){
     if(!confirm("Are you sure you want to delete this student?")) return;
     
@@ -697,9 +697,9 @@ async function deleteDashStudent(id){
 }
 
 // ================= FEES MANAGEMENT =================
-/**
- * Open Fees Popup for Student
- */
+/////
+///// Open Fees Popup for Student
+//////
 async function openFeesExcelPopup(id){
     currentFeesStudent = id;
     document.getElementById("feesExcelModal").style.display = "block";
@@ -739,9 +739,9 @@ async function openFeesExcelPopup(id){
     }
 }
 
-/**
- * Prepare Fees Filters
- */
+/////
+///// Prepare Fees Filters
+//////
 function prepareFeesFilters(){
     // Year filter
     fees_year.innerHTML = '<option value="">Select Year</option>';
@@ -761,9 +761,9 @@ function prepareFeesFilters(){
     });
 }
 
-/**
- * Load Fees Excel Data
- */
+/////
+///// Load Fees Excel Data
+//////
 async function loadFeesExcel(){
     try {
         const response = await fetch(API + '/api/get-students');
@@ -831,9 +831,9 @@ async function loadFeesExcel(){
     }
 }
 
-/**
- * Update Fees Field
- */
+/////
+///// Update Fees Field
+//////
 async function updateFeesField(month, field, value) {
     try {
         await fetch(API + '/api/update-student-fees', {
@@ -852,9 +852,9 @@ async function updateFeesField(month, field, value) {
     }
 }
 
-/**
- * Save Fees Row
- */
+/////
+///// Save Fees Row
+//////
 async function saveFeesRow(btn) {
     const row = btn.closest('tr');
     const key = row.dataset.key;
@@ -877,9 +877,9 @@ async function saveFeesRow(btn) {
 }
 
 // ================= STUDENT EDIT PROFILE =================
-/**
- * Open Student Edit Popup
- */
+/////
+///// Open Student Edit Popup
+//////
 async function openStudentEditPopup(id) {
     try {
         const response = await fetch(API + '/api/get-students');
@@ -906,9 +906,9 @@ async function openStudentEditPopup(id) {
     }
 }
 
-/**
- * Update Student Profile
- */
+/////
+///// Update Student Profile
+//////
 async function updateStudentProfile() {
     const studentData = {
         student_id: document.getElementById("edit_id").value,
@@ -953,9 +953,9 @@ async function updateStudentProfile() {
 }
 
 // ================= EXAM MANAGEMENT =================
-/**
- * Open Exam Management Modal
- */
+/////
+///// Open Exam Management Modal
+//////
 function openClassExamModal() {
     document.getElementById("classExamModal").style.display = "block";
     const clsSelect = document.getElementById("exam_dash_class");
@@ -973,9 +973,9 @@ function openClassExamModal() {
     }
 }
 
-/**
- * Load Exam Students
- */
+/////
+///// Load Exam Students
+//////
 async function loadExamStudents() {
     const cls = document.getElementById("exam_dash_class").value;
     const yr = document.getElementById("exam_dash_year").value;
@@ -1053,9 +1053,9 @@ async function loadExamStudents() {
     }
 }
 
-/**
- * Apply Bulk Settings to All Students
- */
+/////
+///// Apply Bulk Settings to All Students
+//////
 function applyBulkSettings() {
     const subject = document.getElementById("bulk_subject").value;
     const total = document.getElementById("bulk_total_marks").value;
@@ -1070,9 +1070,9 @@ function applyBulkSettings() {
     showNotification("Bulk settings applied", "success");
 }
 
-/**
- * Update Row Division
- */
+/////
+///// Update Row Division
+//////
 function updateRowDivision(input) {
     const row = input.closest('tr');
     const obtained = input.value;
@@ -1080,9 +1080,9 @@ function updateRowDivision(input) {
     row.querySelector(".exam-division").innerText = calculateDivision(obtained, total);
 }
 
-/**
- * Save All Results
- */
+/////
+///// Save All Results
+//////
 async function saveAllResults() {
     if(!confirm("Are you sure you want to publish all results?")) return;
     
@@ -1116,9 +1116,9 @@ async function saveAllResults() {
     }
 }
 
-/**
- * Cancel All Exams
- */
+/////
+///// Cancel All Exams
+//////
 async function cancelAllExams() {
     if(!confirm("Are you sure you want to clear all exam data?")) return;
 
@@ -1153,9 +1153,9 @@ async function cancelAllExams() {
 }
 
 // ================= SYSTEM CONFIGURATION =================
-/**
- * Open System Configuration Modal
- */
+/////
+///// Open System Configuration Modal
+//////
 async function openSystemConfig() {
     document.getElementById('systemConfigModal').style.display = 'block';
     try {
@@ -1178,9 +1178,9 @@ async function openSystemConfig() {
     }
 }
 
-/**
- * Save System Configuration
- */
+/////
+///// Save System Configuration
+//////
 async function saveSystemConfig() {
     const config = {
         title: document.getElementById('cfg_title').value,
@@ -1216,17 +1216,17 @@ async function saveSystemConfig() {
 }
 
 // ================= SLIDER MANAGEMENT =================
-/**
- * Open Slider Manager
- */
+/////
+///// Open Slider Manager
+//////
 async function openSliderManager() {
     document.getElementById('sliderModal').style.display = 'block';
     loadSliders();
 }
 
-/**
- * Preview and Crop Slider Image
- */
+/////
+///// Preview and Crop Slider Image
+//////
 function previewAndCropSlider(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -1253,9 +1253,9 @@ function previewAndCropSlider(input) {
     }
 }
 
-/**
- * Upload Slider Image
- */
+/////
+///// Upload Slider Image
+//////
 async function uploadSlider() {
     if(!tempSliderBase64) {
         showNotification("Please select an image first", "warning");
@@ -1284,9 +1284,9 @@ async function uploadSlider() {
     }
 }
 
-/**
- * Load Sliders
- */
+/////
+///// Load Sliders
+//////
 async function loadSliders() {
     try {
         const res = await fetch('/api/get-sliders');
@@ -1319,9 +1319,9 @@ async function loadSliders() {
     }
 }
 
-/**
- * Delete Slider
- */
+/////
+///// Delete Slider
+//////
 async function deleteSlider(id) {
     if(!confirm("Are you sure you want to delete this slider?")) return;
     
@@ -1342,9 +1342,9 @@ async function deleteSlider(id) {
 }
 
 // ================= PENDING REGISTRATIONS =================
-/**
- * Load Pending Registrations
- */
+/////
+///// Load Pending Registrations
+//////
 async function loadPendingRegistrations() {
     try {
         const res = await fetch('/api/get-students');
@@ -1452,9 +1452,9 @@ async function loadPendingRegistrations() {
     }
 }
 
-/**
- * Approve Student Registration
- */
+/////
+///// Approve Student Registration
+//////
 async function approveStudent(id) {
     const fees = document.getElementById(`fees_${id}`).value;
     if (!fees) {
@@ -1493,9 +1493,9 @@ async function approveStudent(id) {
     }
 }
 
-/**
- * Reject Student Registration
- */
+/////
+///// Reject Student Registration
+//////
 async function rejectStudent(id) {
     if (!confirm("Are you sure you want to reject this student? This action cannot be undone.")) return;
 
@@ -1519,17 +1519,17 @@ async function rejectStudent(id) {
 }
 
 // ================= SMS REMINDER SYSTEM =================
-/**
- * Open SMS Reminder Modal
- */
+/////
+///// Open SMS Reminder Modal
+//////
 function openSMSReminderModal() {
     document.getElementById("smsReminderModal").style.display = "block";
     loadSMSReminderData();
 }
 
-/**
- * Load SMS Reminder Data
- */
+/////
+///// Load SMS Reminder Data
+//////
 async function loadSMSReminderData() {
     try {
         const response = await fetch(API + "/api/get-students");
@@ -1552,9 +1552,9 @@ async function loadSMSReminderData() {
     }
 }
 
-/**
- * Filter SMS by Class
- */
+/////
+///// Filter SMS by Class
+//////
 function filterSMSByClass() {
     const selectedClass = document.getElementById("sms_class_filter").value;
     const body = document.getElementById("smsReminderBody");
@@ -1567,9 +1567,9 @@ function filterSMSByClass() {
     renderSMSBody(filteredStudents, body);
 }
 
-/**
- * Render SMS Body
- */
+/////
+///// Render SMS Body
+//////
 function renderSMSBody(students, bodyElement) {
     bodyElement.innerHTML = "";
     const today = new Date();
@@ -1671,9 +1671,9 @@ ${dueList.join('\n')}
     });
 }
 
-/**
- * Send SMS
- */
+/////
+///// Send SMS
+//////
 function sendSMS(num, el) {
     if (!num || num === 'N/A') {
         showNotification("Mobile number not available", "warning");
@@ -1684,9 +1684,9 @@ function sendSMS(num, el) {
     window.open(`sms:${num}?body=${encodeURIComponent(message)}`);
 }
 
-/**
- * Send WhatsApp Message
- */
+/////
+///// Send WhatsApp Message
+//////
 function sendWA(num, el) {
     if (!num || num === 'N/A') {
         showNotification("Mobile number not available", "warning");
@@ -1697,9 +1697,9 @@ function sendWA(num, el) {
     window.open(`https://wa.me/91${num}?text=${encodeURIComponent(message)}`);
 }
 
-/**
- * Send SMS to All Parents
- */
+/////
+///// Send SMS to All Parents
+//////
 function sendToAllParents() {
     const textareas = document.querySelectorAll(".sms-textarea");
     if (textareas.length === 0) {
@@ -1719,9 +1719,9 @@ function sendToAllParents() {
     showNotification("Opening SMS for all parents", "info");
 }
 
-/**
- * Send SMS to All Students
- */
+/////
+///// Send SMS to All Students
+//////
 function sendToAllStudents() {
     const textareas = document.querySelectorAll(".sms-textarea");
     if (textareas.length === 0) {
@@ -1741,9 +1741,9 @@ function sendToAllStudents() {
     showNotification("Opening SMS for all students", "info");
 }
 
-/**
- * Print Reminder
- */
+/////
+///// Print Reminder
+//////
 function printReminder() {
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
@@ -1770,28 +1770,28 @@ function printReminder() {
 }
 
 // ================= HELPER FUNCTIONS =================
-/**
- * Calculate Division Based on Marks
- */
+/////
+///// Calculate Division Based on Marks
+//////
 function calculateDivision(obtained, total) {
     if(!obtained || !total) return '-';
-    const percentage = (obtained / total) * 100;
+    const percentage = (obtained / total)///// 100;
     if(percentage >= 60) return '1st';
     if(percentage >= 45) return '2nd';
     if(percentage >= 33) return '3rd';
     return 'Fail';
 }
 
-/**
- * Safe ID Generator
- */
+/////
+///// Safe ID Generator
+//////
 function safeId(str) {
     return str.replace(/\s+/g, '_').toLowerCase();
 }
 
-/**
- * Compress Image Function
- */
+/////
+///// Compress Image Function
+//////
 function compressImage(file, callback) {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -1810,17 +1810,17 @@ function compressImage(file, callback) {
     reader.readAsDataURL(file);
 }
 
-/**
- * Handle Image Error
- */
+/////
+///// Handle Image Error
+//////
 function handleImgError(img) {
     img.onerror = null;
     img.src = DEFAULT_AVATAR;
 }
 
-/**
- * Show Notification
- */
+/////
+///// Show Notification
+//////
 function showNotification(message, type = "info") {
     // Remove existing notification
     const existing = document.querySelector('.notification');
@@ -1876,9 +1876,9 @@ function showNotification(message, type = "info") {
     }, 3000);
 }
 
-/**
- * Toggle Password Visibility
- */
+/////
+///// Toggle Password Visibility
+//////
 function togglePassword(button) {
     const input = button.previousElementSibling;
     const icon = button.querySelector('i');
@@ -1892,9 +1892,9 @@ function togglePassword(button) {
     }
 }
 
-/**
- * Close Modal
- */
+/////
+///// Close Modal
+//////
 function closeModal(modalId) {
     if (modalId) {
         document.getElementById(modalId).style.display = 'none';
@@ -1906,9 +1906,9 @@ function closeModal(modalId) {
     }
 }
 
-/**
- * Download Student Excel
- */
+/////
+///// Download Student Excel
+//////
 function downloadStudentExcel() {
     const rows = document.querySelectorAll("#dashboardBody tr");
     if (rows.length === 0) {
@@ -1948,9 +1948,9 @@ function downloadStudentExcel() {
     showNotification("Excel file downloaded", "success");
 }
 
-/**
- * Download Fees Excel
- */
+/////
+///// Download Fees Excel
+//////
 function downloadFeesExcel() {
     const rows = document.querySelectorAll("#feesExcelBody tr");
     if (rows.length === 0) {
@@ -1975,9 +1975,9 @@ function downloadFeesExcel() {
     showNotification("Fees report downloaded", "success");
 }
 
-/**
- * Delete Loaded Class
- */
+/////
+///// Delete Loaded Class
+//////
 async function deleteLoadedClass() {
     const className = dash_class.value;
     if (!className) {
@@ -2032,17 +2032,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ================= ADDITIONAL UTILITY FUNCTIONS =================
-/**
- * Show Notifications
- */
+/////
+///// Show Notifications
+//////
 function showNotifications() {
     // Implementation for notification panel
     showNotification("Notifications feature coming soon", "info");
 }
 
-/**
- * Toggle Dark Mode
- */
+/////
+///// Toggle Dark Mode
+//////
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const icon = document.querySelector('.quick-btn .fa-moon');
@@ -2053,23 +2053,23 @@ function toggleDarkMode() {
     showNotification("Theme changed", "success");
 }
 
-/**
- * Download Reports
- */
+/////
+///// Download Reports
+//////
 function downloadReports() {
     showNotification("Report generation feature coming soon", "info");
 }
 
-/**
- * Show Help
- */
+/////
+///// Show Help
+//////
 function showHelp() {
     showNotification("Help documentation coming soon", "info");
 }
 
-/**
- * Print Dashboard
- */
+/////
+///// Print Dashboard
+//////
 function printDashboard() {
     window.print();
 }
