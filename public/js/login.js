@@ -767,9 +767,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     
     // Auto-open admission popup after 3 seconds
-    setTimeout(() => {
-        openVip('vipAdmission');
-    }, 3000);
+   // setTimeout(() => {
+ //       openVip('vipAdmission');
+  //  }, 3000);
 
     // --- 9. Keyboard Shortcuts ---
     document.addEventListener('keydown', (e) => {
