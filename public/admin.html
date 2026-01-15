@@ -369,7 +369,10 @@
     <span onclick="closeSMSReminder()" style="float:right;cursor:pointer;font-size:22px;">&times;</span>
 
     <h3>📩 Pending Fees Reminder</h3>
-
+<select id="sms_class_filter" onchange="filterSMSByClass()" 
+        style="padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ccc; width:200px;">
+    <option value="all">📚 All Classes</option>
+</select>
     <!-- 🔘 BUTTONS INSIDE POPUP -->
     <div style="margin-bottom:10px;">
       <button onclick="sendToAllParents()">📩 All Parents</button>
