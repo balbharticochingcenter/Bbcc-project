@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,246 +13,1100 @@
     <div class="loader-container" id="loader">
         <div class="spinner"></div>
         <p>Loading...</p>
+        
     </div>
 
     <header class="main-header">
         <div class="header-content">
            <div class="header-left">
-                <div class="coin-container">
-                    <div class="coin-inner">
-                        <div class="coin-front">
-                            <img id="header-logo" src="" alt="Logo" class="coin-img">
-                        </div>
-                        <div class="coin-back">
-                            <div class="admission-text">ADMISSION<br>OPEN</div>
-                        </div>
-                    </div>
-                </div>
+    <div class="coin-container">
+        <div class="coin-inner">
+            <div class="coin-front">
+                <img id="header-logo" src="" alt="Logo" class="coin-img">
             </div>
+            <div class="coin-back">
+                <div class="admission-text">ADMISSION<br>OPEN</div>
+            </div>
+        </div>
+    </div>
+</div>
             <div class="header-center">
                 <h1 id="header-title" class="magical-text"></h1>
                 <h2 id="header-subtitle" class="magical-text"></h2>
             </div>
             <div class="header-right">
-                <button id="loginBtn" class="btn result-button login-btn">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-                <button id="studentRegBtn" class="btn result-button reg-btn">
-                    <i class="fas fa-user-plus"></i> Register
-                </button>
-                <button id="studentResultBtn" class="btn result-button result-btn">
-                    <i class="fas fa-poll"></i> Check Result
-                </button>
+                <button id="loginBtn" class="result-button" style="background: #007bff; margin-right: 10px;">Login</button>
+                <button id="studentRegBtn" class="result-button" style="background: #28a745; margin-right: 10px;">Student Registration</button>
+                <button id="studentResultBtn" class="result-button">Student Result</button>
+               
             </div>
         </div>
+        
     </header>
 
     <div class="slider-container">
         <div id="dynamic-slider" class="slider-wrapper">
-            <div class="slide-placeholder">
-                <i class="fas fa-spinner fa-spin"></i> Loading Slider Photos...
-            </div>
+            <div class="slide-placeholder">Loading Slider Photos...</div>
         </div>
-        <button class="slider-btn prev" onclick="moveSlider(-1)">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="slider-btn next" onclick="moveSlider(1)">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-        <div class="slider-indicators" id="sliderIndicators"></div>
+        <button class="slider-btn prev" onclick="moveSlider(-1)">&#10094;</button>
+        <button class="slider-btn next" onclick="moveSlider(1)">&#10095;</button>
     </div>
 
-    <section class="vip-section">
-        <h2>Bal Bharti Coaching Center – Madhubani</h2>
-        <p class="vip-subtitle">
-            Madhubani ka sabse trusted coaching for <b>Class 1st to 10th</b> – All Subjects – Online & Offline
-        </p>
+ <section class="vip-section">
+  <h2>Bal Bharti Coaching Center – Madhubani</h2>
+  <p class="vip-subtitle">
+    Madhubani ka sabse trusted coaching for <b>Class 1st to 10th</b> – All Subjects – Online & Offline
+  </p>
 
-        <div class="vip-grid">
-            <div onclick="openVip('vip1')" class="vip-grid-item">
-                <i class="fas fa-school"></i>
-                <span>About BBCC</span>
-            </div>
-            <div onclick="openVip('vip2')" class="vip-grid-item">
-                <i class="fas fa-star"></i>
-                <span>Why Choose Us</span>
-            </div>
-            <div onclick="openVip('vip3')" class="vip-grid-item">
-                <i class="fas fa-book-open"></i>
-                <span>Classes 1–10</span>
-            </div>
-            <div onclick="openVip('vip4')" class="vip-grid-item">
-                <i class="fas fa-book"></i>
-                <span>Subjects</span>
-            </div>
-            <div onclick="openVip('vip5')" class="vip-grid-item">
-                <i class="fas fa-trophy"></i>
-                <span>Results</span>
-            </div>
-            <div onclick="openVip('vip6')" class="vip-grid-item">
-                <i class="fas fa-laptop"></i>
-                <span>Online Classes</span>
-            </div>
-            <div onclick="openVip('vip7')" class="vip-grid-item">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <span>Offline Coaching</span>
-            </div>
-            <div onclick="openVip('vip8')" class="vip-grid-item">
-                <i class="fas fa-users"></i>
-                <span>Teachers</span>
-            </div>
-            <div onclick="openVip('vip9')" class="vip-grid-item">
-                <i class="fas fa-file-signature"></i>
-                <span>Admission</span>
-            </div>
-            <div onclick="openVip('vip10')" class="vip-grid-item">
-                <i class="fas fa-phone-alt"></i>
-                <span>Contact</span>
-            </div>
-        </div>
-    </section>
+  <div class="vip-grid">
+    <div onclick="openVip('vip1')">🏫 About BBCC</div>
+    <div onclick="openVip('vip2')">⭐ Why Choose Us</div>
+    <div onclick="openVip('vip3')">📘 Classes 1–10</div>
+    <div onclick="openVip('vip4')">📚 Subjects</div>
+    <div onclick="openVip('vip5')">🏆 Results</div>
+    <div onclick="openVip('vip6')">💻 Online Classes</div>
+    <div onclick="openVip('vip7')">👨‍🏫 Offline Coaching</div>
+    <div onclick="openVip('vip8')">👩‍🏫 Teachers</div>
+    <div onclick="openVip('vip9')">📝 Admission</div>
+    <div onclick="openVip('vip10')">📞 Contact</div>
+  </div>
+</section>
+<div id="vip1" class="vip-popup">
+<div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip1')">&times;</span>
 
-    <!-- VIP Popups -->
-    <div id="vip1" class="vip-popup">
-        <div class="vip-box">
-            <span class="vip-close" onclick="closeVip('vip1')">&times;</span>
-            <h2>Bal Bharti Coaching Center – Madhubani</h2>
-            <!-- Content unchanged -->
-        </div>
-    </div>
+<h2>Bal Bharti Coaching Center – Madhubani</h2>
 
-    <!-- Other VIP popups (same content, just optimized containers) -->
-    <div id="vip2" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip3" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip4" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip5" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip6" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip7" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip8" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vipAdmission" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip10" class="vip-popup"><div class="vip-box">...</div></div>
+<div class="lang-tabs">
+  <button id="vip1-btn-hi" class="active" onclick="showLang('vip1','hi')">Hindi</button>
+  <button id="vip1-btn-ma" onclick="showLang('vip1','ma')">Maithili</button>
+  <button id="vip1-btn-hg" onclick="showLang('vip1','hg')">Hinglish</button>
+  <button id="vip1-btn-en" onclick="showLang('vip1','en')">English</button>
+</div>
 
-    <!-- Login Modal -->
+<!-- HINDI -->
+<div id="vip1-hi" class="lang-content active">
+<p>
+Bal Bharti Coaching Center (BBCC) Madhubani ke Chakdah Chowk par sthit
+ek vishwasniya aur result-oriented coaching institute hai.
+</p>
+
+<p>
+Yahan Class 1st se 10th tak ke bachchon ko
+Maths, Science, English, Hindi aur Social Science
+bahut hi saral aur effective tareeke se padhaya jaata hai.
+</p>
+
+<p>
+Ham yeh maante hain ki har bachcha alag hota hai,
+isliye yahan ratta nahi balki
+<strong>concept-based learning</strong> par zor diya jaata hai.
+</p>
+
+<p>
+BBCC ka maqsad sirf exam clear karwana nahi,
+balki bachchon ke andar
+confidence, discipline aur self-belief develop karna hai.
+</p>
+
+<div class="vip-cta">📌 Admission Open – Aaj hi Join Karein</div>
+</div>
+
+<!-- MAITHILI -->
+<div id="vip1-ma" class="lang-content">
+<p>
+Bal Bharti Coaching Center, Chakdah Chowk Madhubani me sthit,
+ek bharosamand coaching sansthan chhai.
+</p>
+
+<p>
+Ehi jagah par Class 1 se 10 tak ke bachcha sab ke
+sab subject ke padhai karaal jaait chhai.
+</p>
+
+<p>
+Hamra yeh vishwas chhai ki har bachcha alag-alag tarah se seekhait chhai,
+tai hamra yahan ratta nahi,
+samajh ke padhai karal jaait chhai.
+</p>
+
+<p>
+Bal Bharti Coaching Center bachcha ke bhavishya banabe ke kaam karait chhai.
+</p>
+
+<div class="vip-cta">📌 Admission Khulal Chhai – Aahan Aabhi Join Karu</div>
+</div>
+
+<!-- HINGLISH -->
+<div id="vip1-hg" class="lang-content">
+<p>
+Bal Bharti Coaching Center ek aisa coaching hai
+jahan Class 1st se 10th tak ke students ko
+proper guidance aur care ke saath padhaya jaata hai.
+</p>
+
+<p>
+Yahan sirf marks pe focus nahi hota,
+balki student ka overall development hota hai.
+</p>
+
+<p>
+Weak students ke liye special attention,
+aur average students ko top level tak le jaane ka system hai.
+</p>
+
+<div class="vip-cta">🚀 Secure Your Child’s Future – Join BBCC</div>
+</div>
+
+<!-- ENGLISH -->
+<div id="vip1-en" class="lang-content">
+<p>
+Bal Bharti Coaching Center is a trusted and well-known coaching institute
+located at Chakdah Chowk, Madhubani, Bihar.
+</p>
+
+<p>
+We provide quality education for students from Class 1 to Class 10
+with complete focus on concept clarity and strong fundamentals.
+</p>
+
+<p>
+Our goal is not only to improve marks,
+but to build confidence, discipline and academic strength.
+</p>
+
+<div class="vip-cta">🎯 Admissions Open – Enroll Now</div>
+</div>
+<!-- ================= BBCC MEGA CONTENT START ================= -->
+
+
+
+<h1 style="text-align:center;color:#0d6efd">
+Bal Bharti Coaching Center – Madhubani No.1 Coaching Institute
+</h1>
+
+<p style="text-align:center;font-size:18px">
+Class 1 to 10 | All Subjects | Online + Offline | Chakdah Chowk, Madhubani
+</p>
+
+<hr><br>
+
+<!-- ICON SECTION -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:20px;text-align:center">
+<i class="fa-solid fa-school fa-2x"></i>
+<i class="fa-solid fa-book fa-2x"></i>
+<i class="fa-solid fa-user-graduate fa-2x"></i>
+<i class="fa-solid fa-chalkboard-teacher fa-2x"></i>
+<i class="fa-solid fa-laptop fa-2x"></i>
+<i class="fa-solid fa-location-dot fa-2x"></i>
+<i class="fa-solid fa-award fa-2x"></i>
+<i class="fa-solid fa-children fa-2x"></i>
+<i class="fa-solid fa-brain fa-2x"></i>
+<i class="fa-solid fa-clock fa-2x"></i>
+<i class="fa-solid fa-pen fa-2x"></i>
+<i class="fa-solid fa-notes-medical fa-2x"></i>
+<i class="fa-solid fa-chart-line fa-2x"></i>
+<i class="fa-solid fa-star fa-2x"></i>
+<i class="fa-solid fa-thumbs-up fa-2x"></i>
+<i class="fa-solid fa-heart fa-2x"></i>
+<i class="fa-solid fa-lightbulb fa-2x"></i>
+<i class="fa-solid fa-users fa-2x"></i>
+<i class="fa-solid fa-graduation-cap fa-2x"></i>
+<i class="fa-solid fa-building-columns fa-2x"></i>
+</div>
+
+<br><hr><br>
+
+<!-- LONG TEXT PILE -->
+<h2>About Bal Bharti Coaching Center</h2>
+
+<p>
+Bal Bharti Coaching Center, Madhubani Bihar ke Chakdah Chowk par sthit
+ek pramukh aur vishwasniya coaching sansthan hai.
+Yeh coaching institute pichhle kai saalon se
+Class 1 se lekar Class 10 tak ke students ko
+academic excellence ki disha mein guide karta aa raha hai.
+</p>
+
+<p>
+Hamari coaching ka mool uddeshya sirf syllabus complete karna nahi,
+balki har bachche ke andar chhupe hue talent ko bahar nikalna hai.
+Yahan har student ko personal attention diya jaata hai,
+chahe woh strong ho ya weak.
+</p>
+
+<p>
+BBCC mein Mathematics, Science, English, Hindi, Social Science
+jaise sabhi subjects ko
+basic se advanced level tak padhaya jaata hai.
+Concept clarity, regular test, doubt solving aur revision
+hamari teaching ka core hissa hai.
+</p>
+
+<p>
+Hamari coaching Madhubani district ke parents ke beech
+isliye popular hai kyunki yahan sirf padhai nahi,
+balki discipline, confidence aur future planning bhi sikhayi jaati hai.
+</p>
+
+<!-- IMAGE GRID -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px">
+<img src="https://source.unsplash.com/600x400/?school,classroom">
+<img src="https://source.unsplash.com/600x400/?students,india">
+<img src="https://source.unsplash.com/600x400/?teacher,india">
+<img src="https://source.unsplash.com/600x400/?education,india">
+<img src="https://source.unsplash.com/600x400/?study,students">
+<img src="https://source.unsplash.com/600x400/?books,school">
+<img src="https://source.unsplash.com/600x400/?exam,classroom">
+<img src="https://source.unsplash.com/600x400/?learning,students">
+<img src="https://source.unsplash.com/600x400/?coaching,class">
+<img src="https://source.unsplash.com/600x400/?education,students">
+</div>
+
+<br><hr><br>
+
+<!-- REPEATABLE HUGE TEXT -->
+<h2>Why BBCC is Best in Madhubani</h2>
+
+<p>
+Bal Bharti Coaching Center ko Madhubani ka best coaching
+isliye maana jaata hai kyunki yahan results continuously improve hote hain.
+Jo students pehle weak hote hain,
+wo yahan aakar strong foundation develop karte hain.
+</p>
+
+<p>
+Hamare teachers experienced hain aur bachchon ke psychology ko samajhte hain.
+Har class me concept ko real-life example se samjhaya jaata hai.
+Isse students ka fear khatam hota hai aur interest badhta hai.
+</p>
+
+<p>
+Online coaching ke madhyam se
+door-daraz ke students bhi BBCC se jud pa rahe hain.
+Live class, recorded video, notes aur doubt support
+online system ka hissa hai.
+</p>
+
+<p>
+Offline classroom Chakdah Chowk par centrally located hai,
+jahan safe, disciplined aur positive learning environment milta hai.
+</p>
+
+<p>
+(👉 Isi tarah ka long descriptive content  
+aap is block ko multiple baar copy karke  
+VIP-1 se VIP-9 ke andar paste kar sakte ho)
+</p>
+
+<!-- CTA -->
+<div style="background:#28a745;color:#fff;padding:30px;text-align:center;border-radius:10px;font-size:22px">
+📢 ADMISSION OPEN – Join Bal Bharti Coaching Center Today  
+<br>
+📍 Chakdah Chowk, Madhubani | 📞 Call Now
+</div>
+<!-- ========== BBCC LONG CONTENT BLOCK A START ========== -->
+
+
+
+<h2>Bal Bharti Coaching Center – Foundation for Bright Future</h2>
+
+<p>
+Bal Bharti Coaching Center, jo ki Madhubani Bihar ke Chakdah Chowk par sthit hai,
+ek aisa shikshan sansthan hai jo sirf padhai tak seemit nahi hai,
+balki bachchon ke overall development par focus karta hai.
+Yahan Class 1 se lekar Class 10 tak ke students ko
+academic excellence ke saath-saath
+discipline, confidence aur self-belief sikhaya jaata hai.
+</p>
+
+<p>
+Aaj ke competitive yug mein sirf school jaana kaafi nahi hota.
+Students ko extra guidance, personal attention aur
+structured learning environment ki zarurat hoti hai.
+Bal Bharti Coaching Center isi zarurat ko samajhte hue
+ek strong academic support system provide karta hai.
+</p>
+
+<p>
+Hamari coaching ka maanana hai ki
+har bachcha alag hota hai,
+har bachche ki learning speed aur understanding level alag hoti hai.
+Isliye BBCC mein ek hi tarah se sabko padhane ke bajay
+student-centric approach follow ki jaati hai.
+</p>
+
+<p>
+Yahan teachers students ke saath friendly relationship banate hain
+taaki bachcha bina dare apne doubt pooch sake.
+Darr-mukt environment hi sahi learning ka pehla kadam hota hai.
+</p>
+
+<h3>Our Teaching Philosophy</h3>
+
+<p>
+Bal Bharti Coaching Center ki teaching philosophy
+“Samajh kar padho, ratta mat maro” par based hai.
+Hum syllabus ko sirf khatam nahi karte,
+balki har topic ko depth mein samjhate hain.
+</p>
+
+<p>
+Mathematics jaise subject mein
+basic concept clear kiye bina
+aage badhna possible nahi hota.
+Isliye hum pehle foundation strong karte hain,
+phir practice aur application par focus karte hain.
+</p>
+
+<p>
+Science subjects mein experiments, examples
+aur daily-life connections ke through
+topics ko interesting banaya jaata hai.
+English aur Hindi mein grammar ke saath
+writing aur speaking skills par bhi kaam hota hai.
+</p>
+
+<h3>Class 1 to 10 – Complete Academic Support</h3>
+
+<p>
+Bal Bharti Coaching Center mein
+Class 1 se lekar Class 10 tak ke sabhi students ke liye
+alag-alag structured courses available hain.
+Primary classes ke liye fun-based learning,
+middle classes ke liye concept building,
+aur senior classes ke liye exam-oriented preparation karayi jaati hai.
+</p>
+
+<p>
+Har class ke liye regular test series,
+chapter-wise assessment aur revision sessions hote hain
+jisse students ko apni preparation ka exact idea mil sake.
+Parents ko bhi time-to-time feedback diya jaata hai.
+</p>
+
+<h3>Why Parents Prefer BBCC in Madhubani</h3>
+
+<p>
+Madhubani ke hazaron parents Bal Bharti Coaching Center par
+isliye bharosa karte hain kyunki yahan transparency hai.
+Fees structure clear hai, teaching process systematic hai,
+aur results continuously improve hote rehte hain.
+</p>
+
+<p>
+Parents ke liye sabse badi baat hoti hai
+ki unka bachcha safe environment mein padh raha ho.
+BBCC ka classroom environment disciplined,
+safe aur positive energy se bhara hua hota hai.
+</p>
+
+<p>
+Teachers students ke saath-saath
+parents ke saath bhi coordination banakar chalte hain,
+taaki bachche ki growth school, coaching aur home
+teenon jagah balanced rahe.
+</p>
+
+<h3>Offline Classroom Experience</h3>
+
+<p>
+Bal Bharti Coaching Center ka offline classroom
+Chakdah Chowk jaise prime location par sthit hai.
+Yahan students ko proper seating,
+clean classrooms aur focused learning environment milta hai.
+</p>
+
+<p>
+Limited students per batch ka concept
+isliye follow kiya jaata hai
+taaki har student ko personal attention mil sake.
+Teachers har bachche ke progress ko individually monitor karte hain.
+</p>
+
+<h3>Online Coaching – Learning Without Boundaries</h3>
+
+<p>
+Jo students kisi wajah se offline classes attend nahi kar paate,
+unke liye BBCC ne online coaching facility start ki hai.
+Ismein live classes, recorded lectures,
+PDF notes aur doubt clearing support milta hai.
+</p>
+
+<p>
+Online coaching ne un students ke liye raasta khola hai
+jo Madhubani ke bahar rehte hain
+ya kisi aur reason se coaching nahi aa sakte.
+</p>
+
+
+
+</div>
+
+<!-- ========== BBCC LONG CONTENT BLOCK A END ========== -->
+<!-- ========== BBCC LONG CONTENT BLOCK A START ========== -->
+
+
+
+<h2>Bal Bharti Coaching Center – Foundation for Bright Future</h2>
+
+<p>
+Bal Bharti Coaching Center, jo ki Madhubani Bihar ke Chakdah Chowk par sthit hai,
+ek aisa shikshan sansthan hai jo sirf padhai tak seemit nahi hai,
+balki bachchon ke overall development par focus karta hai.
+Yahan Class 1 se lekar Class 10 tak ke students ko
+academic excellence ke saath-saath
+discipline, confidence aur self-belief sikhaya jaata hai.
+</p>
+
+<p>
+Aaj ke competitive yug mein sirf school jaana kaafi nahi hota.
+Students ko extra guidance, personal attention aur
+structured learning environment ki zarurat hoti hai.
+Bal Bharti Coaching Center isi zarurat ko samajhte hue
+ek strong academic support system provide karta hai.
+</p>
+
+<p>
+Hamari coaching ka maanana hai ki
+har bachcha alag hota hai,
+har bachche ki learning speed aur understanding level alag hoti hai.
+Isliye BBCC mein ek hi tarah se sabko padhane ke bajay
+student-centric approach follow ki jaati hai.
+</p>
+
+<p>
+Yahan teachers students ke saath friendly relationship banate hain
+taaki bachcha bina dare apne doubt pooch sake.
+Darr-mukt environment hi sahi learning ka pehla kadam hota hai.
+</p>
+
+<h3>Our Teaching Philosophy</h3>
+
+<p>
+Bal Bharti Coaching Center ki teaching philosophy
+“Samajh kar padho, ratta mat maro” par based hai.
+Hum syllabus ko sirf khatam nahi karte,
+balki har topic ko depth mein samjhate hain.
+</p>
+
+<p>
+Mathematics jaise subject mein
+basic concept clear kiye bina
+aage badhna possible nahi hota.
+Isliye hum pehle foundation strong karte hain,
+phir practice aur application par focus karte hain.
+</p>
+
+<p>
+Science subjects mein experiments, examples
+aur daily-life connections ke through
+topics ko interesting banaya jaata hai.
+English aur Hindi mein grammar ke saath
+writing aur speaking skills par bhi kaam hota hai.
+</p>
+
+<h3>Class 1 to 10 – Complete Academic Support</h3>
+
+<p>
+Bal Bharti Coaching Center mein
+Class 1 se lekar Class 10 tak ke sabhi students ke liye
+alag-alag structured courses available hain.
+Primary classes ke liye fun-based learning,
+middle classes ke liye concept building,
+aur senior classes ke liye exam-oriented preparation karayi jaati hai.
+</p>
+
+<p>
+Har class ke liye regular test series,
+chapter-wise assessment aur revision sessions hote hain
+jisse students ko apni preparation ka exact idea mil sake.
+Parents ko bhi time-to-time feedback diya jaata hai.
+</p>
+
+<h3>Why Parents Prefer BBCC in Madhubani</h3>
+
+<p>
+Madhubani ke hazaron parents Bal Bharti Coaching Center par
+isliye bharosa karte hain kyunki yahan transparency hai.
+Fees structure clear hai, teaching process systematic hai,
+aur results continuously improve hote rehte hain.
+</p>
+
+<p>
+Parents ke liye sabse badi baat hoti hai
+ki unka bachcha safe environment mein padh raha ho.
+BBCC ka classroom environment disciplined,
+safe aur positive energy se bhara hua hota hai.
+</p>
+
+<p>
+Teachers students ke saath-saath
+parents ke saath bhi coordination banakar chalte hain,
+taaki bachche ki growth school, coaching aur home
+teenon jagah balanced rahe.
+</p>
+
+<h3>Offline Classroom Experience</h3>
+
+<p>
+Bal Bharti Coaching Center ka offline classroom
+Chakdah Chowk jaise prime location par sthit hai.
+Yahan students ko proper seating,
+clean classrooms aur focused learning environment milta hai.
+</p>
+
+<p>
+Limited students per batch ka concept
+isliye follow kiya jaata hai
+taaki har student ko personal attention mil sake.
+Teachers har bachche ke progress ko individually monitor karte hain.
+</p>
+
+<h3>Online Coaching – Learning Without Boundaries</h3>
+
+<p>
+Jo students kisi wajah se offline classes attend nahi kar paate,
+unke liye BBCC ne online coaching facility start ki hai.
+Ismein live classes, recorded lectures,
+PDF notes aur doubt clearing support milta hai.
+</p>
+
+<p>
+Online coaching ne un students ke liye raasta khola hai
+jo Madhubani ke bahar rehte hain
+ya kisi aur reason se coaching nahi aa sakte.
+</p>
+
+
+
+<!-- ========== BBCC LONG CONTENT BLOCK A END ========== -->
+
+</section>
+
+<!-- ================= BBCC MEGA CONTENT END ================= -->
+
+</div>
+</div>
+
+<div id="vip2" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip2')">&times;</span>
+<h2>Why Choose Bal Bharti Coaching Center?</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vip2-btn-hi" onclick="showLang('vip2','hi')">Hindi</button>
+<button id="vip2-btn-ma" onclick="showLang('vip2','ma')">Maithili</button>
+<button id="vip2-btn-hg" onclick="showLang('vip2','hg')">Hinglish</button>
+<button id="vip2-btn-en" onclick="showLang('vip2','en')">English</button>
+</div>
+
+<div id="vip2-hi" class="lang-content active">
+<p>BBCC isliye alag hai kyunki yahan har bachche par personal dhyan diya jaata hai.</p>
+<p>Weak students ke liye special doubt classes aur regular tests hote hain.</p>
+<div class="vip-cta">Admission Open – Limited Seats</div>
+</div>
+
+<div id="vip2-ma" class="lang-content">
+<p>Bal Bharti Coaching Center bachcha sab ke future ke dhyan me rakh ke padhai karait chhai.</p>
+<p>Har bachcha ke samasya samajh ke solution diya jaait chhai.</p>
+<div class="vip-cta">Seat Limited – Aahan Aabhi Join Karu</div>
+</div>
+
+<div id="vip2-hg" class="lang-content">
+<p>BBCC is best because yahan teacher-student bonding strong hoti hai.</p>
+<p>Concept clear + exam oriented preparation hoti hai.</p>
+<div class="vip-cta">Join BBCC Today</div>
+</div>
+
+<div id="vip2-en" class="lang-content">
+<p>BBCC focuses on concept clarity, discipline and result-oriented teaching.</p>
+<p>Regular tests and feedback help students grow faster.</p>
+<div class="vip-cta">Enroll Now</div>
+</div>
+</div></div>
+
+<div id="vip3" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip3')">&times;</span>
+<h2>Classes Offered</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vip3-btn-hi" onclick="showLang('vip3','hi')">Hindi</button>
+<button id="vip3-btn-ma" onclick="showLang('vip3','ma')">Maithili</button>
+<button id="vip3-btn-hg" onclick="showLang('vip3','hg')">Hinglish</button>
+<button id="vip3-btn-en" onclick="showLang('vip3','en')">English</button>
+</div>
+
+<div id="vip3-hi" class="lang-content active">
+<p>Class 1 se 10 tak sabhi students ke liye alag-alag batch.</p>
+<p>Foundation strong banane par focus.</p>
+<div class="vip-cta">Admission Start Ho Chuka Hai</div>
+</div>
+
+<div id="vip3-ma" class="lang-content">
+<p>Class 1 se 10 tak ke bachcha sab ke alag batch chhai.</p>
+<div class="vip-cta">Aahan Aabhi Naam Likhabu</div>
+</div>
+
+<div id="vip3-hg" class="lang-content">
+<p>Separate batches for junior and senior students.</p>
+<div class="vip-cta">Secure Seat Now</div>
+</div>
+
+<div id="vip3-en" class="lang-content">
+<p>We offer structured coaching for Classes 1 to 10.</p>
+<div class="vip-cta">Enroll Today</div>
+</div>
+</div></div>
+
+<div id="vip4" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip4')">&times;</span>
+<h2>Subjects We Teach</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vip4-btn-hi" onclick="showLang('vip4','hi')">Hindi</button>
+<button id="vip4-btn-ma" onclick="showLang('vip4','ma')">Maithili</button>
+<button id="vip4-btn-hg" onclick="showLang('vip4','hg')">Hinglish</button>
+<button id="vip4-btn-en" onclick="showLang('vip4','en')">English</button>
+</div>
+
+<div id="vip4-hi" class="lang-content active">
+<p>BBCC me Class 1 se 10 tak ke sabhi important subjects padhaye jaate hain:</p>
+<ul>
+<li>Mathematics – Basic se advance level</li>
+<li>Science – Physics, Chemistry, Biology foundation</li>
+<li>English – Grammar, Writing, Speaking</li>
+<li>Hindi – Vyakaran, Writing, Literature</li>
+<li>Social Science – History, Geography, Civics</li>
+</ul>
+<p>Har subject ko simple language aur daily example se samjhaya jaata hai.</p>
+<div class="vip-cta">All Subjects – One Trusted Coaching</div>
+</div>
+
+<div id="vip4-ma" class="lang-content">
+<p>Bal Bharti Coaching Center me sab subject ke padhai karaal jaait chhai.</p>
+<ul>
+<li>Maths – buniyadi se aage tak</li>
+<li>Science – samajh ke padhai</li>
+<li>English – bolna, likhna, samajhna</li>
+<li>Hindi – vyakaran aur rachna</li>
+<li>Social Science – itihaas aur bhugol</li>
+</ul>
+<div class="vip-cta">Sab Subject Ek Hi Jagah</div>
+</div>
+
+<div id="vip4-hg" class="lang-content">
+<p>All major school subjects under one roof.</p>
+<p>Concept clarity + exam practice dono pe focus hota hai.</p>
+<div class="vip-cta">Strong Subjects = Strong Result</div>
+</div>
+
+<div id="vip4-en" class="lang-content">
+<p>We cover all core subjects for Classes 1–10 with expert teachers.</p>
+<p>Our subject-wise approach builds strong academic foundation.</p>
+<div class="vip-cta">Enroll for All Subjects</div>
+</div>
+</div></div>
+
+<div id="vip5" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip5')">&times;</span>
+<h2>Our Results Speak</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vip5-btn-hi" onclick="showLang('vip5','hi')">Hindi</button>
+<button id="vip5-btn-ma" onclick="showLang('vip5','ma')">Maithili</button>
+<button id="vip5-btn-hg" onclick="showLang('vip5','hg')">Hinglish</button>
+<button id="vip5-btn-en" onclick="showLang('vip5','en')">English</button>
+</div>
+
+<div id="vip5-hi" class="lang-content active">
+<p>BBCC ke students har saal school exams me best performance dete hain.</p>
+<p>Weak students bhi yahan improve karke confident ban jaate hain.</p>
+<p>Regular test + doubt clearing = strong result.</p>
+<div class="vip-cta">Result Chahiye? BBCC Join Kariye</div>
+</div>
+
+<div id="vip5-ma" class="lang-content">
+<p>Bal Bharti Coaching Center ke result har saal nik dekhaait chhai.</p>
+<p>Bachcha me confidence aur number dono badhait chhai.</p>
+<div class="vip-cta">Result ke bharosa BBCC</div>
+</div>
+
+<div id="vip5-hg" class="lang-content">
+<p>Our students show visible improvement within months.</p>
+<p>Parents trust BBCC for consistent results.</p>
+<div class="vip-cta">See the Difference</div>
+</div>
+
+<div id="vip5-en" class="lang-content">
+<p>Our proven teaching methods deliver consistent academic results.</p>
+<p>Student progress is our biggest achievement.</p>
+<div class="vip-cta">Join for Results</div>
+</div>
+</div></div>
+
+<div id="vip6" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip6')">&times;</span>
+<h2>Online Coaching Facility</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vip6-btn-hi" onclick="showLang('vip6','hi')">Hindi</button>
+<button id="vip6-btn-ma" onclick="showLang('vip6','ma')">Maithili</button>
+<button id="vip6-btn-hg" onclick="showLang('vip6','hg')">Hinglish</button>
+<button id="vip6-btn-en" onclick="showLang('vip6','en')">English</button>
+</div>
+
+<div id="vip6-hi" class="lang-content active">
+<p>Jo students coaching nahi aa paate, unke liye online classes available hain.</p>
+<p>Live classes + recorded videos + doubt support.</p>
+<div class="vip-cta">Online Padhai – Ghar Baithe</div>
+</div>
+
+<div id="vip6-ma" class="lang-content">
+<p>Online padhai ke suvidha bhi uplabdh chhai.</p>
+<p>Ghar baith ke class attend kar sakait chhai.</p>
+<div class="vip-cta">Online Join Karu</div>
+</div>
+
+<div id="vip6-hg" class="lang-content">
+<p>Learn from home with BBCC’s online coaching.</p>
+<div class="vip-cta">Start Online Learning</div>
+</div>
+
+<div id="vip6-en" class="lang-content">
+<p>Our online classes ensure uninterrupted learning anytime, anywhere.</p>
+<div class="vip-cta">Enroll Online</div>
+</div>
+</div></div>
+
+<div id="vip7" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip7')">&times;</span>
+<h2>Offline Classroom Coaching</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vip7-btn-hi" onclick="showLang('vip7','hi')">Hindi</button>
+<button id="vip7-btn-ma" onclick="showLang('vip7','ma')">Maithili</button>
+<button id="vip7-btn-hg" onclick="showLang('vip7','hg')">Hinglish</button>
+<button id="vip7-btn-en" onclick="showLang('vip7','en')">English</button>
+</div>
+
+<div id="vip7-hi" class="lang-content active">
+<p>BBCC ka offline classroom system disciplined aur focused hai.</p>
+<p>Limited students per batch for personal attention.</p>
+<div class="vip-cta">Visit Chakdah Chowk Center</div>
+</div>
+
+<div id="vip7-ma" class="lang-content">
+<p>Offline class me direct teacher guidance milait chhai.</p>
+<div class="vip-cta">Center Aahan Aai Dekhu</div>
+</div>
+
+<div id="vip7-hg" class="lang-content">
+<p>Traditional classroom + modern teaching methods.</p>
+<div class="vip-cta">Join Offline Batch</div>
+</div>
+
+<div id="vip7-en" class="lang-content">
+<p>Our offline classes provide interactive and disciplined learning.</p>
+<div class="vip-cta">Enroll Offline</div>
+</div>
+</div></div>
+
+<div id="vip8" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip8')">&times;</span>
+<h2>Our Expert Teachers</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vip8-btn-hi" onclick="showLang('vip8','hi')">Hindi</button>
+<button id="vip8-btn-ma" onclick="showLang('vip8','ma')">Maithili</button>
+<button id="vip8-btn-hg" onclick="showLang('vip8','hg')">Hinglish</button>
+<button id="vip8-btn-en" onclick="showLang('vip8','en')">English</button>
+</div>
+
+<div id="vip8-hi" class="lang-content active">
+<p>BBCC ke teachers experienced, friendly aur result-oriented hain.</p>
+<p>Har student ko equal importance di jaati hai.</p>
+<div class="vip-cta">Learn from the Best Teachers</div>
+</div>
+
+<div id="vip8-ma" class="lang-content">
+<p>Yahan ke teacher sab bahut anubhav wala chhai.</p>
+<div class="vip-cta">Best Teacher ke sath padhai</div>
+</div>
+
+<div id="vip8-hg" class="lang-content">
+<p>Teachers focus on understanding, not rote learning.</p>
+<div class="vip-cta">Trusted Faculty</div>
+</div>
+
+<div id="vip8-en" class="lang-content">
+<p>Our faculty ensures quality education with personal mentoring.</p>
+<div class="vip-cta">Meet Our Teachers</div>
+</div>
+</div></div>
+
+<div id="vipAdmission" class="vip-popup">
+<div class="vip-box">
+<span class="vip-close" onclick="closeVip('vipAdmission')">&times;</span>
+<h2>🔥 Admission Open – Bal Bharti Coaching Center</h2>
+
+<div class="lang-tabs">
+<button class="active" id="vipAdmission-btn-hi" onclick="showLang('vipAdmission','hi')">Hindi</button>
+<button id="vipAdmission-btn-ma" onclick="showLang('vipAdmission','ma')">Maithili</button>
+<button id="vipAdmission-btn-hg" onclick="showLang('vipAdmission','hg')">Hinglish</button>
+<button id="vipAdmission-btn-en" onclick="showLang('vipAdmission','en')">English</button>
+</div>
+
+<div id="vipAdmission-hi" class="lang-content active">
+<p>Yeh sahi samay hai apne bachche ke bhavishya ko secure karne ka.</p>
+<p>Limited seats available – aaj hi admission lein.</p>
+<div class="vip-cta">Register Now</div>
+</div>
+
+<div id="vipAdmission-ma" class="lang-content">
+<p>Aabhi admission khulal chhai – der nai karu.</p>
+<div class="vip-cta">Aahan Aabhi Join Karu</div>
+</div>
+
+<div id="vipAdmission-hg" class="lang-content">
+<p>Don’t miss this opportunity for your child.</p>
+<div class="vip-cta">Join Today</div>
+</div>
+
+<div id="vipAdmission-en" class="lang-content">
+<p>Admissions are now open for the new academic session.</p>
+<div class="vip-cta">Enroll Now</div>
+</div>
+</div>
+</div>
+
+<div id="vip10" class="vip-popup"><div class="vip-box">
+<span class="vip-close" onclick="closeVip('vip10')">&times;</span>
+<h2>Contact Us</h2>
+<p>📍 Chakdah Chowk, Madhubani, Bihar</p>
+<p>📞 +91 9971095964</p>
+<p>📧 balbharticoaching.center@gmail.com</p>
+</div></div>
+
+<div style="display:none">
+Bal Bharti Coaching Center Madhubani,
+Best coaching in Madhubani,
+Class 1 to 10 coaching Bihar,
+Math Science English coaching,
+CBSE foundation coaching,
+Online coaching Madhubani,
+Offline coaching Chakdah Chowk,
+Best teacher in Madhubani,
+School tuition Madhubani Bihar
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     <div id="loginModal" class="modal">
-        <div class="modal-content three-d-card login-modal-card">
-            <span class="close-button" id="closeLogin">&times;</span>
-            <div class="modal-header">
-                <i class="fas fa-lock"></i>
-                <h2>Secure Login</h2>
-                <p class="modal-subtitle">Enter your credentials to access the portal</p>
-            </div>
+        <div class="modal-content three-d-card" style="max-width: 400px; padding: 25px; border-radius: 15px; position: relative;">
+            <span class="close-button" id="closeLogin" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer;">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px;">Login</h2>
             <form id="loginForm">
                 <div class="input-group">
-                    <label for="userId">
-                        <i class="fas fa-user"></i> User ID:
-                    </label>
-                    <input type="text" id="userId" name="userId" placeholder="Enter your User ID" required>
+                    <label for="userId">User ID:</label>
+                    <input type="text" id="userId" name="userId" required>
                 </div>
                 <div class="input-group">
-                    <label for="password">
-                        <i class="fas fa-key"></i> Password:
-                    </label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
                 </div>
-                <button type="submit" class="btn three-d-button submit-btn">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
+                <button type="submit"class="btn three-d-button" style="width: 100%;">Login</button>
                 <p id="loginMessage" class="error-message"></p>
+                 
             </form>
         </div>
     </div>
 
-    <!-- Teacher Ring Section -->
+    
     <section class="teacher-ring-section">
-        <h2 class="section-title">
-            <i class="fas fa-chalkboard-teacher"></i> Our Expert Teachers
-        </h2>
-        <div class="ring-container">
-            <div id="teacher-ring" class="ring-track"></div>
-        </div>
-    </section>
+    <h2 class="section-title">Our Expert Teachers</h2>
+    <div class="ring-container">
+        <div id="teacher-ring" class="ring-track"></div>
+    </div>
+</section>
 
-    <!-- Footer -->
     <footer class="main-footer">
         <div class="footer-content">
-            <div class="footer-info">
-                <p><i class="fas fa-map-marker-alt"></i> <span id="footer-contact"></span></p>
-                <p><i class="fas fa-phone"></i> <span id="footer-call"></span></p>
-                <p><i class="fas fa-envelope"></i> <span id="footer-gmail"></span></p>
-            </div>
+            <p>Contact: <span id="footer-contact"></span> | Call: <span id="footer-call"></span> | Email: <span id="footer-gmail"></span></p>
             <div class="social-links">
                 <a id="footer-facebook" href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 <a id="footer-youtube" href="#" target="_blank"><i class="fab fa-youtube"></i></a>
                 <a id="footer-instagram" href="#" target="_blank"><i class="fab fa-instagram"></i></a>
                 <a id="footer-twitter" href="#" target="_blank"><i class="fab fa-twitter"></i></a>
             </div>
-            <p id="footer-help" class="footer-help"></p>
-            <p class="copyright">© 2024 Bal Bharti Coaching Center. All rights reserved.</p>
+            <p id="footer-help"></p>
         </div>
     </footer>
 
-    <!-- Result Modal -->
-    <div id="resultModal" class="modal">
-        <div class="modal-content three-d-card result-modal-card">
-            <span class="close-button">&times;</span>
-            <div class="modal-header">
-                <i class="fas fa-search"></i>
-                <h3>Search Student Result</h3>
-                <p class="modal-subtitle">Enter ID or Name + Mobile to search</p>
+<div id="resultModal" class="modal">
+    <div class="modal-content three-d-card">
+        <span class="close-button">&times;</span>
+        <h3>Search Student Result</h3>
+        <div class="search-form-group">
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">ID se search karein ya Name + Mobile se</p>
+            
+            <label>Student ID or Name:</label>
+            <input type="text" id="searchStudentId" placeholder="Enter ID or Full Name">
+            
+            <label style="margin-top:10px; display:block;">Mobile Number (Student/Parent):</label>
+            <input type="text" id="searchMobile" placeholder="Enter Mobile Number">
+            
+            <button id="searchStudentBtn" class="btn three-d-button" style="margin-top:15px; width:100%;">Search Result</button>
+        </div>
+        
+        <p id="searchMessage" class="error-message"></p>
+
+        <div id="studentResultDisplay" class="student-result-display" style="display: none;">
+            <div class="result-header">
+                <h2 style="color: #4a90e2;">Bal Bharti Coaching Center</h2>
+                <p>Test Examination Result</p>
             </div>
-            <div class="search-form-group">
-                <div class="input-group">
-                    <label><i class="fas fa-user-graduate"></i> Student ID or Name:</label>
-                    <input type="text" id="searchStudentId" placeholder="Enter ID or Full Name">
+            
+            <div class="result-details">
+                <div class="detail-item">
+                    <p>Name: <span id="result-student-name"></span></p>
+                    <p>ID: <span id="result-student-id"></span></p>
+                    <p>Guardian: <span id="result-parent-name"></span></p>
+                    <p>Class: <span id="result-student-class"></span></p>
                 </div>
-                <div class="input-group">
-                    <label><i class="fas fa-mobile-alt"></i> Mobile Number:</label>
-                    <input type="text" id="searchMobile" placeholder="Student/Parent Mobile">
+                <div class="result-photo-container">
+                    <img id="result-student-photo" src="" alt="Student">
                 </div>
-                <button id="searchStudentBtn" class="btn three-d-button search-btn">
-                    <i class="fas fa-search"></i> Search Result
-                </button>
             </div>
-            <p id="searchMessage" class="error-message"></p>
-            <div id="studentResultDisplay" class="student-result-display">
-                <!-- Result display content -->
+
+            <table class="marks-table">
+                <thead>
+                    <tr>
+                        <th>Exam Date</th>
+                        <th>Subject</th>
+                        <th>Max Marks</th>
+                        <th>Obtained</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span id="result-exam-date"></span></td>
+                        <td><span id="result-exam-subject"></span></td>
+                        <td><span id="result-total-marks"></span></td>
+                        <td><span id="result-obtained-marks"></span></td>
+                        <td><span id="result-percentage"></span>%</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 30px; text-align: right;">
+                <p>Director: <b>Jagannath Sir</b></p>
+            </div>
+
+            <div class="download-buttons">
+                <button id="downloadPdfBtn" class="btn">Download PDF</button>
+                <button id="downloadJpgBtn" class="btn" style="background: #28a745;">Download JPG</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Registration Modal -->
     <div id="regModal" class="modal">
-        <div class="modal-content three-d-card reg-modal-card">
-            <span class="close-button" id="closeReg">&times;</span>
-            <div class="modal-header">
-                <i class="fas fa-user-plus"></i>
-                <h3>Student Registration</h3>
-                <p class="modal-subtitle">Fill details to register new student</p>
-            </div>
+        <div class="modal-content three-d-card" style="max-width: 500px; padding: 25px; border-radius: 15px; position: relative;">
+            <span class="close-button" id="closeReg" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer;">&times;</span>
+            <h3 style="text-align: center; color: #28a745; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <i class="fas fa-user-plus"></i> Student Registration
+            </h3>
             <form id="studentRegForm">
-                <div class="form-container-box">
-                    <!-- Form fields (unchanged) -->
+                <div class="form-container-box" style="background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #eee;">
+                    <label>Student Details</label>
+                    <input type="text" id="regName" placeholder="Enter Student Name" required>
+                    <input type="text" id="regParent" placeholder="Enter Parent Name" required>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="regMobile" placeholder="Student Mobile" required>
+                        <input type="text" id="regParentMobile" placeholder="Parent Mobile" required>
+                    </div>
+                   <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Select Class:</label>
+<select id="regClassSelect" required style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; background: #fff; color: #333;">
+    <option value="" disabled selected>-- Choose Class --</option>
+                    <optgroup label="class">
+                        <option value="1st">1st</option>
+                        <option value="2nd">2nd</option>
+                        <option value="3rd">3rd</option>
+                        <option value="4th">4th</option>
+                        <option value="5th">5th</option>
+                        <option value="6th">6th</option>
+                        <option value="7th">7th</option>
+                        <option value="8th">8th</option>
+                        <option value="9th">9th</option>
+                        <option value="10th">10th</option>
+                    </optgroup>
+                    <optgroup label="Intermediate">
+                        <option value="I.A.">I.A.</option>
+                        <option value="I.Sc">I.Sc.</option>
+                        <option value="I.Com">I.Com</option>
+                    </optgroup>
+                    <optgroup label="Graduation">
+                        <option value="B.A.">B.A.</option>
+                        <option value="B.Sc">B.Sc.</option>
+                        <option value="B.Com">B.Com</option>
+                    </optgroup>
+                </select>
+                    <label style="display:block; margin-top:10px; font-size:14px; font-weight:bold;">Joining Date:</label>
+                    <input type="date" id="regDate" required>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="regId" placeholder="ID/Roll (Optional)">
+                        <input type="password" id="regPass" placeholder="Set Password" required>
+                    </div>
+                    <div class="form-group" style="margin-top:10px;">
+    <label>Student Photo (Max 10KB Auto):</label>
+    <input type="file" id="regPhoto" accept="image/*">
+    <div id="photoPreviewContainer" style="display:none; margin-top:10px; text-align:center;">
+        <img id="photoPreview" src="" style="width:80px; height:80px; border-radius:5px; border:1px solid #ddd; object-fit:cover;">
+        <p id="photoSizeLabel" style="font-size:10px; color:gray;"></p>
+    </div>
+</div>
+                    <button type="submit" class="btn three-d-button" style="margin-top:15px; width:100%; background: #28a745; color: white;">Register Now</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Bharti Float Button -->
-    <div class="bharti-float-container">
-        <span class="tooltip-text">Talk to Bharti</span>
-        <a href="bharti.html" class="bharti-float-btn">
-            <i class="fas fa-comment-dots"></i>
-        </a>
-    </div>
-
-    <!-- Hidden elements -->
+<div class="bharti-float-container">
+    <span class="tooltip-text">Talk to Bharti</span>
+    <a href="bharti.html" class="bharti-float-btn">
+        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png" alt="Bharti">
+    </a>
+</div>
     <div id="detailedResultContent" style="display:none;"></div>
     <div id="alertBox" class="alert"></div>
-    <div style="display:none">
-        Bal Bharti Coaching Center Madhubani, Best coaching in Madhubani, Class 1 to 10 coaching Bihar...
-    </div>
-
-    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="/js/login.js"></script>
