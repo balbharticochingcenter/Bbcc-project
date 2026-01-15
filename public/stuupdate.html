@@ -198,20 +198,58 @@
             background: #059669;
         }
 
+        /* Auto-expanding text box container */
+        .textbox-container {
+            position: relative;
+            width: 100%;
+        }
+
         input[type="text"],
-        input[type="password"],
-        input[type="tel"] {
+        input[type="tel"],
+        input[type="date"],
+        select {
             width: 100%;
             padding: 12px;
             border: 2px solid #dee2e6;
             border-radius: 8px;
             font-size: 1rem;
-            transition: border 0.3s ease;
+            transition: all 0.3s ease;
+            min-width: 120px;
         }
 
-        input:focus {
+        input:focus,
+        select:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Password input with eye icon */
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-container input {
+            padding-right: 40px;
+            width: 100%;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.2rem;
+        }
+
+        .toggle-password:hover {
+            color: #667eea;
         }
 
         .save-btn {
@@ -224,6 +262,7 @@
             font-weight: 600;
             font-size: 1rem;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .save-btn:hover {
@@ -250,7 +289,7 @@
             padding: 30px;
             border-radius: 20px;
             width: 90%;
-            max-width: 600px;
+            max-width: 700px;
         }
 
         .camera-header {
@@ -275,6 +314,29 @@
             font-weight: 600;
         }
 
+        .camera-selector {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .camera-selector button {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .camera-selector button.active {
+            background: #667eea;
+            color: white;
+        }
+
         .video-container {
             width: 100%;
             height: 400px;
@@ -282,6 +344,7 @@
             border-radius: 10px;
             overflow: hidden;
             margin-bottom: 20px;
+            position: relative;
         }
 
         #cameraVideo {
@@ -294,6 +357,7 @@
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .camera-controls button {
@@ -303,6 +367,7 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 1rem;
+            min-width: 120px;
         }
 
         #captureBtn {
@@ -330,8 +395,10 @@
 
         #photoPreview {
             max-width: 300px;
+            max-height: 300px;
             border-radius: 10px;
             border: 3px solid #667eea;
+            object-fit: contain;
         }
 
         .loading {
@@ -396,6 +463,17 @@
             border-top: 1px solid #dee2e6;
         }
 
+        /* Auto-expand for text inputs */
+        input.expandable {
+            min-width: 150px;
+            transition: width 0.3s ease;
+        }
+
+        input.expandable:focus {
+            width: 200px;
+        }
+
+        /* Mobile adjustments */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -426,6 +504,16 @@
             
             .video-container {
                 height: 300px;
+            }
+            
+            .camera-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .camera-controls button {
+                width: 100%;
+                max-width: 250px;
             }
         }
     </style>
@@ -480,6 +568,12 @@
                 <button class="close-camera" onclick="closeCamera()">✕ Close</button>
             </div>
             
+            <!-- Camera Selector -->
+            <div class="camera-selector">
+                <button id="frontCameraBtn" class="active" onclick="switchCamera('user')">📱 Front Camera</button>
+                <button id="backCameraBtn" onclick="switchCamera('environment')">📷 Back Camera</button>
+            </div>
+            
             <div class="video-container">
                 <video id="cameraVideo" autoplay playsinline></video>
             </div>
@@ -493,9 +587,9 @@
             </div>
             
             <div class="camera-controls">
-                <button id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
-                <button id="retakeBtn" onclick="retakePhoto()">Retake</button>
-                <button id="uploadBtn" onclick="uploadPhoto()">Update Photo</button>
+                <button id="captureBtn" onclick="capturePhoto()">📸 Capture Photo</button>
+                <button id="retakeBtn" onclick="retakePhoto()">🔄 Retake</button>
+                <button id="uploadBtn" onclick="uploadPhoto()">✅ Update Photo</button>
             </div>
         </div>
     </div>
@@ -505,6 +599,7 @@
         let currentStudentId = '';
         let stream = null;
         let capturedPhoto = null;
+        let currentCamera = 'user'; // 'user' for front, 'environment' for back
 
         // Available classes
         const classes = [
@@ -626,10 +721,31 @@
                             </button>
                         </td>
                         <td>${student.student_id}</td>
-                        <td><input type="text" value="${student.student_name || ''}" 
-                                   id="name_${student.student_id}"></td>
-                        <td><input type="password" value="${student.pass || ''}" 
-                                   id="pass_${student.student_id}"></td>
+                        <td>
+                            <div class="textbox-container">
+                                <input type="text" 
+                                       value="${student.student_name || ''}" 
+                                       id="name_${student.student_id}"
+                                       class="expandable"
+                                       onfocus="expandInput(this)"
+                                       onblur="shrinkInput(this)">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="password-container">
+                                <input type="password" 
+                                       value="${student.pass || ''}" 
+                                       id="pass_${student.student_id}"
+                                       class="expandable"
+                                       onfocus="expandInput(this)"
+                                       onblur="shrinkInput(this)">
+                                <button type="button" 
+                                        class="toggle-password" 
+                                        onclick="togglePassword('${student.student_id}')">
+                                    👁
+                                </button>
+                            </div>
+                        </td>
                         <td>
                             <select id="class_${student.student_id}">
                                 ${classes.map(c => `
@@ -637,14 +753,47 @@
                                 `).join('')}
                             </select>
                         </td>
-                        <td><input type="text" value="${student.joining_date || ''}" 
-                                   id="doj_${student.student_id}" placeholder="DD-MM-YYYY"></td>
-                        <td><input type="text" value="${student.fees || ''}" 
-                                   id="fees_${student.student_id}"></td>
-                        <td><input type="tel" value="${student.parent_mobile || ''}" 
-                                   id="parent_mobile_${student.student_id}"></td>
-                        <td><input type="tel" value="${student.mobile || ''}" 
-                                   id="mobile_${student.student_id}"></td>
+                        <td>
+                            <div class="textbox-container">
+                                <input type="text" 
+                                       value="${student.joining_date || ''}" 
+                                       id="doj_${student.student_id}" 
+                                       placeholder="DD-MM-YYYY"
+                                       class="expandable"
+                                       onfocus="expandInput(this)"
+                                       onblur="shrinkInput(this)">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="textbox-container">
+                                <input type="text" 
+                                       value="${student.fees || ''}" 
+                                       id="fees_${student.student_id}"
+                                       class="expandable"
+                                       onfocus="expandInput(this)"
+                                       onblur="shrinkInput(this)">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="textbox-container">
+                                <input type="tel" 
+                                       value="${student.parent_mobile || ''}" 
+                                       id="parent_mobile_${student.student_id}"
+                                       class="expandable"
+                                       onfocus="expandInput(this)"
+                                       onblur="shrinkInput(this)">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="textbox-container">
+                                <input type="tel" 
+                                       value="${student.mobile || ''}" 
+                                       id="mobile_${student.student_id}"
+                                       class="expandable"
+                                       onfocus="expandInput(this)"
+                                       onblur="shrinkInput(this)">
+                            </div>
+                        </td>
                         <td>
                             <button class="save-btn" onclick="saveStudent('${student.student_id}')">
                                 Save Changes
@@ -656,6 +805,34 @@
             
             tableHTML += '</tbody></table>';
             container.innerHTML = tableHTML;
+        }
+
+        // Expand input on focus
+        function expandInput(input) {
+            input.style.width = '200px';
+            input.style.minWidth = '200px';
+        }
+
+        // Shrink input on blur if empty
+        function shrinkInput(input) {
+            if (!input.value.trim()) {
+                input.style.width = '150px';
+                input.style.minWidth = '150px';
+            }
+        }
+
+        // Toggle password visibility
+        function togglePassword(studentId) {
+            const input = document.getElementById(`pass_${studentId}`);
+            const button = input.parentNode.querySelector('.toggle-password');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '👁‍🗨';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁';
+            }
         }
 
         // Search students
@@ -675,11 +852,7 @@
             modal.style.display = 'flex';
             
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'user' } 
-                });
-                const video = document.getElementById('cameraVideo');
-                video.srcObject = stream;
+                await startCamera(currentCamera);
                 
                 // Reset UI
                 document.getElementById('previewContainer').style.display = 'none';
@@ -688,8 +861,45 @@
                 document.getElementById('uploadBtn').style.display = 'none';
                 document.getElementById('loadingIndicator').style.display = 'none';
             } catch (error) {
-                showMessage('Camera access denied', 'error');
+                showMessage('Camera access denied or not available', 'error');
                 console.error('Camera error:', error);
+            }
+        }
+
+        // Start camera with specific facing mode
+        async function startCamera(facingMode) {
+            // Stop existing stream if any
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Start new stream
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: facingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            });
+            
+            const video = document.getElementById('cameraVideo');
+            video.srcObject = stream;
+            currentCamera = facingMode;
+            
+            // Update button states
+            if (facingMode === 'user') {
+                document.getElementById('frontCameraBtn').classList.add('active');
+                document.getElementById('backCameraBtn').classList.remove('active');
+            } else {
+                document.getElementById('backCameraBtn').classList.add('active');
+                document.getElementById('frontCameraBtn').classList.remove('active');
+            }
+        }
+
+        // Switch between front and back camera
+        function switchCamera(facingMode) {
+            if (facingMode !== currentCamera) {
+                startCamera(facingMode);
             }
         }
 
@@ -708,12 +918,18 @@
         function capturePhoto() {
             const video = document.getElementById('cameraVideo');
             const canvas = document.createElement('canvas');
+            
+            // Set canvas dimensions to match video
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+            
             const ctx = canvas.getContext('2d');
+            
+            // Draw video frame to canvas
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            capturedPhoto = canvas.toDataURL('image/jpeg', 0.6); // 60% quality
+            // Get data URL with good quality
+            capturedPhoto = canvas.toDataURL('image/jpeg', 0.7);
             
             // Show preview
             document.getElementById('photoPreview').src = capturedPhoto;
@@ -782,17 +998,16 @@
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
-                    let quality = 0.9;
                     
                     // Calculate target size
                     const targetSize = maxKB * 1024;
                     
-                    // Reduce dimensions if needed
+                    // Reduce dimensions for compression
                     const maxDimension = 800;
                     if (width > maxDimension || height > maxDimension) {
                         const ratio = Math.min(maxDimension / width, maxDimension / height);
-                        width *= ratio;
-                        height *= ratio;
+                        width = Math.floor(width * ratio);
+                        height = Math.floor(height * ratio);
                     }
                     
                     canvas.width = width;
@@ -800,28 +1015,29 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Reduce quality until under target size
+                    // Try to find optimal quality
+                    let quality = 0.7;
                     let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    let size = (compressedDataUrl.length * 3) / 4;
                     
-                    // Binary search for optimal quality
-                    let low = 0.1;
-                    let high = 0.9;
-                    let best = compressedDataUrl;
-                    
-                    for (let i = 0; i < 10; i++) {
-                        quality = (low + high) / 2;
+                    // Reduce quality if needed
+                    while (size > targetSize && quality > 0.1) {
+                        quality -= 0.1;
                         compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                        const size = (compressedDataUrl.length * 3) / 4; // Approximate size
-                        
-                        if (size <= targetSize) {
-                            best = compressedDataUrl;
-                            low = quality;
-                        } else {
-                            high = quality;
-                        }
+                        size = (compressedDataUrl.length * 3) / 4;
                     }
                     
-                    resolve(best);
+                    // If still too big, reduce dimensions more
+                    if (size > targetSize) {
+                        width = Math.floor(width * 0.8);
+                        height = Math.floor(height * 0.8);
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                    }
+                    
+                    resolve(compressedDataUrl);
                 };
                 img.src = dataUrl;
             });
@@ -840,6 +1056,12 @@
                     parent_mobile: document.getElementById(`parent_mobile_${studentId}`).value,
                     mobile: document.getElementById(`mobile_${studentId}`).value
                 };
+                
+                // Validate date format
+                if (studentData.joining_date && !validateDate(studentData.joining_date)) {
+                    showMessage('Please enter date in DD-MM-YYYY format', 'error');
+                    return;
+                }
                 
                 const response = await fetch('/api/update-student-data', {
                     method: 'POST',
