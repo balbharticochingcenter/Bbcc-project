@@ -1,5 +1,6 @@
 // ================= GLOBAL DOM =================
 let bannerBase64 = "";
+let allSMSStudents = [];
 const dash_class = document.getElementById("dash_class");
 const dash_year = document.getElementById("dash_year");
 const dashTotal = document.getElementById("dashTotal");
@@ -1241,60 +1242,105 @@ function handleBannerUpload(input) {
 
 ////////////////////////////////////////////////////////////HGHGHHHHHHHHHKFTKTKYKKHJLKJ//////////////////////////////
 
-function openSMSReminderModal(){
-  document.getElementById("smsReminderModal").style.display = "block";
-  loadSMSReminderData(); // data load hoga
+// ================= SMS REMINDER =================
+function openSMSReminderModal() {
+    document.getElementById("smsReminderModal").style.display = "block";
+    loadSMSReminderData();
 }
 
-function closeSMSReminder(){
-  document.getElementById("smsReminderModal").style.display = "none";
+function closeSMSReminder() {
+    document.getElementById("smsReminderModal").style.display = "none";
 }
-async function loadSMSReminderData(){
-  const students = await (await fetch(API + "/api/get-students")).json();
-  const body = document.getElementById("smsReminderBody");
-  body.innerHTML = "";
-  const today = new Date();
 
-  students.forEach(s=>{
-    let dueList=[];
-    let total=0;
+async function loadSMSReminderData() {
+    const students = await (await fetch(API + "/api/get-students")).json();
+    
+    // ✅ Store all students globally
+    allSMSStudents = students;
+    
+    // ✅ Class filter dropdown load
+    const filterSelect = document.getElementById("sms_class_filter");
+    filterSelect.innerHTML = '<option value="all">📚 All Classes</option>';
+    
+    // Unique classes nikalein
+    const uniqueClasses = [...new Set(students.map(s => s.student_class).filter(c => c))];
+    uniqueClasses.sort().forEach(cls => {
+        filterSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+    });
+    
+    // ✅ Apply filter
+    filterSMSByClass();
+}
 
-    let d=new Date(s.joining_date);
-    let y=d.getFullYear(), m=d.getMonth();
+// ✅ Filter function
+function filterSMSByClass() {
+    const selectedClass = document.getElementById("sms_class_filter").value;
+    const body = document.getElementById("smsReminderBody");
+    
+    let filteredStudents = allSMSStudents;
+    if (selectedClass !== "all") {
+        filteredStudents = allSMSStudents.filter(s => s.student_class === selectedClass);
+    }
+    
+    renderSMSBody(filteredStudents, body);
+}
 
-    while(new Date(y,m)<=today){
-      const key=`${y}-${String(m+1).padStart(2,'0')}`;
-      const fee=Number(s.fees_data?.[key]?.fees ?? s.fees);
-      const paid=Number(s.fees_data?.[key]?.paid ?? 0);
+// ✅ Render function (Hindi SMS)
+function renderSMSBody(students, bodyElement) {
+    bodyElement.innerHTML = "";
+    const today = new Date();
 
-      if(paid<fee){
-        let due=fee-paid;
-        total+=due;
-        let label=new Date(y,m).toLocaleString('en-IN',{month:'short',year:'2-digit'}).toUpperCase();
-        dueList.push(`${label} : ₹${due}`);
-      }
-      m++; if(m>11){m=0;y++;}
+    if (students.length === 0) {
+        bodyElement.innerHTML = `
+        <tr>
+            <td colspan="10" style="text-align:center; padding:20px; color:#666;">
+                📭 Selected class mein koi pending fees nahi hai
+            </td>
+        </tr>`;
+        return;
     }
 
-    if(dueList.length===0) return;
+    students.forEach(s => {
+        let dueList = [];
+        let total = 0;
 
-    const msg=`Dear Parent,
+        let d = new Date(s.joining_date);
+        let y = d.getFullYear(), m = d.getMonth();
 
-This is to inform you that the following fee amount is pending for your :
-Student ID : ${s.student_id} | Password : ${s.pass || 'N/A'}
+        while (new Date(y, m) <= today) {
+            const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+            const fee = Number(s.fees_data?.[key]?.fees ?? s.fees);
+            const paid = Number(s.fees_data?.[key]?.paid ?? 0);
+
+            if (paid < fee) {
+                let due = fee - paid;
+                total += due;
+                let label = new Date(y, m).toLocaleString('en-IN', { month: 'short', year: '2-digit' }).toUpperCase();
+                dueList.push(`${label} : ₹${due}`);
+            }
+            m++; if (m > 11) { m = 0; y++; }
+        }
+
+        if (dueList.length === 0) return;
+
+        // ✅ HINDI MESSAGE TEXT
+        const msg = `प्रिय अभिभावक/छात्र,
+
+आपके निम्नलिखित फीस राशि लंबित है:
+छात्र आईडी : ${s.student_id} | पासवर्ड : ${s.pass || 'N/A'}
 ${dueList.join('\n')}
 
-Total Due Amount : ₹${total}
+कुल लंबित राशि : ₹${total}
 
-Kindly clear the pending fees at the earliest.
+कृपया लंबित फीस शीघ्र अदा करें।
 
-Contact : 9971095964
-Website : https://balbharticoachingcenter.onrender.com
+संपर्क: 9971095964
+वेबसाइट: https://balbharticoachingcenter.onrender.com
 
-Regards,
-Bal Bharti Coaching Center`;
+धन्यवाद,
+बाल भारती कोचिंग सेंटर`;
 
-    body.innerHTML+=`
+        bodyElement.innerHTML += `
 <tr>
 <td><img src="${s.photo||'user.png'}" width="40"></td>
 <td>${s.student_id}</td>
@@ -1324,33 +1370,35 @@ style="width:260px;height:160px">${msg}</textarea>
 </span>
 </td>
 </tr>`;
-  });
-}
-function getMsg(el){
-  return el.closest("tr").querySelector(".msgBox").value;
+    });
 }
 
-function sendSMS(num,el){
-  window.open(`sms:${num}?body=${encodeURIComponent(getMsg(el))}`);
+function getMsg(el) {
+    return el.closest("tr").querySelector(".msgBox").value;
 }
 
-function sendWA(num,el){
-  window.open(`https://wa.me/91${num}?text=${encodeURIComponent(getMsg(el))}`);
-}
-function sendToAllParents(){
-  document.querySelectorAll(".msgBox").forEach(t=>{
-    window.open(`sms:${t.dataset.parent}?body=${encodeURIComponent(t.value)}`);
-  });
+function sendSMS(num, el) {
+    window.open(`sms:${num}?body=${encodeURIComponent(getMsg(el))}`);
 }
 
-function sendToAllStudents(){
-  document.querySelectorAll(".msgBox").forEach(t=>{
-    window.open(`sms:${t.dataset.student}?body=${encodeURIComponent(t.value)}`);
-  });
+function sendWA(num, el) {
+    window.open(`https://wa.me/91${num}?text=${encodeURIComponent(getMsg(el))}`);
 }
 
-function printReminder(){
-  let w=window.open("");
-  w.document.write(document.getElementById("reminderTable").outerHTML);
-  w.print();
+function sendToAllParents() {
+    document.querySelectorAll(".msgBox").forEach(t => {
+        window.open(`sms:${t.dataset.parent}?body=${encodeURIComponent(t.value)}`);
+    });
+}
+
+function sendToAllStudents() {
+    document.querySelectorAll(".msgBox").forEach(t => {
+        window.open(`sms:${t.dataset.student}?body=${encodeURIComponent(t.value)}`);
+    });
+}
+
+function printReminder() {
+    let w = window.open("");
+    w.document.write(document.getElementById("reminderTable").outerHTML);
+    w.print();
 }
