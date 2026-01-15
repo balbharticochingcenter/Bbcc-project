@@ -1,4 +1,4 @@
-/* ================= CSS RESET & BASE STYLES ================= */
+////================= CSS RESET & BASE STYLES ================= */
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +6,7 @@
 }
 
 :root {
-    /* Color Palette */
+    ////Color Palette */
     --primary: #6c5ce7;
     --primary-dark: #5b4fcf;
     --secondary: #00cec9;
@@ -19,19 +19,19 @@
     --gray: #636e72;
     --gray-light: #dfe6e9;
     
-    /* Gradients */
+    ////Gradients */
     --gradient-primary: linear-gradient(135deg, var(--primary), #a29bfe);
     --gradient-success: linear-gradient(135deg, var(--success), #00cec9);
     --gradient-danger: linear-gradient(135deg, var(--danger), #fd79a8);
     --gradient-dark: linear-gradient(135deg, var(--dark), #2d3436);
     
-    /* Shadows */
+    ////Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
     --shadow-glow: 0 0 20px rgba(108, 92, 231, 0.3);
     
-    /* Transitions */
+    ////Transitions */
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
@@ -46,7 +46,7 @@ body {
     position: relative;
 }
 
-/* ================= ANIMATED BACKGROUND ================= */
+////================= ANIMATED BACKGROUND ================= */
 .animated-bg {
     position: fixed;
     top: 0;
@@ -94,7 +94,7 @@ body {
     }
 }
 
-/* ================= MAIN CONTAINER ================= */
+////================= MAIN CONTAINER ================= */
 .main-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -103,7 +103,7 @@ body {
     z-index: 1;
 }
 
-/* ================= HEADER STYLES ================= */
+////================= HEADER STYLES ================= */
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -268,7 +268,7 @@ body {
     box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
 }
 
-/* ================= STATS CARDS ================= */
+////================= STATS CARDS ================= */
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -339,7 +339,7 @@ body {
     color: var(--danger);
 }
 
-/* ================= PENDING REGISTRATIONS ================= */
+////================= PENDING REGISTRATIONS ================= */
 .pending-section {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -401,7 +401,7 @@ body {
     opacity: 0.5;
 }
 
-/* ================= DASHBOARD CONTROLS ================= */
+////================= DASHBOARD CONTROLS ================= */
 .dashboard-controls {
     display: flex;
     flex-direction: column;
@@ -482,7 +482,7 @@ body {
     opacity: 0.7;
 }
 
-/* Button Colors */
+////Button Colors */
 .control-btn.primary {
     background: linear-gradient(135deg, rgba(52, 152, 219, 0.2), transparent);
     border-color: rgba(52, 152, 219, 0.3);
@@ -513,7 +513,7 @@ body {
     border-color: rgba(45, 52, 54, 0.3);
 }
 
-/* ================= CLASS CARDS ================= */
+////================= CLASS CARDS ================= */
 .classes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -578,7 +578,7 @@ body {
     transform: scale(1.05);
 }
 
-/* ================= QUICK ACTIONS ================= */
+////================= QUICK ACTIONS ================= */
 .quick-actions {
     display: flex;
     justify-content: center;
@@ -609,7 +609,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* ================= MODAL STYLES ================= */
+////================= MODAL STYLES ================= */
 .modal {
     display: none;
     position: fixed;
@@ -735,7 +735,7 @@ body {
     box-shadow: var(--shadow-md);
 }
 
-/* ================= FORM STYLES ================= */
+////================= FORM STYLES ================= */
 .form-group {
     margin-bottom: 20px;
 }
@@ -783,7 +783,7 @@ body {
     gap: 20px;
 }
 
-/* ================= UPLOAD AREAS ================= */
+////================= UPLOAD AREAS ================= */
 .upload-area {
     border: 2px dashed rgba(255, 255, 255, 0.3);
     border-radius: 12px;
@@ -818,7 +818,7 @@ body {
     display: none;
 }
 
-/* ================= TABLE STYLES ================= */
+////================= TABLE STYLES ================= */
 .table-container {
     overflow-x: auto;
     border-radius: 12px;
@@ -859,7 +859,7 @@ body {
     background: rgba(255, 255, 255, 0.03);
 }
 
-/* ================= BUTTON VARIATIONS ================= */
+////================= BUTTON VARIATIONS ================= */
 .btn-load, .btn-export, .btn-delete, .btn-apply, .btn-publish, .btn-clear, .btn-sms, .btn-print {
     padding: 10px 20px;
     border-radius: 8px;
@@ -905,7 +905,7 @@ body {
     background: linear-gradient(135deg, #636e72, #2d3436);
 }
 
-/* ================= FILTER CONTROLS ================= */
+////================= FILTER CONTROLS ================= */
 .modal-toolbar, .sms-controls, .bulk-controls {
     padding: 20px 30px;
     background: rgba(0, 0, 0, 0.2);
@@ -933,7 +933,7 @@ body {
     min-width: 150px;
 }
 
-/* ================= STUDENT HEADER ================= */
+////================= STUDENT HEADER ================= */
 .student-header {
     padding: 20px 30px;
     background: rgba(0, 0, 0, 0.1);
@@ -943,7 +943,7 @@ body {
     gap: 20px;
 }
 
-/* ================= SUMMARY FOOTER ================= */
+////================= SUMMARY FOOTER ================= */
 .summary-footer {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -987,7 +987,7 @@ body {
     font-weight: 700;
 }
 
-/* ================= PROFILE PHOTO SECTIONS ================= */
+////================= PROFILE PHOTO SECTIONS ================= */
 .profile-photo-section, .admin-photo-section {
     text-align: center;
     margin-bottom: 30px;
@@ -1035,7 +1035,7 @@ body {
     margin-top: 5px;
 }
 
-/* ================= PASSWORD INPUT ================= */
+////================= PASSWORD INPUT ================= */
 .password-input {
     position: relative;
 }
@@ -1055,7 +1055,7 @@ body {
     cursor: pointer;
 }
 
-/* ================= FOOTER ================= */
+////================= FOOTER ================= */
 .dashboard-footer {
     margin-top: 50px;
     padding: 30px;
@@ -1109,7 +1109,7 @@ body {
     color: var(--gray);
 }
 
-/* ================= RESPONSIVE DESIGN ================= */
+////================= RESPONSIVE DESIGN ================= */
 @media (max-width: 1200px) {
     .main-container {
         padding: 15px;
@@ -1172,7 +1172,7 @@ body {
     }
 }
 
-/* ================= SUBJECTS CONTAINER ================= */
+////================= SUBJECTS CONTAINER ================= */
 .subjects-container {
     max-height: 400px;
     overflow-y: auto;
@@ -1181,7 +1181,7 @@ body {
     border-radius: 8px;
 }
 
-/* ================= SCROLLBAR STYLING ================= */
+////================= SCROLLBAR STYLING ================= */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -1201,7 +1201,7 @@ body {
     background: var(--primary-dark);
 }
 
-/* ================= LOADING ANIMATIONS ================= */
+////================= LOADING ANIMATIONS ================= */
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
@@ -1211,7 +1211,7 @@ body {
     animation: pulse 1.5s infinite;
 }
 
-/* ================= STATUS BADGES ================= */
+////================= STATUS BADGES ================= */
 .status-badge {
     display: inline-block;
     padding: 4px 12px;
