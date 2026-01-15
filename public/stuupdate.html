@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Data Update - Bal Bharti Coaching Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .class-selector {
+            padding: 25px 40px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .class-selector h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .class-btn {
+            padding: 15px 10px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .class-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .class-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #764ba2;
+        }
+
+        .students-container {
+            padding: 30px 40px;
+        }
+
+        .students-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .students-header h2 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            width: 300px;
+            font-size: 1rem;
+        }
+
+        .search-box button {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .search-box button:hover {
+            background: #764ba2;
+        }
+
+        .students-table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #dee2e6;
+            transition: background 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        td {
+            padding: 18px 20px;
+            color: #333;
+        }
+
+        .photo-cell {
+            text-align: center;
+        }
+
+        .student-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+        }
+
+        .update-photo-btn {
+            padding: 8px 15px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .update-photo-btn:hover {
+            background: #059669;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .save-btn {
+            padding: 12px 25px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .camera-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .camera-header h3 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .close-camera {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 400px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #cameraVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .camera-controls button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        #captureBtn {
+            background: #3b82f6;
+            color: white;
+        }
+
+        #retakeBtn {
+            background: #f59e0b;
+            color: white;
+            display: none;
+        }
+
+        #uploadBtn {
+            background: #10b981;
+            color: white;
+            display: none;
+        }
+
+        .preview-container {
+            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #photoPreview {
+            max-width: 300px;
+            border-radius: 10px;
+            border: 3px solid #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .success {
+            background: #10b981;
+        }
+
+        .error {
+            background: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+
+        .footer {
+            padding: 25px 40px;
+            background: #f8f9fa;
+            text-align: center;
+            color: #6b7280;
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header, .class-selector, .students-container {
+                padding: 20px;
+            }
+            
+            .search-box {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .search-box input {
+                width: 100%;
+            }
+            
+            .class-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+            
+            .camera-content {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .video-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Student Data Update</h1>
+            <p>Select a class to view and update student information</p>
+        </div>
+
+        <!-- Class Selector -->
+        <div class="class-selector">
+            <h2>Select Class:</h2>
+            <div class="class-grid" id="classGrid">
+                <!-- Classes will be loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Students Container -->
+        <div class="students-container">
+            <div class="students-header">
+                <h2 id="selectedClassTitle">No Class Selected</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name or ID...">
+                    <button onclick="searchStudents()">Search</button>
+                </div>
+            </div>
+
+            <div id="studentsTableContainer" class="students-table-container">
+                <!-- Table will be loaded dynamically -->
+                <div class="empty-state">
+                    <h3>👆 Select a Class</h3>
+                    <p>Please select a class from above to view student data</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Bal Bharti Coaching Center - Student Management System</p>
+            <p>All student data is securely stored and managed</p>
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div class="camera-modal" id="cameraModal">
+        <div class="camera-content">
+            <div class="camera-header">
+                <h3>📸 Update Student Photo</h3>
+                <button class="close-camera" onclick="closeCamera()">✕ Close</button>
+            </div>
+            
+            <div class="video-container">
+                <video id="cameraVideo" autoplay playsinline></video>
+            </div>
+            
+            <div class="preview-container" id="previewContainer">
+                <img id="photoPreview" alt="Captured Photo">
+            </div>
+            
+            <div class="loading" id="loadingIndicator">
+                Processing image... Please wait
+            </div>
+            
+            <div class="camera-controls">
+                <button id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
+                <button id="retakeBtn" onclick="retakePhoto()">Retake</button>
+                <button id="uploadBtn" onclick="uploadPhoto()">Update Photo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentClass = '';
+        let currentStudentId = '';
+        let stream = null;
+        let capturedPhoto = null;
+
+        // Available classes
+        const classes = [
+            "1st", "2nd", "3rd", "4th", "5th",
+            "6th", "7th", "8th", "9th", "10th",
+            "I.A.", "I.Sc", "I.Com",
+            "B.A.", "B.Sc", "B.Com"
+        ];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClasses();
+            setupEventListeners();
+        });
+
+        // Load classes into grid
+        function loadClasses() {
+            const classGrid = document.getElementById('classGrid');
+            classes.forEach(className => {
+                const btn = document.createElement('button');
+                btn.className = 'class-btn';
+                btn.textContent = className;
+                btn.onclick = () => selectClass(className);
+                classGrid.appendChild(btn);
+            });
+        }
+
+        // Select class and load students
+        async function selectClass(className) {
+            currentClass = className;
+            
+            // Update active class button
+            document.querySelectorAll('.class-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === className) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update title
+            document.getElementById('selectedClassTitle').textContent = `Students - Class ${className}`;
+            
+            // Load students
+            await loadStudents(className);
+        }
+
+        // Load students for selected class
+        async function loadStudents(className, searchTerm = '') {
+            try {
+                const response = await fetch(`/api/get-students`);
+                const students = await response.json();
+                
+                // Filter by class and search term
+                let filteredStudents = students.filter(student => 
+                    student.student_class === className
+                );
+                
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    filteredStudents = filteredStudents.filter(student =>
+                        student.student_name.toLowerCase().includes(term) ||
+                        student.student_id.toLowerCase().includes(term) ||
+                        student.parent_mobile.includes(term) ||
+                        student.mobile.includes(term)
+                    );
+                }
+                
+                displayStudents(filteredStudents);
+            } catch (error) {
+                showMessage('Error loading students', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        // Display students in table
+        function displayStudents(students) {
+            const container = document.getElementById('studentsTableContainer');
+            
+            if (students.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 No Students Found</h3>
+                        <p>No students registered in this class</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Password</th>
+                            <th>Class</th>
+                            <th>Joining Date</th>
+                            <th>Fees</th>
+                            <th>Parent Mobile</th>
+                            <th>Student Mobile</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            students.forEach(student => {
+                tableHTML += `
+                    <tr>
+                        <td class="photo-cell">
+                            <img src="${student.photo || 'https://via.placeholder.com/60?text=No+Photo'}" 
+                                 alt="${student.student_name}" 
+                                 class="student-photo" 
+                                 id="photo_${student.student_id}">
+                            <br>
+                            <button class="update-photo-btn" onclick="openCamera('${student.student_id}')">
+                                Update Photo
+                            </button>
+                        </td>
+                        <td>${student.student_id}</td>
+                        <td><input type="text" value="${student.student_name || ''}" 
+                                   id="name_${student.student_id}"></td>
+                        <td><input type="password" value="${student.pass || ''}" 
+                                   id="pass_${student.student_id}"></td>
+                        <td>
+                            <select id="class_${student.student_id}">
+                                ${classes.map(c => `
+                                    <option value="${c}" ${c === student.student_class ? 'selected' : ''}>${c}</option>
+                                `).join('')}
+                            </select>
+                        </td>
+                        <td><input type="text" value="${student.joining_date || ''}" 
+                                   id="doj_${student.student_id}" placeholder="DD-MM-YYYY"></td>
+                        <td><input type="text" value="${student.fees || ''}" 
+                                   id="fees_${student.student_id}"></td>
+                        <td><input type="tel" value="${student.parent_mobile || ''}" 
+                                   id="parent_mobile_${student.student_id}"></td>
+                        <td><input type="tel" value="${student.mobile || ''}" 
+                                   id="mobile_${student.student_id}"></td>
+                        <td>
+                            <button class="save-btn" onclick="saveStudent('${student.student_id}')">
+                                Save Changes
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+
+        // Search students
+        function searchStudents() {
+            const searchTerm = document.getElementById('searchInput').value;
+            if (currentClass) {
+                loadStudents(currentClass, searchTerm);
+            } else {
+                showMessage('Please select a class first', 'error');
+            }
+        }
+
+        // Open camera for photo update
+        async function openCamera(studentId) {
+            currentStudentId = studentId;
+            const modal = document.getElementById('cameraModal');
+            modal.style.display = 'flex';
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' } 
+                });
+                const video = document.getElementById('cameraVideo');
+                video.srcObject = stream;
+                
+                // Reset UI
+                document.getElementById('previewContainer').style.display = 'none';
+                document.getElementById('captureBtn').style.display = 'block';
+                document.getElementById('retakeBtn').style.display = 'none';
+                document.getElementById('uploadBtn').style.display = 'none';
+                document.getElementById('loadingIndicator').style.display = 'none';
+            } catch (error) {
+                showMessage('Camera access denied', 'error');
+                console.error('Camera error:', error);
+            }
+        }
+
+        // Close camera
+        function closeCamera() {
+            const modal = document.getElementById('cameraModal');
+            modal.style.display = 'none';
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        // Capture photo
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            capturedPhoto = canvas.toDataURL('image/jpeg', 0.6); // 60% quality
+            
+            // Show preview
+            document.getElementById('photoPreview').src = capturedPhoto;
+            document.getElementById('previewContainer').style.display = 'block';
+            
+            // Update buttons
+            document.getElementById('captureBtn').style.display = 'none';
+            document.getElementById('retakeBtn').style.display = 'block';
+            document.getElementById('uploadBtn').style.display = 'block';
+        }
+
+        // Retake photo
+        function retakePhoto() {
+            document.getElementById('previewContainer').style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'block';
+            document.getElementById('retakeBtn').style.display = 'none';
+            document.getElementById('uploadBtn').style.display = 'none';
+            capturedPhoto = null;
+        }
+
+        // Upload photo to server
+        async function uploadPhoto() {
+            if (!capturedPhoto) return;
+            
+            document.getElementById('loadingIndicator').style.display = 'block';
+            
+            try {
+                // Compress image to under 5KB
+                const compressedPhoto = await compressImage(capturedPhoto, 5);
+                
+                // Update student data
+                const response = await fetch('/api/update-student-data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_id: currentStudentId,
+                        photo: compressedPhoto
+                    })
+                });
+                
+                if (response.ok) {
+                    // Update photo preview in table
+                    const img = document.getElementById(`photo_${currentStudentId}`);
+                    if (img) {
+                        img.src = compressedPhoto;
+                    }
+                    
+                    showMessage('Photo updated successfully!', 'success');
+                    closeCamera();
+                } else {
+                    throw new Error('Failed to update photo');
+                }
+            } catch (error) {
+                showMessage('Error updating photo', 'error');
+                console.error('Upload error:', error);
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        // Compress image to under specified KB
+        function compressImage(dataUrl, maxKB) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    let quality = 0.9;
+                    
+                    // Calculate target size
+                    const targetSize = maxKB * 1024;
+                    
+                    // Reduce dimensions if needed
+                    const maxDimension = 800;
+                    if (width > maxDimension || height > maxDimension) {
+                        const ratio = Math.min(maxDimension / width, maxDimension / height);
+                        width *= ratio;
+                        height *= ratio;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Reduce quality until under target size
+                    let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    
+                    // Binary search for optimal quality
+                    let low = 0.1;
+                    let high = 0.9;
+                    let best = compressedDataUrl;
+                    
+                    for (let i = 0; i < 10; i++) {
+                        quality = (low + high) / 2;
+                        compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        const size = (compressedDataUrl.length * 3) / 4; // Approximate size
+                        
+                        if (size <= targetSize) {
+                            best = compressedDataUrl;
+                            low = quality;
+                        } else {
+                            high = quality;
+                        }
+                    }
+                    
+                    resolve(best);
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        // Save student data
+        async function saveStudent(studentId) {
+            try {
+                const studentData = {
+                    student_id: studentId,
+                    student_name: document.getElementById(`name_${studentId}`).value,
+                    pass: document.getElementById(`pass_${studentId}`).value,
+                    student_class: document.getElementById(`class_${studentId}`).value,
+                    joining_date: document.getElementById(`doj_${studentId}`).value,
+                    fees: document.getElementById(`fees_${studentId}`).value,
+                    parent_mobile: document.getElementById(`parent_mobile_${studentId}`).value,
+                    mobile: document.getElementById(`mobile_${studentId}`).value
+                };
+                
+                const response = await fetch('/api/update-student-data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentData)
+                });
+                
+                if (response.ok) {
+                    showMessage('Student data updated successfully!', 'success');
+                    
+                    // If class changed, reload students
+                    if (studentData.student_class !== currentClass) {
+                        await loadStudents(currentClass);
+                    }
+                } else {
+                    throw new Error('Failed to update student');
+                }
+            } catch (error) {
+                showMessage('Error updating student data', 'error');
+                console.error('Save error:', error);
+            }
+        }
+
+        // Show message notification
+        function showMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchStudents();
+                }
+            });
+        }
+
+        // Date format validation helper
+        function validateDate(dateStr) {
+            const pattern = /^\d{2}-\d{2}-\d{4}$/;
+            if (!pattern.test(dateStr)) return false;
+            
+            const [day, month, year] = dateStr.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            return date.getDate() === day && 
+                   date.getMonth() === month - 1 && 
+                   date.getFullYear() === year;
+        }
+    </script>
+</body>
+</html>
