@@ -803,82 +803,6 @@ body {
     border-left: 4px solid var(--danger-color);
 }
 
-/* ====== BHARTI FLOAT BUTTON ====== */
-.bharti-float-container {
-    position: fixed !important;
-    right: 30px;
-    bottom: 40px;
-    z-index: 2147483647;
-    pointer-events: auto;
-    animation: bhartiFloat 3.5s ease-in-out infinite;
-    will-change: transform;
-}
-
-.tooltip-text {
-    position: absolute;
-    top: -45px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 10px;
-    font-size: 0.9em;
-    white-space: nowrap;
-    opacity: 0;
-    transition: var(--transition);
-    pointer-events: none;
-}
-
-.bharti-float-container:hover .tooltip-text {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-5px);
-}
-
-.bharti-float-btn {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #7ffcff, #00bcd4, #0052d4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 0 30px rgba(0,255,255,0.8);
-    text-decoration: none;
-    position: relative;
-    overflow: hidden;
-    transition: var(--transition);
-}
-
-.bharti-float-btn i {
-    font-size: 2em;
-    color: white;
-    z-index: 2;
-}
-
-.bharti-float-btn::before,
-.bharti-float-btn::after {
-    content: '';
-    position: absolute;
-    inset: -10px;
-    border-radius: 50%;
-    border: 3px solid rgba(0,255,255,0.4);
-    animation: softWave 3s infinite;
-}
-
-.bharti-float-btn::after {
-    animation-delay: 1.5s;
-}
-
-.bharti-float-btn:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 50px rgba(0,255,255,1);
-}
-
-.bharti-float-btn:hover i {
-    animation: bounce 0.6s ease;
-}
 
 /* ====== ANIMATIONS ====== */
 @keyframes spin {
@@ -1043,28 +967,7 @@ body {
     }
 }
 
-/* ====== PRINT STYLES ====== */
-@media print {
-    .bharti-float-container,
-    .header-right,
-    .slider-btn,
-    .vip-section,
-    .teacher-ring-section,
-    .social-links,
-    .modal {
-        display: none !important;
-    }
-    
-    body {
-        background: white !important;
-        color: black !important;
-    }
-    
-    .student-result-display {
-        border: none !important;
-        box-shadow: none !important;
-    }
-}
+
 
 /* ====== DARK MODE SUPPORT ====== */
 @media (prefers-color-scheme: dark) {
