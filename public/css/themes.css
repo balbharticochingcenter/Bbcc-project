@@ -1,0 +1,186 @@
+/* ===== SPECIAL DAYS THEMES ===== */
+:root {
+    /* Default Theme */
+    --theme-primary: #4a6fff;
+    --theme-secondary: #00c9a7;
+    --theme-accent: #ff6b9d;
+    --theme-gradient: linear-gradient(135deg, #4a6fff 0%, #00c9a7 100%);
+    --theme-bg: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    --theme-header-bg: white;
+    --theme-footer-bg: #1a1a2e;
+}
+
+/* REPUBLIC DAY (26 January) */
+.theme-republic-day {
+    --theme-primary: #FF9933;
+    --theme-secondary: #FFFFFF;
+    --theme-accent: #138808;
+    --theme-gradient: linear-gradient(135deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+    --theme-bg: linear-gradient(135deg, #fff5e6 0%, #f0f8ff 100%);
+    --theme-header-bg: #fff5e6;
+    --theme-footer-bg: #0c4b14;
+}
+
+/* INDEPENDENCE DAY (15 August) */
+.theme-independence-day {
+    --theme-primary: #FF671F;
+    --theme-secondary: #FFFFFF;
+    --theme-accent: #046A38;
+    --theme-gradient: linear-gradient(135deg, #FF671F 0%, #FFFFFF 50%, #046A38 100%);
+    --theme-bg: linear-gradient(135deg, #fff0e6 0%, #e6fff0 100%);
+    --theme-header-bg: #fff0e6;
+    --theme-footer-bg: #046A38;
+}
+
+/* GANDHI JAYANTI (2 October) */
+.theme-gandhi-jayanti {
+    --theme-primary: #7d7d7d;
+    --theme-secondary: #ffffff;
+    --theme-accent: #5cb85c;
+    --theme-gradient: linear-gradient(135deg, #7d7d7d 0%, #ffffff 100%);
+    --theme-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --theme-header-bg: #f8f9fa;
+    --theme-footer-bg: #333333;
+}
+
+/* DIWALI */
+.theme-diwali {
+    --theme-primary: #FFD700;
+    --theme-secondary: #FF6B35;
+    --theme-accent: #4A00E0;
+    --theme-gradient: linear-gradient(135deg, #FFD700 0%, #FF6B35 50%, #4A00E0 100%);
+    --theme-bg: linear-gradient(135deg, #fff9e6 0%, #1a1a2e 100%);
+    --theme-header-bg: #fff9e6;
+    --theme-footer-bg: #1a1a2e;
+}
+
+/* HOLI */
+.theme-holi {
+    --theme-primary: #FF4081;
+    --theme-secondary: #4CAF50;
+    --theme-accent: #2196F3;
+    --theme-gradient: linear-gradient(135deg, #FF4081 0%, #4CAF50 50%, #2196F3 100%);
+    --theme-bg: linear-gradient(135deg, #ffe6f2 0%, #e6ffe6 50%, #e6f7ff 100%);
+    --theme-header-bg: #ffe6f2;
+    --theme-footer-bg: #2196F3;
+}
+
+/* TEACHER'S DAY (5 September) */
+.theme-teachers-day {
+    --theme-primary: #9C27B0;
+    --theme-secondary: #FF9800;
+    --theme-accent: #3F51B5;
+    --theme-gradient: linear-gradient(135deg, #9C27B0 0%, #FF9800 100%);
+    --theme-bg: linear-gradient(135deg, #f3e5f5 0%, #fff3e0 100%);
+    --theme-header-bg: #f3e5f5;
+    --theme-footer-bg: #3F51B5;
+}
+
+/* CHILDREN'S DAY (14 November) */
+.theme-childrens-day {
+    --theme-primary: #FF5722;
+    --theme-secondary: #00BCD4;
+    --theme-accent: #8BC34A;
+    --theme-gradient: linear-gradient(135deg, #FF5722 0%, #00BCD4 50%, #8BC34A 100%);
+    --theme-bg: linear-gradient(135deg, #ffecf0 0%, #e8f5e9 100%);
+    --theme-header-bg: #ffecf0;
+    --theme-footer-bg: #FF5722;
+}
+
+/* Special Day Banner */
+.special-day-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: var(--theme-gradient);
+    color: white;
+    text-align: center;
+    padding: 15px;
+    z-index: 9998;
+    font-weight: bold;
+    animation: slideDown 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.special-day-banner i {
+    font-size: 1.5rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* Theme Applied Styles */
+body.theme-active {
+    background: var(--theme-bg) !important;
+    transition: background 0.5s ease;
+}
+
+.main-header.theme-active {
+    background: var(--theme-header-bg) !important;
+}
+
+.main-footer.theme-active {
+    background: var(--theme-footer-bg) !important;
+}
+
+.action-btn.theme-active {
+    background: var(--theme-primary) !important;
+}
+
+.vip-card.theme-active:hover {
+    border-color: var(--theme-primary) !important;
+}
+
+/* Celebration Effects */
+.fireworks {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9997;
+    opacity: 0.7;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--theme-primary);
+    border-radius: 50%;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .special-day-banner {
+        font-size: 0.9rem;
+        padding: 12px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .special-day-banner i {
+        font-size: 1.2rem;
+    }
+}
