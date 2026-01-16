@@ -1,4 +1,4 @@
-// SPECIAL DAYS THEME SYSTEM WITH SOCIAL SHARING
+// COMPLETE SPECIAL DAYS THEME SYSTEM WITH ALL FESTIVALS
 class ThemeManager {
     constructor() {
         this.specialDays = this.getSpecialDaysCalendar();
@@ -6,7 +6,6 @@ class ThemeManager {
         this.isInitialized = false;
     }
 
-    // Initialize only once
     init() {
         if (this.isInitialized) return;
         this.isInitialized = true;
@@ -22,12 +21,27 @@ class ThemeManager {
         }
     }
 
-    // Special Days Database with Background Images
+    // सभी प्रमुख त्योहारों का Database
     getSpecialDaysCalendar() {
         const today = new Date();
         const currentYear = today.getFullYear();
         
         return [
+            // JANUARY
+            {
+                name: "नया साल",
+                englishName: "New Year",
+                date: new Date(currentYear, 0, 1),
+                theme: "new-year",
+                icon: "fas fa-glass-cheers",
+                startDaysBefore: 7,
+                endDaysAfter: 5,
+                colors: ["#FF4081", "#18FFFF", "#76FF03"],
+                message: "नए साल की शुभकामनाएँ! 🎉",
+                background: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#NewYear", "#HappyNewYear", "#BBCCMadhubani"],
+                shareText: "नए साल की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎉"
+            },
             {
                 name: "गणतंत्र दिवस",
                 englishName: "Republic Day",
@@ -42,6 +56,192 @@ class ThemeManager {
                 hashtags: ["#RepublicDay", "#26January", "#India", "#BBCCMadhubani"],
                 shareText: "गणतंत्र दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🇮🇳"
             },
+
+            // FEBRUARY
+            {
+                name: "बसंत पंचमी",
+                englishName: "Vasant Panchami",
+                date: this.getVasantPanchamiDate(currentYear),
+                theme: "vasant-panchami",
+                icon: "fas fa-palette",
+                startDaysBefore: 5,
+                endDaysAfter: 3,
+                colors: ["#FFFF00", "#FFD700", "#FFA500"],
+                message: "बसंत पंचमी की शुभकामनाएँ! 🌼 सरस्वती पूजा की हार्दिक शुभकामनाएँ",
+                background: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#VasantPanchami", "#SaraswatiPuja", "#BBCCMadhubani", "#BasantPanchami"],
+                shareText: "बसंत पंचमी एवं सरस्वती पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🌼"
+            },
+            {
+                name: "महा शिवरात्रि",
+                englishName: "Maha Shivratri",
+                date: this.getMahaShivratriDate(currentYear),
+                theme: "shivratri",
+                icon: "fas fa-om",
+                startDaysBefore: 3,
+                endDaysAfter: 3,
+                colors: ["#4B0082", "#8A2BE2", "#9400D3"],
+                message: "महा शिवरात्रि की शुभकामनाएँ! ॐ नमः शिवाय 🙏",
+                background: "https://images.unsplash.com/photo-1581798459210-94d5d1d1dc56?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#MahaShivratri", "#Shivratri", "#BBCCMadhubani", "#OmNamahShivaya"],
+                shareText: "महा शिवरात्रि की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏"
+            },
+
+            // MARCH
+            {
+                name: "होली",
+                englishName: "Holi",
+                date: this.getHoliDate(currentYear),
+                theme: "holi",
+                icon: "fas fa-palette",
+                startDaysBefore: 7,
+                endDaysAfter: 3,
+                colors: ["#FF4081", "#4CAF50", "#2196F3"],
+                message: "होली की रंगीन शुभकामनाएँ! 🎨",
+                background: "https://images.unsplash.com/photo-1548365328-8c6db3220e4c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#Holi", "#FestivalOfColors", "#BBCCMadhubani", "#HappyHoli"],
+                shareText: "होली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎨"
+            },
+
+            // APRIL
+            {
+                name: "रामनवमी",
+                englishName: "Ram Navami",
+                date: this.getRamNavamiDate(currentYear),
+                theme: "ram-navami",
+                icon: "fas fa-pray",
+                startDaysBefore: 3,
+                endDaysAfter: 3,
+                colors: ["#FFD700", "#FF6B35", "#FF0000"],
+                message: "श्री राम नवमी की शुभकामनाएँ! 🙏 जय श्री राम",
+                background: "https://images.unsplash.com/photo-1560713997-1a7c78b63c15?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#RamNavami", "#JayShriRam", "#BBCCMadhubani", "#Ramayana"],
+                shareText: "राम नवमी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏"
+            },
+
+            // AUGUST
+            {
+                name: "रक्षा बंधन",
+                englishName: "Raksha Bandhan",
+                date: this.getRakshaBandhanDate(currentYear),
+                theme: "raksha-bandhan",
+                icon: "fas fa-hands-helping",
+                startDaysBefore: 5,
+                endDaysAfter: 3,
+                colors: ["#FF69B4", "#FFFFFF", "#800080"],
+                message: "रक्षा बंधन की शुभकामनाएँ! भाई-बहन के प्यार का त्योहार",
+                background: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#RakshaBandhan", "#Rakhi", "#BBCCMadhubani", "#BrotherSister"],
+                shareText: "रक्षा बंधन की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
+            },
+            {
+                name: "जन्माष्टमी",
+                englishName: "Janmashtami",
+                date: this.getJanmashtamiDate(currentYear),
+                theme: "janmashtami",
+                icon: "fas fa-baby",
+                startDaysBefore: 5,
+                endDaysAfter: 3,
+                colors: ["#0000FF", "#FFFF00", "#FFFFFF"],
+                message: "जन्माष्टमी की शुभकामनाएँ! 🎉 जय श्री कृष्ण",
+                background: "https://images.unsplash.com/photo-1560713997-1a7c78b63c15?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#Janmashtami", "#Krishna", "#BBCCMadhubani", "#JayShriKrishna"],
+                shareText: "जन्माष्टमी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎉"
+            },
+
+            // SEPTEMBER
+            {
+                name: "गणेश चतुर्थी",
+                englishName: "Ganesh Chaturthi",
+                date: this.getGaneshChaturthiDate(currentYear),
+                theme: "ganesh-chaturthi",
+                icon: "fas fa-elephant",
+                startDaysBefore: 7,
+                endDaysAfter: 10,
+                colors: ["#FFD700", "#FF0000", "#FFFFFF"],
+                message: "गणेश चतुर्थी की शुभकामनाएँ! 🐘 गणपति बप्पा मोरया",
+                background: "https://images.unsplash.com/photo-1563496779257-5f1a5c71b5d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#GaneshChaturthi", "#GanpatiBappa", "#BBCCMadhubani", "#Ganesha"],
+                shareText: "गणेश चतुर्थी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🐘"
+            },
+
+            // OCTOBER
+            {
+                name: "दुर्गा पूजा",
+                englishName: "Durga Puja",
+                date: this.getDurgaPujaDate(currentYear),
+                theme: "durga-puja",
+                icon: "fas fa-female",
+                startDaysBefore: 10,
+                endDaysAfter: 5,
+                colors: ["#FF0000", "#FFFFFF", "#FFD700"],
+                message: "दुर्गा पूजा की शुभकामनाएँ! 🙏 जय माँ दुर्गा",
+                background: "https://images.unsplash.com/photo-1603216663465-7eb81d8dbf6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#DurgaPuja", "#Navratri", "#BBCCMadhubani", "#JaiMaaDurga"],
+                shareText: "दुर्गा पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏"
+            },
+            {
+                name: "दशहरा",
+                englishName: "Dussehra",
+                date: this.getDussehraDate(currentYear),
+                theme: "dussehra",
+                icon: "fas fa-crosshairs",
+                startDaysBefore: 3,
+                endDaysAfter: 3,
+                colors: ["#FF0000", "#FFFFFF", "#000000"],
+                message: "दशहरा की शुभकामनाएँ! बुराई पर अच्छाई की जीत",
+                background: "https://images.unsplash.com/photo-1603216663465-7eb81d8dbf6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#Dussehra", "#Vijayadashami", "#BBCCMadhubani", "#GoodOverEvil"],
+                shareText: "दशहरा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
+            },
+            {
+                name: "दिवाली",
+                englishName: "Diwali",
+                date: this.getDiwaliDate(currentYear),
+                theme: "diwali",
+                icon: "fas fa-oil-can",
+                startDaysBefore: 15,
+                endDaysAfter: 7,
+                colors: ["#FFD700", "#FF6B35", "#4A00E0"],
+                message: "दिवाली की शुभकामनाएँ! 🪔 रोशनी का त्योहार",
+                background: "https://images.unsplash.com/photo-1604061986762-dbbe1297a68e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#Diwali", "#FestivalOfLights", "#BBCCMadhubani", "#HappyDiwali"],
+                shareText: "दिवाली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🪔"
+            },
+
+            // NOVEMBER
+            {
+                name: "छठ पूजा",
+                englishName: "Chhath Puja",
+                date: this.getChhathPujaDate(currentYear),
+                theme: "chhath-puja",
+                icon: "fas fa-sun",
+                startDaysBefore: 5,
+                endDaysAfter: 3,
+                colors: ["#FF8C00", "#FFD700", "#FF4500"],
+                message: "छठ पूजा की शुभकामनाएँ! सूर्य देव की आराधना",
+                background: "https://images.unsplash.com/photo-1604061986762-dbbe1297a68e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#ChhathPuja", "#Chhath", "#BBCCMadhubani", "#BiharFestival"],
+                shareText: "छठ पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
+            },
+
+            // DECEMBER
+            {
+                name: "क्रिसमस",
+                englishName: "Christmas",
+                date: new Date(currentYear, 11, 25),
+                theme: "christmas",
+                icon: "fas fa-sleigh",
+                startDaysBefore: 10,
+                endDaysAfter: 5,
+                colors: ["#D32F2F", "#388E3C", "#FFFFFF"],
+                message: "क्रिसमस की शुभकामनाएँ! 🎄 मेरी क्रिसमस",
+                background: "https://images.unsplash.com/photo-1512389142860-9c449e58a543?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#Christmas", "#25December", "#BBCCMadhubani", "#MerryChristmas"],
+                shareText: "क्रिसमस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎄"
+            },
+
+            // NATIONAL DAYS
             {
                 name: "स्वतंत्रता दिवस",
                 englishName: "Independence Day",
@@ -64,39 +264,11 @@ class ThemeManager {
                 icon: "fas fa-peace",
                 startDaysBefore: 7,
                 endDaysAfter: 3,
-                colors: ["#7d7d7d", "#ffffff"],
+                colors: ["#7d7d7d", "#ffffff", "#000000"],
                 message: "गाँधी जयंती की शुभकामनाएँ!",
                 background: "https://images.unsplash.com/photo-1581798459210-94d5d1d1dc56?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#GandhiJayanti", "#2October", "#BBCCMadhubani"],
                 shareText: "गाँधी जयंती की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
-            },
-            {
-                name: "दिवाली",
-                englishName: "Diwali",
-                date: this.getDiwaliDate(currentYear),
-                theme: "diwali",
-                icon: "fas fa-oil-can",
-                startDaysBefore: 15,
-                endDaysAfter: 7,
-                colors: ["#FFD700", "#FF6B35", "#4A00E0"],
-                message: "दिवाली की शुभकामनाएँ! 🪔 रोशनी का त्योहार",
-                background: "https://images.unsplash.com/photo-1604061986762-dbbe1297a68e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#Diwali", "#FestivalOfLights", "#BBCCMadhubani", "#HappyDiwali"],
-                shareText: "दिवाली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🪔"
-            },
-            {
-                name: "होली",
-                englishName: "Holi",
-                date: this.getHoliDate(currentYear),
-                theme: "holi",
-                icon: "fas fa-palette",
-                startDaysBefore: 7,
-                endDaysAfter: 3,
-                colors: ["#FF4081", "#4CAF50", "#2196F3"],
-                message: "होली की रंगीन शुभकामनाएँ! 🎨",
-                background: "https://images.unsplash.com/photo-1548365328-8c6db3220e4c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#Holi", "#FestivalOfColors", "#BBCCMadhubani", "#HappyHoli"],
-                shareText: "होली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎨"
             },
             {
                 name: "शिक्षक दिवस",
@@ -106,39 +278,11 @@ class ThemeManager {
                 icon: "fas fa-chalkboard-teacher",
                 startDaysBefore: 5,
                 endDaysAfter: 3,
-                colors: ["#9C27B0", "#FF9800"],
+                colors: ["#9C27B0", "#FF9800", "#FFFFFF"],
                 message: "शिक्षक दिवस की शुभकामनाएँ! सभी गुरुजनों को नमन",
                 background: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#TeachersDay", "#5September", "#BBCCMadhubani", "#RespectTeachers"],
                 shareText: "शिक्षक दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
-            },
-            {
-                name: "क्रिसमस",
-                englishName: "Christmas",
-                date: new Date(currentYear, 11, 25),
-                theme: "christmas",
-                icon: "fas fa-sleigh",
-                startDaysBefore: 10,
-                endDaysAfter: 5,
-                colors: ["#D32F2F", "#388E3C", "#FFFFFF"],
-                message: "क्रिसमस की शुभकामनाएँ! 🎄 मेरी क्रिसमस",
-                background: "https://images.unsplash.com/photo-1512389142860-9c449e58a543?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#Christmas", "#25December", "#BBCCMadhubani", "#MerryChristmas"],
-                shareText: "क्रिसमस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎄"
-            },
-            {
-                name: "नया साल",
-                englishName: "New Year",
-                date: new Date(currentYear + 1, 0, 1),
-                theme: "new-year",
-                icon: "fas fa-glass-cheers",
-                startDaysBefore: 7,
-                endDaysAfter: 5,
-                colors: ["#FF4081", "#18FFFF", "#76FF03"],
-                message: "नए साल की शुभकामनाएँ! 🎉 2025",
-                background: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#NewYear", "#HappyNewYear", "#BBCCMadhubani", "#2025"],
-                shareText: "नए साल की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎉"
             },
             {
                 name: "बाल दिवस",
@@ -153,49 +297,67 @@ class ThemeManager {
                 background: "https://images.unsplash.com/photo-1530277645362-bb2d3b9a6c6a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#ChildrensDay", "#14November", "#BBCCMadhubani", "#HappyChildrensDay"],
                 shareText: "बाल दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
-            },
-            {
-                name: "अंतर्राष्ट्रीय महिला दिवस",
-                englishName: "International Women's Day",
-                date: new Date(currentYear, 2, 8),
-                theme: "womens-day",
-                icon: "fas fa-female",
-                startDaysBefore: 5,
-                endDaysAfter: 3,
-                colors: ["#E91E63", "#9C27B0"],
-                message: "अंतर्राष्ट्रीय महिला दिवस की शुभकामनाएँ!",
-                background: "https://images.unsplash.com/photo-1518556737724-5c2aaba1e20c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#WomensDay", "#8March", "#BBCCMadhubani", "#WomenEmpowerment"],
-                shareText: "अंतर्राष्ट्रीय महिला दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
-            },
-            {
-                name: "श्रम दिवस",
-                englishName: "Labor Day",
-                date: new Date(currentYear, 4, 1),
-                theme: "labor-day",
-                icon: "fas fa-tools",
-                startDaysBefore: 3,
-                endDaysAfter: 3,
-                colors: ["#FF9800", "#4CAF50"],
-                message: "श्रम दिवस की शुभकामनाएँ!",
-                background: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#LaborDay", "#1May", "#BBCCMadhubani", "#WorkersDay"],
-                shareText: "श्रम दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
             }
         ];
     }
 
-    getDiwaliDate(year) {
-        // Diwali usually in October/November
-        // Actual calculation requires Hindu calendar
-        return new Date(year, 9, 27);
+    // Date Calculation Functions
+    getVasantPanchamiDate(year) {
+        // Usually in January/February
+        return new Date(year, 0, 29);
+    }
+
+    getMahaShivratriDate(year) {
+        // Usually in February/March
+        return new Date(year, 1, 18);
     }
 
     getHoliDate(year) {
-        // Holi usually in March
         return new Date(year, 2, 8);
     }
 
+    getRamNavamiDate(year) {
+        // Usually in March/April
+        return new Date(year, 3, 2);
+    }
+
+    getRakshaBandhanDate(year) {
+        // Usually in August
+        return new Date(year, 7, 19);
+    }
+
+    getJanmashtamiDate(year) {
+        // Usually in August/September
+        return new Date(year, 8, 6);
+    }
+
+    getGaneshChaturthiDate(year) {
+        // Usually in August/September
+        return new Date(year, 8, 7);
+    }
+
+    getDurgaPujaDate(year) {
+        // Usually in October
+        return new Date(year, 9, 12);
+    }
+
+    getDussehraDate(year) {
+        // Usually in October
+        return new Date(year, 9, 15);
+    }
+
+    getDiwaliDate(year) {
+        // Usually in October/November
+        return new Date(year, 9, 27);
+    }
+
+    getChhathPujaDate(year) {
+        // Usually in November
+        return new Date(year, 10, 10);
+    }
+
+    // Rest of the class remains same as before...
+    // (All methods from the previous version remain unchanged)
     checkSpecialDays() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
