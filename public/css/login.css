@@ -2707,3 +2707,48 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* Special Notification Styling */
+.special-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideInRight 0.5s ease;
+    max-width: 350px;
+    border-left: 5px solid var(--theme-accent);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.special-notification i.fa-calendar-star {
+    font-size: 1.8rem;
+    color: gold;
+    animation: spin 3s linear infinite;
+    text-shadow: 0 0 10px rgba(255,215,0,0.5);
+}
+
+.special-notification-content {
+    flex: 1;
+}
+
+.close-notification {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    transition: all 0.
