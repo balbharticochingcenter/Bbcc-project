@@ -659,3 +659,130 @@ body.theme-active::before {
         display: none !important;
     }
 }
+/* ===== NEW FESTIVAL THEMES ===== */
+
+/* SARASWATI PUJA / VASANT PANCHAMI */
+.theme-vasant-panchami {
+    --theme-primary: #FFFF00;
+    --theme-secondary: #FFD700;
+    --theme-accent: #FFA500;
+    --theme-gradient: linear-gradient(135deg, #FFFF00 0%, #FFD700 50%, #FFA500 100%);
+    --theme-bg: linear-gradient(135deg, rgba(255, 255, 224, 0.9) 0%, rgba(255, 250, 205, 0.9) 100%);
+    --theme-header-bg: rgba(255, 255, 224, 0.95);
+    --theme-footer-bg: #FFA500;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(255, 255, 0, 0.1), rgba(255, 255, 0, 0.1));
+    --theme-footer-image: linear-gradient(rgba(255, 165, 0, 0.1), rgba(255, 165, 0, 0.1));
+}
+
+/* MAHA SHIVRATRI */
+.theme-shivratri {
+    --theme-primary: #4B0082;
+    --theme-secondary: #8A2BE2;
+    --theme-accent: #9400D3;
+    --theme-gradient: linear-gradient(135deg, #4B0082 0%, #8A2BE2 50%, #9400D3 100%);
+    --theme-bg: linear-gradient(135deg, rgba(75, 0, 130, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+    --theme-header-bg: rgba(75, 0, 130, 0.95);
+    --theme-footer-bg: #4B0082;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1581798459210-94d5d1d1dc56?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(75, 0, 130, 0.1), rgba(75, 0, 130, 0.1));
+    --theme-footer-image: linear-gradient(rgba(75, 0, 130, 0.1), rgba(75, 0, 130, 0.1));
+}
+
+/* RAM NAVAMI */
+.theme-ram-navami {
+    --theme-primary: #FFD700;
+    --theme-secondary: #FF6B35;
+    --theme-accent: #FF0000;
+    --theme-gradient: linear-gradient(135deg, #FFD700 0%, #FF6B35 50%, #FF0000 100%);
+    --theme-bg: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 107, 53, 0.1) 100%);
+    --theme-header-bg: rgba(255, 215, 0, 0.95);
+    --theme-footer-bg: #FF0000;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1560713997-1a7c78b63c15?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.1));
+    --theme-footer-image: linear-gradient(rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.1));
+}
+
+/* RAKSHA BANDHAN */
+.theme-raksha-bandhan {
+    --theme-primary: #FF69B4;
+    --theme-secondary: #FFFFFF;
+    --theme-accent: #800080;
+    --theme-gradient: linear-gradient(135deg, #FF69B4 0%, #FFFFFF 50%, #800080 100%);
+    --theme-bg: linear-gradient(135deg, rgba(255, 105, 180, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+    --theme-header-bg: rgba(255, 105, 180, 0.95);
+    --theme-footer-bg: #800080;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(255, 105, 180, 0.1), rgba(255, 105, 180, 0.1));
+    --theme-footer-image: linear-gradient(rgba(128, 0, 128, 0.1), rgba(128, 0, 128, 0.1));
+}
+
+/* JANMASHTAMI */
+.theme-janmashtami {
+    --theme-primary: #0000FF;
+    --theme-secondary: #FFFF00;
+    --theme-accent: #FFFFFF;
+    --theme-gradient: linear-gradient(135deg, #0000FF 0%, #FFFF00 50%, #FFFFFF 100%);
+    --theme-bg: linear-gradient(135deg, rgba(0, 0, 255, 0.1) 0%, rgba(255, 255, 0, 0.1) 100%);
+    --theme-header-bg: rgba(0, 0, 255, 0.95);
+    --theme-footer-bg: #0000FF;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1560713997-1a7c78b63c15?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(0, 0, 255, 0.1), rgba(0, 0, 255, 0.1));
+    --theme-footer-image: linear-gradient(rgba(0, 0, 255, 0.1), rgba(0, 0, 255, 0.1));
+}
+
+/* GANESH CHATURTHI */
+.theme-ganesh-chaturthi {
+    --theme-primary: #FFD700;
+    --theme-secondary: #FF0000;
+    --theme-accent: #FFFFFF;
+    --theme-gradient: linear-gradient(135deg, #FFD700 0%, #FF0000 50%, #FFFFFF 100%);
+    --theme-bg: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 0, 0, 0.1) 100%);
+    --theme-header-bg: rgba(255, 215, 0, 0.95);
+    --theme-footer-bg: #FF0000;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1563496779257-5f1a5c71b5d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.1));
+    --theme-footer-image: linear-gradient(rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.1));
+}
+
+/* DURGA PUJA */
+.theme-durga-puja {
+    --theme-primary: #FF0000;
+    --theme-secondary: #FFFFFF;
+    --theme-accent: #FFD700;
+    --theme-gradient: linear-gradient(135deg, #FF0000 0%, #FFFFFF 50%, #FFD700 100%);
+    --theme-bg: linear-gradient(135deg, rgba(255, 0, 0, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+    --theme-header-bg: rgba(255, 0, 0, 0.95);
+    --theme-footer-bg: #FF0000;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1603216663465-7eb81d8dbf6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.1));
+    --theme-footer-image: linear-gradient(rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.1));
+}
+
+/* DUSSEHRA */
+.theme-dussehra {
+    --theme-primary: #FF0000;
+    --theme-secondary: #FFFFFF;
+    --theme-accent: #000000;
+    --theme-gradient: linear-gradient(135deg, #FF0000 0%, #FFFFFF 50%, #000000 100%);
+    --theme-bg: linear-gradient(135deg, rgba(255, 0, 0, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+    --theme-header-bg: rgba(255, 0, 0, 0.95);
+    --theme-footer-bg: #000000;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1603216663465-7eb81d8dbf6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.1));
+    --theme-footer-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1));
+}
+
+/* CHHATH PUJA */
+.theme-chhath-puja {
+    --theme-primary: #FF8C00;
+    --theme-secondary: #FFD700;
+    --theme-accent: #FF4500;
+    --theme-gradient: linear-gradient(135deg, #FF8C00 0%, #FFD700 50%, #FF4500 100%);
+    --theme-bg: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
+    --theme-header-bg: rgba(255, 140, 0, 0.95);
+    --theme-footer-bg: #FF4500;
+    --theme-bg-image: url('https://images.unsplash.com/photo-1604061986762-dbbe1297a68e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    --theme-header-image: linear-gradient(rgba(255, 140, 0, 0.1), rgba(255, 140, 0, 0.1));
+    --theme-footer-image: linear-gradient(rgba(255, 69, 0, 0.1), rgba(255, 69, 0, 0.1));
+}
