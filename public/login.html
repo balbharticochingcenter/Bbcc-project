@@ -13,9 +13,33 @@
 <link rel="stylesheet" href="/css/themes.css">
 <script src="/js/themes.js" defer></script>
     <meta name="google-site-verification" content="TvuSNz7Vm9cM9S0ZWzwTe1ioc_o1hd3S3Wsm4QH651c" />
+    
 </head>
 <body>
-   
+   <!-- Special Days Notification -->
+<div id="specialDayNotification" style="display: none;">
+    <i class="fas fa-calendar-star"></i>
+    <span id="specialDayText"></span>
+</div>
+
+<script>
+// Immediate theme check on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Quick notification
+    setTimeout(() => {
+        if (window.themeManager?.currentTheme) {
+            const notification = document.getElementById('specialDayNotification');
+            const text = document.getElementById('specialDayText');
+            
+            if (notification && text) {
+                text.textContent = window.themeManager.currentTheme.message;
+                notification.style.display = 'flex';
+                notification.style.animation = 'slideIn 0.5s ease';
+            }
+        }
+    }, 2000);
+});
+</script>
     <!-- Enhanced Loader -->
     <div class="loader-container" id="loader">
         <div class="loader-spinner">
