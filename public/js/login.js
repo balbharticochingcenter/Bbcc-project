@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const studentResultBtn = document.getElementById('studentResultBtn');
     const mobileResultBtn = document.getElementById('mobileResultBtn');
     const resultModal = document.getElementById('resultModal');
+    const closeResult = document.getElementById('closeResult'); // ✅ नया जोड़ा
     const searchStudentBtn = document.getElementById('searchStudentBtn');
     const searchStudentIdInput = document.getElementById('searchStudentId');
     const searchMobileInput = document.getElementById('searchMobile');
@@ -111,6 +112,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // --- 3. Modal Controls ---
+    function openLoginModal() {
+        loginModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.getElementById('userId').focus();
+    }
+
+    function openRegistrationModal() {
+        regModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        setDefaultDate();
+    }
+
+    function openResultModal() {
+        resultModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        setSearchMode('id');
+        // Reset form
+        document.getElementById('searchStudentId').value = '';
+        document.getElementById('searchMobile').value = '';
+        document.getElementById('searchMessage').textContent = '';
+        studentResultDisplay.style.display = 'none';
+    }
+
+    // Button Event Listeners
+    if (loginBtn) loginBtn.onclick = openLoginModal;
+    if (regBtn) regBtn.onclick = openRegistrationModal;
+    if (studentResultBtn) studentResultBtn.onclick = openResultModal;
+
     // Mobile menu buttons
     if (mobileLoginBtn) mobileLoginBtn.onclick = () => {
         openLoginModal();
@@ -130,141 +160,144 @@ document.addEventListener('DOMContentLoaded', async () => {
         mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
     };
 
-    // --- 3. Modal Controls ---
-    function openLoginModal() {
-        loginModal.style.display = 'flex';
-        document.getElementById('userId').focus();
-    }
-
-    function openRegistrationModal() {
-        regModal.style.display = 'flex';
-        setDefaultDate();
-    }
-
-    function openResultModal() {
-        resultModal.style.display = 'flex';
-        setSearchMode('id');
-    }
-
-    if (loginBtn) loginBtn.onclick = openLoginModal;
-    if (regBtn) regBtn.onclick = openRegistrationModal;
-    if (studentResultBtn) studentResultBtn.onclick = openResultModal;
-
     // Close buttons
-    document.querySelectorAll('.close-button').forEach(btn => {
-        btn.onclick = (e) => {
-            e.target.closest('.modal').style.display = 'none';
-        };
-    });
+    if (closeLogin) closeLogin.onclick = () => {
+        loginModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+    
+    if (closeReg) closeReg.onclick = () => {
+        regModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+    
+    if (closeResult) closeResult.onclick = () => {
+        resultModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
 
     // Outside click to close modals
     window.onclick = (event) => {
-        if (event.target == regModal) regModal.style.display = "none";
-        if (event.target == resultModal) resultModal.style.display = "none";
-        if (event.target == loginModal) loginModal.style.display = "none";
+        if (event.target == regModal) {
+            regModal.style.display = "none";
+            document.body.style.overflow = 'auto';
+        }
+        if (event.target == resultModal) {
+            resultModal.style.display = "none";
+            document.body.style.overflow = 'auto';
+        }
+        if (event.target == loginModal) {
+            loginModal.style.display = "none";
+            document.body.style.overflow = 'auto';
+        }
         document.querySelectorAll('.vip-popup').forEach(popup => {
-            if (event.target == popup) popup.style.display = "none";
+            if (event.target == popup) {
+                popup.style.display = "none";
+                document.body.style.overflow = 'auto';
+            }
         });
     };
 
     // --- 4. Login Logic ---
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        showLoader();
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoader();
 
-        const userId = document.getElementById('userId').value.trim();
-        const password = document.getElementById('password').value;
-        let loginType = '';
-        let userData = null;
+            const userId = document.getElementById('userId').value.trim();
+            const password = document.getElementById('password').value;
+            let loginType = '';
+            let userData = null;
 
-        try {
-            // Check Admin
-            const adminRes = await fetch('/api/get-admin-profile');
-            const admin = await adminRes.json();
-            if (admin && admin.admin_userid === userId && admin.admin_pass === password) {
-                loginType = 'admin';
-                userData = admin;
-            }
+            try {
+                // Check Admin
+                const adminRes = await fetch('/api/get-admin-profile');
+                const admin = await adminRes.json();
+                if (admin && admin.admin_userid === userId && admin.admin_pass === password) {
+                    loginType = 'admin';
+                    userData = admin;
+                }
 
-            // Check Teacher/Student if not admin
-            if (!loginType) {
-                const [tRes, sRes] = await Promise.all([
-                    fetch('/api/get-teachers'),
-                    fetch('/api/get-students')
-                ]);
+                // Check Teacher/Student if not admin
+                if (!loginType) {
+                    const [tRes, sRes] = await Promise.all([
+                        fetch('/api/get-teachers'),
+                        fetch('/api/get-students')
+                    ]);
 
-                const teachers = await tRes.json();
-                const students = await sRes.json();
+                    const teachers = await tRes.json();
+                    const students = await sRes.json();
 
-                // Check Teacher
-                const teacher = teachers.find(t => t.teacher_id === userId && t.pass === password);
-                if (teacher) {
-                    loginType = 'teacher';
-                    userData = teacher;
-                } 
-                // Check Student
-                else {
-                    const student = students.find(
-                        s => s.student_id === userId && s.pass === password
-                    );
+                    // Check Teacher
+                    const teacher = teachers.find(t => t.teacher_id === userId && t.pass === password);
+                    if (teacher) {
+                        loginType = 'teacher';
+                        userData = teacher;
+                    } 
+                    // Check Student
+                    else {
+                        const student = students.find(
+                            s => s.student_id === userId && s.pass === password
+                        );
 
-                    if (student) {
-                        // Fee Approval Check
-                        if (!student.fees || student.fees === "0" || student.fees === "pending") {
-                            hideLoader();
-                            showSmoothAlert(
-                                "⚠️ Admission Approval Pending\nPlease complete fee payment or contact administration.",
-                                'warning'
-                            );
-                            localStorage.removeItem("studentId");
-                            setTimeout(() => {
-                                loginModal.style.display = 'none';
-                            }, 3000);
-                            return;
+                        if (student) {
+                            // Fee Approval Check
+                            if (!student.fees || student.fees === "0" || student.fees === "pending") {
+                                hideLoader();
+                                showSmoothAlert(
+                                    "⚠️ Admission Approval Pending\nPlease complete fee payment or contact administration.",
+                                    'warning'
+                                );
+                                localStorage.removeItem("studentId");
+                                setTimeout(() => {
+                                    loginModal.style.display = 'none';
+                                }, 3000);
+                                return;
+                            }
+
+                            loginType = 'student';
+                            userData = student;
+                            localStorage.setItem("studentId", student.student_id);
                         }
-
-                        loginType = 'student';
-                        userData = student;
-                        localStorage.setItem("studentId", student.student_id);
                     }
                 }
+
+                // Redirect based on login type
+                hideLoader();
+                
+                if (loginType === 'admin') {
+                    localStorage.setItem("isAdminLoggedIn", "true");
+                    localStorage.setItem("adminData", JSON.stringify(userData));
+                    window.location.replace('/admin');
+                    return;
+                }
+
+                if (loginType === 'teacher') {
+                    localStorage.setItem("teacherId", userData.teacher_id);
+                    localStorage.setItem("teacherData", JSON.stringify(userData));
+                    window.location.replace('/teacher');
+                    return;
+                }
+
+                if (loginType === 'student') {
+                    localStorage.setItem("studentData", JSON.stringify(userData));
+                    window.location.replace('/student.html');
+                    return;
+                }
+
+                // Invalid credentials
+                loginMessage.textContent = "❌ Invalid User ID or Password";
+                loginMessage.style.color = "var(--danger)";
+                shakeElement(loginForm);
+
+            } catch (err) {
+                hideLoader();
+                loginMessage.textContent = "⚠️ Server Error. Please try again.";
+                loginMessage.style.color = "var(--warning)";
+                console.error('Login error:', err);
             }
-
-            // Redirect based on login type
-            hideLoader();
-            
-            if (loginType === 'admin') {
-                localStorage.setItem("isAdminLoggedIn", "true");
-                localStorage.setItem("adminData", JSON.stringify(userData));
-                window.location.replace('/admin');
-                return;
-            }
-
-            if (loginType === 'teacher') {
-                localStorage.setItem("teacherId", userData.teacher_id);
-                localStorage.setItem("teacherData", JSON.stringify(userData));
-                window.location.replace('/teacher');
-                return;
-            }
-
-            if (loginType === 'student') {
-                localStorage.setItem("studentData", JSON.stringify(userData));
-                window.location.replace('/student.html');
-                return;
-            }
-
-            // Invalid credentials
-            loginMessage.textContent = "❌ Invalid User ID or Password";
-            loginMessage.style.color = "var(--danger)";
-            shakeElement(loginForm);
-
-        } catch (err) {
-            hideLoader();
-            loginMessage.textContent = "⚠️ Server Error. Please try again.";
-            loginMessage.style.color = "var(--warning)";
-            console.error('Login error:', err);
-        }
-    });
+        });
+    }
 
     // Password visibility toggle
     function togglePassword() {
@@ -319,59 +352,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize search mode
     setSearchMode('id');
 
-    searchStudentBtn.onclick = async () => {
-        const searchTerm = document.getElementById('searchStudentId').value.trim();
-        const mobileNum = document.getElementById('searchMobile').value.trim();
-        
-        // Validation
-        if (!searchTerm) {
-            showSearchError("Please enter search term!");
-            return;
-        }
-        
-        if (currentSearchMode === 'mobile' && !mobileNum) {
-            showSearchError("Mobile number is required!");
-            return;
-        }
-
-        showLoader();
-        searchMessage.textContent = "🔍 Searching...";
-        searchMessage.style.color = "var(--primary)";
-
-        try {
-            const searchData = {
-                searchMode: currentSearchMode,
-                searchTerm: searchTerm
-            };
+    if (searchStudentBtn) {
+        searchStudentBtn.onclick = async () => {
+            const searchTerm = document.getElementById('searchStudentId').value.trim();
+            const mobileNum = document.getElementById('searchMobile').value.trim();
             
-            if (currentSearchMode === 'mobile') {
-                searchData.mobileNumber = mobileNum;
+            // Validation
+            if (!searchTerm) {
+                showSearchError("Please enter search term!");
+                return;
+            }
+            
+            if (currentSearchMode === 'mobile' && !mobileNum) {
+                showSearchError("Mobile number is required!");
+                return;
             }
 
-            const res = await fetch('/api/search-student-result', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(searchData)
-            });
-            
-            const data = await res.json();
+            showLoader();
+            searchMessage.textContent = "🔍 Searching...";
+            searchMessage.style.color = "var(--primary)";
 
-            hideLoader();
-            
-            if (data.success) {
-                displayStudentResult(data.student);
-                searchMessage.textContent = "✅ Result found!";
-                searchMessage.style.color = "var(--success)";
-            } else {
-                showSearchError(data.message || "Student not found!");
-                studentResultDisplay.style.display = 'none';
+            try {
+                const searchData = {
+                    searchMode: currentSearchMode,
+                    searchTerm: searchTerm
+                };
+                
+                if (currentSearchMode === 'mobile') {
+                    searchData.mobileNumber = mobileNum;
+                }
+
+                const res = await fetch('/api/search-student-result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(searchData)
+                });
+                
+                const data = await res.json();
+
+                hideLoader();
+                
+                if (data.success) {
+                    displayStudentResult(data.student);
+                    searchMessage.textContent = "✅ Result found!";
+                    searchMessage.style.color = "var(--success)";
+                } else {
+                    showSearchError(data.message || "Student not found!");
+                    studentResultDisplay.style.display = 'none';
+                }
+            } catch (err) {
+                hideLoader();
+                showSearchError("❌ Connection Error! Please try again.");
+                console.error('Search error:', err);
             }
-        } catch (err) {
-            hideLoader();
-            showSearchError("❌ Connection Error! Please try again.");
-            console.error('Search error:', err);
-        }
-    };
+        };
+    }
 
     function displayStudentResult(student) {
         studentResultDisplay.style.display = 'block';
@@ -410,66 +445,70 @@ document.addEventListener('DOMContentLoaded', async () => {
         const downloadBtns = element.querySelector('.download-buttons');
 
         // PDF Download
-        document.getElementById('downloadPdfBtn').onclick = async () => {
-            downloadBtns.style.display = 'none';
-            
-            try {
-                const { jsPDF } = window.jspdf;
+        if (document.getElementById('downloadPdfBtn')) {
+            document.getElementById('downloadPdfBtn').onclick = async () => {
+                downloadBtns.style.display = 'none';
                 
-                html2canvas(element, { 
-                    scale: 2, 
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                }).then(canvas => {
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                try {
+                    const { jsPDF } = window.jspdf;
                     
-                    // Add background color
-                    pdf.setFillColor(255, 255, 255);
-                    pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
-                    
-                    // Add image
-                    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 10, pdfWidth, pdfHeight);
-                    
-                    // Add watermark
-                    pdf.setFontSize(10);
-                    pdf.setTextColor(200, 200, 200);
-                    pdf.text('BBCC Madhubani', pdfWidth/2, pdfHeight - 10, { align: 'center' });
-                    
-                    pdf.save(`BBCC_Result_${studentId}.pdf`);
-                    showSmoothAlert("✅ PDF Downloaded Successfully!", 'success');
-                });
-            } catch (error) {
-                console.error('PDF generation error:', error);
-                showSmoothAlert("❌ PDF download failed!", 'error');
-            } finally {
-                downloadBtns.style.display = 'flex';
-            }
-        };
+                    html2canvas(element, { 
+                        scale: 2, 
+                        useCORS: true,
+                        backgroundColor: '#ffffff'
+                    }).then(canvas => {
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                        
+                        // Add background color
+                        pdf.setFillColor(255, 255, 255);
+                        pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+                        
+                        // Add image
+                        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 10, pdfWidth, pdfHeight);
+                        
+                        // Add watermark
+                        pdf.setFontSize(10);
+                        pdf.setTextColor(200, 200, 200);
+                        pdf.text('BBCC Madhubani', pdfWidth/2, pdfHeight - 10, { align: 'center' });
+                        
+                        pdf.save(`BBCC_Result_${studentId}.pdf`);
+                        showSmoothAlert("✅ PDF Downloaded Successfully!", 'success');
+                    });
+                } catch (error) {
+                    console.error('PDF generation error:', error);
+                    showSmoothAlert("❌ PDF download failed!", 'error');
+                } finally {
+                    downloadBtns.style.display = 'flex';
+                }
+            };
+        }
 
         // JPG Download
-        document.getElementById('downloadJpgBtn').onclick = async () => {
-            downloadBtns.style.display = 'none';
-            
-            try {
-                html2canvas(element, { 
-                    scale: 2,
-                    backgroundColor: '#ffffff'
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `BBCC_Result_${studentId}.jpg`;
-                    link.href = canvas.toDataURL("image/jpeg", 0.9);
-                    link.click();
-                    showSmoothAlert("✅ Image Downloaded Successfully!", 'success');
-                });
-            } catch (error) {
-                console.error('Image generation error:', error);
-                showSmoothAlert("❌ Image download failed!", 'error');
-            } finally {
-                downloadBtns.style.display = 'flex';
-            }
-        };
+        if (document.getElementById('downloadJpgBtn')) {
+            document.getElementById('downloadJpgBtn').onclick = async () => {
+                downloadBtns.style.display = 'none';
+                
+                try {
+                    html2canvas(element, { 
+                        scale: 2,
+                        backgroundColor: '#ffffff'
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = `BBCC_Result_${studentId}.jpg`;
+                        link.href = canvas.toDataURL("image/jpeg", 0.9);
+                        link.click();
+                        showSmoothAlert("✅ Image Downloaded Successfully!", 'success');
+                    });
+                } catch (error) {
+                    console.error('Image generation error:', error);
+                    showSmoothAlert("❌ Image download failed!", 'error');
+                } finally {
+                    downloadBtns.style.display = 'flex';
+                }
+            };
+        }
     }
 
     // --- 6. Registration Logic ---
@@ -567,92 +606,94 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Registration form submission
-    studentRegForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        // Disable button and show loading
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        
-        // Generate unique ID
-        const date = new Date();
-        const datePart = date.getFullYear().toString().slice(2) + 
-                        (date.getMonth() + 1).toString().padStart(2, '0');
-        const randomPart = Math.floor(1000 + Math.random() * 9000);
-        const generatedId = "STU" + datePart + randomPart;
-
-        // Get form values
-        const formData = {
-            student_name: document.getElementById('regName').value.trim(),
-            parent_name: document.getElementById('regParent').value.trim(),
-            mobile: document.getElementById('regMobile').value.trim(),
-            parent_mobile: document.getElementById('regParentMobile').value.trim(),
-            student_class: document.getElementById('regClassSelect').value,
-            joining_date: document.getElementById('regDate').value,
-            student_id: document.getElementById('regId').value.trim() || generatedId,
-            pass: document.getElementById('regPass').value || "123456",
-            photo: compressedPhotoBase64 || "",
-            fees: "0",
-            status: "pending"
-        };
-
-        // Validation
-        if (!formData.student_class) {
-            showSmoothAlert("Please select a class!", 'warning');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-            return;
-        }
-
-        if (formData.mobile && !/^\d{10}$/.test(formData.mobile)) {
-            showSmoothAlert("Invalid mobile number! Must be 10 digits.", 'warning');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-            return;
-        }
-
-        try {
-            showLoader();
-            const response = await fetch('/api/student-reg', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+    if (studentRegForm) {
+        studentRegForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            const result = await response.json();
-            hideLoader();
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
             
-            if (result.success) {
-                showSmoothAlert(
-                    `✅ Registration Successful!\nStudent ID: ${result.student_id}\nPassword: ${formData.pass}`,
-                    'success'
-                );
-                
-                // Reset form
-                studentRegForm.reset();
-                compressedPhotoBase64 = "";
-                document.getElementById('photoPreviewContainer').style.display = 'none';
-                regModal.style.display = "none";
-                
-                // Auto-open admission popup
-                setTimeout(() => {
-                    openVip('vipAdmission');
-                }, 1000);
-            } else {
-                showSmoothAlert(`❌ Registration Failed: ${result.error}`, 'error');
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            // Generate unique ID
+            const date = new Date();
+            const datePart = date.getFullYear().toString().slice(2) + 
+                            (date.getMonth() + 1).toString().padStart(2, '0');
+            const randomPart = Math.floor(1000 + Math.random() * 9000);
+            const generatedId = "STU" + datePart + randomPart;
+
+            // Get form values
+            const formData = {
+                student_name: document.getElementById('regName').value.trim(),
+                parent_name: document.getElementById('regParent').value.trim(),
+                mobile: document.getElementById('regMobile').value.trim(),
+                parent_mobile: document.getElementById('regParentMobile').value.trim(),
+                student_class: document.getElementById('regClassSelect').value,
+                joining_date: document.getElementById('regDate').value,
+                student_id: document.getElementById('regId').value.trim() || generatedId,
+                pass: document.getElementById('regPass').value || "123456",
+                photo: compressedPhotoBase64 || "",
+                fees: "0",
+                status: "pending"
+            };
+
+            // Validation
+            if (!formData.student_class) {
+                showSmoothAlert("Please select a class!", 'warning');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
             }
-        } catch (err) {
-            hideLoader();
-            showSmoothAlert("❌ Server Error! Please try again.", 'error');
-            console.error('Registration error:', err);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        }
-    });
+
+            if (formData.mobile && !/^\d{10}$/.test(formData.mobile)) {
+                showSmoothAlert("Invalid mobile number! Must be 10 digits.", 'warning');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
+            }
+
+            try {
+                showLoader();
+                const response = await fetch('/api/student-reg', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                hideLoader();
+                
+                if (result.success) {
+                    showSmoothAlert(
+                        `✅ Registration Successful!\nStudent ID: ${result.student_id}\nPassword: ${formData.pass}`,
+                        'success'
+                    );
+                    
+                    // Reset form
+                    studentRegForm.reset();
+                    compressedPhotoBase64 = "";
+                    document.getElementById('photoPreviewContainer').style.display = 'none';
+                    regModal.style.display = "none";
+                    
+                    // Auto-open admission popup
+                    setTimeout(() => {
+                        openVip('vipAdmission');
+                    }, 1000);
+                } else {
+                    showSmoothAlert(`❌ Registration Failed: ${result.error}`, 'error');
+                }
+            } catch (err) {
+                hideLoader();
+                showSmoothAlert("❌ Server Error! Please try again.", 'error');
+                console.error('Registration error:', err);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    }
 
     // --- 7. Slider Functions ---
     async function fetchSliderPhotos() {
@@ -895,3 +936,40 @@ document.addEventListener('keydown', (e) => {
         document.body.style.overflow = 'auto';
     }
 });
+
+// Additional global functions
+function openRegistration() {
+    const regModal = document.getElementById('regModal');
+    if (regModal) {
+        regModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('regDate').value = today;
+    }
+}
+
+// Add missing global functions for slider and ring
+function moveSlider(direction) {
+    const wrapper = document.getElementById('dynamic-slider');
+    if (!wrapper) return;
+    
+    const slides = wrapper.querySelectorAll('img');
+    if (slides.length === 0) return;
+    
+    let currentSlide = parseInt(wrapper.dataset.currentSlide || 0);
+    currentSlide += direction;
+    
+    if (currentSlide >= slides.length) currentSlide = 0;
+    if (currentSlide < 0) currentSlide = slides.length - 1;
+    
+    wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+    wrapper.dataset.currentSlide = currentSlide;
+}
+
+function scrollRing(direction) {
+    const ring = document.getElementById('teacher-ring');
+    if (!ring) return;
+    
+    const scrollAmount = 250;
+    ring.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+}
