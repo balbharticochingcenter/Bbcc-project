@@ -188,39 +188,81 @@
             </div>
 
             <div id="vip1-hi" class="lang-content active">
-                <!-- Hindi content (unchanged) -->
                 <p>Bal Bharti Coaching Center (BBCC) Madhubani ke Chakdah Chowk par sthit ek vishwasniya coaching institute hai.</p>
-                <!-- ... rest of content ... -->
+                <p>Yahan Class 1st se 10th tak ke bachchon ko Maths, Science, English, Hindi aur Social Science bahut hi saral aur effective tareeke se padhaya jaata hai.</p>
+                <p>Ham yeh maante hain ki har bachcha alag hota hai, isliye yahan ratta nahi balki <strong>concept-based learning</strong> par zor diya jaata hai.</p>
+                <p>BBCC ka maqsad sirf exam clear karwana nahi, balki bachchon ke andar confidence, discipline aur self-belief develop karna hai.</p>
+                <div class="vip-cta">📌 Admission Open – Aaj hi Join Karein</div>
             </div>
+
             <div id="vip1-ma" class="lang-content">
-                <!-- Maithili content -->
+                <p>Bal Bharti Coaching Center, Chakdah Chowk Madhubani me sthit, ek bharosamand coaching sansthan chhai.</p>
+                <p>Ehi jagah par Class 1 se 10 tak ke bachcha sab ke sab subject ke padhai karaal jaait chhai.</p>
+                <p>Hamra yeh vishwas chhai ki har bachcha alag-alag tarah se seekhait chhai, tai hamra yahan ratta nahi, samajh ke padhai karal jaait chhai.</p>
+                <p>Bal Bharti Coaching Center bachcha ke bhavishya banabe ke kaam karait chhai.</p>
+                <div class="vip-cta">📌 Admission Khulal Chhai – Aahan Aabhi Join Karu</div>
             </div>
+
             <div id="vip1-hg" class="lang-content">
-                <!-- Hinglish content -->
+                <p>Bal Bharti Coaching Center ek aisa coaching hai jahan Class 1st se 10th tak ke students ko proper guidance aur care ke saath padhaya jaata hai.</p>
+                <p>Yahan sirf marks pe focus nahi hota, balki student ka overall development hota hai.</p>
+                <p>Weak students ke liye special attention, aur average students ko top level tak le jaane ka system hai.</p>
+                <div class="vip-cta">🚀 Secure Your Child's Future – Join BBCC</div>
             </div>
+
             <div id="vip1-en" class="lang-content">
-                <!-- English content -->
+                <p>Bal Bharti Coaching Center is a trusted and well-known coaching institute located at Chakdah Chowk, Madhubani, Bihar.</p>
+                <p>We provide quality education for students from Class 1 to Class 10 with complete focus on concept clarity and strong fundamentals.</p>
+                <p>Our goal is not only to improve marks, but to build confidence, discipline and academic strength.</p>
+                <div class="vip-cta">🎯 Admissions Open – Enroll Now</div>
             </div>
         </div>
     </div>
 
-    <!-- VIP 2-10 Popups (similar structure) -->
-    <div id="vip2" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip3" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip4" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip5" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip6" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip7" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip8" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip9" class="vip-popup"><div class="vip-box">...</div></div>
-    <div id="vip10" class="vip-popup"><div class="vip-box">...</div></div>
+    <!-- VIP 2-10 Popups (simplified for space) -->
+    <div id="vip2" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip2')">&times;</span><h2>Why Choose Us</h2><p>Content here...</p></div></div>
+    <div id="vip3" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip3')">&times;</span><h2>Classes 1-10</h2><p>Content here...</p></div></div>
+    <div id="vip4" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip4')">&times;</span><h2>Subjects</h2><p>Content here...</p></div></div>
+    <div id="vip5" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip5')">&times;</span><h2>Results</h2><p>Content here...</p></div></div>
+    <div id="vip6" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip6')">&times;</span><h2>Online Classes</h2><p>Content here...</p></div></div>
+    <div id="vip7" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip7')">&times;</span><h2>Offline Coaching</h2><p>Content here...</p></div></div>
+    <div id="vip8" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip8')">&times;</span><h2>Teachers</h2><p>Content here...</p></div></div>
+    <div id="vip9" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip9')">&times;</span><h2>Admission</h2><p>Content here...</p></div></div>
+    <div id="vip10" class="vip-popup"><div class="vip-box"><span class="vip-close" onclick="closeVip('vip10')">&times;</span><h2>Contact Us</h2><p>Content here...</p></div></div>
 
     <!-- Admission Popup -->
     <div id="vipAdmission" class="vip-popup">
         <div class="vip-box">
             <span class="vip-close" onclick="closeVip('vipAdmission')">&times;</span>
             <h2><i class="fas fa-fire"></i> Admission Open – Bal Bharti Coaching Center</h2>
-            <!-- Multi-language content -->
+            
+            <div class="lang-tabs">
+                <button class="active" id="vipAdmission-btn-hi" onclick="showLang('vipAdmission','hi')">Hindi</button>
+                <button id="vipAdmission-btn-ma" onclick="showLang('vipAdmission','ma')">Maithili</button>
+                <button id="vipAdmission-btn-hg" onclick="showLang('vipAdmission','hg')">Hinglish</button>
+                <button id="vipAdmission-btn-en" onclick="showLang('vipAdmission','en')">English</button>
+            </div>
+
+            <div id="vipAdmission-hi" class="lang-content active">
+                <p>Yeh sahi samay hai apne bachche ke bhavishya ko secure karne ka.</p>
+                <p>Limited seats available – aaj hi admission lein.</p>
+                <div class="vip-cta">Register Now</div>
+            </div>
+
+            <div id="vipAdmission-ma" class="lang-content">
+                <p>Aabhi admission khulal chhai – der nai karu.</p>
+                <div class="vip-cta">Aahan Aabhi Join Karu</div>
+            </div>
+
+            <div id="vipAdmission-hg" class="lang-content">
+                <p>Don't miss this opportunity for your child.</p>
+                <div class="vip-cta">Join Today</div>
+            </div>
+
+            <div id="vipAdmission-en" class="lang-content">
+                <p>Admissions are now open for the new academic session.</p>
+                <div class="vip-cta">Enroll Now</div>
+            </div>
         </div>
     </div>
 
@@ -273,12 +315,13 @@
 
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
-        <div class="modal-content three-d-card">
-            <span class="close-button">&times;</span>
+        <div class="modal-content three-d-card" style="max-width: 600px;">
+            <span class="close-button" id="closeResult">&times;</span>
             <div class="modal-header">
                 <h2><i class="fas fa-search"></i> Search Student Result</h2>
-                <p>Find your result using ID or Name</p>
+                <p>Find your result using ID, Name or Mobile</p>
             </div>
+            
             <div class="search-form-group">
                 <div class="search-tabs">
                     <button class="search-tab active" onclick="setSearchMode('id')">By ID</button>
@@ -289,10 +332,10 @@
                 <div class="search-input-group">
                     <div class="input-group">
                         <label id="searchLabel">Student ID</label>
-                        <input type="text" id="searchStudentId" placeholder="Enter Student ID">
+                        <input type="text" id="searchStudentId" placeholder="Enter Student ID (e.g., STU24001)">
                     </div>
                     <div class="input-group" id="mobileInputGroup" style="display: none;">
-                        <label>Mobile Number</label>
+                        <label>Mobile Number (Student/Parent)</label>
                         <input type="text" id="searchMobile" placeholder="Enter Mobile Number">
                     </div>
                 </div>
@@ -304,23 +347,157 @@
             
             <p id="searchMessage" class="error-message"></p>
 
-            <div id="studentResultDisplay" class="student-result-display">
-                <!-- Result display content -->
+            <!-- Result Display Area -->
+            <div id="studentResultDisplay" class="student-result-display" style="display: none;">
+                <div class="result-header">
+                    <h2 style="color: #4a90e2;">Bal Bharti Coaching Center</h2>
+                    <p>Test Examination Result</p>
+                </div>
+                
+                <div class="result-details">
+                    <div class="detail-item">
+                        <p><strong>Name:</strong> <span id="result-student-name"></span></p>
+                        <p><strong>ID:</strong> <span id="result-student-id"></span></p>
+                        <p><strong>Guardian:</strong> <span id="result-parent-name"></span></p>
+                        <p><strong>Class:</strong> <span id="result-student-class"></span></p>
+                        <p><strong>Exam Date:</strong> <span id="result-exam-date"></span></p>
+                    </div>
+                    <div class="result-photo-container">
+                        <img id="result-student-photo" src="" alt="Student Photo">
+                    </div>
+                </div>
+
+                <table class="marks-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Max Marks</th>
+                            <th>Obtained</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span id="result-exam-subject"></span></td>
+                            <td><span id="result-total-marks"></span></td>
+                            <td><span id="result-obtained-marks"></span></td>
+                            <td><span id="result-percentage"></span>%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 30px; text-align: right;">
+                    <p>Director: <b>Jagannath Sir</b></p>
+                    <p>Bal Bharti Coaching Center, Madhubani</p>
+                </div>
+
+                <div class="download-buttons">
+                    <button id="downloadPdfBtn" class="btn three-d-button">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                    <button id="downloadJpgBtn" class="btn three-d-button" style="background: #28a745;">
+                        <i class="fas fa-image"></i> Download JPG
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Registration Modal -->
     <div id="regModal" class="modal">
-        <div class="modal-content three-d-card">
+        <div class="modal-content three-d-card" style="max-width: 500px;">
             <span class="close-button" id="closeReg">&times;</span>
             <div class="modal-header">
                 <h2><i class="fas fa-user-plus"></i> Student Registration</h2>
                 <p>Join BBCC for quality education</p>
             </div>
+            
             <form id="studentRegForm">
                 <div class="form-container-box">
-                    <!-- Form fields -->
+                    <div class="input-group">
+                        <label><i class="fas fa-user"></i> Student Name *</label>
+                        <input type="text" id="regName" placeholder="Enter Student Full Name" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-user-friends"></i> Parent/Guardian Name *</label>
+                        <input type="text" id="regParent" placeholder="Enter Parent Name" required>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <div class="input-group" style="flex: 1;">
+                            <label><i class="fas fa-mobile-alt"></i> Student Mobile</label>
+                            <input type="text" id="regMobile" placeholder="Student Mobile">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label><i class="fas fa-phone"></i> Parent Mobile *</label>
+                            <input type="text" id="regParentMobile" placeholder="Parent Mobile" required>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-graduation-cap"></i> Select Class *</label>
+                        <select id="regClassSelect" required style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                            <option value="" disabled selected>-- Choose Class --</option>
+                            <optgroup label="School">
+                                <option value="1st">Class 1st</option>
+                                <option value="2nd">Class 2nd</option>
+                                <option value="3rd">Class 3rd</option>
+                                <option value="4th">Class 4th</option>
+                                <option value="5th">Class 5th</option>
+                                <option value="6th">Class 6th</option>
+                                <option value="7th">Class 7th</option>
+                                <option value="8th">Class 8th</option>
+                                <option value="9th">Class 9th</option>
+                                <option value="10th">Class 10th</option>
+                            </optgroup>
+                            <optgroup label="Intermediate">
+                                <option value="I.A.">I.A. (Arts)</option>
+                                <option value="I.Sc">I.Sc (Science)</option>
+                                <option value="I.Com">I.Com (Commerce)</option>
+                            </optgroup>
+                            <optgroup label="Graduation">
+                                <option value="B.A.">B.A. (Arts)</option>
+                                <option value="B.Sc">B.Sc (Science)</option>
+                                <option value="B.Com">B.Com (Commerce)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-calendar-alt"></i> Joining Date *</label>
+                        <input type="date" id="regDate" required>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <div class="input-group" style="flex: 1;">
+                            <label><i class="fas fa-id-card"></i> Student ID (Optional)</label>
+                            <input type="text" id="regId" placeholder="Auto-generated if empty">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label><i class="fas fa-lock"></i> Password *</label>
+                            <input type="password" id="regPass" placeholder="Set Password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label><i class="fas fa-camera"></i> Student Photo (Max 1MB)</label>
+                        <input type="file" id="regPhoto" accept="image/*" style="padding: 10px; border: 2px dashed #ddd; border-radius: 8px; width: 100%;">
+                        <small style="color: #666; display: block; margin-top: 5px;">Photo will be auto-compressed to 10KB</small>
+                        
+                        <div id="photoPreviewContainer" style="display:none; margin-top:15px; text-align:center;">
+                            <img id="photoPreview" src="" style="width:120px; height:120px; border-radius:8px; border:3px solid #4a6fff; object-fit:cover;">
+                            <p id="photoSizeLabel" style="font-size:12px; color:#666; margin-top:5px;"></p>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn three-d-button" style="background: #28a745; margin-top: 20px;">
+                        <i class="fas fa-user-plus"></i> Register Now
+                    </button>
+                    
+                    <p style="text-align: center; margin-top: 15px; font-size: 12px; color: #666;">
+                        <i class="fas fa-info-circle"></i> After registration, approval is subject to fee payment verification.
+                    </p>
                 </div>
             </form>
         </div>
@@ -378,9 +555,17 @@
     <!-- Alert Box -->
     <div id="alertBox" class="alert"></div>
 
+    <!-- Hidden SEO Content -->
+    <div style="display:none">
+        Bal Bharti Coaching Center Madhubani, Best coaching in Madhubani, Class 1 to 10 coaching Bihar,
+        Math Science English coaching, CBSE foundation coaching, Online coaching Madhubani,
+        Offline coaching Chakdah Chowk, Best teacher in Madhubani, School tuition Madhubani Bihar
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="/js/login.js"></script>
-</body>
-</html>
+
+  </body>
+</html>  
