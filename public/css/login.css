@@ -274,7 +274,20 @@ body {
         justify-content: center;
     }
 }
+/* QUICKEST FIX - JUST LOGO SMALL */
+.logo-container, .coin-container {
+    width: 40px !important;
+    height: 40px !important;
+    margin-right: 8px !important;
+}
 
+.logo-img, .coin-img {
+    transform: scale(0.9);
+}
+
+.header-left {
+    gap: 5px !important;
+}
 /* ====== SLIDER ====== */
 .slider-container {
     width: 95%;
