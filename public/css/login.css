@@ -63,34 +63,39 @@ body {
 }
 
 /* ====== HEADER ====== */
+/* ====== HEADER FIX ====== */
 .main-header {
     background: linear-gradient(135deg, var(--light-bg) 0%, #2a2a4a 100%);
-    padding: 10px 20px;
+    padding: 10px 20px !important; /* padding reduce */
     border-bottom: 3px solid var(--primary-color);
     box-shadow: var(--shadow);
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 1000;
+    width: 100%;
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 800px;
+    max-width: 100% !important; /* Full width नहीं */
     margin: 0 auto;
+    padding: 0 15px !important; /* padding add */
 }
 
 .header-left {
     display: flex;
     align-items: center;
+    flex: 1; /* flexible space */
+    min-width: 200px; /* minimum width */
 }
 
 .coin-container {
-    width: 80px;
-    height: 80px;
+    width: 60px !important; /* छोटा करें */
+    height: 60px !important;
     perspective: 1000px;
-    margin-right: 20px;
+    margin-right: 10px !important; /* margin reduce */
 }
 
 .coin-inner {
@@ -110,70 +115,16 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid #ffd700;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.coin-front {
-    background: white;
-}
-
-.coin-img {
-    width: 90%;
-    height: 90%;
-    border-radius: 50%;
-    object-fit: contain;
-    animation: logoGlow 2s ease-in-out infinite;
-}
-
-.coin-back {
-    background: linear-gradient(45deg, #d41414, #ff4b2b);
-    color: white;
-    transform: rotateY(180deg);
-    text-align: center;
-}
-
-.admission-text {
-    font-size: 12px;
-    font-weight: 900;
-    line-height: 1.2;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-}
-
-.logo-container {
-    width: 80px;
-    height: 80px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 20px;
-}
-
-.logo-img {
-    max-width: 100%;
-    max-height: 100%;
-    border-radius: 50%;
-    object-fit: contain;
-    position: relative;
-    z-index: 2;
-    animation: channelLogoEffect 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
-}
-
-.logo-ring-animation {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 3px solid transparent;
-    animation: colorChangeRing 10s linear infinite, rotateRing 20s linear infinite;
-    z-index: 1;
+    border: 2px solid #ffd700; /* border छोटा */
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
 }
 
 .header-center {
     text-align: center;
-    flex-grow: 1;
+    flex: 2; /* मध्य में ज्यादा space */
+    min-width: 300px;
+    max-width: 500px;
+    margin: 0 10px;
 }
 
 .magical-text {
@@ -183,81 +134,145 @@ body {
     -webkit-text-fill-color: transparent;
     animation: waterWave 4s linear infinite;
     font-family: 'Orbitron', sans-serif;
-    text-shadow: 0 0 20px rgba(74, 144, 226, 0.3);
+    text-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
+    line-height: 1.2;
 }
 
 #header-title {
-    font-size: 2.8em;
-    margin-bottom: 5px;
-    letter-spacing: 1px;
+    font-size: 1.8em !important; /* Font size reduce */
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #header-subtitle {
-    font-size: 1.3em;
+    font-size: 0.9em !important; /* Font size reduce */
     opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .header-right {
     display: flex;
-    gap: 15px;
+    gap: 8px !important; /* gap reduce */
+    flex: 1; /* flexible space */
+    justify-content: flex-end;
+    min-width: 200px;
 }
 
 .result-button {
-    padding: 12px 25px;
+    padding: 8px 15px !important; /* padding reduce */
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 1.1em;
+    font-size: 0.9em !important; /* font size reduce */
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     transition: var(--transition);
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
 }
 
-.result-button::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -60%;
-    width: 20%;
-    height: 200%;
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(30deg);
-    animation: shineLine 3s infinite;
+.result-button i {
+    font-size: 1em;
 }
 
-.login-btn {
-    background: linear-gradient(135deg, var(--primary-color), #3a7bd5);
-    color: white;
+/* Mobile के लिए और compact */
+@media (max-width: 1024px) {
+    .header-content {
+        padding: 0 10px !important;
+    }
+    
+    #header-title {
+        font-size: 1.5em !important;
+    }
+    
+    #header-subtitle {
+        font-size: 0.8em !important;
+    }
+    
+    .coin-container {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .result-button {
+        padding: 6px 12px !important;
+        font-size: 0.8em !important;
+    }
 }
 
-.reg-btn {
-    background: linear-gradient(135deg, var(--success-color), #218838);
-    color: white;
+@media (max-width: 768px) {
+    .header-content {
+        flex-wrap: wrap;
+        justify-content: center !important;
+        gap: 10px;
+        padding: 5px !important;
+    }
+    
+    .header-left {
+        order: 1;
+        flex: 100%;
+        justify-content: center;
+        min-width: auto;
+    }
+    
+    .header-center {
+        order: 3;
+        flex: 100%;
+        margin: 5px 0;
+    }
+    
+    .header-right {
+        order: 2;
+        flex: 100%;
+        justify-content: center;
+        min-width: auto;
+    }
+    
+    #header-title {
+        font-size: 1.3em !important;
+    }
+    
+    .result-button {
+        padding: 5px 10px !important;
+        font-size: 0.75em !important;
+    }
+    
+    .coin-container {
+        width: 40px !important;
+        height: 40px !important;
+        margin-right: 5px !important;
+    }
 }
 
-.result-btn {
-    background: linear-gradient(135deg, var(--accent-color), #e69500);
-    color: white;
-}
-
-#studentResultBtn {
-    background: var(--accent-color) !important;
-    color: #000 !important;
-    font-weight: bold;
-}
-
-#studentResultBtn:hover {
-    color: #fff !important;
-    background: #e69516 !important;
-}
-
-.result-button:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+@media (max-width: 480px) {
+    .magical-text {
+        font-size: 0.9em;
+    }
+    
+    .result-button span {
+        display: none; /* छोटे screen पर text hide */
+    }
+    
+    .result-button i {
+        margin-right: 0;
+        font-size: 1.2em;
+    }
+    
+    .result-button {
+        width: 40px;
+        height: 40px;
+        padding: 0 !important;
+        border-radius: 50%;
+        justify-content: center;
+    }
 }
 
 /* ====== SLIDER ====== */
