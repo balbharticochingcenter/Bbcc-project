@@ -1503,3 +1503,267 @@ body {
         padding: 20px;
     }
 }
+ 
+            .mega-content {
+                max-height: 70vh;
+                overflow-y: auto;
+                padding: 20px;
+            }
+            
+            .content-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #eee;
+            }
+            
+            .content-header h3 {
+                color: var(--primary);
+                margin-bottom: 10px;
+            }
+            
+            .subtitle {
+                color: #666;
+                font-size: 1.1rem;
+            }
+            
+            .icon-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 15px;
+                margin: 30px 0;
+                text-align: center;
+            }
+            
+            .icon-item {
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                transition: var(--transition);
+            }
+            
+            .icon-item:hover {
+                transform: translateY(-5px);
+                background: var(--primary);
+                color: white;
+            }
+            
+            .icon-item i {
+                font-size: 2rem;
+                margin-bottom: 10px;
+                display: block;
+            }
+            
+            .content-section {
+                margin: 40px 0;
+                padding: 25px;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            }
+            
+            .content-section h4 {
+                color: var(--primary);
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #f0f0f0;
+            }
+            
+            .content-section h5 {
+                color: var(--dark);
+                margin: 20px 0 10px;
+            }
+            
+            .class-details {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin: 20px 0;
+            }
+            
+            .class-card {
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                border-left: 5px solid var(--primary);
+            }
+            
+            .subject-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin: 20px 0;
+            }
+            
+            .subject-card {
+                padding: 20px;
+                text-align: center;
+                background: white;
+                border-radius: 10px;
+                border: 2px solid #f0f0f0;
+                transition: var(--transition);
+            }
+            
+            .subject-card:hover {
+                border-color: var(--primary);
+                transform: translateY(-5px);
+            }
+            
+            .subject-card i {
+                font-size: 2.5rem;
+                color: var(--primary);
+                margin-bottom: 15px;
+            }
+            
+            .teacher-qualities, .facility-grid, .development-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin: 20px 0;
+            }
+            
+            .quality-item, .facility-item, .dev-item {
+                padding: 20px;
+                text-align: center;
+                background: #f8f9fa;
+                border-radius: 10px;
+            }
+            
+            .results-stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 20px;
+                margin: 30px 0;
+                text-align: center;
+            }
+            
+            .stat-item h3 {
+                font-size: 2.5rem;
+                color: var(--primary);
+                margin-bottom: 5px;
+            }
+            
+            .admission-steps {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin: 30px 0;
+            }
+            
+            .step {
+                text-align: center;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                position: relative;
+            }
+            
+            .step-number {
+                position: absolute;
+                top: -15px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 30px;
+                height: 30px;
+                background: var(--primary);
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+            
+            .fee-structure {
+                background: #f0f7ff;
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+                border-left: 5px solid var(--primary);
+            }
+            
+            .final-cta {
+                text-align: center;
+                padding: 40px 20px;
+                background: linear-gradient(45deg, var(--primary), var(--secondary));
+                color: white;
+                border-radius: 15px;
+                margin-top: 40px;
+            }
+            
+            .benefits-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+                margin: 30px 0;
+            }
+            
+            .benefit {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: rgba(255,255,255,0.1);
+                padding: 10px;
+                border-radius: 8px;
+            }
+            
+            .action-buttons {
+                display: flex;
+                gap: 20px;
+                justify-content: center;
+                margin: 30px 0;
+                flex-wrap: wrap;
+            }
+            
+            .cta-btn {
+                padding: 15px 30px;
+                background: white;
+                color: var(--primary);
+                border: none;
+                border-radius: 50px;
+                font-weight: bold;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition: var(--transition);
+            }
+            
+            .cta-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            }
+            
+            .cta-btn.secondary {
+                background: transparent;
+                border: 2px solid white;
+                color: white;
+            }
+            
+            .contact-info {
+                margin-top: 30px;
+                font-size: 0.9rem;
+                opacity: 0.9;
+                line-height: 1.8;
+            }
+            
+            @media (max-width: 768px) {
+                .class-details,
+                .subject-grid,
+                .teacher-qualities,
+                .facility-grid,
+                .development-grid,
+                .admission-steps {
+                    grid-template-columns: 1fr;
+                }
+                
+                .action-buttons {
+                    flex-direction: column;
+                }
+                
+                .cta-btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+    
