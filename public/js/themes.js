@@ -848,3 +848,491 @@ function showThemeInfoModal() {
         }
     });
 }
+
+
+// ============================================
+// SPECIAL DAY SLIDERS FOR SIDEBAR
+// ============================================
+
+class SpecialDaySliders {
+    constructor() {
+        this.slidersAdded = false;
+        this.specialDays = this.getSpecialDaysData();
+    }
+
+    getSpecialDaysData() {
+        return [
+            {
+                id: "diwali",
+                name: "दिवाली विशेष",
+                englishName: "Diwali Special",
+                icon: "🪔",
+                color: "#FF9800",
+                gradient: "linear-gradient(135deg, #FF9800, #FF5722)",
+                description: "दिवाली पर विशेष कक्षाएं और छूट",
+                date: this.getUpcomingFestivalDate("diwali"),
+                link: "#vipAdmission"
+            },
+            {
+                id: "holi",
+                name: "होली ऑफर",
+                englishName: "Holi Offer",
+                icon: "🎨",
+                color: "#E91E63",
+                gradient: "linear-gradient(135deg, #E91E63, #9C27B0)",
+                description: "होली पर 20% तक की छूट",
+                date: this.getUpcomingFestivalDate("holi"),
+                link: "#vipAdmission"
+            },
+            {
+                id: "christmas",
+                name: "क्रिसमस स्पेशल",
+                englishName: "Christmas Special",
+                icon: "🎄",
+                color: "#4CAF50",
+                gradient: "linear-gradient(135deg, #4CAF50, #2196F3)",
+                description: "क्रिसमस पर विशेष कार्यक्रम",
+                date: this.getUpcomingFestivalDate("christmas"),
+                link: "#vipAdmission"
+            },
+            {
+                id: "newyear",
+                name: "नववर्ष की शुरुआत",
+                englishName: "New Year Batch",
+                icon: "🎉",
+                color: "#2196F3",
+                gradient: "linear-gradient(135deg, #2196F3, #9C27B0)",
+                description: "नए साल में नया बैच",
+                date: this.getUpcomingFestivalDate("newyear"),
+                link: "#vipAdmission"
+            },
+            {
+                id: "birthday",
+                name: "BBCC का जन्मदिन",
+                englishName: "BBCC Anniversary",
+                icon: "🎂",
+                color: "#9C27B0",
+                gradient: "linear-gradient(135deg, #9C27B0, #E91E63)",
+                description: "10+ वर्षों का सफर",
+                date: this.getUpcomingFestivalDate("anniversary"),
+                link: "#vip1"
+            }
+        ];
+    }
+
+    getUpcomingFestivalDate(festival) {
+        const today = new Date();
+        const year = today.getFullYear();
+        
+        // Set approximate dates for festivals
+        switch(festival) {
+            case "diwali": return new Date(year, 9, 25); // October 25
+            case "holi": return new Date(year, 2, 8);    // March 8
+            case "christmas": return new Date(year, 11, 25); // December 25
+            case "newyear": return new Date(year + 1, 0, 1); // January 1 next year
+            case "anniversary": return new Date(year, 3, 15); // April 15
+            default: return new Date();
+        }
+    }
+
+    init() {
+        if (this.slidersAdded) return;
+        
+        // Wait for DOM to be fully loaded
+        setTimeout(() => {
+            this.createSliders();
+            this.addStyles();
+            this.slidersAdded = true;
+            console.log("✅ Special Day Sliders Initialized");
+        }, 2000);
+    }
+
+    createSliders() {
+        const sidebar = document.querySelector('.main-header, header');
+        if (!sidebar) {
+            console.log("Sidebar not found, retrying...");
+            setTimeout(() => this.createSliders(), 1000);
+            return;
+        }
+
+        // Create container
+        const sliderContainer = document.createElement('div');
+        sliderContainer.className = 'special-day-sliders-container';
+        sliderContainer.innerHTML = `
+            <div class="special-days-header">
+                <h3 class="special-days-title">
+                    <span class="special-icon">🎊</span>
+                    त्योहार विशेष
+                    <span class="special-badge">New</span>
+                </h3>
+                <p class="special-days-subtitle">विशेष अवसरों पर विशेष ऑफर</p>
+            </div>
+            <div class="special-days-sliders"></div>
+        `;
+
+        // Add sliders
+        const slidersContainer = sliderContainer.querySelector('.special-days-sliders');
+        
+        this.specialDays.forEach((day, index) => {
+            const slide = document.createElement('div');
+            slide.className = 'special-day-slide';
+            slide.style.animationDelay = `${index * 0.2}s`;
+            
+            // Calculate days until festival
+            const daysUntil = Math.ceil((day.date - new Date()) / (1000 * 60 * 60 * 24));
+            let statusText = "";
+            
+            if (daysUntil > 30) {
+                statusText = `${daysUntil} दिन बचे`;
+            } else if (daysUntil > 0) {
+                statusText = `केवल ${daysUntil} दिन बचे`;
+            } else if (daysUntil === 0) {
+                statusText = "आज ही!";
+            } else {
+                statusText = "यादगार पल";
+            }
+
+            slide.innerHTML = `
+                <div class="special-day-icon" style="background: ${day.gradient};">
+                    ${day.icon}
+                </div>
+                <div class="special-day-content">
+                    <h4 class="special-day-name">${day.name}</h4>
+                    <p class="special-day-desc">${day.description}</p>
+                    <div class="special-day-meta">
+                        <span class="special-day-date">${statusText}</span>
+                        <span class="special-day-cta" onclick="window.openRegistrationModal()">ज्वाइन करें</span>
+                    </div>
+                </div>
+            `;
+
+            slide.addEventListener('click', () => {
+                this.handleSliderClick(day);
+            });
+
+            slidersContainer.appendChild(slide);
+        });
+
+        // Insert into page (after header or before footer)
+        const mainContent = document.querySelector('.hero-container, .vip-section');
+        if (mainContent) {
+            mainContent.parentNode.insertBefore(sliderContainer, mainContent.nextSibling);
+        } else {
+            document.body.insertBefore(sliderContainer, document.querySelector('footer'));
+        }
+    }
+
+    handleSliderClick(day) {
+        // Show notification
+        this.showFestivalNotification(day);
+        
+        // Open relevant section
+        if (day.link) {
+            if (day.link.startsWith('#')) {
+                const element = document.querySelector(day.link);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+        
+        // For admission links
+        if (day.id.includes("offer") || day.id.includes("special")) {
+            setTimeout(() => {
+                if (typeof openRegistrationModal === 'function') {
+                    openRegistrationModal();
+                }
+            }, 500);
+        }
+    }
+
+    showFestivalNotification(day) {
+        const notification = document.createElement('div');
+        notification.className = 'festival-notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: ${day.gradient};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 9999;
+            animation: slideInRight 0.3s ease;
+            max-width: 300px;
+        `;
+        
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">${day.icon}</span>
+                <div>
+                    <strong>${day.name}</strong>
+                    <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.9;">${day.description}</p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    addStyles() {
+        if (document.querySelector('#special-day-sliders-styles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'special-day-sliders-styles';
+        styles.textContent = `
+            .special-day-sliders-container {
+                margin: 30px auto;
+                max-width: 1200px;
+                padding: 0 20px;
+            }
+            
+            .special-days-header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            
+            .special-days-title {
+                color: var(--theme-primary, #7c3aed);
+                font-size: 2rem;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            .special-icon {
+                font-size: 2.5rem;
+                animation: bounce 2s infinite;
+            }
+            
+            .special-badge {
+                background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+                color: white;
+                padding: 5px 15px;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: bold;
+            }
+            
+            .special-days-subtitle {
+                color: #666;
+                font-size: 1.1rem;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .special-days-sliders {
+                display: flex;
+                gap: 20px;
+                overflow-x: auto;
+                padding: 20px 10px;
+                scrollbar-width: thin;
+                scrollbar-color: var(--theme-primary) #f0f0f0;
+            }
+            
+            .special-days-sliders::-webkit-scrollbar {
+                height: 6px;
+            }
+            
+            .special-days-sliders::-webkit-scrollbar-track {
+                background: #f0f0f0;
+                border-radius: 3px;
+            }
+            
+            .special-days-sliders::-webkit-scrollbar-thumb {
+                background: var(--theme-primary);
+                border-radius: 3px;
+            }
+            
+            .special-day-slide {
+                min-width: 280px;
+                background: white;
+                border-radius: 15px;
+                padding: 25px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 1px solid #eaeaea;
+                animation: slideInUp 0.5s ease forwards;
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            
+            .special-day-slide:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+                border-color: var(--theme-primary);
+            }
+            
+            .special-day-icon {
+                width: 60px;
+                height: 60px;
+                border-radius: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2rem;
+                margin-bottom: 20px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+            
+            .special-day-name {
+                font-size: 1.3rem;
+                color: #333;
+                margin-bottom: 10px;
+            }
+            
+            .special-day-desc {
+                color: #666;
+                font-size: 0.95rem;
+                line-height: 1.5;
+                margin-bottom: 15px;
+            }
+            
+            .special-day-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-top: 15px;
+                border-top: 1px solid #eee;
+            }
+            
+            .special-day-date {
+                color: #888;
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+            
+            .special-day-cta {
+                background: var(--theme-primary);
+                color: white;
+                padding: 8px 20px;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .special-day-cta:hover {
+                background: var(--theme-accent);
+                transform: scale(1.05);
+            }
+            
+            @keyframes slideInUp {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+            
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            
+            @media (max-width: 768px) {
+                .special-days-title {
+                    font-size: 1.5rem;
+                }
+                
+                .special-day-slide {
+                    min-width: 250px;
+                    padding: 20px;
+                }
+                
+                .special-days-sliders {
+                    padding: 10px;
+                }
+            }
+        `;
+
+        document.head.appendChild(styles);
+    }
+
+    updateWithCurrentTheme() {
+        if (!window.themeManager?.currentTheme) return;
+        
+        const theme = window.themeManager.currentTheme;
+        const slides = document.querySelectorAll('.special-day-slide');
+        
+        slides.forEach(slide => {
+            const cta = slide.querySelector('.special-day-cta');
+            if (cta) {
+                cta.style.background = theme.colors[0];
+                cta.style.color = 'white';
+            }
+        });
+        
+        // Update container with current festival
+        const container = document.querySelector('.special-days-header');
+        if (container) {
+            const title = container.querySelector('.special-days-title');
+            if (title && theme.name) {
+                title.innerHTML = `
+                    <span class="special-icon">${theme.icon || '🎊'}</span>
+                    ${theme.name} विशेष
+                    <span class="special-badge">Live</span>
+                `;
+            }
+        }
+    }
+}
+
+// ============================================
+// INTEGRATION WITH EXISTING THEME SYSTEM
+// ============================================
+
+// Initialize after theme manager
+document.addEventListener('DOMContentLoaded', () => {
+    // Create global instance
+    window.specialDaySliders = new SpecialDaySliders();
+    
+    // Wait for theme manager to initialize
+    setTimeout(() => {
+        if (window.themeManager) {
+            // Initialize sliders
+            window.specialDaySliders.init();
+            
+            // Update sliders when theme changes
+            window.specialDaySliders.updateWithCurrentTheme();
+        } else {
+            // Fallback initialization
+            window.specialDaySliders.init();
+        }
+    }, 3000); // 3 second delay
+    
+    // Reinitialize when page changes (for SPA-like behavior)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && !window.specialDaySliders.slidersAdded) {
+            window.specialDaySliders.init();
+        }
+    });
+});
+
+// Optional: Add refresh function for manual control
+function refreshSpecialDaySliders() {
+    if (window.specialDaySliders) {
+        window.specialDaySliders.slidersAdded = false;
+        window.specialDaySliders.init();
+    }
+}
