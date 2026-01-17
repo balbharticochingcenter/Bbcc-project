@@ -823,6 +823,15 @@ class ThemeManager {
                     { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
                     { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
                     { frequency: 392.00, duration: 1.5, type: 'sine' },  // G4
+                    { frequency: 523.25, duration: 0.8, type: 'sine' },  // C5 (Jana Gana Mana)
+                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
+                { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
+                { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
+                { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
+                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
+                { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
+                { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
+                { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
                 ]
             },
             
