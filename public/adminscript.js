@@ -1402,3 +1402,246 @@ function printReminder() {
     w.document.write(document.getElementById("reminderTable").outerHTML);
     w.print();
 }
+
+
+
+
+/////////////////////////////////////////////
+// ================= CSV DOWNLOAD FUNCTIONS WITH VALIDATION =================
+
+// Helper function to validate Indian mobile number
+function isValidMobile(number) {
+    if (!number) return false;
+    
+    const cleaned = number.toString().trim();
+    
+    // Check for "N/A", empty, or invalid values
+    if (cleaned === "N/A" || cleaned === "" || cleaned === "null" || cleaned === "undefined") {
+        return false;
+    }
+    
+    // Check if it's a valid 10-digit Indian mobile number
+    const mobileRegex = /^[6-9]\d{9}$/;
+    return mobileRegex.test(cleaned.replace(/\D/g, ''));
+}
+
+// 1. PARENT CSV DOWNLOAD - Only valid parent numbers
+function downloadParentCSV() {
+    const rows = document.querySelectorAll("#smsReminderBody tr");
+    if (rows.length === 0) {
+        alert("Koi data nahi hai download karne ke liye!");
+        return;
+    }
+    
+    let csv = "Parent Mobile,SMS Text\n";
+    let count = 0;
+    
+    rows.forEach(row => {
+        const parentMobileCell = row.querySelector("td:nth-child(7)");
+        const parentMobile = parentMobileCell ? parentMobileCell.innerText.trim() : "";
+        const smsText = row.querySelector(".msgBox")?.value.trim() || "";
+        
+        // Skip if parent mobile is not valid
+        if (!isValidMobile(parentMobile)) {
+            console.log(`Skipping parent: ${parentMobile} - Invalid mobile`);
+            return; // Continue to next iteration
+        }
+        
+        // CSV format: Escape quotes and newlines
+        const escapedText = smsText.replace(/"/g, '""');
+        // Replace newlines with space for single line
+        const singleLineText = escapedText.replace(/\n/g, ' ');
+        
+        csv += `"${parentMobile}","${singleLineText}"\n`;
+        count++;
+    });
+    
+    if (count === 0) {
+        alert("Koi valid parent mobile number nahi hai CSV banane ke liye!");
+        return;
+    }
+    
+    downloadCSV(csv, `parent_fees_reminder_${getFormattedDate()}.csv`);
+    showDownloadMessage(count, "parents");
+}
+
+// 2. STUDENT CSV DOWNLOAD - Only valid student numbers
+function downloadStudentCSV() {
+    const rows = document.querySelectorAll("#smsReminderBody tr");
+    if (rows.length === 0) {
+        alert("Koi data nahi hai download karne ke liye!");
+        return;
+    }
+    
+    let csv = "Student Mobile,SMS Text\n";
+    let count = 0;
+    
+    rows.forEach(row => {
+        const studentMobileCell = row.querySelector("td:nth-child(8)");
+        const studentMobile = studentMobileCell ? studentMobileCell.innerText.trim() : "";
+        const smsText = row.querySelector(".msgBox")?.value.trim() || "";
+        
+        // Skip if student mobile is not valid
+        if (!isValidMobile(studentMobile)) {
+            console.log(`Skipping student: ${studentMobile} - Invalid mobile`);
+            return; // Continue to next iteration
+        }
+        
+        // CSV format: Escape quotes and newlines
+        const escapedText = smsText.replace(/"/g, '""');
+        // Replace newlines with space for single line
+        const singleLineText = escapedText.replace(/\n/g, ' ');
+        
+        csv += `"${studentMobile}","${singleLineText}"\n`;
+        count++;
+    });
+    
+    if (count === 0) {
+        alert("Koi valid student mobile number nahi hai CSV banane ke liye!");
+        return;
+    }
+    
+    downloadCSV(csv, `student_fees_reminder_${getFormattedDate()}.csv`);
+    showDownloadMessage(count, "students");
+}
+
+// 3. ALL DATA CSV - Includes both with validation
+function downloadAllCSV() {
+    const rows = document.querySelectorAll("#smsReminderBody tr");
+    if (rows.length === 0) {
+        alert("Koi data nahi hai!");
+        return;
+    }
+    
+    let csv = "Student ID,Student Name,Class,Parent Mobile,Student Mobile,SMS Text,Due Amount,Due Months\n";
+    let parentCount = 0;
+    let studentCount = 0;
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const studentId = cells[1]?.innerText.trim() || "";
+        const studentName = cells[2]?.innerText.trim() || "";
+        const studentClass = cells[3]?.innerText.trim() || "";
+        const parentMobile = cells[6]?.innerText.trim() || "";
+        const studentMobile = cells[7]?.innerText.trim() || "";
+        const dueMonths = cells[4]?.innerText.trim() || "";
+        const dueAmount = cells[5]?.innerText.trim() || "";
+        const smsText = row.querySelector(".msgBox")?.value.trim() || "";
+        
+        // Only include if at least one valid mobile exists
+        const hasValidParent = isValidMobile(parentMobile);
+        const hasValidStudent = isValidMobile(studentMobile);
+        
+        if (!hasValidParent && !hasValidStudent) {
+            console.log(`Skipping row ${studentId}: No valid mobile numbers`);
+            return; // Skip this row
+        }
+        
+        // Count valid numbers
+        if (hasValidParent) parentCount++;
+        if (hasValidStudent) studentCount++;
+        
+        // CSV escaping
+        const escapedText = smsText.replace(/"/g, '""');
+        const singleLineText = escapedText.replace(/\n/g, ' ');
+        const escapedDueMonths = dueMonths.replace(/"/g, '""').replace(/\n/g, ', ');
+        
+        csv += `"${studentId}","${studentName}","${studentClass}","${parentMobile}","${studentMobile}","${singleLineText}","${dueAmount}","${escapedDueMonths}"\n`;
+    });
+    
+    if (parentCount === 0 && studentCount === 0) {
+        alert("Koi valid mobile numbers nahi hai CSV banane ke liye!");
+        return;
+    }
+    
+    downloadCSV(csv, `all_fees_data_${getFormattedDate()}.csv`);
+    showDownloadMessage(parentCount + studentCount, "total entries");
+}
+
+// 4. COMMON CSV DOWNLOAD HELPER
+function downloadCSV(csvContent, fileName) {
+    try {
+        // Add BOM for UTF-8 encoding (for Excel compatibility)
+        const BOM = "\uFEFF";
+        const blob = new Blob([BOM + csvContent], { 
+            type: 'text/csv;charset=utf-8;' 
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up URL object
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+    } catch (error) {
+        console.error("CSV download error:", error);
+        alert("CSV download mein error aaya. Kripya console check karein.");
+    }
+}
+
+// 5. HELPER FUNCTIONS
+function getFormattedDate() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}_${hours}-${minutes}`;
+}
+
+function showDownloadMessage(count, type) {
+    // You can show a small notification here
+    console.log(`✅ ${count} ${type} added to CSV`);
+    
+    // Optional: Show a toast notification
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #27ae60;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 5px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease;
+    `;
+    
+    toast.innerHTML = `
+        <strong>✅ CSV Downloaded!</strong><br>
+        ${count} ${type} added to file
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+}
+
+// Add CSS for animations (add to your CSS file or style tag)
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
