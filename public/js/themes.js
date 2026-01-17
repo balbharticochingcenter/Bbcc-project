@@ -721,275 +721,339 @@ class ThemeManager {
         document.head.appendChild(style);
     }
 
-    // त्योहार के अनुसार MP3 फाइल्स
-   // त्योहार के अनुसार MP3 फाइल्स - UPDATED VERSION
-getFestivalMP3(theme) {
-    const mp3Files = {
-        'diwali': 'https://assets.mixkit.co/sfx/preview/mixkit-firework-show-3019.mp3',
-        'holi': 'https://assets.mixkit.co/sfx/preview/mixkit-party-horn-sound-2927.mp3',
-        'new-year': 'https://assets.mixkit.co/sfx/preview/mixkit-new-year-countdown-party-2171.mp3',
-        'christmas': 'https://assets.mixkit.co/sfx/preview/mixkit-christmas-bells-2995.mp3',
-        'ganesh-chaturthi': 'https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3',
-        'republic-day': 'https://assets.mixkit.co/sfx/preview/mixkit-national-anthem-of-india-170.mp3',
-        'independence-day': 'https://assets.mixkit.co/sfx/preview/mixkit-national-anthem-of-india-170.mp3',
-        'janmashtami': 'https://assets.mixkit.co/sfx/preview/mixkit-flute-melody-ambient-148.mp3',
-        'ram-navami': 'https://assets.mixkit.co/sfx/preview/mixkit-temple-bell-sound-3554.mp3',
-        'durga-puja': 'https://assets.mixkit.co/sfx/preview/mixkit-temple-drum-hitting-3555.mp3',
-        'dussehra': 'https://assets.mixkit.co/sfx/preview/mixkit-victory-fanfare-2011.mp3',
-        'vasant-panchami': 'https://assets.mixkit.co/sfx/preview/mixkit-flute-happy-melody-148.mp3',
-        'shivratri': 'https://assets.mixkit.co/sfx/preview/mixkit-meditation-bells-1925.mp3',
-        'raksha-bandhan': 'https://assets.mixkit.co/sfx/preview/mixkit-happy-family-melody-2020.mp3',
-        'teachers-day': 'https://assets.mixkit.co/sfx/preview/mixkit-applause-light-1-276.mp3',
-        'gandhi-jayanti': 'https://assets.mixkit.co/sfx/preview/mixkit-peaceful-bells-1924.mp3',
-        'chhath-puja': 'https://assets.mixkit.co/sfx/preview/mixkit-morning-in-the-jungle-1235.mp3',
-        'childrens-day': 'https://assets.mixkit.co/sfx/preview/mixkit-kids-laughing-143.mp3',
-        'default': 'https://assets.mixkit.co/sfx/preview/mixkit-celebration-horn-2015.mp3'
-    };
-    
-    return mp3Files[theme] || mp3Files['default'];
-}
+    // त्योहार के अनुसार MP3 फाइल्स - UPDATED VERSION
+    getFestivalMP3(theme) {
+        const mp3Files = {
+            'diwali': 'https://assets.mixkit.co/sfx/preview/mixkit-firework-show-3019.mp3',
+            'holi': 'https://assets.mixkit.co/sfx/preview/mixkit-party-horn-sound-2927.mp3',
+            'new-year': 'https://assets.mixkit.co/sfx/preview/mixkit-new-year-countdown-party-2171.mp3',
+            'christmas': 'https://assets.mixkit.co/sfx/preview/mixkit-christmas-bells-2995.mp3',
+            'ganesh-chaturthi': 'https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3',
+            'republic-day': 'https://assets.mixkit.co/sfx/preview/mixkit-national-anthem-of-india-170.mp3',
+            'independence-day': 'https://assets.mixkit.co/sfx/preview/mixkit-national-anthem-of-india-170.mp3',
+            'janmashtami': 'https://assets.mixkit.co/sfx/preview/mixkit-flute-melody-ambient-148.mp3',
+            'ram-navami': 'https://assets.mixkit.co/sfx/preview/mixkit-temple-bell-sound-3554.mp3',
+            'durga-puja': 'https://assets.mixkit.co/sfx/preview/mixkit-temple-drum-hitting-3555.mp3',
+            'dussehra': 'https://assets.mixkit.co/sfx/preview/mixkit-victory-fanfare-2011.mp3',
+            'vasant-panchami': 'https://assets.mixkit.co/sfx/preview/mixkit-flute-happy-melody-148.mp3',
+            'shivratri': 'https://assets.mixkit.co/sfx/preview/mixkit-meditation-bells-1925.mp3',
+            'raksha-bandhan': 'https://assets.mixkit.co/sfx/preview/mixkit-happy-family-melody-2020.mp3',
+            'teachers-day': 'https://assets.mixkit.co/sfx/preview/mixkit-applause-light-1-276.mp3',
+            'gandhi-jayanti': 'https://assets.mixkit.co/sfx/preview/mixkit-peaceful-bells-1924.mp3',
+            'chhath-puja': 'https://assets.mixkit.co/sfx/preview/mixkit-morning-in-the-jungle-1235.mp3',
+            'childrens-day': 'https://assets.mixkit.co/sfx/preview/mixkit-kids-laughing-143.mp3',
+            'default': 'https://assets.mixkit.co/sfx/preview/mixkit-celebration-horn-2015.mp3'
+        };
+        
+        return mp3Files[theme] || mp3Files['default'];
+    }
 
-// त्योहार के अनुसार साउंड पैटर्न - UPDATED VERSION
-getFestivalSoundPattern(theme) {
-    const patterns = {
-        // दिवाली - पटाखों जैसी आवाज
-        'diwali': {
-            notes: [
-                { frequency: 659.25, duration: 0.2, type: 'square' }, // E5
-                { frequency: 523.25, duration: 0.2, type: 'square' }, // C5
-                { frequency: 392.00, duration: 0.3, type: 'square' }, // G4
-                { frequency: 659.25, duration: 0.1, type: 'square' }, // E5
-                { frequency: 783.99, duration: 0.4, type: 'square' }, // G5
-                { frequency: 523.25, duration: 0.2, type: 'square' }, // C5
-                { frequency: 392.00, duration: 0.5, type: 'square' }, // G4
-                { frequency: 293.66, duration: 0.3, type: 'square' }, // D4
-            ]
-        },
+    // MP3 फाइल प्ले करें
+    playMP3Sound(theme) {
+        const mp3Url = this.getFestivalMP3(theme);
+        const audio = new Audio(mp3Url);
+        audio.volume = 0.3;
         
-        // होली - मस्ती भरी आवाज
-        'holi': {
-            notes: [
-                { frequency: 523.25, duration: 0.3, type: 'sine' },  // C5
-                { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                { frequency: 659.25, duration: 0.3, type: 'sine' },  // E5
-                { frequency: 698.46, duration: 0.3, type: 'sine' },  // F5
-                { frequency: 783.99, duration: 0.4, type: 'sine' },  // G5
-                { frequency: 880.00, duration: 0.4, type: 'sine' },  // A5
-                { frequency: 987.77, duration: 0.5, type: 'sine' },  // B5
-                { frequency: 1046.50, duration: 0.5, type: 'sine' }, // C6
-            ]
-        },
+        // 10 सेकंड के बाद ऑटो स्टॉप
+        setTimeout(() => {
+            audio.pause();
+            audio.currentTime = 0;
+        }, 10000);
         
-        // नया साल - पार्टी वाली आवाज
-        'new-year': {
-            notes: [
-                { frequency: 1046.50, duration: 0.5, type: 'triangle' }, // C6
-                { frequency: 1174.66, duration: 0.5, type: 'triangle' }, // D6
-                { frequency: 1318.51, duration: 0.5, type: 'triangle' }, // E6
-                { frequency: 1396.91, duration: 0.5, type: 'triangle' }, // F6
-                { frequency: 1567.98, duration: 1.0, type: 'triangle' }, // G6
-                { frequency: 1760.00, duration: 1.0, type: 'triangle' }, // A6
-                { frequency: 1975.53, duration: 1.5, type: 'triangle' }, // B6
-            ]
-        },
+        audio.play().catch(e => {
+            console.log('MP3 play failed, using generated sound instead');
+            this.playFestiveSound(); // Fallback to generated sound
+        });
+    }
+
+    // त्योहार के अनुसार साउंड पैटर्न - UPDATED VERSION
+    getFestivalSoundPattern(theme) {
+        const patterns = {
+            // दिवाली - पटाखों जैसी आवाज
+            'diwali': {
+                notes: [
+                    { frequency: 659.25, duration: 0.2, type: 'square' }, // E5
+                    { frequency: 523.25, duration: 0.2, type: 'square' }, // C5
+                    { frequency: 392.00, duration: 0.3, type: 'square' }, // G4
+                    { frequency: 659.25, duration: 0.1, type: 'square' }, // E5
+                    { frequency: 783.99, duration: 0.4, type: 'square' }, // G5
+                    { frequency: 523.25, duration: 0.2, type: 'square' }, // C5
+                    { frequency: 392.00, duration: 0.5, type: 'square' }, // G4
+                    { frequency: 293.66, duration: 0.3, type: 'square' }, // D4
+                ]
+            },
+            
+            // होली - मस्ती भरी आवाज
+            'holi': {
+                notes: [
+                    { frequency: 523.25, duration: 0.3, type: 'sine' },  // C5
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
+                    { frequency: 659.25, duration: 0.3, type: 'sine' },  // E5
+                    { frequency: 698.46, duration: 0.3, type: 'sine' },  // F5
+                    { frequency: 783.99, duration: 0.4, type: 'sine' },  // G5
+                    { frequency: 880.00, duration: 0.4, type: 'sine' },  // A5
+                    { frequency: 987.77, duration: 0.5, type: 'sine' },  // B5
+                    { frequency: 1046.50, duration: 0.5, type: 'sine' }, // C6
+                ]
+            },
+            
+            // नया साल - पार्टी वाली आवाज
+            'new-year': {
+                notes: [
+                    { frequency: 1046.50, duration: 0.5, type: 'triangle' }, // C6
+                    { frequency: 1174.66, duration: 0.5, type: 'triangle' }, // D6
+                    { frequency: 1318.51, duration: 0.5, type: 'triangle' }, // E6
+                    { frequency: 1396.91, duration: 0.5, type: 'triangle' }, // F6
+                    { frequency: 1567.98, duration: 1.0, type: 'triangle' }, // G6
+                    { frequency: 1760.00, duration: 1.0, type: 'triangle' }, // A6
+                    { frequency: 1975.53, duration: 1.5, type: 'triangle' }, // B6
+                ]
+            },
+            
+            // गणतंत्र दिवस & स्वतंत्रता दिवस - देशभक्ति साउंड
+            'republic-day': {
+                notes: [
+                    { frequency: 293.66, duration: 0.8, type: 'sine' },  // D4 (Sare Jahan Se Achha)
+                    { frequency: 329.63, duration: 0.4, type: 'sine' },  // E4
+                    { frequency: 349.23, duration: 0.8, type: 'sine' },  // F4
+                    { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
+                    { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
+                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
+                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
+                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
+                    { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
+                    { frequency: 392.00, duration: 1.5, type: 'sine' },  // G4
+                ]
+            },
+            
+            'independence-day': {
+                notes: [
+                    { frequency: 523.25, duration: 0.8, type: 'sine' },  // C5 (Jana Gana Mana)
+                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
+                    { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
+                    { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
+                    { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
+                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
+                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
+                    { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
+                    { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
+                ]
+            },
+            
+            // क्रिसमस - घंटियों जैसी आवाज
+            'christmas': {
+                notes: [
+                    { frequency: 659.25, duration: 0.4, type: 'sawtooth' },  // E5
+                    { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
+                    { frequency: 783.99, duration: 0.6, type: 'sawtooth' },  // G5
+                    { frequency: 659.25, duration: 0.4, type: 'sawtooth' },  // E5
+                    { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
+                    { frequency: 392.00, duration: 0.8, type: 'sawtooth' },  // G4
+                    { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
+                ]
+            },
+            
+            // गणेश चतुर्थी - भक्ति साउंड
+            'ganesh-chaturthi': {
+                notes: [
+                    { frequency: 329.63, duration: 0.8, type: 'sine' },  // E4
+                    { frequency: 349.23, duration: 0.4, type: 'sine' },  // F4
+                    { frequency: 392.00, duration: 0.8, type: 'sine' },  // G4
+                    { frequency: 440.00, duration: 0.4, type: 'sine' },  // A4
+                    { frequency: 493.88, duration: 0.8, type: 'sine' },  // B4
+                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
+                ]
+            },
+            
+            // होली की तरह अन्य त्योहारों के लिए
+            'vasant-panchami': {
+                notes: [
+                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
+                    { frequency: 587.33, duration: 0.4, type: 'sine' },  // D5
+                    { frequency: 659.25, duration: 0.4, type: 'sine' },  // E5
+                    { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
+                    { frequency: 783.99, duration: 0.4, type: 'sine' },  // G5
+                ]
+            },
+            
+            // जन्माष्टमी - बांसुरी साउंड
+            'janmashtami': {
+                notes: [
+                    { frequency: 440.00, duration: 0.6, type: 'sine' },  // A4
+                    { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
+                    { frequency: 523.25, duration: 0.6, type: 'sine' },  // C5
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
+                    { frequency: 659.25, duration: 0.8, type: 'sine' },  // E5
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
+                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
+                ]
+            },
+            
+            // राम नवमी - मंदिर घंटी
+            'ram-navami': {
+                notes: [
+                    { frequency: 392.00, duration: 0.5, type: 'sine' },  // G4
+                    { frequency: 440.00, duration: 0.3, type: 'sine' },  // A4
+                    { frequency: 493.88, duration: 0.5, type: 'sine' },  // B4
+                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
+                    { frequency: 493.88, duration: 0.5, type: 'sine' },  // B4
+                    { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
+                    { frequency: 392.00, duration: 1.0, type: 'sine' },  // G4
+                ]
+            },
+            
+            // दुर्गा पूजा - ढोल साउंड
+            'durga-puja': {
+                notes: [
+                    { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
+                    { frequency: 196.00, duration: 0.2, type: 'sawtooth' },  // G3
+                    { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
+                    { frequency: 261.63, duration: 0.4, type: 'sawtooth' },  // C4
+                    { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
+                    { frequency: 196.00, duration: 0.5, type: 'sawtooth' },  // G3
+                ]
+            },
+            
+            // दशहरा - विजय साउंड
+            'dussehra': {
+                notes: [
+                    { frequency: 440.00, duration: 0.2, type: 'triangle' },  // A4
+                    { frequency: 523.25, duration: 0.2, type: 'triangle' },  // C5
+                    { frequency: 659.25, duration: 0.3, type: 'triangle' },  // E5
+                    { frequency: 783.99, duration: 0.5, type: 'triangle' },  // G5
+                    { frequency: 880.00, duration: 0.3, type: 'triangle' },  // A5
+                    { frequency: 783.99, duration: 0.2, type: 'triangle' },  // G5
+                    { frequency: 659.25, duration: 0.8, type: 'triangle' },  // E5
+                ]
+            },
+            
+            // महा शिवरात्रि - मेडिटेशन साउंड
+            'shivratri': {
+                notes: [
+                    { frequency: 196.00, duration: 1.0, type: 'sine' },  // G3
+                    { frequency: 220.00, duration: 0.8, type: 'sine' },  // A3
+                    { frequency: 261.63, duration: 1.2, type: 'sine' },  // C4
+                    { frequency: 293.66, duration: 1.0, type: 'sine' },  // D4
+                    { frequency: 329.63, duration: 1.5, type: 'sine' },  // E4
+                ]
+            },
+            
+            // रक्षा बंधन - प्यार भरा साउंड
+            'raksha-bandhan': {
+                notes: [
+                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
+                    { frequency: 587.33, duration: 0.4, type: 'sine' },  // D5
+                    { frequency: 659.25, duration: 0.6, type: 'sine' },  // E5
+                    { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
+                    { frequency: 783.99, duration: 0.8, type: 'sine' },  // G5
+                    { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
+                    { frequency: 659.25, duration: 0.6, type: 'sine' },  // E5
+                    { frequency: 587.33, duration: 1.0, type: 'sine' },  // D5
+                ]
+            },
+            
+            // छठ पूजा - प्राकृतिक साउंड
+            'chhath-puja': {
+                notes: [
+                    { frequency: 329.63, duration: 1.0, type: 'sine' },  // E4
+                    { frequency: 349.23, duration: 0.5, type: 'sine' },  // F4
+                    { frequency: 392.00, duration: 1.0, type: 'sine' },  // G4
+                    { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
+                    { frequency: 493.88, duration: 1.0, type: 'sine' },  // B4
+                    { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
+                ]
+            },
+            
+            // गाँधी जयंती - शांति साउंड
+            'gandhi-jayanti': {
+                notes: [
+                    { frequency: 261.63, duration: 1.0, type: 'sine' },  // C4
+                    { frequency: 293.66, duration: 0.8, type: 'sine' },  // D4
+                    { frequency: 329.63, duration: 1.2, type: 'sine' },  // E4
+                    { frequency: 349.23, duration: 1.0, type: 'sine' },  // F4
+                    { frequency: 392.00, duration: 1.5, type: 'sine' },  // G4
+                ]
+            },
+            
+            // बाल दिवस - खिलखिलाहट साउंड
+            'childrens-day': {
+                notes: [
+                    { frequency: 523.25, duration: 0.2, type: 'triangle' },  // C5
+                    { frequency: 587.33, duration: 0.2, type: 'triangle' },  // D5
+                    { frequency: 659.25, duration: 0.2, type: 'triangle' },  // E5
+                    { frequency: 698.46, duration: 0.3, type: 'triangle' },  // F5
+                    { frequency: 783.99, duration: 0.3, type: 'triangle' },  // G5
+                    { frequency: 880.00, duration: 0.4, type: 'triangle' },  // A5
+                    { frequency: 987.77, duration: 0.4, type: 'triangle' },  // B5
+                    { frequency: 1046.50, duration: 0.5, type: 'triangle' }, // C6
+                ]
+            },
+            
+            // Default pattern for other festivals
+            'default': {
+                notes: [
+                    { frequency: 440.00, duration: 0.3, type: 'sine' },  // A4
+                    { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
+                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
+                    { frequency: 659.25, duration: 0.5, type: 'sine' },  // E5
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
+                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
+                    { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
+                    { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
+                ]
+            }
+        };
         
-        // गणतंत्र दिवस & स्वतंत्रता दिवस - देशभक्ति साउंड
-        'republic-day': {
-            notes: [
-                { frequency: 293.66, duration: 0.8, type: 'sine' },  // D4 (Sare Jahan Se Achha)
-                { frequency: 329.63, duration: 0.4, type: 'sine' },  // E4
-                { frequency: 349.23, duration: 0.8, type: 'sine' },  // F4
-                { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
-                { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
-                { frequency: 392.00, duration: 1.5, type: 'sine' },  // G4
-            ]
-        },
+        return patterns[theme] || patterns['default'];
+    }
+
+    // Play festive sound - UPDATED VERSION with festival-specific sounds
+    playFestiveSound() {
+        if (!this.currentTheme) return;
         
-        'independence-day': {
-            notes: [
-                { frequency: 523.25, duration: 0.8, type: 'sine' },  // C5 (Jana Gana Mana)
-                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
-                { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
-                { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
-            ]
-        },
-        
-        // क्रिसमस - घंटियों जैसी आवाज
-        'christmas': {
-            notes: [
-                { frequency: 659.25, duration: 0.4, type: 'sawtooth' },  // E5
-                { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
-                { frequency: 783.99, duration: 0.6, type: 'sawtooth' },  // G5
-                { frequency: 659.25, duration: 0.4, type: 'sawtooth' },  // E5
-                { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
-                { frequency: 392.00, duration: 0.8, type: 'sawtooth' },  // G4
-                { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
-            ]
-        },
-        
-        // गणेश चतुर्थी - भक्ति साउंड
-        'ganesh-chaturthi': {
-            notes: [
-                { frequency: 329.63, duration: 0.8, type: 'sine' },  // E4
-                { frequency: 349.23, duration: 0.4, type: 'sine' },  // F4
-                { frequency: 392.00, duration: 0.8, type: 'sine' },  // G4
-                { frequency: 440.00, duration: 0.4, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 0.8, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-            ]
-        },
-        
-        // होली की तरह अन्य त्योहारों के लिए
-        'vasant-panchami': {
-            notes: [
-                { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                { frequency: 587.33, duration: 0.4, type: 'sine' },  // D5
-                { frequency: 659.25, duration: 0.4, type: 'sine' },  // E5
-                { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
-                { frequency: 783.99, duration: 0.4, type: 'sine' },  // G5
-            ]
-        },
-        
-        // जन्माष्टमी - बांसुरी साउंड
-        'janmashtami': {
-            notes: [
-                { frequency: 440.00, duration: 0.6, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 0.6, type: 'sine' },  // C5
-                { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                { frequency: 659.25, duration: 0.8, type: 'sine' },  // E5
-                { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-            ]
-        },
-        
-        // राम नवमी - मंदिर घंटी
-        'ram-navami': {
-            notes: [
-                { frequency: 392.00, duration: 0.5, type: 'sine' },  // G4
-                { frequency: 440.00, duration: 0.3, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 0.5, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                { frequency: 493.88, duration: 0.5, type: 'sine' },  // B4
-                { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
-                { frequency: 392.00, duration: 1.0, type: 'sine' },  // G4
-            ]
-        },
-        
-        // दुर्गा पूजा - ढोल साउंड
-        'durga-puja': {
-            notes: [
-                { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
-                { frequency: 196.00, duration: 0.2, type: 'sawtooth' },  // G3
-                { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
-                { frequency: 261.63, duration: 0.4, type: 'sawtooth' },  // C4
-                { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
-                { frequency: 196.00, duration: 0.5, type: 'sawtooth' },  // G3
-            ]
-        },
-        
-        // दशहरा - विजय साउंड
-        'dussehra': {
-            notes: [
-                { frequency: 440.00, duration: 0.2, type: 'triangle' },  // A4
-                { frequency: 523.25, duration: 0.2, type: 'triangle' },  // C5
-                { frequency: 659.25, duration: 0.3, type: 'triangle' },  // E5
-                { frequency: 783.99, duration: 0.5, type: 'triangle' },  // G5
-                { frequency: 880.00, duration: 0.3, type: 'triangle' },  // A5
-                { frequency: 783.99, duration: 0.2, type: 'triangle' },  // G5
-                { frequency: 659.25, duration: 0.8, type: 'triangle' },  // E5
-            ]
-        },
-        
-        // महा शिवरात्रि - मेडिटेशन साउंड
-        'shivratri': {
-            notes: [
-                { frequency: 196.00, duration: 1.0, type: 'sine' },  // G3
-                { frequency: 220.00, duration: 0.8, type: 'sine' },  // A3
-                { frequency: 261.63, duration: 1.2, type: 'sine' },  // C4
-                { frequency: 293.66, duration: 1.0, type: 'sine' },  // D4
-                { frequency: 329.63, duration: 1.5, type: 'sine' },  // E4
-            ]
-        },
-        
-        // रक्षा बंधन - प्यार भरा साउंड
-        'raksha-bandhan': {
-            notes: [
-                { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                { frequency: 587.33, duration: 0.4, type: 'sine' },  // D5
-                { frequency: 659.25, duration: 0.6, type: 'sine' },  // E5
-                { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
-                { frequency: 783.99, duration: 0.8, type: 'sine' },  // G5
-                { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
-                { frequency: 659.25, duration: 0.6, type: 'sine' },  // E5
-                { frequency: 587.33, duration: 1.0, type: 'sine' },  // D5
-            ]
-        },
-        
-        // छठ पूजा - प्राकृतिक साउंड
-        'chhath-puja': {
-            notes: [
-                { frequency: 329.63, duration: 1.0, type: 'sine' },  // E4
-                { frequency: 349.23, duration: 0.5, type: 'sine' },  // F4
-                { frequency: 392.00, duration: 1.0, type: 'sine' },  // G4
-                { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 1.0, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
-            ]
-        },
-        
-        // गाँधी जयंती - शांति साउंड
-        'gandhi-jayanti': {
-            notes: [
-                { frequency: 261.63, duration: 1.0, type: 'sine' },  // C4
-                { frequency: 293.66, duration: 0.8, type: 'sine' },  // D4
-                { frequency: 329.63, duration: 1.2, type: 'sine' },  // E4
-                { frequency: 349.23, duration: 1.0, type: 'sine' },  // F4
-                { frequency: 392.00, duration: 1.5, type: 'sine' },  // G4
-            ]
-        },
-        
-        // बाल दिवस - खिलखिलाहट साउंड
-        'childrens-day': {
-            notes: [
-                { frequency: 523.25, duration: 0.2, type: 'triangle' },  // C5
-                { frequency: 587.33, duration: 0.2, type: 'triangle' },  // D5
-                { frequency: 659.25, duration: 0.2, type: 'triangle' },  // E5
-                { frequency: 698.46, duration: 0.3, type: 'triangle' },  // F5
-                { frequency: 783.99, duration: 0.3, type: 'triangle' },  // G5
-                { frequency: 880.00, duration: 0.4, type: 'triangle' },  // A5
-                { frequency: 987.77, duration: 0.4, type: 'triangle' },  // B5
-                { frequency: 1046.50, duration: 0.5, type: 'triangle' }, // C6
-            ]
-        },
-        
-        // Default pattern for other festivals
-        'default': {
-            notes: [
-                { frequency: 440.00, duration: 0.3, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                { frequency: 659.25, duration: 0.5, type: 'sine' },  // E5
-                { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
-                { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
-            ]
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // त्योहार के अनुसार अलग-अलग साउंड पैटर्न
+            const soundPattern = this.getFestivalSoundPattern(this.currentTheme.theme);
+            
+            // Create multiple oscillators for richer sound
+            soundPattern.notes.forEach((note, index) => {
+                setTimeout(() => {
+                    this.playNote(audioContext, note.frequency, note.duration, note.type);
+                }, index * 500); // 500ms gap between notes
+            });
+            
+            console.log(`🎵 Playing ${this.currentTheme.name} theme sound for 10 seconds`);
+            
+        } catch (e) {
+            console.log('Audio not supported or blocked by browser');
+            // Fallback to MP3 sound
+            this.playMP3Sound(this.currentTheme.theme);
         }
-    };
-    
-    return patterns[theme] || patterns['default'];
-}
+    }
+
+    // Play single note
+    playNote(audioContext, frequency, duration, type = 'sine') {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+        
+        // Smooth fade in and out
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
+    }
+
     // ✅✅✅ FESTIVAL SIDEBAR BANNER - COMPLETE VERSION ✅✅✅
     addFestivalToSidebar() {
         if (!this.currentTheme || !this.isFestivalBannerVisible) return;
