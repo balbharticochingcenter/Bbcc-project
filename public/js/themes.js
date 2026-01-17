@@ -4,6 +4,7 @@ class ThemeManager {
         this.specialDays = this.getSpecialDaysCalendar();
         this.currentTheme = null;
         this.isInitialized = false;
+        this.isFestivalBannerVisible = true;
     }
 
     init() {
@@ -18,6 +19,7 @@ class ThemeManager {
             this.addSocialSharing();
             this.startCelebration();
             this.preloadBackground();
+            this.addFestivalToSidebar();
         }
     }
 
@@ -40,7 +42,9 @@ class ThemeManager {
                 message: "नए साल की शुभकामनाएँ! 🎉",
                 background: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#NewYear", "#HappyNewYear", "#BBCCMadhubani"],
-                shareText: "नए साल की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎉"
+                shareText: "नए साल की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎉",
+                emoji: "🎉",
+                specialOffer: "नए साल पर विशेष छूट: सभी नए छात्रों के लिए 20% तक छूट!"
             },
             {
                 name: "गणतंत्र दिवस",
@@ -54,7 +58,9 @@ class ThemeManager {
                 message: "🇮🇳 गणतंत्र दिवस की हार्दिक शुभकामनाएँ! 🇮🇳",
                 background: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#RepublicDay", "#26January", "#India", "#BBCCMadhubani"],
-                shareText: "गणतंत्र दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🇮🇳"
+                shareText: "गणतंत्र दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🇮🇳",
+                emoji: "🇮🇳",
+                specialOffer: "देशभक्ति सप्ताह: सभी रक्षा सेवा आकांक्षियों के लिए विशेष कक्षाएं"
             },
 
             // FEBRUARY
@@ -70,7 +76,9 @@ class ThemeManager {
                 message: "बसंत पंचमी की शुभकामनाएँ! 🌼 सरस्वती पूजा की हार्दिक शुभकामनाएँ",
                 background: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#VasantPanchami", "#SaraswatiPuja", "#BBCCMadhubani", "#BasantPanchami"],
-                shareText: "बसंत पंचमी एवं सरस्वती पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🌼"
+                shareText: "बसंत पंचमी एवं सरस्वती पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🌼",
+                emoji: "🌼",
+                specialOffer: "विद्या आरंभ: नए प्रवेश पर विशेष पुस्तकें मुफ्त"
             },
             {
                 name: "महा शिवरात्रि",
@@ -84,7 +92,9 @@ class ThemeManager {
                 message: "महा शिवरात्रि की शुभकामनाएँ! ॐ नमः शिवाय 🙏",
                 background: "https://images.unsplash.com/photo-1581798459210-94d5d1d1dc56?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#MahaShivratri", "#Shivratri", "#BBCCMadhubani", "#OmNamahShivaya"],
-                shareText: "महा शिवरात्रि की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏"
+                shareText: "महा शिवरात्रि की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏",
+                emoji: "🙏",
+                specialOffer: "ध्यान सत्र: विशेष मेडिटेशन क्लासेस"
             },
 
             // MARCH
@@ -100,7 +110,9 @@ class ThemeManager {
                 message: "होली की रंगीन शुभकामनाएँ! 🎨",
                 background: "https://images.unsplash.com/photo-1548365328-8c6db3220e4c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#Holi", "#FestivalOfColors", "#BBCCMadhubani", "#HappyHoli"],
-                shareText: "होली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎨"
+                shareText: "होली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎨",
+                emoji: "🎨",
+                specialOffer: "रंगभरी ऑफर: 3 दोस्तों के साथ ज्वाइन करें, 1 का फीस फ्री"
             },
 
             // APRIL
@@ -116,7 +128,9 @@ class ThemeManager {
                 message: "श्री राम नवमी की शुभकामनाएँ! 🙏 जय श्री राम",
                 background: "https://images.unsplash.com/photo-1560713997-1a7c78b63c15?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#RamNavami", "#JayShriRam", "#BBCCMadhubani", "#Ramayana"],
-                shareText: "राम नवमी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏"
+                shareText: "राम नवमी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏",
+                emoji: "🙏",
+                specialOffer: "धर्म ज्ञान प्रतियोगिता: विजेता को मुफ्त कोर्स"
             },
 
             // AUGUST
@@ -132,7 +146,9 @@ class ThemeManager {
                 message: "रक्षा बंधन की शुभकामनाएँ! भाई-बहन के प्यार का त्योहार",
                 background: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#RakshaBandhan", "#Rakhi", "#BBCCMadhubani", "#BrotherSister"],
-                shareText: "रक्षा बंधन की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
+                shareText: "रक्षा बंधन की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी",
+                emoji: "🎀",
+                specialOffer: "भाई-बहन ऑफर: एक साथ एडमिशन पर 25% छूट"
             },
             {
                 name: "जन्माष्टमी",
@@ -146,7 +162,25 @@ class ThemeManager {
                 message: "जन्माष्टमी की शुभकामनाएँ! 🎉 जय श्री कृष्ण",
                 background: "https://images.unsplash.com/photo-1560713997-1a7c78b63c15?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#Janmashtami", "#Krishna", "#BBCCMadhubani", "#JayShriKrishna"],
-                shareText: "जन्माष्टमी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎉"
+                shareText: "जन्माष्टमी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎉",
+                emoji: "🎉",
+                specialOffer: "कृष्ण ज्ञान क्विज: विजेता को स्पेशल गिफ्ट"
+            },
+            {
+                name: "स्वतंत्रता दिवस",
+                englishName: "Independence Day",
+                date: new Date(currentYear, 7, 15),
+                theme: "independence-day",
+                icon: "fas fa-dove",
+                startDaysBefore: 10,
+                endDaysAfter: 5,
+                colors: ["#FF671F", "#FFFFFF", "#046A38"],
+                message: "🇮🇳 स्वतंत्रता दिवस की हार्दिक शुभकामनाएँ! 🇮🇳",
+                background: "https://images.unsplash.com/photo-1594736797933-d0e64d2f0c7a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#IndependenceDay", "#15August", "#India", "#BBCCMadhubani"],
+                shareText: "स्वतंत्रता दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🇮🇳",
+                emoji: "🇮🇳",
+                specialOffer: "देशभक्ति सप्ताह: सभी रक्षा सेवा आकांक्षियों के लिए फ्री काउंसलिंग"
             },
 
             // SEPTEMBER
@@ -162,7 +196,25 @@ class ThemeManager {
                 message: "गणेश चतुर्थी की शुभकामनाएँ! 🐘 गणपति बप्पा मोरया",
                 background: "https://images.unsplash.com/photo-1563496779257-5f1a5c71b5d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#GaneshChaturthi", "#GanpatiBappa", "#BBCCMadhubani", "#Ganesha"],
-                shareText: "गणेश चतुर्थी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🐘"
+                shareText: "गणेश चतुर्थी की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🐘",
+                emoji: "🐘",
+                specialOffer: "विद्या आरंभ पूजा: नए सत्र की शुरुआत पर विशेष"
+            },
+            {
+                name: "शिक्षक दिवस",
+                englishName: "Teacher's Day",
+                date: new Date(currentYear, 8, 5),
+                theme: "teachers-day",
+                icon: "fas fa-chalkboard-teacher",
+                startDaysBefore: 5,
+                endDaysAfter: 3,
+                colors: ["#9C27B0", "#FF9800", "#FFFFFF"],
+                message: "शिक्षक दिवस की शुभकामनाएँ! सभी गुरुजनों को नमन",
+                background: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#TeachersDay", "#5September", "#BBCCMadhubani", "#RespectTeachers"],
+                shareText: "शिक्षक दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी",
+                emoji: "👨‍🏫",
+                specialOffer: "गुरु दक्षिणा: पुराने छात्रों के लिए 30% छूट"
             },
 
             // OCTOBER
@@ -178,7 +230,9 @@ class ThemeManager {
                 message: "दुर्गा पूजा की शुभकामनाएँ! 🙏 जय माँ दुर्गा",
                 background: "https://images.unsplash.com/photo-1603216663465-7eb81d8dbf6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#DurgaPuja", "#Navratri", "#BBCCMadhubani", "#JaiMaaDurga"],
-                shareText: "दुर्गा पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏"
+                shareText: "दुर्गा पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🙏",
+                emoji: "🙏",
+                specialOffer: "नवरात्रि विशेष: 9 दिनों की फ्री वर्कशॉप"
             },
             {
                 name: "दशहरा",
@@ -192,7 +246,9 @@ class ThemeManager {
                 message: "दशहरा की शुभकामनाएँ! बुराई पर अच्छाई की जीत",
                 background: "https://images.unsplash.com/photo-1603216663465-7eb81d8dbf6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#Dussehra", "#Vijayadashami", "#BBCCMadhubani", "#GoodOverEvil"],
-                shareText: "दशहरा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
+                shareText: "दशहरा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी",
+                emoji: "⚔️",
+                specialOffer: "विजयादशमी ऑफर: टॉपर्स के लिए स्पेशल स्कॉलरशिप"
             },
             {
                 name: "दिवाली",
@@ -206,7 +262,25 @@ class ThemeManager {
                 message: "दिवाली की शुभकामनाएँ! 🪔 रोशनी का त्योहार",
                 background: "https://images.unsplash.com/photo-1604061986762-dbbe1297a68e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#Diwali", "#FestivalOfLights", "#BBCCMadhubani", "#HappyDiwali"],
-                shareText: "दिवाली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🪔"
+                shareText: "दिवाली की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🪔",
+                emoji: "🪔",
+                specialOffer: "दिवाली बोनस: फीस जमा करने पर एक्स्ट्रा क्लासेस फ्री"
+            },
+            {
+                name: "गाँधी जयंती",
+                englishName: "Gandhi Jayanti",
+                date: new Date(currentYear, 9, 2),
+                theme: "gandhi-jayanti",
+                icon: "fas fa-peace",
+                startDaysBefore: 7,
+                endDaysAfter: 3,
+                colors: ["#7d7d7d", "#ffffff", "#000000"],
+                message: "गाँधी जयंती की शुभकामनाएँ!",
+                background: "https://images.unsplash.com/photo-1581798459210-94d5d1d1dc56?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#GandhiJayanti", "#2October", "#BBCCMadhubani"],
+                shareText: "गाँधी जयंती की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी",
+                emoji: "🕊️",
+                specialOffer: "सत्याग्रह सप्ताह: सामाजिक सेवा प्रोजेक्ट में भाग लें, पाएं छूट"
             },
 
             // NOVEMBER
@@ -222,7 +296,25 @@ class ThemeManager {
                 message: "छठ पूजा की शुभकामनाएँ! सूर्य देव की आराधना",
                 background: "https://images.unsplash.com/photo-1604061986762-dbbe1297a68e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#ChhathPuja", "#Chhath", "#BBCCMadhubani", "#BiharFestival"],
-                shareText: "छठ पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
+                shareText: "छठ पूजा की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी",
+                emoji: "☀️",
+                specialOffer: "बिहार विशेष: स्थानीय छात्रों के लिए अतिरिक्त छूट"
+            },
+            {
+                name: "बाल दिवस",
+                englishName: "Children's Day",
+                date: new Date(currentYear, 10, 14),
+                theme: "childrens-day",
+                icon: "fas fa-child",
+                startDaysBefore: 5,
+                endDaysAfter: 3,
+                colors: ["#FF5722", "#00BCD4", "#8BC34A"],
+                message: "बाल दिवस की शुभकामनाएँ! सभी बच्चों को",
+                background: "https://images.unsplash.com/photo-1530277645362-bb2d3b9a6c6a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                hashtags: ["#ChildrensDay", "#14November", "#BBCCMadhubani", "#HappyChildrensDay"],
+                shareText: "बाल दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी",
+                emoji: "👧",
+                specialOffer: "बच्चों के लिए विशेष: सभी कोर्सेज पर 15% छूट"
             },
 
             // DECEMBER
@@ -238,65 +330,9 @@ class ThemeManager {
                 message: "क्रिसमस की शुभकामनाएँ! 🎄 मेरी क्रिसमस",
                 background: "https://images.unsplash.com/photo-1512389142860-9c449e58a543?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
                 hashtags: ["#Christmas", "#25December", "#BBCCMadhubani", "#MerryChristmas"],
-                shareText: "क्रिसमस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎄"
-            },
-
-            // NATIONAL DAYS
-            {
-                name: "स्वतंत्रता दिवस",
-                englishName: "Independence Day",
-                date: new Date(currentYear, 7, 15),
-                theme: "independence-day",
-                icon: "fas fa-dove",
-                startDaysBefore: 10,
-                endDaysAfter: 5,
-                colors: ["#FF671F", "#FFFFFF", "#046A38"],
-                message: "🇮🇳 स्वतंत्रता दिवस की हार्दिक शुभकामनाएँ! 🇮🇳",
-                background: "https://images.unsplash.com/photo-1594736797933-d0e64d2f0c7a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#IndependenceDay", "#15August", "#India", "#BBCCMadhubani"],
-                shareText: "स्वतंत्रता दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🇮🇳"
-            },
-            {
-                name: "गाँधी जयंती",
-                englishName: "Gandhi Jayanti",
-                date: new Date(currentYear, 9, 2),
-                theme: "gandhi-jayanti",
-                icon: "fas fa-peace",
-                startDaysBefore: 7,
-                endDaysAfter: 3,
-                colors: ["#7d7d7d", "#ffffff", "#000000"],
-                message: "गाँधी जयंती की शुभकामनाएँ!",
-                background: "https://images.unsplash.com/photo-1581798459210-94d5d1d1dc56?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#GandhiJayanti", "#2October", "#BBCCMadhubani"],
-                shareText: "गाँधी जयंती की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
-            },
-            {
-                name: "शिक्षक दिवस",
-                englishName: "Teacher's Day",
-                date: new Date(currentYear, 8, 5),
-                theme: "teachers-day",
-                icon: "fas fa-chalkboard-teacher",
-                startDaysBefore: 5,
-                endDaysAfter: 3,
-                colors: ["#9C27B0", "#FF9800", "#FFFFFF"],
-                message: "शिक्षक दिवस की शुभकामनाएँ! सभी गुरुजनों को नमन",
-                background: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#TeachersDay", "#5September", "#BBCCMadhubani", "#RespectTeachers"],
-                shareText: "शिक्षक दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
-            },
-            {
-                name: "बाल दिवस",
-                englishName: "Children's Day",
-                date: new Date(currentYear, 10, 14),
-                theme: "childrens-day",
-                icon: "fas fa-child",
-                startDaysBefore: 5,
-                endDaysAfter: 3,
-                colors: ["#FF5722", "#00BCD4", "#8BC34A"],
-                message: "बाल दिवस की शुभकामनाएँ! सभी बच्चों को",
-                background: "https://images.unsplash.com/photo-1530277645362-bb2d3b9a6c6a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-                hashtags: ["#ChildrensDay", "#14November", "#BBCCMadhubani", "#HappyChildrensDay"],
-                shareText: "बाल दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी"
+                shareText: "क्रिसमस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🎄",
+                emoji: "🎄",
+                specialOffer: "क्रिसमस गिफ्ट: नए एडमिशन पर फ्री स्टडी किट"
             }
         ];
     }
@@ -356,8 +392,6 @@ class ThemeManager {
         return new Date(year, 10, 10);
     }
 
-    // Rest of the class remains same as before...
-    // (All methods from the previous version remain unchanged)
     checkSpecialDays() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -392,7 +426,9 @@ class ThemeManager {
 
         // Update CSS variables
         this.updateCSSVariables();
-        this.addFestivalToSidebar();
+        
+        // Add CSS animations
+        this.addThemeStyles();
     }
 
     updateCSSVariables() {
@@ -416,6 +452,74 @@ class ThemeManager {
         root.style.setProperty('--theme-primary-rgb', hexToRgb(colors[0]));
     }
 
+    // Add dynamic CSS styles
+    addThemeStyles() {
+        const styleId = 'festival-theme-styles';
+        let styleElement = document.getElementById(styleId);
+        
+        if (!styleElement) {
+            styleElement = document.createElement('style');
+            styleElement.id = styleId;
+            document.head.appendChild(styleElement);
+        }
+
+        styleElement.textContent = `
+            @keyframes bounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+            
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.8; }
+            }
+            
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+            }
+            
+            @keyframes sparkle {
+                0%, 100% { opacity: 0; }
+                50% { opacity: 1; }
+            }
+            
+            .festival-sidebar-banner {
+                animation: float 3s ease-in-out infinite;
+            }
+            
+            .festival-offer-btn:hover {
+                transform: scale(1.1) !important;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
+            }
+            
+            .close-festival-banner:hover {
+                background: rgba(255,255,255,0.4) !important;
+                transform: rotate(90deg);
+            }
+            
+            .theme-active .main-header {
+                background: linear-gradient(135deg, 
+                    var(--theme-primary), 
+                    var(--theme-secondary)) !important;
+                transition: all 0.5s ease;
+            }
+            
+            .theme-active .btn-primary {
+                background: var(--theme-primary) !important;
+                border-color: var(--theme-primary) !important;
+            }
+            
+            .theme-active .hero-container {
+                background: linear-gradient(rgba(var(--theme-primary-rgb), 0.9), 
+                    rgba(var(--theme-primary-rgb), 0.7)),
+                    url('${this.currentTheme.background}') !important;
+                background-size: cover !important;
+                background-position: center !important;
+            }
+        `;
+    }
+
     // Preload background image
     preloadBackground() {
         if (!this.currentTheme?.background) return;
@@ -425,6 +529,32 @@ class ThemeManager {
         img.onload = () => {
             console.log('✅ Background image loaded:', this.currentTheme.background);
         };
+    }
+
+    // Get appropriate emoji for festival
+    getFestivalEmoji(theme) {
+        const themeEmojis = {
+            'new-year': '🎉',
+            'republic-day': '🇮🇳',
+            'vasant-panchami': '🌼',
+            'shivratri': '🙏',
+            'holi': '🎨',
+            'ram-navami': '🙏',
+            'independence-day': '🇮🇳',
+            'raksha-bandhan': '🎀',
+            'janmashtami': '🎉',
+            'ganesh-chaturthi': '🐘',
+            'teachers-day': '👨‍🏫',
+            'durga-puja': '🙏',
+            'dussehra': '⚔️',
+            'diwali': '🪔',
+            'gandhi-jayanti': '🕊️',
+            'chhath-puja': '☀️',
+            'childrens-day': '👧',
+            'christmas': '🎄'
+        };
+        
+        return themeEmojis[theme] || '🎊';
     }
 
     // Show notification with share buttons
@@ -500,387 +630,164 @@ class ThemeManager {
         }
     }
 
-    // Add social sharing panel
+    // Add Social Sharing buttons to page
     addSocialSharing() {
         if (!this.currentTheme) return;
-
-        const existingPanel = document.querySelector('.social-sharing-panel');
-        if (existingPanel) existingPanel.remove();
-
-        const panel = document.createElement('div');
-        panel.className = 'social-sharing-panel';
-        panel.innerHTML = `
-            <h4><i class="fas fa-share-alt"></i> Share Festive Greetings</h4>
-            <div class="social-share-buttons">
-                <button class="social-share-btn whatsapp" onclick="window.themeManager.shareOnWhatsApp()">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>WhatsApp</span>
-                </button>
-                <button class="social-share-btn facebook" onclick="window.themeManager.shareOnFacebook()">
-                    <i class="fab fa-facebook-f"></i>
-                    <span>Facebook</span>
-                </button>
-                <button class="social-share-btn instagram" onclick="window.themeManager.shareOnInstagram()">
-                    <i class="fab fa-instagram"></i>
-                    <span>Instagram</span>
-                </button>
-                <button class="social-share-btn twitter" onclick="window.themeManager.shareOnTwitter()">
-                    <i class="fab fa-twitter"></i>
-                    <span>Twitter</span>
-                </button>
-                <button class="social-share-btn share" onclick="window.themeManager.shareNative()">
-                    <i class="fas fa-share"></i>
-                    <span>More</span>
-                </button>
-                <button class="social-share-btn download" onclick="window.themeManager.downloadThemeImage()">
-                    <i class="fas fa-download"></i>
-                    <span>Save Image</span>
-                </button>
+        
+        const shareContainer = document.querySelector('.social-sharing-container');
+        if (!shareContainer) return;
+        
+        shareContainer.innerHTML = `
+            <div class="festival-sharing">
+                <h4>शुभकामनाएँ साझा करें:</h4>
+                <div class="sharing-buttons">
+                    <button class="share-btn whatsapp" onclick="themeManager.shareOnWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                    <button class="share-btn facebook" onclick="themeManager.shareOnFacebook()">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </button>
+                    <button class="share-btn twitter" onclick="themeManager.shareOnTwitter()">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </button>
+                    <button class="share-btn instagram" onclick="themeManager.shareOnInstagram()">
+                        <i class="fab fa-instagram"></i> Instagram
+                    </button>
+                </div>
             </div>
         `;
-
-        document.body.appendChild(panel);
-        
-        // Auto-hide after 30 seconds
-        setTimeout(() => {
-            panel.style.opacity = '0';
-            panel.style.transform = 'translateY(100%)';
-            setTimeout(() => panel.remove(), 500);
-        }, 30000);
     }
 
-    // ===== SOCIAL SHARING FUNCTIONS =====
-    
-    shareOnWhatsApp() {
-        const text = `${this.currentTheme.shareText}\n\n${window.location.href}\n\n${this.currentTheme.hashtags.join(' ')}`;
-        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-    }
-
-    shareOnFacebook() {
-        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(this.currentTheme.shareText)}`;
-        window.open(url, '_blank', 'width=600,height=400,noopener,noreferrer');
-    }
-
-    shareOnTwitter() {
-        const text = `${this.currentTheme.shareText} ${this.currentTheme.hashtags.join(' ')}`;
-        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-    }
-
-    shareOnInstagram() {
-        alert('To share on Instagram:\n1. Take a screenshot\n2. Open Instagram\n3. Post as Story/Feed\n4. Add hashtags: ' + this.currentTheme.hashtags.join(' '));
-        this.downloadThemeImage();
-    }
-
-    shareNative() {
-        if (navigator.share) {
-            navigator.share({
-                title: `${this.currentTheme.name} - BBCC Madhubani`,
-                text: this.currentTheme.shareText,
-                url: window.location.href,
-            }).catch(console.error);
-        } else {
-            this.copyToClipboard();
-        }
-    }
-
-    copyToClipboard() {
-        const text = `${this.currentTheme.shareText}\n${window.location.href}\n${this.currentTheme.hashtags.join(' ')}`;
-        
-        navigator.clipboard.writeText(text)
-            .then(() => {
-                alert('Copied to clipboard! You can now paste anywhere.');
-            })
-            .catch(err => {
-                console.error('Copy failed:', err);
-                alert('Please copy manually:\n\n' + text);
-            });
-    }
-
-    async downloadThemeImage() {
-        try {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = 1200;
-            canvas.height = 630;
-            
-            // Background gradient
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, this.currentTheme.colors[0]);
-            gradient.addColorStop(0.5, this.currentTheme.colors[1] || this.currentTheme.colors[0]);
-            gradient.addColorStop(1, this.currentTheme.colors[2] || this.currentTheme.colors[0]);
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Add text
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 60px Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(this.currentTheme.name, canvas.width/2, 200);
-            
-            ctx.font = '40px Arial, sans-serif';
-            ctx.fillText(this.currentTheme.englishName, canvas.width/2, 270);
-            
-            ctx.font = '30px Arial, sans-serif';
-            ctx.fillText('बाल भारती कोचिंग सेंटर, मधुबनी', canvas.width/2, 350);
-            ctx.fillText('📚 Quality Education for Classes 1-10', canvas.width/2, 400);
-            
-            ctx.font = '25px Arial, sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            this.currentTheme.hashtags.forEach((tag, i) => {
-                ctx.fillText(tag, canvas.width/2, 450 + i * 35);
-            });
-            
-            // Convert to data URL
-            const dataUrl = canvas.toDataURL('image/png');
-            
-            // Download
-            const link = document.createElement('a');
-            link.download = `BBCC_${this.currentTheme.englishName.replace(/\s+/g, '_')}.png`;
-            link.href = dataUrl;
-            link.click();
-            
-            alert('🎉 Festive image downloaded! Share it on social media.');
-        } catch (error) {
-            console.error('Image creation failed:', error);
-            alert('Please take a screenshot to share!');
-        }
-    }
-
-    // Celebration effects
+    // Start celebration effects
     startCelebration() {
-        this.createFireworks();
-        this.createFloatingElements();
-    }
-
-    createFireworks() {
-        const container = document.createElement('div');
-        container.className = 'fireworks';
-        document.body.appendChild(container);
-
-        for (let i = 0; i < 50; i++) {
-            setTimeout(() => {
-                this.createFirework(container);
-            }, i * 100);
-        }
-
-        setTimeout(() => {
-            container.style.opacity = '0';
-            setTimeout(() => container.remove(), 1000);
-        }, 5000);
-    }
-
-    createFirework(container) {
-        const colors = this.currentTheme.colors;
-        const x = Math.random() * 100;
-        
-        for (let i = 0; i < 20; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'confetti';
-            
-            particle.style.left = `${x}vw`;
-            particle.style.top = '0';
-            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            particle.style.animationDuration = `${Math.random() * 2 + 1}s`;
-            particle.style.animationDelay = `${Math.random()}s`;
-            
-            container.appendChild(particle);
-        }
-    }
-
-    createFloatingElements() {
-        const icons = ['🎉', '🎊', '✨', '🎨', '🪔', '🇮🇳', '🎄', '🌟', '💫', '🥳'];
-        
-        for (let i = 0; i < 10; i++) {
-            setTimeout(() => {
-                const element = document.createElement('div');
-                element.className = 'floating-element';
-                element.textContent = icons[Math.floor(Math.random() * icons.length)];
-                element.style.left = `${Math.random() * 100}vw`;
-                element.style.color = this.currentTheme.colors[Math.floor(Math.random() * this.currentTheme.colors.length)];
-                element.style.animationDuration = `${Math.random() * 10 + 10}s`;
-                
-                document.body.appendChild(element);
-                
-                setTimeout(() => element.remove(), 20000);
-            }, i * 500);
-        }
-    }
-
-    // Get upcoming days
-    getUpcomingDays(days = 30) {
-        const today = new Date();
-        const upcoming = [];
-
-        for (const day of this.specialDays) {
-            const daysUntil = Math.floor((day.date - today) / (1000 * 60 * 60 * 24));
-            
-            if (daysUntil >= 0 && daysUntil <= days) {
-                upcoming.push({
-                    ...day,
-                    daysUntil,
-                    status: daysUntil <= day.startDaysBefore ? 'preparation' : 'upcoming'
-                });
-            }
-        }
-
-        return upcoming.sort((a, b) => a.daysUntil - b.daysUntil);
-    }
-}
-
-// Initialize Theme Manager
-document.addEventListener('DOMContentLoaded', () => {
-    window.themeManager = new ThemeManager();
-    window.themeManager.init();
-    
-    // Add theme info button to header
-    addThemeInfoButton();
-});
-
-function addThemeInfoButton() {
-    const headerRight = document.querySelector('.header-right');
-    if (!headerRight) return;
-
-    const existingBtn = document.querySelector('.theme-info-btn');
-    if (existingBtn) return;
-
-    const themeBtn = document.createElement('button');
-    themeBtn.className = 'action-btn theme-info-btn';
-    themeBtn.innerHTML = '<i class="fas fa-calendar-day"></i> <span>Festivals</span>';
-    themeBtn.title = 'Upcoming Festivals & Special Days';
-    themeBtn.style.marginLeft = '10px';
-    
-    themeBtn.onclick = () => showThemeInfoModal();
-    
-    headerRight.appendChild(themeBtn);
-}
-
-function showThemeInfoModal() {
-    const upcomingDays = window.themeManager?.getUpcomingDays(60) || [];
-    
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.display = 'flex';
-    
-    modal.innerHTML = `
-        <div class="modal-content three-d-card" style="max-width: 700px;">
-            <span class="close-button" onclick="this.parentElement.parentElement.remove()">&times;</span>
-            <div class="modal-header">
-                <h2><i class="fas fa-calendar-alt"></i> Upcoming Festivals & Special Days</h2>
-                <p>बाल भारती कोचिंग सेंटर celebrates all festivals</p>
-            </div>
-            
-            <div style="padding: 30px; max-height: 70vh; overflow-y: auto;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                    ${upcomingDays.map(day => `
-                        <div style="background: white; border-radius: 15px; padding: 25px; border-left: 8px solid ${day.colors[0]}; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; overflow: hidden;">
-                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                                <div style="width: 60px; height: 60px; background: ${day.colors[0]}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                                    <i class="${day.icon}"></i>
-                                </div>
-                                <div>
-                                    <h3 style="margin: 0; color: #333;">${day.name}</h3>
-                                    <p style="margin: 5px 0 0; color: #666;">${day.englishName}</p>
-                                </div>
-                            </div>
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-                                <div>
-                                    <div style="color: #666; font-size: 0.9rem;">
-                                        <i class="fas fa-calendar"></i> 
-                                        ${day.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                    </div>
-                                    <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">
-                                        <i class="fas fa-clock"></i> 
-                                        ${day.daysUntil === 0 ? 'Today' : day.daysUntil === 1 ? 'Tomorrow' : `In ${day.daysUntil} days`}
-                                    </div>
-                                </div>
-                                
-                                <div style="background: ${day.colors[0]}; color: white; padding: 8px 20px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">
-                                    ${day.daysUntil <= day.startDaysBefore ? '🎉 Theme Active' : '📅 Coming Soon'}
-                                </div>
-                            </div>
-                            
-                            ${day.daysUntil <= day.startDaysBefore ? `
-                                <div style="margin-top: 15px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-radius: 8px; border: 1px solid #ffc107; font-size: 0.9rem; color: #856404;">
-                                    <i class="fas fa-sparkles"></i>
-                                    <strong>Theme active for:</strong> 
-                                    ${day.startDaysBefore - day.daysUntil} days
-                                </div>
-                            ` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-                
-                ${upcomingDays.length === 0 ? `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-calendar-times fa-3x"></i>
-                        <p style="margin-top: 15px;">No upcoming special days in next 60 days</p>
-                    </div>
-                ` : `
-                    <div style="text-align: center; margin-top: 30px; color: #666; font-size: 0.9rem;">
-                        <i class="fas fa-info-circle"></i>
-                        <p>BBCC celebrates all festivals with special themes and activities</p>
-                    </div>
-                `}
-            </div>
-            
-            <div style="padding: 20px 30px; border-top: 1px solid #eee; text-align: center;">
-                <button onclick="window.themeManager.downloadThemeImage()" style="padding: 12px 30px; background: var(--theme-primary); color: white; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-download"></i> Download Festive Images
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    modal.onclick = (e) => {
-        if (e.target === modal) modal.remove();
-    };
-    
-    document.addEventListener('keydown', function closeOnEscape(e) {
-        if (e.key === 'Escape') {
-            modal.remove();
-            document.removeEventListener('keydown', closeOnEscape);
-        }
-    });
-}
-
- // Add Festival Banner to Existing Sidebar
-    addFestivalToSidebar() {
         if (!this.currentTheme) return;
+        
+        // Add floating particles
+        this.addParticles();
+        
+        // Play festive sound if user interacts
+        document.addEventListener('click', this.playFestiveSound.bind(this), { once: true });
+    }
+
+    addParticles() {
+        const particlesContainer = document.createElement('div');
+        particlesContainer.className = 'festival-particles';
+        particlesContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            overflow: hidden;
+        `;
+        
+        // Create particles based on theme colors
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            const color = this.currentTheme.colors[Math.floor(Math.random() * this.currentTheme.colors.length)];
+            
+            particle.style.cssText = `
+                position: absolute;
+                width: ${Math.random() * 10 + 5}px;
+                height: ${Math.random() * 10 + 5}px;
+                background: ${color};
+                border-radius: 50%;
+                top: ${Math.random() * 100}vh;
+                left: ${Math.random() * 100}vw;
+                animation: floatParticle ${Math.random() * 10 + 10}s linear infinite;
+                opacity: ${Math.random() * 0.5 + 0.3};
+            `;
+            
+            particlesContainer.appendChild(particle);
+        }
+        
+        document.body.appendChild(particlesContainer);
+        
+        // Add particle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes floatParticle {
+                0% {
+                    transform: translateY(100vh) rotate(0deg);
+                }
+                100% {
+                    transform: translateY(-100vh) rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    playFestiveSound() {
+        // Simple beep sound for celebration
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 523.25; // C5 note
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (e) {
+            console.log('Audio not supported');
+        }
+    }
+
+    // ✅✅✅ FESTIVAL SIDEBAR BANNER - COMPLETE VERSION ✅✅✅
+    addFestivalToSidebar() {
+        if (!this.currentTheme || !this.isFestivalBannerVisible) return;
         
         // Remove existing festival banner if any
         this.removeFestivalFromSidebar();
         
-        // Wait for sidebar to load
+        // Wait for page to load completely
         setTimeout(() => {
-            // Find sidebar in your HTML
-            const sidebarSelectors = [
-                '.teacher-ring-section', // Teacher section
-                '.vip-section', // VIP section
-                '.stats-container', // Stats section
-                '.hero-container', // Hero section
-                'section', // Any section
-                '.main-header', // Header
-                '.main-footer' // Footer
+            // Try different selectors for sidebar/section
+            const selectors = [
+                '.teacher-ring-section',
+                '.sidebar',
+                '.right-sidebar',
+                '.left-sidebar',
+                '.side-section',
+                '.main-container aside',
+                '[class*="sidebar"]',
+                '[class*="side"]:not(.main-side)'
             ];
             
             let targetSection = null;
-            for (const selector of sidebarSelectors) {
-                const element = document.querySelector(selector);
-                if (element) {
-                    targetSection = element;
+            
+            for (const selector of selectors) {
+                targetSection = document.querySelector(selector);
+                if (targetSection && targetSection.offsetParent !== null) {
                     break;
                 }
             }
             
+            // If no sidebar found, try to find any suitable container
             if (!targetSection) {
-                console.log("No section found for festival banner");
+                const containers = document.querySelectorAll('div[class*="container"], section');
+                for (const container of containers) {
+                    const rect = container.getBoundingClientRect();
+                    if (rect.width < 400 && rect.width > 200) {
+                        targetSection = container;
+                        break;
+                    }
+                }
+            }
+            
+            // Last resort: create a floating banner
+            if (!targetSection) {
+                this.createFloatingBanner();
                 return;
             }
             
@@ -896,119 +803,94 @@ function showThemeInfoModal() {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             let statusText = '';
+            let statusClass = '';
             if (diffDays > 0) {
                 statusText = `${diffDays} दिन बचे`;
+                statusClass = 'upcoming';
             } else if (diffDays === 0) {
-                statusText = 'आज ही!';
+                statusText = 'आज है!';
+                statusClass = 'today';
             } else {
                 statusText = `${Math.abs(diffDays)} दिन पहले`;
+                statusClass = 'past';
             }
             
+            // Create banner content with enhanced design
             festivalBanner.innerHTML = `
-                <div class="festival-banner-content" style="
-                    background: linear-gradient(135deg, ${this.currentTheme.colors[0]}, ${this.currentTheme.colors[1] || this.currentTheme.colors[0]});
-                    color: white;
-                    border-radius: 12px;
-                    padding: 20px;
-                    margin: 20px 0;
-                    text-align: center;
-                    border: 3px solid white;
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    position: relative;
-                    overflow: hidden;
-                ">
-                    <div class="festival-icon" style="
-                        font-size: 3rem;
-                        margin-bottom: 15px;
-                        animation: bounce 2s infinite;
-                    ">
+                <div class="festival-banner-content">
+                    <!-- Festival Icon with animation -->
+                    <div class="festival-icon">
                         ${this.getFestivalEmoji(this.currentTheme.theme)}
                     </div>
                     
-                    <h3 style="margin: 0 0 10px; font-size: 1.4rem; font-weight: bold;">
+                    <!-- Festival Name -->
+                    <h3 class="festival-title">
                         ${this.currentTheme.name}
+                        <span class="festival-english">${this.currentTheme.englishName}</span>
                     </h3>
                     
-                    <p style="margin: 0 0 15px; font-size: 1rem; opacity: 0.95;">
+                    <!-- Festival Message -->
+                    <p class="festival-message">
                         ${this.currentTheme.message}
                     </p>
                     
-                    <div class="festival-info" style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 15px;
-                        padding: 12px;
-                        background: rgba(255,255,255,0.2);
-                        border-radius: 8px;
-                    ">
-                        <span style="font-size: 0.9rem;">
-                            <i class="fas fa-calendar"></i> ${statusText}
-                        </span>
+                    <!-- Festival Info -->
+                    <div class="festival-info">
+                        <!-- Days Count -->
+                        <div class="days-count ${statusClass}">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>${statusText}</span>
+                        </div>
                         
-                        <div class="festival-colors" style="display: flex; gap: 8px;">
+                        <!-- Festival Colors -->
+                        <div class="festival-colors">
                             ${this.currentTheme.colors.map(color => 
-                                `<span style="
-                                    width: 20px;
-                                    height: 20px;
-                                    background: ${color};
-                                    border-radius: 50%;
-                                    border: 2px solid white;
-                                "></span>`
+                                `<span class="color-dot" style="background: ${color};"></span>`
                             ).join('')}
                         </div>
                     </div>
                     
-                    <button class="festival-offer-btn" style="
-                        padding: 12px 30px;
-                        background: white;
-                        color: ${this.currentTheme.colors[0]};
-                        border: none;
-                        border-radius: 25px;
-                        font-weight: bold;
-                        cursor: pointer;
-                        font-size: 1rem;
-                        transition: all 0.3s ease;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 10px;
-                        margin: 0 auto;
-                    ">
-                        <i class="fas fa-gift"></i> विशेष ऑफर देखें
+                    <!-- Special Offer -->
+                    <div class="festival-offer">
+                        <p><i class="fas fa-gift"></i> ${this.currentTheme.specialOffer}</p>
+                    </div>
+                    
+                    <!-- Action Button -->
+                    <button class="festival-action-btn">
+                        <i class="fas fa-star"></i>
+                        <span>विशेष ऑफर देखें</span>
                     </button>
                     
-                    <div class="festival-hashtags" style="
-                        margin-top: 15px;
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 8px;
-                        justify-content: center;
-                    ">
+                    <!-- Hashtags -->
+                    <div class="festival-hashtags">
                         ${this.currentTheme.hashtags.slice(0, 3).map(tag => 
-                            `<span style="
-                                background: rgba(255,255,255,0.2);
-                                color: white;
-                                padding: 5px 12px;
-                                border-radius: 15px;
-                                font-size: 0.8rem;
-                            ">${tag}</span>`
+                            `<span class="hashtag">${tag}</span>`
                         ).join('')}
                     </div>
+                    
+                    <!-- Close Button -->
+                    <button class="close-festival-banner">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             `;
             
-            // Insert festival banner
-            targetSection.parentNode.insertBefore(festivalBanner, targetSection.nextSibling);
+            // Insert the banner at the beginning of target section
+            targetSection.insertBefore(festivalBanner, targetSection.firstChild);
             
-            // Add click event
-            festivalBanner.addEventListener('click', () => {
+            // Add event listeners
+            festivalBanner.querySelector('.festival-action-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.handleFestivalBannerClick();
             });
             
-            // Add hover effects
+            festivalBanner.querySelector('.close-festival-banner').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.removeFestivalFromSidebar();
+                this.showToast('फेस्टिवल बैनर बंद किया गया');
+            });
+            
+            // Add hover effect
             const bannerContent = festivalBanner.querySelector('.festival-banner-content');
             bannerContent.addEventListener('mouseenter', () => {
                 bannerContent.style.transform = 'translateY(-5px)';
@@ -1017,198 +899,516 @@ function showThemeInfoModal() {
             
             bannerContent.addEventListener('mouseleave', () => {
                 bannerContent.style.transform = 'translateY(0)';
-                bannerContent.style.boxShadow = '0 8px 25px rgba(0,0,0,0.2)';
+                bannerContent.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
             });
             
-            // Add CSS animation
-            this.addFestivalBannerStyles();
+            // Add banner click event
+            bannerContent.addEventListener('click', (e) => {
+                if (!e.target.closest('.close-festival-banner') && 
+                    !e.target.closest('.festival-action-btn')) {
+                    this.handleFestivalBannerClick();
+                }
+            });
             
-            console.log(`✅ Festival banner added to sidebar: ${this.currentTheme.name}`);
+            // Add inline styles
+            this.addBannerStyles();
+            
+            console.log('✅ Festival banner added successfully');
             
         }, 1000); // Wait 1 second for page to load
     }
-    
-    getFestivalEmoji(theme) {
-        const emojiMap = {
-            'diwali': '🪔',
-            'holi': '🎨',
-            'christmas': '🎄',
-            'new-year': '🎉',
-            'republic-day': '🇮🇳',
-            'independence-day': '🇮🇳',
-            'vasant-panchami': '🌼',
-            'shivratri': '🙏',
-            'ram-navami': '🕉️',
-            'raksha-bandhan': '🧿',
-            'janmashtami': '🐘',
-            'ganesh-chaturthi': '🐘',
-            'durga-puja': '👸',
-            'dussehra': '⚔️',
-            'chhath-puja': '🌅',
-            'gandhi-jayanti': '👓',
-            'teachers-day': '👨‍🏫',
-            'childrens-day': '👦'
-        };
+
+    // Create floating banner if no sidebar found
+    createFloatingBanner() {
+        const festivalBanner = document.createElement('div');
+        festivalBanner.className = 'festival-floating-banner';
+        festivalBanner.id = 'festivalSidebarBanner';
+        festivalBanner.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            width: 300px;
+            z-index: 9999;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        `;
         
-        return emojiMap[theme] || '🎊';
+        festivalBanner.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, ${this.currentTheme.colors[0]}, ${this.currentTheme.colors[1] || this.currentTheme.colors[0]});
+                color: white;
+                padding: 20px;
+                text-align: center;
+            ">
+                <div style="font-size: 2.5rem; margin-bottom: 10px;">
+                    ${this.getFestivalEmoji(this.currentTheme.theme)}
+                </div>
+                <h4 style="margin: 0 0 10px;">${this.currentTheme.name}</h4>
+                <p style="margin: 0 0 15px; font-size: 0.9rem;">${this.currentTheme.message}</p>
+                <button onclick="themeManager.handleFestivalBannerClick()" style="
+                    padding: 8px 20px;
+                    background: white;
+                    color: ${this.currentTheme.colors[0]};
+                    border: none;
+                    border-radius: 20px;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">
+                    देखें
+                </button>
+                <button onclick="themeManager.removeFestivalFromSidebar()" style="
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: rgba(255,255,255,0.2);
+                    color: white;
+                    border: none;
+                    width: 25px;
+                    height: 25px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                ">
+                    ×
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(festivalBanner);
     }
-    
+
+    // Add CSS styles for banner
+    addBannerStyles() {
+        const styleId = 'festival-banner-styles';
+        if (document.getElementById(styleId)) return;
+        
+        const style = document.createElement('style');
+        style.id = styleId;
+        
+        style.textContent = `
+            .festival-sidebar-banner {
+                margin: 15px;
+                animation: float 6s ease-in-out infinite;
+            }
+            
+            .festival-banner-content {
+                background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+                color: white;
+                border-radius: 20px;
+                padding: 25px 20px;
+                text-align: center;
+                border: 3px solid white;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+                cursor: pointer;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .festival-banner-content::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: linear-gradient(
+                    45deg,
+                    transparent 30%,
+                    rgba(255,255,255,0.1) 50%,
+                    transparent 70%
+                );
+                animation: shine 3s infinite linear;
+            }
+            
+            .festival-icon {
+                font-size: 3.8rem;
+                margin-bottom: 15px;
+                animation: bounce 2s infinite;
+                filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+                line-height: 1;
+            }
+            
+            .festival-title {
+                margin: 0 0 10px;
+                font-size: 1.7rem;
+                font-weight: 800;
+                text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                line-height: 1.2;
+            }
+            
+            .festival-english {
+                display: block;
+                font-size: 1rem;
+                font-weight: 500;
+                opacity: 0.9;
+                margin-top: 5px;
+            }
+            
+            .festival-message {
+                margin: 0 0 20px;
+                font-size: 1.05rem;
+                opacity: 0.95;
+                line-height: 1.5;
+                min-height: 50px;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            }
+            
+            .festival-info {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding: 15px;
+                background: rgba(255,255,255,0.15);
+                border-radius: 12px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255,255,255,0.2);
+            }
+            
+            .days-count {
+                font-size: 1rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .days-count.upcoming {
+                color: #4caf50;
+            }
+            
+            .days-count.today {
+                color: #ffeb3b;
+                animation: pulse 1.5s infinite;
+            }
+            
+            .days-count.past {
+                color: #ff9800;
+            }
+            
+            .festival-colors {
+                display: flex;
+                gap: 10px;
+            }
+            
+            .color-dot {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                border: 2px solid white;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                transition: transform 0.3s;
+            }
+            
+            .color-dot:hover {
+                transform: scale(1.3);
+            }
+            
+            .festival-offer {
+                background: rgba(0,0,0,0.2);
+                border-radius: 10px;
+                padding: 12px;
+                margin-bottom: 20px;
+                border-left: 4px solid white;
+            }
+            
+            .festival-offer p {
+                margin: 0;
+                font-size: 0.95rem;
+                line-height: 1.4;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .festival-offer i {
+                font-size: 1.2rem;
+            }
+            
+            .festival-action-btn {
+                padding: 14px 35px;
+                background: linear-gradient(to right, white, #f8f9fa);
+                color: var(--theme-primary);
+                border: none;
+                border-radius: 30px;
+                font-weight: 800;
+                font-size: 1.1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                margin: 0 auto 20px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+            }
+            
+            .festival-action-btn:hover {
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+            }
+            
+            .festival-hashtags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .hashtag {
+                background: rgba(255,255,255,0.25);
+                color: white;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border: 1px solid rgba(255,255,255,0.4);
+                transition: all 0.3s;
+            }
+            
+            .hashtag:hover {
+                background: rgba(255,255,255,0.4);
+                transform: translateY(-2px);
+            }
+            
+            .close-festival-banner {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: rgba(255,255,255,0.25);
+                color: white;
+                border: none;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255,255,255,0.3);
+            }
+            
+            .close-festival-banner:hover {
+                background: rgba(255,255,255,0.4);
+                transform: rotate(90deg) scale(1.1);
+            }
+            
+            @keyframes shine {
+                0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+                100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            }
+            
+            @media (max-width: 768px) {
+                .festival-sidebar-banner {
+                    margin: 10px;
+                }
+                
+                .festival-banner-content {
+                    padding: 20px 15px;
+                }
+                
+                .festival-icon {
+                    font-size: 3rem;
+                }
+                
+                .festival-title {
+                    font-size: 1.4rem;
+                }
+                
+                .festival-action-btn {
+                    padding: 12px 25px;
+                    font-size: 1rem;
+                }
+            }
+        `;
+        
+        document.head.appendChild(style);
+    }
+
+    // Remove festival banner
     removeFestivalFromSidebar() {
-        const existingBanner = document.getElementById('festivalSidebarBanner');
-        if (existingBanner) {
-            existingBanner.remove();
+        const banner = document.getElementById('festivalSidebarBanner');
+        const floatingBanner = document.querySelector('.festival-floating-banner');
+        
+        if (banner) {
+            banner.style.opacity = '0';
+            banner.style.transform = 'scale(0.8)';
+            setTimeout(() => banner.remove(), 300);
         }
+        
+        if (floatingBanner) {
+            floatingBanner.style.opacity = '0';
+            floatingBanner.style.transform = 'translateX(100%)';
+            setTimeout(() => floatingBanner.remove(), 300);
+        }
+        
+        this.isFestivalBannerVisible = false;
     }
-    
+
+    // Handle banner click
     handleFestivalBannerClick() {
         if (!this.currentTheme) return;
         
-        // Show festival offer modal
-        this.showFestivalOfferModal();
+        // Show festival modal
+        this.showFestivalModal();
         
-        // For festival days, open registration
-        const offerFestivals = ['diwali', 'holi', 'christmas', 'new-year', 
-                              'durga-puja', 'dussehra', 'ganesh-chaturthi'];
+        // Log analytics
+        console.log(`🎊 Festival clicked: ${this.currentTheme.name}`);
         
-        if (offerFestivals.includes(this.currentTheme.theme)) {
-            setTimeout(() => {
-                if (typeof openRegistrationModal === 'function') {
-                    openRegistrationModal();
-                }
-            }, 500);
-        }
+        // Track in localStorage
+        const clicks = parseInt(localStorage.getItem('festivalClicks') || '0') + 1;
+        localStorage.setItem('festivalClicks', clicks.toString());
+        localStorage.setItem('lastFestivalClicked', this.currentTheme.name);
     }
-    
-    showFestivalOfferModal() {
-        if (!this.currentTheme) return;
+
+    // Show festival details modal
+    showFestivalModal() {
+        const modalId = 'festivalModal';
+        let modal = document.getElementById(modalId);
         
-        const modal = document.createElement('div');
-        modal.className = 'festival-offer-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            animation: fadeIn 0.3s ease;
-        `;
+        if (modal) modal.remove();
+        
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'festival-modal';
         
         modal.innerHTML = `
-            <div style="
-                background: white;
-                border-radius: 20px;
-                width: 90%;
-                max-width: 500px;
-                overflow: hidden;
-                animation: slideUp 0.3s ease;
-            ">
-                <div style="
+            <div class="festival-modal-content">
+                <div class="festival-modal-header" style="
                     background: linear-gradient(135deg, ${this.currentTheme.colors[0]}, ${this.currentTheme.colors[1] || this.currentTheme.colors[0]});
                     color: white;
-                    padding: 30px;
+                    padding: 25px;
+                    border-radius: 15px 15px 0 0;
                     text-align: center;
                 ">
-                    <span onclick="this.parentElement.parentElement.parentElement.remove()" style="
-                        position: absolute;
-                        top: 15px;
-                        right: 20px;
-                        color: white;
-                        font-size: 1.5rem;
-                        cursor: pointer;
-                        background: rgba(0,0,0,0.2);
-                        width: 30px;
-                        height: 30px;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    ">&times;</span>
-                    
-                    <div style="font-size: 3rem; margin-bottom: 15px;">
-                        ${this.getFestivalEmoji(this.currentTheme.theme)}
-                    </div>
-                    <h2 style="margin: 0; font-size: 1.8rem;">${this.currentTheme.name}</h2>
-                    <p style="margin: 5px 0 0; opacity: 0.9;">${this.currentTheme.englishName}</p>
+                    <h2 style="margin: 0 0 10px;">
+                        <i class="${this.currentTheme.icon}"></i>
+                        ${this.currentTheme.name}
+                    </h2>
+                    <p style="margin: 0; opacity: 0.9;">${this.currentTheme.englishName}</p>
                 </div>
                 
-                <div style="padding: 30px;">
-                    <h3 style="color: #333; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-gift"></i> विशेष ऑफर
-                    </h3>
+                <div class="festival-modal-body" style="padding: 25px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 4rem; margin-bottom: 15px;">
+                            ${this.getFestivalEmoji(this.currentTheme.theme)}
+                        </div>
+                        <p style="font-size: 1.1rem; line-height: 1.6;">
+                            ${this.currentTheme.message}
+                        </p>
+                    </div>
                     
-                    <div style="
-                        display: grid;
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 15px;
-                        margin: 20px 0;
-                    ">
-                        <div style="
-                            background: #f8f9fa;
-                            padding: 15px;
-                            border-radius: 10px;
-                            border-left: 4px solid ${this.currentTheme.colors[0]};
-                        ">
-                            <i class="fas fa-percentage" style="color: ${this.currentTheme.colors[0]}; font-size: 1.5rem;"></i>
-                            <h4 style="margin: 10px 0 5px;">20% छूट</h4>
-                            <p style="margin: 0; color: #666; font-size: 0.9rem;">नए एडमिशन पर</p>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; color: var(--theme-primary);">
+                            <i class="fas fa-gift"></i> विशेष ऑफर
+                        </h4>
+                        <p style="margin: 10px 0;">${this.currentTheme.specialOffer}</p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: var(--theme-primary);">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <div style="font-size: 0.9rem;">थीम कलर्स</div>
+                            <div style="display: flex; gap: 5px; justify-content: center; margin-top: 5px;">
+                                ${this.currentTheme.colors.map(color => 
+                                    `<span style="
+                                        width: 20px;
+                                        height: 20px;
+                                        background: ${color};
+                                        border-radius: 50%;
+                                        border: 2px solid white;
+                                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                                    "></span>`
+                                ).join('')}
+                            </div>
                         </div>
                         
-                        <div style="
-                            background: #f8f9fa;
-                            padding: 15px;
-                            border-radius: 10px;
-                            border-left: 4px solid ${this.currentTheme.colors[0]};
-                        ">
-                            <i class="fas fa-book" style="color: ${this.currentTheme.colors[0]}; font-size: 1.5rem;"></i>
-                            <h4 style="margin: 10px 0 5px;">मुफ्त किट</h4>
-                            <p style="margin: 0; color: #666; font-size: 0.9rem;">स्टडी मटेरियल</p>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: var(--theme-primary);">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+                            <div style="font-size: 0.9rem;">हैशटैग</div>
+                            <div style="margin-top: 5px;">
+                                ${this.currentTheme.hashtags.slice(0, 2).map(tag => 
+                                    `<div style="font-size: 0.8rem; color: #666;">${tag}</div>`
+                                ).join('')}
+                            </div>
                         </div>
                     </div>
                     
-                    <button onclick="openRegistrationModal()" style="
-                        width: 100%;
-                        padding: 15px;
-                        background: ${this.currentTheme.colors[0]};
-                        color: white;
-                        border: none;
-                        border-radius: 10px;
-                        font-size: 1.1rem;
-                        font-weight: bold;
-                        cursor: pointer;
-                        margin-top: 20px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 10px;
-                        transition: all 0.3s ease;
-                    ">
-                        <i class="fas fa-user-plus"></i> अभी ज्वाइन करें
-                    </button>
+                    <div style="display: flex; gap: 10px; margin-top: 25px;">
+                        <button onclick="themeManager.shareOnWhatsApp()" style="
+                            flex: 1;
+                            padding: 12px;
+                            background: #25D366;
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            font-weight: bold;
+                        ">
+                            <i class="fab fa-whatsapp"></i> शेयर करें
+                        </button>
+                        
+                        <button onclick="themeManager.closeFestivalModal()" style="
+                            flex: 1;
+                            padding: 12px;
+                            background: #6c757d;
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 8px;
+                            font-weight: bold;
+                        ">
+                            <i class="fas fa-times"></i> बंद करें
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
         
-        document.body.appendChild(modal);
-        
-        modal.onclick = (e) => {
-            if (e.target === modal) modal.remove();
-        };
-    }
-    
-    addFestivalBannerStyles() {
-        if (document.querySelector('#festival-banner-styles')) return;
-        
-        const styles = document.createElement('style');
-        styles.id = 'festival-banner-styles';
-        styles.textContent = `
-            @keyframes bounce {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-10px); }
+        // Add modal styles
+        const modalStyles = document.createElement('style');
+        modalStyles.textContent = `
+            .festival-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease;
+            }
+            
+            .festival-modal-content {
+                background: white;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 500px;
+                animation: slideUp 0.4s ease;
+                max-height: 80vh;
+                overflow-y: auto;
             }
             
             @keyframes fadeIn {
@@ -1217,15 +1417,238 @@ function showThemeInfoModal() {
             }
             
             @keyframes slideUp {
-                from { transform: translateY(20px); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-            
-            .festival-offer-btn:hover {
-                transform: scale(1.05);
-                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                from { 
+                    opacity: 0;
+                    transform: translateY(50px);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
         `;
         
-        document.head.appendChild(styles);
+        document.head.appendChild(modalStyles);
+        document.body.appendChild(modal);
+        
+        // Close modal on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeFestivalModal();
+            }
+        });
+        
+        // Add escape key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeFestivalModal();
+            }
+        });
     }
+
+    closeFestivalModal() {
+        const modal = document.getElementById('festivalModal');
+        if (modal) {
+            modal.style.opacity = '0';
+            modal.style.transform = 'scale(0.9)';
+            setTimeout(() => modal.remove(), 300);
+        }
+    }
+
+    // Show toast notification
+    showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'festival-toast';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--theme-primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10001;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Social Sharing Functions
+    shareOnWhatsApp() {
+        const text = `${this.currentTheme.shareText}\n\n${window.location.href}`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    shareOnFacebook() {
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+        window.open(url, '_blank');
+    }
+
+    shareOnTwitter() {
+        const text = `${this.currentTheme.shareText}`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+        window.open(url, '_blank');
+    }
+
+    shareOnInstagram() {
+        // Instagram doesn't support direct sharing, open in app or show message
+        this.showToast('Instagram पर शेयर करने के लिए मैन्युअली कॉपी करें');
+        
+        // Copy to clipboard
+        const text = `${this.currentTheme.shareText}\n${window.location.href}`;
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('Text copied to clipboard');
+        });
+    }
+
+    downloadThemeImage() {
+        // Create a festive image to download
+        const canvas = document.createElement('canvas');
+        canvas.width = 1200;
+        canvas.height = 630;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw background gradient
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, this.currentTheme.colors[0]);
+        gradient.addColorStop(1, this.currentTheme.colors[1] || this.currentTheme.colors[0]);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 60px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.currentTheme.name, canvas.width/2, 200);
+        
+        ctx.font = '40px Arial';
+        ctx.fillText(this.currentTheme.englishName, canvas.width/2, 260);
+        
+        ctx.font = '30px Arial';
+        ctx.fillText('बाल भारती कोचिंग सेंटर, मधुबनी', canvas.width/2, 350);
+        
+        ctx.font = '25px Arial';
+        ctx.fillText(this.currentTheme.message, canvas.width/2, 420);
+        
+        // Convert to data URL and download
+        const dataURL = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `${this.currentTheme.theme}-greeting.png`;
+        link.href = dataURL;
+        link.click();
+        
+        this.showToast('इमेज डाउनलोड हो रही है...');
+    }
+
+    // Utility function to check if banner should be shown
+    shouldShowBanner() {
+        if (!this.currentTheme) return false;
+        
+        // Check localStorage for user preference
+        const hideBanner = localStorage.getItem('hideFestivalBanner');
+        if (hideBanner === 'true') return false;
+        
+        // Check if banner was closed today
+        const lastClosed = localStorage.getItem('festivalBannerLastClosed');
+        if (lastClosed) {
+            const lastClosedDate = new Date(lastClosed);
+            const today = new Date();
+            if (lastClosedDate.toDateString() === today.toDateString()) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    // Save banner state
+    saveBannerState(visible) {
+        this.isFestivalBannerVisible = visible;
+        if (!visible) {
+            localStorage.setItem('festivalBannerLastClosed', new Date().toISOString());
+        }
+    }
+}
+
+// Initialize Theme Manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.themeManager = new ThemeManager();
+    themeManager.init();
+    
+    // Add theme toggle button to header if needed
+    setTimeout(() => {
+        const header = document.querySelector('.main-header');
+        if (header && themeManager.currentTheme) {
+            const themeToggle = document.createElement('button');
+            themeToggle.className = 'theme-toggle-btn';
+            themeToggle.innerHTML = `<i class="fas fa-theater-masks"></i>`;
+            themeToggle.title = 'फेस्टिवल थीम';
+            themeToggle.style.cssText = `
+                background: var(--theme-primary);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-left: 10px;
+            `;
+            themeToggle.addEventListener('click', () => {
+                themeManager.showFestivalModal();
+            });
+            
+            // Try to add to header actions
+            const headerActions = header.querySelector('.header-actions, .nav-right, [class*="action"]');
+            if (headerActions) {
+                headerActions.appendChild(themeToggle);
+            } else {
+                header.appendChild(themeToggle);
+            }
+        }
+    }, 2000);
+});
+
+// Export for module usage
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ThemeManager;
+}
