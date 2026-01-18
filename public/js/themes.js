@@ -3,6 +3,10 @@ class ThemeManager {
     constructor() {
         this.specialDays = this.getSpecialDaysCalendar();
         this.currentTheme = null;
+        this.activeFestivals = []; // सभी एक्टिव फेस्टिवल
+        this.currentThemeIndex = 0;
+        this.isThemeRotating = false;
+        this.themeRotationInterval = null;
         this.isInitialized = false;
         this.isFestivalBannerVisible = true;
         this.handleBannerClickWithSound = null;
@@ -13,7 +17,37 @@ class ThemeManager {
         this.isInitialized = true;
         
         this.checkSpecialDays();
-        if (this.currentTheme) {
+        
+        // Multiple festivals हैं
+        if (this.activeFestivals && this.activeFestivals.length > 1) {
+            console.log(`🎊 Multiple Festivals Found: ${this.activeFestivals.length}`);
+            
+            // Theme rotation शुरू करो
+            this.startThemeRotation();
+            
+            // पहला theme apply करो
+            this.currentTheme = this.activeFestivals[0];
+            this.applyTheme();
+            
+            // Multi-festival banner दिखाओ
+            this.showMultiFestivalBanner();
+            
+            // Multi-festival notification
+            this.showMultiFestivalNotification();
+            
+            // Celebration effects
+            this.startCelebration();
+            
+            // Backgrounds preload
+            this.preloadBackgrounds();
+            
+            // Sidebar में multi-festival banner
+            this.addMultiFestivalToSidebar();
+            
+        } 
+        // Single festival है
+        else if (this.currentTheme) {
+            console.log(`🎉 Single Festival: ${this.currentTheme.name}`);
             this.applyTheme();
             this.showNotification();
             this.showBanner();
@@ -393,78 +427,510 @@ class ThemeManager {
         return new Date(year, 10, 10);
     }
 
-   checkSpecialDays() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const activeFestivals = [];  // सभी एक्टिव फेस्टिवल इकट्ठा करें
-    
-    for (const day of this.specialDays) {
-        const startDate = new Date(day.date);
-        startDate.setDate(startDate.getDate() - day.startDaysBefore);
-        startDate.setHours(0, 0, 0, 0);
+    checkSpecialDays() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const activeFestivals = [];  // सभी एक्टिव फेस्टिवल इकट्ठा करें
+        
+        for (const day of this.specialDays) {
+            const startDate = new Date(day.date);
+            startDate.setDate(startDate.getDate() - day.startDaysBefore);
+            startDate.setHours(0, 0, 0, 0);
 
-        const endDate = new Date(day.date);
-        endDate.setDate(endDate.getDate() + day.endDaysAfter);
-        endDate.setHours(23, 59, 59, 999);
+            const endDate = new Date(day.date);
+            endDate.setDate(endDate.getDate() + day.endDaysAfter);
+            endDate.setHours(23, 59, 59, 999);
 
-        if (today >= startDate && today <= endDate) {
-            activeFestivals.push(day);  // सभी जोड़ें
+            if (today >= startDate && today <= endDate) {
+                activeFestivals.push(day);  // सभी जोड़ें
+            }
+        }
+        
+        // अब सॉर्ट करें
+        if (activeFestivals.length > 0) {
+            // 1. पहले ठीक आज वाले फेस्टिवल (exact date match)
+            // 2. फिर शुरू हुए लेकिन आज नहीं वाले
+            // 3. फिर आने वाले (upcoming)
+            
+            activeFestivals.sort((a, b) => {
+                // Exact festival date today - highest priority
+                const aIsToday = today.getDate() === a.date.getDate() && 
+                                today.getMonth() === a.date.getMonth();
+                const bIsToday = today.getDate() === b.date.getDate() && 
+                                today.getMonth() === b.date.getMonth();
+                
+                if (aIsToday && !bIsToday) return -1;
+                if (!aIsToday && bIsToday) return 1;
+                
+                // Closest festival gets priority
+                const aDiff = Math.abs(a.date - today);
+                const bDiff = Math.abs(b.date - today);
+                return aDiff - bDiff;
+            });
+            
+            // पहला सबसे इम्पोर्टेन्ट थीम
+            this.currentTheme = activeFestivals[0];
+            
+            // सभी एक्टिव फेस्टिवल स्टोर करें
+            this.activeFestivals = activeFestivals;
+            
+            console.log(`🎊 ${activeFestivals.length} फेस्टिवल एक्टिव:`);
+            activeFestivals.forEach(f => {
+                console.log(`   - ${f.name} (${f.date.toLocaleDateString()})`);
+            });
         }
     }
+
+    // =================== THEME ROTATION SYSTEM ===================
     
-    // अब सॉर्ट करें
-    if (activeFestivals.length > 0) {
-        // 1. पहले ठीक आज वाले फेस्टिवल (exact date match)
-        // 2. फिर शुरू हुए लेकिन आज नहीं वाले
-        // 3. फिर आने वाले (upcoming)
+    // थीम रोटेशन शुरू करें (हर 10 सेकंड)
+    startThemeRotation() {
+        if (this.activeFestivals.length <= 1) return;
         
-        activeFestivals.sort((a, b) => {
-            // Exact festival date today - highest priority
-            const aIsToday = today.getDate() === a.date.getDate() && 
-                            today.getMonth() === a.date.getMonth();
-            const bIsToday = today.getDate() === b.date.getDate() && 
-                            today.getMonth() === b.date.getMonth();
-            
-            if (aIsToday && !bIsToday) return -1;
-            if (!aIsToday && bIsToday) return 1;
-            
-            // Closest festival gets priority
-            const aDiff = Math.abs(a.date - today);
-            const bDiff = Math.abs(b.date - today);
-            return aDiff - bDiff;
-        });
+        this.isThemeRotating = true;
         
-        // पहला सबसे इम्पोर्टेन्ट थीम
-        this.currentTheme = activeFestivals[0];
+        // हर 10 सेकंड में थीम बदलें
+        this.themeRotationInterval = setInterval(() => {
+            this.rotateToNextTheme();
+        }, 10000); // 10 seconds
         
-        // सभी एक्टिव फेस्टिवल स्टोर करें
-        this.activeFestivals = activeFestivals;
+        console.log(`🎭 Theme Rotation Started: ${this.activeFestivals.length} festivals, 10s interval`);
         
-        console.log(`🎊 ${activeFestivals.length} फेस्टिवल एक्टिव:`);
-        activeFestivals.forEach(f => {
-            console.log(`   - ${f.name} (${f.date.toLocaleDateString()})`);
-        });
+        // रोटेशन जानकारी दिखाएं
+        this.showRotationInfo();
     }
-}
+    
+    // अगली थीम पर जाएं
+    rotateToNextTheme() {
+        if (this.activeFestivals.length <= 1) return;
+        
+        // पहले वाली थीम remove करें
+        document.body.classList.remove(`theme-${this.currentTheme.theme}`);
+        
+        // अगली थीम select करें
+        this.currentThemeIndex = (this.currentThemeIndex + 1) % this.activeFestivals.length;
+        this.currentTheme = this.activeFestivals[this.currentThemeIndex];
+        
+        // नई थीम apply करें
+        this.applyTheme();
+        
+        // रोटेशन जानकारी update करें
+        this.updateRotationInfo();
+        
+        console.log(`🔄 Theme Changed to: ${this.currentTheme.name} (${this.currentThemeIndex + 1}/${this.activeFestivals.length})`);
+    }
+    
+    // थीम apply करें (updated for rotation)
     applyTheme() {
         if (!this.currentTheme) return;
-
-        // Add theme class
+        
+        // सभी पुरानी थीम classes हटाएं
+        if (this.activeFestivals.length > 1) {
+            this.activeFestivals.forEach(festival => {
+                document.body.classList.remove(`theme-${festival.theme}`);
+            });
+        }
+        
+        // नई थीम class add करें
         document.body.classList.add(`theme-${this.currentTheme.theme}`, 'theme-active');
         
-        // Apply to other elements
+        // अन्य elements को update करें
         document.querySelectorAll('.main-header, .main-footer, .hero-container').forEach(el => {
             el?.classList.add('theme-active');
         });
-
-        // Update CSS variables
+        
+        // CSS variables update करें
         this.updateCSSVariables();
         
-        // Add CSS animations
+        // CSS animations add करें
         this.addThemeStyles();
+        
+        // Background update करें
+        this.updateBackground();
+    }
+    
+    updateBackground() {
+        if (!this.currentTheme?.background) return;
+        
+        const heroContainer = document.querySelector('.hero-container');
+        if (heroContainer) {
+            heroContainer.style.backgroundImage = 
+                `linear-gradient(rgba(var(--theme-primary-rgb), 0.9), 
+                  rgba(var(--theme-primary-rgb), 0.7)),
+                 url('${this.currentTheme.background}')`;
+            heroContainer.style.backgroundSize = 'cover';
+            heroContainer.style.backgroundPosition = 'center';
+            heroContainer.style.transition = 'background-image 1s ease-in-out';
+        }
+    }
+    
+    // रोटेशन जानकारी दिखाएं
+    showRotationInfo() {
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'theme-rotation-info';
+        infoDiv.id = 'themeRotationInfo';
+        infoDiv.innerHTML = `
+            <div class="rotation-content">
+                <span class="rotation-icon">🎭</span>
+                <span class="rotation-text">
+                    <strong>${this.activeFestivals.length} फेस्टिवल</strong>
+                    <small>हर 10 सेकंड में थीम बदल रहा है</small>
+                </span>
+                <button class="rotation-pause-btn" title="रोकें/चालू करें">
+                    <i class="fas fa-pause"></i>
+                </button>
+            </div>
+            <div class="rotation-progress">
+                <div class="progress-bar"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(infoDiv);
+        
+        // Pause button event
+        infoDiv.querySelector('.rotation-pause-btn').addEventListener('click', () => {
+            this.toggleThemeRotation();
+        });
+        
+        // Progress bar animation
+        this.startProgressBar();
+    }
+    
+    updateRotationInfo() {
+        const infoDiv = document.getElementById('themeRotationInfo');
+        if (!infoDiv) return;
+        
+        const rotationText = infoDiv.querySelector('.rotation-text strong');
+        if (rotationText) {
+            rotationText.textContent = `${this.currentThemeIndex + 1}/${this.activeFestivals.length} - ${this.currentTheme.name}`;
+        }
+        
+        // Progress bar restart
+        this.startProgressBar();
+    }
+    
+    startProgressBar() {
+        const progressBar = document.querySelector('.rotation-progress .progress-bar');
+        if (progressBar) {
+            progressBar.style.animation = 'none';
+            setTimeout(() => {
+                progressBar.style.animation = 'progressAnimation 10s linear';
+            }, 10);
+        }
+    }
+    
+    toggleThemeRotation() {
+        const btn = document.querySelector('.rotation-pause-btn i');
+        
+        if (this.isThemeRotating) {
+            // Pause rotation
+            clearInterval(this.themeRotationInterval);
+            this.isThemeRotating = false;
+            btn.className = 'fas fa-play';
+            
+            // Progress bar pause
+            const progressBar = document.querySelector('.rotation-progress .progress-bar');
+            if (progressBar) {
+                progressBar.style.animationPlayState = 'paused';
+            }
+            
+            this.showToast('थीम रोटेशन रोका गया');
+        } else {
+            // Resume rotation
+            this.startThemeRotation();
+            btn.className = 'fas fa-pause';
+            
+            // Progress bar resume
+            const progressBar = document.querySelector('.rotation-progress .progress-bar');
+            if (progressBar) {
+                progressBar.style.animationPlayState = 'running';
+            }
+            
+            this.showToast('थीम रोटेशन शुरू किया');
+        }
+    }
+    
+    // =================== MULTI-FESTIVAL BANNER ===================
+    
+    showMultiFestivalBanner() {
+        const banner = document.createElement('div');
+        banner.className = 'multi-festival-banner';
+        banner.id = 'multiFestivalBanner';
+        
+        // Festival names scroll करें
+        const festivalNames = this.activeFestivals.map(f => f.name).join(' • ');
+        
+        banner.innerHTML = `
+            <div class="festival-scroll">
+                <i class="fas fa-star"></i>
+                <span class="festival-names">${festivalNames}</span>
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="festival-counter">
+                <span>${this.activeFestivals.length} फेस्टिवल</span>
+                <button class="theme-info-btn" title="थीम जानकारी">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.insertBefore(banner, document.body.firstChild);
+        
+        // Info button event
+        banner.querySelector('.theme-info-btn').addEventListener('click', () => {
+            this.showMultiFestivalInfo();
+        });
+        
+        // Adjust header margin
+        const header = document.querySelector('.main-header');
+        if (header) {
+            header.style.marginTop = '60px';
+        }
+    }
+    
+    showMultiFestivalInfo() {
+        const modal = document.createElement('div');
+        modal.className = 'multi-festival-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🎊 ${this.activeFestivals.length} फेस्टिवल एक्टिव</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="festival-list">
+                        ${this.activeFestivals.map((festival, index) => `
+                            <div class="festival-item ${index === this.currentThemeIndex ? 'active' : ''}">
+                                <div class="festival-icon">${this.getFestivalEmoji(festival.theme)}</div>
+                                <div class="festival-details">
+                                    <h4>${festival.name}</h4>
+                                    <p>${festival.englishName}</p>
+                                    <small>${festival.message}</small>
+                                </div>
+                                <div class="festival-status">
+                                    ${index === this.currentThemeIndex ? 
+                                        '<span class="active-badge">सक्रिय</span>' : 
+                                        `<button onclick="themeManager.switchToTheme(${index})">चुनें</button>`
+                                    }
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-footer">
+                        <p>थीम हर 10 सेकंड में बदलती है। मैन्युअल चुनने के 30 सेकंड बाद ऑटो रोटेशन फिर शुरू होगा।</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close modal
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+    
+    switchToTheme(index) {
+        if (index >= 0 && index < this.activeFestivals.length) {
+            // Manual switch - pause auto rotation
+            clearInterval(this.themeRotationInterval);
+            this.isThemeRotating = false;
+            
+            // Change theme
+            this.currentThemeIndex = index;
+            this.currentTheme = this.activeFestivals[index];
+            this.applyTheme();
+            
+            // Update UI
+            const btn = document.querySelector('.rotation-pause-btn i');
+            if (btn) btn.className = 'fas fa-play';
+            
+            this.updateRotationInfo();
+            this.showToast(`${this.currentTheme.name} थीम चुना गया`);
+            
+            // Restart rotation after 30 seconds
+            setTimeout(() => {
+                this.startThemeRotation();
+            }, 30000);
+        }
+    }
+    
+    showMultiFestivalNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'multi-festival-notification';
+        notification.id = 'multiFestivalNotification';
+        
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="festival-icons">
+                    ${this.activeFestivals.map(f => 
+                        `<span class="festival-icon" title="${f.name}">${this.getFestivalEmoji(f.theme)}</span>`
+                    ).join('')}
+                </div>
+                <div class="notification-text">
+                    <strong>${this.activeFestivals.length} फेस्टिवल की शुभकामनाएँ!</strong>
+                    <p>थीम हर 10 सेकंड में बदल रही है</p>
+                </div>
+                <button class="close-notification">&times;</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 10 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                setTimeout(() => notification.remove(), 500);
+            }
+        }, 10000);
+        
+        // Close button
+        notification.querySelector('.close-notification').addEventListener('click', () => {
+            notification.remove();
+        });
+    }
+    
+    // =================== UPDATED FUNCTIONS ===================
+    
+    preloadBackgrounds() {
+        this.activeFestivals.forEach(festival => {
+            if (festival.background) {
+                const img = new Image();
+                img.src = festival.background;
+                img.onload = () => {
+                    console.log(`✅ Background loaded: ${festival.name}`);
+                };
+            }
+        });
+    }
+    
+    addMultiFestivalToSidebar() {
+        setTimeout(() => {
+            const selectors = [
+                '.teacher-ring-section',
+                '.sidebar',
+                '.right-sidebar',
+                '.left-sidebar',
+                '.side-section',
+                '.main-container aside',
+                '[class*="sidebar"]',
+                '[class*="side"]:not(.main-side)'
+            ];
+            
+            let targetSection = null;
+            
+            for (const selector of selectors) {
+                targetSection = document.querySelector(selector);
+                if (targetSection && targetSection.offsetParent !== null) {
+                    break;
+                }
+            }
+            
+            if (!targetSection) {
+                this.createMultiFestivalFloatingBanner();
+                return;
+            }
+            
+            const festivalBanner = document.createElement('div');
+            festivalBanner.className = 'multi-festival-sidebar-banner';
+            festivalBanner.id = 'multiFestivalSidebarBanner';
+            
+            festivalBanner.innerHTML = `
+                <div class="festival-carousel">
+                    ${this.activeFestivals.map((festival, index) => `
+                        <div class="festival-slide ${index === 0 ? 'active' : ''}" data-index="${index}">
+                            <div class="festival-emoji">${this.getFestivalEmoji(festival.theme)}</div>
+                            <h4>${festival.name}</h4>
+                            <p>${festival.message}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="festival-dots">
+                    ${this.activeFestivals.map((_, index) => `
+                        <span class="dot ${index === 0 ? 'active' : ''}" data-index="${index}"></span>
+                    `).join('')}
+                </div>
+                <div class="festival-timer">
+                    <div class="timer-bar"></div>
+                </div>
+            `;
+            
+            targetSection.insertBefore(festivalBanner, targetSection.firstChild);
+            
+            // Add event listeners for dots
+            festivalBanner.querySelectorAll('.dot').forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    this.switchToTheme(index);
+                });
+            });
+            
+            // Auto rotate carousel
+            let carouselIndex = 0;
+            setInterval(() => {
+                const slides = festivalBanner.querySelectorAll('.festival-slide');
+                const dots = festivalBanner.querySelectorAll('.dot');
+                
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                carouselIndex = (carouselIndex + 1) % this.activeFestivals.length;
+                
+                slides[carouselIndex].classList.add('active');
+                dots[carouselIndex].classList.add('active');
+            }, 5000);
+            
+        }, 1000);
+    }
+    
+    createMultiFestivalFloatingBanner() {
+        const banner = document.createElement('div');
+        banner.className = 'multi-festival-floating-banner';
+        banner.id = 'multiFestivalFloatingBanner';
+        
+        banner.innerHTML = `
+            <div class="floating-content">
+                <div class="festival-count">
+                    <i class="fas fa-star"></i>
+                    <span>${this.activeFestivals.length} फेस्टिवल</span>
+                </div>
+                <div class="current-festival">
+                    <strong>${this.currentTheme.name}</strong>
+                    <small>${this.currentTheme.message}</small>
+                </div>
+                <button class="floating-btn" onclick="themeManager.showMultiFestivalInfo()">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(banner);
+        
+        // Update current festival every 10 seconds
+        setInterval(() => {
+            const currentFestival = banner.querySelector('.current-festival strong');
+            const currentMessage = banner.querySelector('.current-festival small');
+            
+            if (currentFestival && currentMessage) {
+                currentFestival.textContent = this.currentTheme.name;
+                currentMessage.textContent = this.currentTheme.message;
+            }
+        }, 10000);
     }
 
+    // =================== ORIGINAL FUNCTIONS (UPDATED) ===================
+    
     updateCSSVariables() {
         if (!this.currentTheme) return;
 
@@ -475,7 +941,6 @@ class ThemeManager {
         root.style.setProperty('--theme-secondary', colors[1] || colors[0]);
         root.style.setProperty('--theme-accent', colors[2] || colors[0]);
         
-        // Convert hex to rgb for opacity
         const hexToRgb = (hex) => {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             return result ? 
@@ -486,7 +951,6 @@ class ThemeManager {
         root.style.setProperty('--theme-primary-rgb', hexToRgb(colors[0]));
     }
 
-    // Add dynamic CSS styles
     addThemeStyles() {
         const styleId = 'festival-theme-styles';
         let styleElement = document.getElementById(styleId);
@@ -498,14 +962,541 @@ class ThemeManager {
         }
 
         styleElement.textContent = `
+            /* Theme Rotation Styles */
+            .theme-rotation-info {
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+                color: white;
+                border-radius: 10px;
+                padding: 10px 15px;
+                z-index: 9999;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                min-width: 250px;
+                animation: slideInRight 0.5s ease;
+            }
+            
+            .rotation-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+            }
+            
+            .rotation-icon {
+                font-size: 1.2rem;
+            }
+            
+            .rotation-text {
+                flex: 1;
+            }
+            
+            .rotation-text strong {
+                display: block;
+                font-size: 0.9rem;
+            }
+            
+            .rotation-text small {
+                font-size: 0.75rem;
+                opacity: 0.9;
+            }
+            
+            .rotation-pause-btn {
+                background: rgba(255,255,255,0.2);
+                border: none;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s;
+            }
+            
+            .rotation-pause-btn:hover {
+                background: rgba(255,255,255,0.3);
+                transform: scale(1.1);
+            }
+            
+            .rotation-progress {
+                height: 3px;
+                background: rgba(255,255,255,0.2);
+                border-radius: 2px;
+                overflow: hidden;
+            }
+            
+            .progress-bar {
+                height: 100%;
+                width: 100%;
+                background: white;
+                animation: progressAnimation 10s linear infinite;
+                transform-origin: left;
+            }
+            
+            @keyframes progressAnimation {
+                0% { transform: scaleX(0); }
+                100% { transform: scaleX(1); }
+            }
+            
+            /* Multi Festival Banner */
+            .multi-festival-banner {
+                background: linear-gradient(90deg, 
+                    var(--theme-primary) 0%,
+                    var(--theme-secondary) 50%,
+                    var(--theme-accent) 100%);
+                color: white;
+                padding: 12px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                animation: slideDown 0.5s ease;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999;
+            }
+            
+            .festival-scroll {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                overflow: hidden;
+                flex: 1;
+            }
+            
+            .festival-names {
+                white-space: nowrap;
+                animation: scrollText 30s linear infinite;
+                font-weight: 600;
+                font-size: 1.1rem;
+            }
+            
+            .festival-counter {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: rgba(255,255,255,0.2);
+                padding: 5px 12px;
+                border-radius: 20px;
+            }
+            
+            .theme-info-btn {
+                background: transparent;
+                color: white;
+                border: none;
+                cursor: pointer;
+                font-size: 1rem;
+                padding: 5px;
+                border-radius: 50%;
+                transition: all 0.3s;
+            }
+            
+            .theme-info-btn:hover {
+                background: rgba(255,255,255,0.3);
+                transform: scale(1.1);
+            }
+            
+            /* Multi Festival Notification */
+            .multi-festival-notification {
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+                color: white;
+                border-radius: 10px;
+                padding: 15px;
+                z-index: 9998;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+                animation: slideInRight 0.5s ease;
+            }
+            
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .festival-icons {
+                display: flex;
+                gap: 8px;
+            }
+            
+            .festival-icons .festival-icon {
+                font-size: 1.5rem;
+                animation: bounce 2s infinite;
+            }
+            
+            .notification-text {
+                flex: 1;
+            }
+            
+            .notification-text strong {
+                display: block;
+                font-size: 1rem;
+                margin-bottom: 3px;
+            }
+            
+            .notification-text p {
+                font-size: 0.85rem;
+                opacity: 0.9;
+                margin: 0;
+            }
+            
+            .close-notification {
+                background: rgba(255,255,255,0.2);
+                border: none;
+                color: white;
+                width: 25px;
+                height: 25px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1rem;
+            }
+            
+            /* Multi Festival Modal */
+            .multi-festival-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease;
+            }
+            
+            .multi-festival-modal .modal-content {
+                background: white;
+                border-radius: 15px;
+                width: 90%;
+                max-width: 500px;
+                max-height: 80vh;
+                overflow-y: auto;
+                animation: slideUp 0.4s ease;
+            }
+            
+            .modal-header {
+                background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+                color: white;
+                padding: 20px;
+                border-radius: 15px 15px 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .modal-header h3 {
+                margin: 0;
+            }
+            
+            .close-modal {
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 0;
+                width: 30px;
+                height: 30px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
+            .festival-list {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            
+            .festival-item {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+                transition: all 0.3s;
+            }
+            
+            .festival-item.active {
+                background: rgba(var(--theme-primary-rgb), 0.1);
+                border-left: 4px solid var(--theme-primary);
+            }
+            
+            .festival-item:last-child {
+                border-bottom: none;
+            }
+            
+            .festival-icon {
+                font-size: 2rem;
+            }
+            
+            .festival-details {
+                flex: 1;
+            }
+            
+            .festival-details h4 {
+                margin: 0 0 5px;
+                color: var(--theme-primary);
+            }
+            
+            .festival-details p {
+                margin: 0 0 3px;
+                font-size: 0.9rem;
+                color: #666;
+            }
+            
+            .festival-details small {
+                font-size: 0.8rem;
+                color: #888;
+            }
+            
+            .festival-status .active-badge {
+                background: var(--theme-primary);
+                color: white;
+                padding: 5px 10px;
+                border-radius: 15px;
+                font-size: 0.8rem;
+                font-weight: bold;
+            }
+            
+            .festival-status button {
+                background: var(--theme-primary);
+                color: white;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s;
+            }
+            
+            .festival-status button:hover {
+                background: var(--theme-secondary);
+                transform: scale(1.05);
+            }
+            
+            .modal-footer {
+                margin-top: 20px;
+                padding-top: 15px;
+                border-top: 1px solid #eee;
+                font-size: 0.9rem;
+                color: #666;
+                text-align: center;
+            }
+            
+            /* Multi Festival Sidebar Banner */
+            .multi-festival-sidebar-banner {
+                margin: 15px;
+                background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            }
+            
+            .festival-carousel {
+                padding: 20px;
+            }
+            
+            .festival-slide {
+                display: none;
+                text-align: center;
+                color: white;
+            }
+            
+            .festival-slide.active {
+                display: block;
+                animation: fadeIn 0.5s ease;
+            }
+            
+            .festival-slide .festival-emoji {
+                font-size: 3rem;
+                margin-bottom: 10px;
+                animation: bounce 2s infinite;
+            }
+            
+            .festival-slide h4 {
+                margin: 0 0 10px;
+                font-size: 1.4rem;
+            }
+            
+            .festival-slide p {
+                margin: 0;
+                font-size: 0.95rem;
+                opacity: 0.9;
+            }
+            
+            .festival-dots {
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+                padding: 10px;
+                background: rgba(0,0,0,0.2);
+            }
+            
+            .dot {
+                width: 10px;
+                height: 10px;
+                background: rgba(255,255,255,0.3);
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            
+            .dot.active {
+                background: white;
+                transform: scale(1.3);
+            }
+            
+            .festival-timer {
+                height: 3px;
+                background: rgba(0,0,0,0.2);
+            }
+            
+            .timer-bar {
+                height: 100%;
+                width: 100%;
+                background: white;
+                animation: timerAnimation 5s linear infinite;
+            }
+            
+            /* Multi Festival Floating Banner */
+            .multi-festival-floating-banner {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+                color: white;
+                border-radius: 10px;
+                padding: 15px;
+                z-index: 9999;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                animation: slideInUp 0.5s ease;
+            }
+            
+            .floating-content {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .festival-count {
+                background: rgba(255,255,255,0.2);
+                padding: 5px 10px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .current-festival {
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .current-festival strong {
+                display: block;
+                font-size: 1rem;
+                margin-bottom: 3px;
+            }
+            
+            .current-festival small {
+                font-size: 0.8rem;
+                opacity: 0.9;
+                display: block;
+            }
+            
+            .floating-btn {
+                background: rgba(255,255,255,0.2);
+                border: none;
+                color: white;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+                transition: all 0.3s;
+            }
+            
+            .floating-btn:hover {
+                background: rgba(255,255,255,0.3);
+                transform: scale(1.1);
+            }
+            
+            /* Animations */
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-100%);
+                }
+                to {
+                    transform: translateY(0);
+                }
+            }
+            
+            @keyframes slideInUp {
+                from {
+                    transform: translateY(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes scrollText {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            
+            @keyframes timerAnimation {
+                0% { width: 0%; }
+                100% { width: 100%; }
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(50px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
             @keyframes bounce {
                 0%, 100% { transform: translateY(0); }
                 50% { transform: translateY(-10px); }
-            }
-            
-            @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.8; }
             }
             
             @keyframes float {
@@ -513,48 +1504,32 @@ class ThemeManager {
                 50% { transform: translateY(-20px); }
             }
             
-            @keyframes sparkle {
-                0%, 100% { opacity: 0; }
-                50% { opacity: 1; }
-            }
-            
-            .festival-sidebar-banner {
-                animation: float 3s ease-in-out infinite;
-            }
-            
-            .festival-offer-btn:hover {
-                transform: scale(1.1) !important;
-                box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
-            }
-            
-            .close-festival-banner:hover {
-                background: rgba(255,255,255,0.4) !important;
-                transform: rotate(90deg);
-            }
-            
+            /* Original Theme Styles */
             .theme-active .main-header {
                 background: linear-gradient(135deg, 
                     var(--theme-primary), 
                     var(--theme-secondary)) !important;
-                transition: all 0.5s ease;
+                transition: all 1s ease;
             }
             
             .theme-active .btn-primary {
                 background: var(--theme-primary) !important;
                 border-color: var(--theme-primary) !important;
+                transition: all 1s ease;
             }
             
-            .theme-active .hero-container {
-                background: linear-gradient(rgba(var(--theme-primary-rgb), 0.9), 
-                    rgba(var(--theme-primary-rgb), 0.7)),
-                    url('${this.currentTheme.background}') !important;
-                background-size: cover !important;
-                background-position: center !important;
+            body {
+                transition: background-color 1s ease, color 1s ease;
+            }
+            
+            .theme-active {
+                transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
             }
         `;
     }
 
-    // Preload background image
+    // =================== ORIGINAL FUNCTIONS (KEEP AS IS) ===================
+    
     preloadBackground() {
         if (!this.currentTheme?.background) return;
         
@@ -565,7 +1540,6 @@ class ThemeManager {
         };
     }
 
-    // Get appropriate emoji for festival
     getFestivalEmoji(theme) {
         const themeEmojis = {
             'new-year': '🎉',
@@ -591,7 +1565,6 @@ class ThemeManager {
         return themeEmojis[theme] || '🎊';
     }
 
-    // Show notification with share buttons
     showNotification() {
         if (!this.currentTheme) return;
 
@@ -625,7 +1598,6 @@ class ThemeManager {
 
         document.body.appendChild(notification);
         
-        // Auto-close after 15 seconds
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.style.opacity = '0';
@@ -635,7 +1607,6 @@ class ThemeManager {
         }, 15000);
     }
 
-    // Show top banner
     showBanner() {
         if (!this.currentTheme) return;
 
@@ -657,14 +1628,12 @@ class ThemeManager {
 
         document.body.insertBefore(banner, document.body.firstChild);
         
-        // Adjust header margin
         const header = document.querySelector('.main-header');
         if (header) {
             header.style.marginTop = '60px';
         }
     }
 
-    // Add Social Sharing buttons to page
     addSocialSharing() {
         if (!this.currentTheme) return;
         
@@ -692,14 +1661,10 @@ class ThemeManager {
         `;
     }
 
-    // Start celebration effects
     startCelebration() {
         if (!this.currentTheme) return;
         
-        // Add floating particles
         this.addParticles();
-        
-        // Play festive sound if user interacts
         document.addEventListener('click', this.playFestiveSound.bind(this), { once: true });
     }
 
@@ -717,7 +1682,6 @@ class ThemeManager {
             overflow: hidden;
         `;
         
-        // Create particles based on theme colors
         for (let i = 0; i < 50; i++) {
             const particle = document.createElement('div');
             const color = this.currentTheme.colors[Math.floor(Math.random() * this.currentTheme.colors.length)];
@@ -739,7 +1703,6 @@ class ThemeManager {
         
         document.body.appendChild(particlesContainer);
         
-        // Add particle animation
         const style = document.createElement('style');
         style.textContent = `
             @keyframes floatParticle {
@@ -754,7 +1717,6 @@ class ThemeManager {
         document.head.appendChild(style);
     }
 
-    // त्योहार के अनुसार MP3 फाइल्स - UPDATED VERSION
     getFestivalMP3(theme) {
         const mp3Files = {
             'diwali': 'https://assets.mixkit.co/sfx/preview/mixkit-firework-show-3019.mp3',
@@ -781,13 +1743,11 @@ class ThemeManager {
         return mp3Files[theme] || mp3Files['default'];
     }
 
-    // MP3 फाइल प्ले करें
     playMP3Sound(theme) {
         const mp3Url = this.getFestivalMP3(theme);
         const audio = new Audio(mp3Url);
         audio.volume = 0.3;
         
-        // 10 सेकंड के बाद ऑटो स्टॉप
         setTimeout(() => {
             audio.pause();
             audio.currentTime = 0;
@@ -795,254 +1755,58 @@ class ThemeManager {
         
         audio.play().catch(e => {
             console.log('MP3 play failed, using generated sound instead');
-            this.playFestiveSound(); // Fallback to generated sound
+            this.playFestiveSound();
         });
     }
 
-    // त्योहार के अनुसार साउंड पैटर्न - UPDATED VERSION
     getFestivalSoundPattern(theme) {
         const patterns = {
-            // दिवाली - पटाखों जैसी आवाज
             'diwali': {
                 notes: [
-                    { frequency: 659.25, duration: 0.2, type: 'square' }, // E5
-                    { frequency: 523.25, duration: 0.2, type: 'square' }, // C5
-                    { frequency: 392.00, duration: 0.3, type: 'square' }, // G4
-                    { frequency: 659.25, duration: 0.1, type: 'square' }, // E5
-                    { frequency: 783.99, duration: 0.4, type: 'square' }, // G5
-                    { frequency: 523.25, duration: 0.2, type: 'square' }, // C5
-                    { frequency: 392.00, duration: 0.5, type: 'square' }, // G4
-                    { frequency: 293.66, duration: 0.3, type: 'square' }, // D4
+                    { frequency: 659.25, duration: 0.2, type: 'square' },
+                    { frequency: 523.25, duration: 0.2, type: 'square' },
+                    { frequency: 392.00, duration: 0.3, type: 'square' },
+                    { frequency: 659.25, duration: 0.1, type: 'square' },
+                    { frequency: 783.99, duration: 0.4, type: 'square' },
+                    { frequency: 523.25, duration: 0.2, type: 'square' },
+                    { frequency: 392.00, duration: 0.5, type: 'square' },
+                    { frequency: 293.66, duration: 0.3, type: 'square' },
                 ]
             },
-            
-            // होली - मस्ती भरी आवाज
             'holi': {
                 notes: [
-                    { frequency: 523.25, duration: 0.3, type: 'sine' },  // C5
-                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                    { frequency: 659.25, duration: 0.3, type: 'sine' },  // E5
-                    { frequency: 698.46, duration: 0.3, type: 'sine' },  // F5
-                    { frequency: 783.99, duration: 0.4, type: 'sine' },  // G5
-                    { frequency: 880.00, duration: 0.4, type: 'sine' },  // A5
-                    { frequency: 987.77, duration: 0.5, type: 'sine' },  // B5
-                    { frequency: 1046.50, duration: 0.5, type: 'sine' }, // C6
+                    { frequency: 523.25, duration: 0.3, type: 'sine' },
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },
+                    { frequency: 659.25, duration: 0.3, type: 'sine' },
+                    { frequency: 698.46, duration: 0.3, type: 'sine' },
+                    { frequency: 783.99, duration: 0.4, type: 'sine' },
+                    { frequency: 880.00, duration: 0.4, type: 'sine' },
+                    { frequency: 987.77, duration: 0.5, type: 'sine' },
+                    { frequency: 1046.50, duration: 0.5, type: 'sine' },
                 ]
             },
-            
-            // नया साल - पार्टी वाली आवाज
             'new-year': {
                 notes: [
-                    { frequency: 1046.50, duration: 0.5, type: 'triangle' }, // C6
-                    { frequency: 1174.66, duration: 0.5, type: 'triangle' }, // D6
-                    { frequency: 1318.51, duration: 0.5, type: 'triangle' }, // E6
-                    { frequency: 1396.91, duration: 0.5, type: 'triangle' }, // F6
-                    { frequency: 1567.98, duration: 1.0, type: 'triangle' }, // G6
-                    { frequency: 1760.00, duration: 1.0, type: 'triangle' }, // A6
-                    { frequency: 1975.53, duration: 1.5, type: 'triangle' }, // B6
+                    { frequency: 1046.50, duration: 0.5, type: 'triangle' },
+                    { frequency: 1174.66, duration: 0.5, type: 'triangle' },
+                    { frequency: 1318.51, duration: 0.5, type: 'triangle' },
+                    { frequency: 1396.91, duration: 0.5, type: 'triangle' },
+                    { frequency: 1567.98, duration: 1.0, type: 'triangle' },
+                    { frequency: 1760.00, duration: 1.0, type: 'triangle' },
+                    { frequency: 1975.53, duration: 1.5, type: 'triangle' },
                 ]
             },
-            
-            // गणतंत्र दिवस & स्वतंत्रता दिवस - देशभक्ति साउंड
-            'republic-day': {
-                notes: [
-                    { frequency: 293.66, duration: 0.8, type: 'sine' },  // D4 (Sare Jahan Se Achha)
-                    { frequency: 329.63, duration: 0.4, type: 'sine' },  // E4
-                    { frequency: 349.23, duration: 0.8, type: 'sine' },  // F4
-                    { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
-                    { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                    { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
-                    { frequency: 392.00, duration: 1.5, type: 'sine' },  // G4
-                    { frequency: 523.25, duration: 0.8, type: 'sine' },  // C5 (Jana Gana Mana)
-                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
-                { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
-                { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
-                ]
-            },
-            
-            'independence-day': {
-                notes: [
-                    { frequency: 523.25, duration: 0.8, type: 'sine' },  // C5 (Jana Gana Mana)
-                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                    { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                    { frequency: 392.00, duration: 0.4, type: 'sine' },  // G4
-                    { frequency: 440.00, duration: 0.8, type: 'sine' },  // A4
-                    { frequency: 493.88, duration: 0.4, type: 'sine' },  // B4
-                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                    { frequency: 440.00, duration: 1.0, type: 'sine' },  // A4
-                    { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
-                ]
-            },
-            
-            // क्रिसमस - घंटियों जैसी आवाज
-            'christmas': {
-                notes: [
-                    { frequency: 659.25, duration: 0.4, type: 'sawtooth' },  // E5
-                    { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
-                    { frequency: 783.99, duration: 0.6, type: 'sawtooth' },  // G5
-                    { frequency: 659.25, duration: 0.4, type: 'sawtooth' },  // E5
-                    { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
-                    { frequency: 392.00, duration: 0.8, type: 'sawtooth' },  // G4
-                    { frequency: 523.25, duration: 0.4, type: 'sawtooth' },  // C5
-                ]
-            },
-            
-            // गणेश चतुर्थी - भक्ति साउंड
-            'ganesh-chaturthi': {
-                notes: [
-                    { frequency: 329.63, duration: 0.8, type: 'sine' },  // E4
-                    { frequency: 349.23, duration: 0.4, type: 'sine' },  // F4
-                    { frequency: 392.00, duration: 0.8, type: 'sine' },  // G4
-                    { frequency: 440.00, duration: 0.4, type: 'sine' },  // A4
-                    { frequency: 493.88, duration: 0.8, type: 'sine' },  // B4
-                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                ]
-            },
-            
-            // होली की तरह अन्य त्योहारों के लिए
-            'vasant-panchami': {
-                notes: [
-                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                    { frequency: 587.33, duration: 0.4, type: 'sine' },  // D5
-                    { frequency: 659.25, duration: 0.4, type: 'sine' },  // E5
-                    { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
-                    { frequency: 783.99, duration: 0.4, type: 'sine' },  // G5
-                ]
-            },
-            
-            // जन्माष्टमी - बांसुरी साउंड
-            'janmashtami': {
-                notes: [
-                    { frequency: 440.00, duration: 0.6, type: 'sine' },  // A4
-                    { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
-                    { frequency: 523.25, duration: 0.6, type: 'sine' },  // C5
-                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                    { frequency: 659.25, duration: 0.8, type: 'sine' },  // E5
-                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                ]
-            },
-            
-            // राम नवमी - मंदिर घंटी
-            'ram-navami': {
-                notes: [
-                    { frequency: 392.00, duration: 0.5, type: 'sine' },  // G4
-                    { frequency: 440.00, duration: 0.3, type: 'sine' },  // A4
-                    { frequency: 493.88, duration: 0.5, type: 'sine' },  // B4
-                    { frequency: 523.25, duration: 1.0, type: 'sine' },  // C5
-                    { frequency: 493.88, duration: 0.5, type: 'sine' },  // B4
-                    { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
-                    { frequency: 392.00, duration: 1.0, type: 'sine' },  // G4
-                ]
-            },
-            
-            // दुर्गा पूजा - ढोल साउंड
-            'durga-puja': {
-                notes: [
-                    { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
-                    { frequency: 196.00, duration: 0.2, type: 'sawtooth' },  // G3
-                    { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
-                    { frequency: 261.63, duration: 0.4, type: 'sawtooth' },  // C4
-                    { frequency: 220.00, duration: 0.3, type: 'sawtooth' },  // A3
-                    { frequency: 196.00, duration: 0.5, type: 'sawtooth' },  // G3
-                ]
-            },
-            
-            // दशहरा - विजय साउंड
-            'dussehra': {
-                notes: [
-                    { frequency: 440.00, duration: 0.2, type: 'triangle' },  // A4
-                    { frequency: 523.25, duration: 0.2, type: 'triangle' },  // C5
-                    { frequency: 659.25, duration: 0.3, type: 'triangle' },  // E5
-                    { frequency: 783.99, duration: 0.5, type: 'triangle' },  // G5
-                    { frequency: 880.00, duration: 0.3, type: 'triangle' },  // A5
-                    { frequency: 783.99, duration: 0.2, type: 'triangle' },  // G5
-                    { frequency: 659.25, duration: 0.8, type: 'triangle' },  // E5
-                ]
-            },
-            
-            // महा शिवरात्रि - मेडिटेशन साउंड
-            'shivratri': {
-                notes: [
-                    { frequency: 196.00, duration: 1.0, type: 'sine' },  // G3
-                    { frequency: 220.00, duration: 0.8, type: 'sine' },  // A3
-                    { frequency: 261.63, duration: 1.2, type: 'sine' },  // C4
-                    { frequency: 293.66, duration: 1.0, type: 'sine' },  // D4
-                    { frequency: 329.63, duration: 1.5, type: 'sine' },  // E4
-                ]
-            },
-            
-            // रक्षा बंधन - प्यार भरा साउंड
-            'raksha-bandhan': {
-                notes: [
-                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                    { frequency: 587.33, duration: 0.4, type: 'sine' },  // D5
-                    { frequency: 659.25, duration: 0.6, type: 'sine' },  // E5
-                    { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
-                    { frequency: 783.99, duration: 0.8, type: 'sine' },  // G5
-                    { frequency: 698.46, duration: 0.4, type: 'sine' },  // F5
-                    { frequency: 659.25, duration: 0.6, type: 'sine' },  // E5
-                    { frequency: 587.33, duration: 1.0, type: 'sine' },  // D5
-                ]
-            },
-            
-            // छठ पूजा - प्राकृतिक साउंड
-            'chhath-puja': {
-                notes: [
-                    { frequency: 329.63, duration: 1.0, type: 'sine' },  // E4
-                    { frequency: 349.23, duration: 0.5, type: 'sine' },  // F4
-                    { frequency: 392.00, duration: 1.0, type: 'sine' },  // G4
-                    { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
-                    { frequency: 493.88, duration: 1.0, type: 'sine' },  // B4
-                    { frequency: 523.25, duration: 1.5, type: 'sine' },  // C5
-                ]
-            },
-            
-            // गाँधी जयंती - शांति साउंड
-            'gandhi-jayanti': {
-                notes: [
-                    { frequency: 261.63, duration: 1.0, type: 'sine' },  // C4
-                    { frequency: 293.66, duration: 0.8, type: 'sine' },  // D4
-                    { frequency: 329.63, duration: 1.2, type: 'sine' },  // E4
-                    { frequency: 349.23, duration: 1.0, type: 'sine' },  // F4
-                    { frequency: 392.00, duration: 1.5, type: 'sine' },  // G4
-                ]
-            },
-            
-            // बाल दिवस - खिलखिलाहट साउंड
-            'childrens-day': {
-                notes: [
-                    { frequency: 523.25, duration: 0.2, type: 'triangle' },  // C5
-                    { frequency: 587.33, duration: 0.2, type: 'triangle' },  // D5
-                    { frequency: 659.25, duration: 0.2, type: 'triangle' },  // E5
-                    { frequency: 698.46, duration: 0.3, type: 'triangle' },  // F5
-                    { frequency: 783.99, duration: 0.3, type: 'triangle' },  // G5
-                    { frequency: 880.00, duration: 0.4, type: 'triangle' },  // A5
-                    { frequency: 987.77, duration: 0.4, type: 'triangle' },  // B5
-                    { frequency: 1046.50, duration: 0.5, type: 'triangle' }, // C6
-                ]
-            },
-            
-            // Default pattern for other festivals
             'default': {
                 notes: [
-                    { frequency: 440.00, duration: 0.3, type: 'sine' },  // A4
-                    { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
-                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                    { frequency: 659.25, duration: 0.5, type: 'sine' },  // E5
-                    { frequency: 587.33, duration: 0.3, type: 'sine' },  // D5
-                    { frequency: 523.25, duration: 0.4, type: 'sine' },  // C5
-                    { frequency: 493.88, duration: 0.3, type: 'sine' },  // B4
-                    { frequency: 440.00, duration: 0.5, type: 'sine' },  // A4
+                    { frequency: 440.00, duration: 0.3, type: 'sine' },
+                    { frequency: 493.88, duration: 0.3, type: 'sine' },
+                    { frequency: 523.25, duration: 0.4, type: 'sine' },
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },
+                    { frequency: 659.25, duration: 0.5, type: 'sine' },
+                    { frequency: 587.33, duration: 0.3, type: 'sine' },
+                    { frequency: 523.25, duration: 0.4, type: 'sine' },
+                    { frequency: 493.88, duration: 0.3, type: 'sine' },
+                    { frequency: 440.00, duration: 0.5, type: 'sine' },
                 ]
             }
         };
@@ -1050,33 +1814,27 @@ class ThemeManager {
         return patterns[theme] || patterns['default'];
     }
 
-    // Play festive sound - UPDATED VERSION with festival-specific sounds
     playFestiveSound() {
         if (!this.currentTheme) return;
         
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // त्योहार के अनुसार अलग-अलग साउंड पैटर्न
             const soundPattern = this.getFestivalSoundPattern(this.currentTheme.theme);
             
-            // Create multiple oscillators for richer sound
             soundPattern.notes.forEach((note, index) => {
                 setTimeout(() => {
                     this.playNote(audioContext, note.frequency, note.duration, note.type);
-                }, index * 500); // 500ms gap between notes
+                }, index * 500);
             });
             
-            console.log(`🎵 Playing ${this.currentTheme.name} theme sound for 10 seconds`);
+            console.log(`🎵 Playing ${this.currentTheme.name} theme sound`);
             
         } catch (e) {
             console.log('Audio not supported or blocked by browser');
-            // Fallback to MP3 sound
             this.playMP3Sound(this.currentTheme.theme);
         }
     }
 
-    // Play single note
     playNote(audioContext, frequency, duration, type = 'sine') {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
@@ -1087,7 +1845,6 @@ class ThemeManager {
         oscillator.frequency.value = frequency;
         oscillator.type = type;
         
-        // Smooth fade in and out
         gainNode.gain.setValueAtTime(0, audioContext.currentTime);
         gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
@@ -1096,16 +1853,12 @@ class ThemeManager {
         oscillator.stop(audioContext.currentTime + duration);
     }
 
-    // ✅✅✅ FESTIVAL SIDEBAR BANNER - COMPLETE VERSION ✅✅✅
     addFestivalToSidebar() {
         if (!this.currentTheme || !this.isFestivalBannerVisible) return;
         
-        // Remove existing festival banner if any
         this.removeFestivalFromSidebar();
         
-        // Wait for page to load completely
         setTimeout(() => {
-            // Try different selectors for sidebar/section
             const selectors = [
                 '.teacher-ring-section',
                 '.sidebar',
@@ -1126,30 +1879,15 @@ class ThemeManager {
                 }
             }
             
-            // If no sidebar found, try to find any suitable container
-            if (!targetSection) {
-                const containers = document.querySelectorAll('div[class*="container"], section');
-                for (const container of containers) {
-                    const rect = container.getBoundingClientRect();
-                    if (rect.width < 400 && rect.width > 200) {
-                        targetSection = container;
-                        break;
-                    }
-                }
-            }
-            
-            // Last resort: create a floating banner
             if (!targetSection) {
                 this.createFloatingBanner();
                 return;
             }
             
-            // Create festival banner
             const festivalBanner = document.createElement('div');
             festivalBanner.className = 'festival-sidebar-banner';
             festivalBanner.id = 'festivalSidebarBanner';
             
-            // Calculate days until/since festival
             const today = new Date();
             const festivalDate = new Date(this.currentTheme.date);
             const diffTime = festivalDate - today;
@@ -1168,73 +1906,51 @@ class ThemeManager {
                 statusClass = 'past';
             }
             
-            // Create banner content with enhanced design
             festivalBanner.innerHTML = `
                 <div class="festival-banner-content">
-                    <!-- Festival Icon with animation -->
                     <div class="festival-icon">
                         ${this.getFestivalEmoji(this.currentTheme.theme)}
                     </div>
-                    
-                    <!-- Festival Name -->
                     <h3 class="festival-title">
                         ${this.currentTheme.name}
                         <span class="festival-english">${this.currentTheme.englishName}</span>
                     </h3>
-                    
-                    <!-- Festival Message -->
                     <p class="festival-message">
                         ${this.currentTheme.message}
                     </p>
-                    
-                    <!-- Festival Info -->
                     <div class="festival-info">
-                        <!-- Days Count -->
                         <div class="days-count ${statusClass}">
                             <i class="fas fa-calendar-alt"></i>
                             <span>${statusText}</span>
                         </div>
-                        
-                        <!-- Festival Colors -->
                         <div class="festival-colors">
                             ${this.currentTheme.colors.map(color => 
                                 `<span class="color-dot" style="background: ${color};"></span>`
                             ).join('')}
                         </div>
                     </div>
-                    
-                    <!-- Special Offer -->
                     <div class="festival-offer">
                         <p><i class="fas fa-gift"></i> ${this.currentTheme.specialOffer}</p>
                     </div>
-                    
-                    <!-- Action Button -->
                     <button class="festival-action-btn">
                         <i class="fas fa-star"></i>
                         <span>विशेष ऑफर देखें</span>
                     </button>
-                    
-                    <!-- Hashtags -->
                     <div class="festival-hashtags">
                         ${this.currentTheme.hashtags.slice(0, 3).map(tag => 
                             `<span class="hashtag">${tag}</span>`
                         ).join('')}
                     </div>
-                    
-                    <!-- Close Button -->
                     <button class="close-festival-banner">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             `;
             
-            // Insert the banner at the beginning of target section
             targetSection.insertBefore(festivalBanner, targetSection.firstChild);
             
-            // Add sound to banner click
             this.addSoundToBanner();
             
-            // Add event listeners
             festivalBanner.querySelector('.festival-action-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.handleFestivalBannerClick();
@@ -1246,7 +1962,6 @@ class ThemeManager {
                 this.showToast('फेस्टिवल बैनर बंद किया गया');
             });
             
-            // Add hover effect
             const bannerContent = festivalBanner.querySelector('.festival-banner-content');
             bannerContent.addEventListener('mouseenter', () => {
                 bannerContent.style.transform = 'translateY(-5px)';
@@ -1258,15 +1973,13 @@ class ThemeManager {
                 bannerContent.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
             });
             
-            // Add inline styles
             this.addBannerStyles();
             
             console.log('✅ Festival banner added successfully');
             
-        }, 1000); // Wait 1 second for page to load
+        }, 1000);
     }
 
-    // Add sound to festival banner click
     addSoundToBanner() {
         const banner = document.getElementById('festivalSidebarBanner');
         if (!banner) return;
@@ -1274,31 +1987,24 @@ class ThemeManager {
         const bannerContent = banner.querySelector('.festival-banner-content');
         if (!bannerContent) return;
         
-        // Remove previous listeners to avoid duplicates
         bannerContent.removeEventListener('click', this.handleBannerClickWithSound);
         
-        // Create new handler with sound
         this.handleBannerClickWithSound = (e) => {
             if (!e.target.closest('.close-festival-banner') && 
                 !e.target.closest('.festival-action-btn')) {
                 
-                // Play festival sound
                 this.playFestiveSound();
-                
-                // Show festival modal after a short delay
                 setTimeout(() => {
                     this.handleFestivalBannerClick();
                 }, 500);
             }
         };
         
-        // Add event listener
         bannerContent.addEventListener('click', this.handleBannerClickWithSound.bind(this));
         
         console.log('🔊 Sound added to festival banner');
     }
 
-    // Create floating banner if no sidebar found
     createFloatingBanner() {
         const festivalBanner = document.createElement('div');
         festivalBanner.className = 'festival-floating-banner';
@@ -1355,12 +2061,9 @@ class ThemeManager {
         `;
         
         document.body.appendChild(festivalBanner);
-        
-        // Add sound to floating banner
         this.addSoundToBanner();
     }
 
-    // Add CSS styles for banner
     addBannerStyles() {
         const styleId = 'festival-banner-styles';
         if (document.getElementById(styleId)) return;
@@ -1587,35 +2290,11 @@ class ThemeManager {
                 0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
                 100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
             }
-            
-            @media (max-width: 768px) {
-                .festival-sidebar-banner {
-                    margin: 10px;
-                }
-                
-                .festival-banner-content {
-                    padding: 20px 15px;
-                }
-                
-                .festival-icon {
-                    font-size: 3rem;
-                }
-                
-                .festival-title {
-                    font-size: 1.4rem;
-                }
-                
-                .festival-action-btn {
-                    padding: 12px 25px;
-                    font-size: 1rem;
-                }
-            }
         `;
         
         document.head.appendChild(style);
     }
 
-    // Remove festival banner
     removeFestivalFromSidebar() {
         const banner = document.getElementById('festivalSidebarBanner');
         const floatingBanner = document.querySelector('.festival-floating-banner');
@@ -1635,28 +2314,20 @@ class ThemeManager {
         this.isFestivalBannerVisible = false;
     }
 
-    // Handle banner click - UPDATED with sound
     handleFestivalBannerClick() {
         if (!this.currentTheme) return;
         
-        // Play sound on every click
         this.playFestiveSound();
         
-        // Show festival modal after sound starts
         setTimeout(() => {
             this.showFestivalModal();
         }, 300);
         
-        // Log analytics
-        console.log(`🎊 Festival clicked with sound: ${this.currentTheme.name}`);
-        
-        // Track in localStorage
         const clicks = parseInt(localStorage.getItem('festivalClicks') || '0') + 1;
         localStorage.setItem('festivalClicks', clicks.toString());
         localStorage.setItem('lastFestivalClicked', this.currentTheme.name);
     }
 
-    // Show festival details modal
     showFestivalModal() {
         const modalId = 'festivalModal';
         let modal = document.getElementById(modalId);
@@ -1772,7 +2443,6 @@ class ThemeManager {
             </div>
         `;
         
-        // Add modal styles
         const modalStyles = document.createElement('style');
         modalStyles.textContent = `
             .festival-modal {
@@ -1819,14 +2489,12 @@ class ThemeManager {
         document.head.appendChild(modalStyles);
         document.body.appendChild(modal);
         
-        // Close modal on background click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 this.closeFestivalModal();
             }
         });
         
-        // Add escape key to close
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeFestivalModal();
@@ -1843,7 +2511,6 @@ class ThemeManager {
         }
     }
 
-    // Show toast notification
     showToast(message) {
         const toast = document.createElement('div');
         toast.className = 'festival-toast';
@@ -1863,7 +2530,6 @@ class ThemeManager {
         
         document.body.appendChild(toast);
         
-        // Add animation
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideIn {
@@ -1890,14 +2556,12 @@ class ThemeManager {
         `;
         document.head.appendChild(style);
         
-        // Auto remove after 3 seconds
         setTimeout(() => {
             toast.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
-    // Social Sharing Functions
     shareOnWhatsApp() {
         const text = `${this.currentTheme.shareText}\n\n${window.location.href}`;
         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -1916,10 +2580,7 @@ class ThemeManager {
     }
 
     shareOnInstagram() {
-        // Instagram doesn't support direct sharing, open in app or show message
         this.showToast('Instagram पर शेयर करने के लिए मैन्युअली कॉपी करें');
-        
-        // Copy to clipboard
         const text = `${this.currentTheme.shareText}\n${window.location.href}`;
         navigator.clipboard.writeText(text).then(() => {
             console.log('Text copied to clipboard');
@@ -1927,20 +2588,17 @@ class ThemeManager {
     }
 
     downloadThemeImage() {
-        // Create a festive image to download
         const canvas = document.createElement('canvas');
         canvas.width = 1200;
         canvas.height = 630;
         const ctx = canvas.getContext('2d');
         
-        // Draw background gradient
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         gradient.addColorStop(0, this.currentTheme.colors[0]);
         gradient.addColorStop(1, this.currentTheme.colors[1] || this.currentTheme.colors[0]);
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Draw text
         ctx.fillStyle = 'white';
         ctx.font = 'bold 60px Arial';
         ctx.textAlign = 'center';
@@ -1955,7 +2613,6 @@ class ThemeManager {
         ctx.font = '25px Arial';
         ctx.fillText(this.currentTheme.message, canvas.width/2, 420);
         
-        // Convert to data URL and download
         const dataURL = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = `${this.currentTheme.theme}-greeting.png`;
@@ -1965,15 +2622,12 @@ class ThemeManager {
         this.showToast('इमेज डाउनलोड हो रही है...');
     }
 
-    // Utility function to check if banner should be shown
     shouldShowBanner() {
         if (!this.currentTheme) return false;
         
-        // Check localStorage for user preference
         const hideBanner = localStorage.getItem('hideFestivalBanner');
         if (hideBanner === 'true') return false;
         
-        // Check if banner was closed today
         const lastClosed = localStorage.getItem('festivalBannerLastClosed');
         if (lastClosed) {
             const lastClosedDate = new Date(lastClosed);
@@ -1986,7 +2640,6 @@ class ThemeManager {
         return true;
     }
 
-    // Save banner state
     saveBannerState(visible) {
         this.isFestivalBannerVisible = visible;
         if (!visible) {
@@ -2028,7 +2681,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 300);
             });
             
-            // Try to add to header actions
             const headerActions = header.querySelector('.header-actions, .nav-right, [class*="action"]');
             if (headerActions) {
                 headerActions.appendChild(themeToggle);
