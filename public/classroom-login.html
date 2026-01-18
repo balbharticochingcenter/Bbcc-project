@@ -507,7 +507,7 @@
                         auth: btoa(`${userId}:${Date.now()}`) // Simple auth token
                     });
                     
-                    window.location.href = `/classroom-app?${params.toString()}`;
+                    window.location.href = `/classroom.html?${params.toString()}`;
                 }, 1000);
 
             } catch (error) {
