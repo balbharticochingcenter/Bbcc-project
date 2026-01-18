@@ -373,36 +373,65 @@ class ThemeManager {
     }
 
     // ✅✅✅ नया AUTOMATIC FESTIVAL DATE FUNCTION ✅✅✅
-    getFestivalDate(festivalName, year) {
-        // हर साल के लिए ऑटोमैटिक तारीखें
-        const festivalDates = {
-            // Fixed dates (हर साल same)
-            'new-year': new Date(year, 0, 1),
-            'republic-day': new Date(year, 0, 26),
-            'independence-day': new Date(year, 7, 15),
-            'teachers-day': new Date(year, 8, 5),
-            'gandhi-jayanti': new Date(year, 9, 2),
-            'childrens-day': new Date(year, 10, 14),
-            'christmas': new Date(year, 11, 25),
-            
-            // Dynamic dates (हर साल थोड़ी बदलेंगी)
-            // Formula: baseDate + (year % 10)
-            'vasant-panchami': new Date(year, 1, 1 + (year % 30)),
-            'maha-shivratri': new Date(year, 1, 13 + (year % 15)),
-            'holi': new Date(year, 2, 8 + (year % 10)),
-            'ram-navami': new Date(year, 3, 2 + (year % 12)),
-            'raksha-bandhan': new Date(year, 7, 19 + (year % 10)),
-            'janmashtami': new Date(year, 7, 6 + (year % 20)),
-            'ganesh-chaturthi': new Date(year, 8, 7 + (year % 15)),
-            'durga-puja': new Date(year, 9, 12 + (year % 10)),
-            'dussehra': new Date(year, 9, 15 + (year % 10)),
-            'diwali': new Date(year, 9, 23 + (year % 8)),
-            'chhath-puja': new Date(year, 10, 10 + (year % 10))
-        };
+   getFestivalDate(festivalName, year) {
+    // 2026 के लिए सटीक तारीखें
+    const festivalDates2026 = {
+        // JANUARY 2026
+        'new-year': [1, 0],        // 1 Jan
+        'republic-day': [26, 0],   // 26 Jan
+        'vasant-panchami': [23, 0], // 23 Jan ✅
         
-        return festivalDates[festivalName] || new Date(year, 0, 1);
+        // FEBRUARY 2026  
+        'maha-shivratri': [16, 1], // 16 Feb
+        
+        // MARCH 2026
+        'holi': [3, 2],            // 3 Mar
+        
+        // APRIL 2026
+        'ram-navami': [5, 3],      // 5 Apr
+        
+        // AUGUST 2026
+        'independence-day': [15, 7], // 15 Aug
+        'raksha-bandhan': [23, 7],  // 23 Aug
+        'janmashtami': [24, 7],     // 24 Aug
+        
+        // SEPTEMBER 2026
+        'teachers-day': [5, 8],     // 5 Sep
+        'ganesh-chaturthi': [23, 8], // 23 Sep
+        
+        // OCTOBER 2026
+        'gandhi-jayanti': [2, 9],   // 2 Oct
+        'durga-puja': [11, 9],      // 11 Oct
+        'dussehra': [20, 9],        // 20 Oct
+        'diwali': [29, 9],          // 29 Oct
+        
+        // NOVEMBER 2026
+        'chhath-puja': [7, 10],     // 7 Nov
+        'childrens-day': [14, 10],  // 14 Nov
+        
+        // DECEMBER 2026
+        'christmas': [25, 11]       // 25 Dec
+    };
+    
+    // यदि 2026 है और त्योहार database में है
+    if (year === 2026 && festivalDates2026[festivalName]) {
+        const [day, month] = festivalDates2026[festivalName];
+        return new Date(2026, month, day);
     }
-
+    
+    // अन्य वर्षों के लिए fixed dates
+    const fixedDates = {
+        'new-year': new Date(year, 0, 1),
+        'republic-day': new Date(year, 0, 26),
+        'independence-day': new Date(year, 7, 15),
+        'teachers-day': new Date(year, 8, 5),
+        'gandhi-jayanti': new Date(year, 9, 2),
+        'childrens-day': new Date(year, 10, 14),
+        'christmas': new Date(year, 11, 25)
+    };
+    
+    return fixedDates[festivalName] || new Date(year, 0, 1);
+}
     checkSpecialDays() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
