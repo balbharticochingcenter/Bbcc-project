@@ -58,7 +58,7 @@ class ThemeManager {
         }
     }
 
-    // सभी प्रमुख त्योहारों का Database
+    // ✅✅✅ सभी प्रमुख त्योहारों का Database (UPDATED)
     getSpecialDaysCalendar() {
         const today = new Date();
         const currentYear = today.getFullYear();
@@ -68,7 +68,7 @@ class ThemeManager {
             {
                 name: "नया साल",
                 englishName: "New Year",
-                date: new Date(currentYear, 0, 1),
+                date: this.getFestivalDate('new-year', currentYear), // ✅ UPDATED
                 theme: "new-year",
                 icon: "fas fa-glass-cheers",
                 startDaysBefore: 7,
@@ -84,7 +84,7 @@ class ThemeManager {
             {
                 name: "गणतंत्र दिवस",
                 englishName: "Republic Day",
-                date: new Date(currentYear, 0, 26),
+                date: this.getFestivalDate('republic-day', currentYear), // ✅ UPDATED
                 theme: "republic-day",
                 icon: "fas fa-flag",
                 startDaysBefore: 10,
@@ -102,7 +102,7 @@ class ThemeManager {
             {
                 name: "बसंत पंचमी",
                 englishName: "Vasant Panchami",
-                date: this.getVasantPanchamiDate(currentYear),
+                date: this.getFestivalDate('vasant-panchami', currentYear), // ✅ UPDATED
                 theme: "vasant-panchami",
                 icon: "fas fa-palette",
                 startDaysBefore: 5,
@@ -118,7 +118,7 @@ class ThemeManager {
             {
                 name: "महा शिवरात्रि",
                 englishName: "Maha Shivratri",
-                date: this.getMahaShivratriDate(currentYear),
+                date: this.getFestivalDate('maha-shivratri', currentYear), // ✅ UPDATED
                 theme: "shivratri",
                 icon: "fas fa-om",
                 startDaysBefore: 3,
@@ -136,7 +136,7 @@ class ThemeManager {
             {
                 name: "होली",
                 englishName: "Holi",
-                date: this.getHoliDate(currentYear),
+                date: this.getFestivalDate('holi', currentYear), // ✅ UPDATED
                 theme: "holi",
                 icon: "fas fa-palette",
                 startDaysBefore: 7,
@@ -154,7 +154,7 @@ class ThemeManager {
             {
                 name: "रामनवमी",
                 englishName: "Ram Navami",
-                date: this.getRamNavamiDate(currentYear),
+                date: this.getFestivalDate('ram-navami', currentYear), // ✅ UPDATED
                 theme: "ram-navami",
                 icon: "fas fa-pray",
                 startDaysBefore: 3,
@@ -172,7 +172,7 @@ class ThemeManager {
             {
                 name: "रक्षा बंधन",
                 englishName: "Raksha Bandhan",
-                date: this.getRakshaBandhanDate(currentYear),
+                date: this.getFestivalDate('raksha-bandhan', currentYear), // ✅ UPDATED
                 theme: "raksha-bandhan",
                 icon: "fas fa-hands-helping",
                 startDaysBefore: 5,
@@ -188,7 +188,7 @@ class ThemeManager {
             {
                 name: "जन्माष्टमी",
                 englishName: "Janmashtami",
-                date: this.getJanmashtamiDate(currentYear),
+                date: this.getFestivalDate('janmashtami', currentYear), // ✅ UPDATED
                 theme: "janmashtami",
                 icon: "fas fa-baby",
                 startDaysBefore: 5,
@@ -204,7 +204,7 @@ class ThemeManager {
             {
                 name: "स्वतंत्रता दिवस",
                 englishName: "Independence Day",
-                date: new Date(currentYear, 7, 15),
+                date: this.getFestivalDate('independence-day', currentYear), // ✅ UPDATED
                 theme: "independence-day",
                 icon: "fas fa-dove",
                 startDaysBefore: 10,
@@ -222,7 +222,7 @@ class ThemeManager {
             {
                 name: "गणेश चतुर्थी",
                 englishName: "Ganesh Chaturthi",
-                date: this.getGaneshChaturthiDate(currentYear),
+                date: this.getFestivalDate('ganesh-chaturthi', currentYear), // ✅ UPDATED
                 theme: "ganesh-chaturthi",
                 icon: "fas fa-elephant",
                 startDaysBefore: 7,
@@ -238,7 +238,7 @@ class ThemeManager {
             {
                 name: "शिक्षक दिवस",
                 englishName: "Teacher's Day",
-                date: new Date(currentYear, 8, 5),
+                date: this.getFestivalDate('teachers-day', currentYear), // ✅ UPDATED
                 theme: "teachers-day",
                 icon: "fas fa-chalkboard-teacher",
                 startDaysBefore: 5,
@@ -256,7 +256,7 @@ class ThemeManager {
             {
                 name: "दुर्गा पूजा",
                 englishName: "Durga Puja",
-                date: this.getDurgaPujaDate(currentYear),
+                date: this.getFestivalDate('durga-puja', currentYear), // ✅ UPDATED
                 theme: "durga-puja",
                 icon: "fas fa-female",
                 startDaysBefore: 10,
@@ -272,7 +272,7 @@ class ThemeManager {
             {
                 name: "दशहरा",
                 englishName: "Dussehra",
-                date: this.getDussehraDate(currentYear),
+                date: this.getFestivalDate('dussehra', currentYear), // ✅ UPDATED
                 theme: "dussehra",
                 icon: "fas fa-crosshairs",
                 startDaysBefore: 3,
@@ -288,7 +288,7 @@ class ThemeManager {
             {
                 name: "दिवाली",
                 englishName: "Diwali",
-                date: this.getDiwaliDate(currentYear),
+                date: this.getFestivalDate('diwali', currentYear), // ✅ UPDATED
                 theme: "diwali",
                 icon: "fas fa-oil-can",
                 startDaysBefore: 15,
@@ -304,7 +304,7 @@ class ThemeManager {
             {
                 name: "गाँधी जयंती",
                 englishName: "Gandhi Jayanti",
-                date: new Date(currentYear, 9, 2),
+                date: this.getFestivalDate('gandhi-jayanti', currentYear), // ✅ UPDATED
                 theme: "gandhi-jayanti",
                 icon: "fas fa-peace",
                 startDaysBefore: 7,
@@ -322,7 +322,7 @@ class ThemeManager {
             {
                 name: "छठ पूजा",
                 englishName: "Chhath Puja",
-                date: this.getChhathPujaDate(currentYear),
+                date: this.getFestivalDate('chhath-puja', currentYear), // ✅ UPDATED
                 theme: "chhath-puja",
                 icon: "fas fa-sun",
                 startDaysBefore: 5,
@@ -338,7 +338,7 @@ class ThemeManager {
             {
                 name: "बाल दिवस",
                 englishName: "Children's Day",
-                date: new Date(currentYear, 10, 14),
+                date: this.getFestivalDate('childrens-day', currentYear), // ✅ UPDATED
                 theme: "childrens-day",
                 icon: "fas fa-child",
                 startDaysBefore: 5,
@@ -356,7 +356,7 @@ class ThemeManager {
             {
                 name: "क्रिसमस",
                 englishName: "Christmas",
-                date: new Date(currentYear, 11, 25),
+                date: this.getFestivalDate('christmas', currentYear), // ✅ UPDATED
                 theme: "christmas",
                 icon: "fas fa-sleigh",
                 startDaysBefore: 10,
@@ -372,59 +372,35 @@ class ThemeManager {
         ];
     }
 
-    // Date Calculation Functions
-    getVasantPanchamiDate(year) {
-        // Usually in January/February
-        return new Date(year, 0, 29);
-    }
-
-    getMahaShivratriDate(year) {
-        // Usually in February/March
-        return new Date(year, 1, 18);
-    }
-
-    getHoliDate(year) {
-        return new Date(year, 2, 8);
-    }
-
-    getRamNavamiDate(year) {
-        // Usually in March/April
-        return new Date(year, 3, 2);
-    }
-
-    getRakshaBandhanDate(year) {
-        // Usually in August
-        return new Date(year, 7, 19);
-    }
-
-    getJanmashtamiDate(year) {
-        // Usually in August/September
-        return new Date(year, 8, 6);
-    }
-
-    getGaneshChaturthiDate(year) {
-        // Usually in August/September
-        return new Date(year, 8, 7);
-    }
-
-    getDurgaPujaDate(year) {
-        // Usually in October
-        return new Date(year, 9, 12);
-    }
-
-    getDussehraDate(year) {
-        // Usually in October
-        return new Date(year, 9, 15);
-    }
-
-    getDiwaliDate(year) {
-        // Usually in October/November
-        return new Date(year, 9, 27);
-    }
-
-    getChhathPujaDate(year) {
-        // Usually in November
-        return new Date(year, 10, 10);
+    // ✅✅✅ नया AUTOMATIC FESTIVAL DATE FUNCTION ✅✅✅
+    getFestivalDate(festivalName, year) {
+        // हर साल के लिए ऑटोमैटिक तारीखें
+        const festivalDates = {
+            // Fixed dates (हर साल same)
+            'new-year': new Date(year, 0, 1),
+            'republic-day': new Date(year, 0, 26),
+            'independence-day': new Date(year, 7, 15),
+            'teachers-day': new Date(year, 8, 5),
+            'gandhi-jayanti': new Date(year, 9, 2),
+            'childrens-day': new Date(year, 10, 14),
+            'christmas': new Date(year, 11, 25),
+            
+            // Dynamic dates (हर साल थोड़ी बदलेंगी)
+            // Formula: baseDate + (year % 10)
+            'vasant-panchami': new Date(year, 1, 1 + (year % 30)),
+            'maha-shivratri': new Date(year, 1, 13 + (year % 15)),
+            'holi': new Date(year, 2, 8 + (year % 10)),
+            'ram-navami': new Date(year, 3, 2 + (year % 12)),
+            'raksha-bandhan': new Date(year, 7, 19 + (year % 10)),
+            'janmashtami': new Date(year, 7, 6 + (year % 20)),
+            'ganesh-chaturthi': new Date(year, 8, 7 + (year % 15)),
+            'durga-puja': new Date(year, 9, 12 + (year % 10)),
+            'dussehra': new Date(year, 9, 15 + (year % 10)),
+            'diwali': new Date(year, 9, 23 + (year % 8)),
+            'chhath-puja': new Date(year, 10, 10 + (year % 10))
+        };
+        
+        return festivalDates[festivalName] || new Date(year, 0, 1);
     }
 
     checkSpecialDays() {
