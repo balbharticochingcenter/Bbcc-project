@@ -514,9 +514,10 @@ socket.on('join-classroom', (data) => {
             });
         }
     });
-    // ✅ ये code ADD करो Line 335 के बाद (socket.on('disconnect') से पहले):
-// ✅ ये code ADD करो socket.on('disconnect') से पहले:
-socket.on('get-room-users', (data, callback) => {
+  // ✅ FIXED: ये function ADD करो existing-users के बाद
+socket.on('get-room-users', (data) => {
+    console.log('📋 Client requested room users for:', data.roomId);
+    
     const roomUsers = [];
     connectedUsers.forEach(user => {
         if (user.roomId === data.roomId) {
@@ -528,8 +529,10 @@ socket.on('get-room-users', (data, callback) => {
             });
         }
     });
-    // सीधे callback में भेजो
-    callback(roomUsers);
+    
+    // ✅ FIXED: सीधे socket.emit से भेजो
+    socket.emit('room-users-list', roomUsers);
+    console.log('📤 Sent room users list:', roomUsers.length);
 });
     // Disconnect
     socket.on('disconnect', () => {
