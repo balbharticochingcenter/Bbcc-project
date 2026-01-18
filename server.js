@@ -477,13 +477,12 @@ socket.on('join-classroom', (data) => {
     
    // ✅ FIXED: ICE Candidate forwarding
 socket.on('ice-candidate', (data) => {
-    const { target, candidate, sender } = data;
-    console.log(`🧊 Forwarding ICE candidate from ${socket.id} to ${target}`);
+    console.log('🧊 ICE Candidate from:', socket.id, 'to:', data.target);
     
-    // सीधे target socket को भेजो
-    socket.to(target).emit('ice-candidate', {
-        sender: socket.id,
-        candidate: candidate
+    // FIX: सही format में भेजो
+    socket.to(data.target).emit('ice-candidate', {
+        sender: socket.id,  // ये जोड़ो
+        candidate: data.candidate
     });
 });
     
