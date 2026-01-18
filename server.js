@@ -9,7 +9,20 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
+// ---------------- SOCKET.IO SETUP ----------------
+const http = require('http');
+const { Server } = require('socket.io');
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
+// Class Room Storage
+const classRooms = new Map();
+const connectedUsers = new Map();
 // ---------------- MIDDLEWARE ----------------
 app.use(cors());
 app.use(bodyParser.json({ limit: '20mb' }));
@@ -406,6 +419,188 @@ Main sirf yahi bolungi:
         res.json({ reply: "Server error aaya hai." });
     }
 });
+
+// ---------------- CLASSROOM SOCKET EVENTS ----------------
+io.on('connection', (socket) => {
+    console.log('📱 New classroom connection:', socket.id);
+    
+    // Join classroom
+    socket.on('join-classroom', (data) => {
+        const { roomId, userId, userName, userType } = data;
+        
+        socket.join(roomId);
+        connectedUsers.set(socket.id, { roomId, userId, userName, userType, socketId: socket.id });
+        
+        // Notify others
+        socket.to(roomId).emit('user-joined', {
+            userId,
+            userName,
+            userType,
+            socketId: socket.id,
+            timestamp: new Date().toISOString()
+        });
+        
+        console.log(`✅ ${userName} joined room ${roomId}`);
+    });
+    
+    // WebRTC signaling
+    socket.on('offer', (data) => {
+        socket.to(data.target).emit('offer', data);
+    });
+    
+    socket.on('answer', (data) => {
+        socket.to(data.target).emit('answer', data);
+    });
+    
+    socket.on('ice-candidate', (data) => {
+        socket.to(data.target).emit('ice-candidate', data);
+    });
+    
+    // Toggle controls
+    socket.on('toggle-mute', (data) => {
+        const user = connectedUsers.get(socket.id);
+        if (user) {
+            socket.to(user.roomId).emit('user-muted', {
+                socketId: socket.id,
+                userId: user.userId,
+                muted: data.muted
+            });
+        }
+    });
+    
+    socket.on('toggle-video', (data) => {
+        const user = connectedUsers.get(socket.id);
+        if (user) {
+            socket.to(user.roomId).emit('user-video-off', {
+                socketId: socket.id,
+                userId: user.userId,
+                videoOff: data.videoOff
+            });
+        }
+    });
+    
+    // Chat message
+    socket.on('send-message', (data) => {
+        const user = connectedUsers.get(socket.id);
+        if (user) {
+            socket.to(user.roomId).emit('new-message', {
+                userId: user.userId,
+                userName: user.userName,
+                message: data.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+    
+    // Disconnect
+    socket.on('disconnect', () => {
+        const user = connectedUsers.get(socket.id);
+        if (user) {
+            socket.to(user.roomId).emit('user-left', {
+                socketId: socket.id,
+                userId: user.userId
+            });
+            connectedUsers.delete(socket.id);
+            console.log(`❌ ${user.userName} disconnected`);
+        }
+    });
+});
+
+// ---------------- CLASSROOM APIs ----------------
+// Create new class room
+app.post('/api/classroom/create', (req, res) => {
+    const { teacherId, className } = req.body;
+    const roomId = `class_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    classRooms.set(roomId, {
+        roomId,
+        teacherId,
+        className,
+        students: [],
+        createdAt: new Date()
+    });
+    
+    res.json({ success: true, roomId });
+});
+
+// Get active rooms
+app.get('/api/classroom/active-rooms', (req, res) => {
+    const rooms = Array.from(classRooms.values()).map(room => ({
+        roomId: room.roomId,
+        teacherId: room.teacherId,
+        className: room.className,
+        studentCount: room.students.length,
+        createdAt: room.createdAt
+    }));
+    res.json({ success: true, rooms });
+});
+
+// Verify user for classroom
+app.get('/api/classroom/verify', async (req, res) => {
+    try {
+        const { userId, password, userType } = req.query;
+        
+        if (userType === 'student') {
+            const student = await Student.findOne({ 
+                student_id: userId,
+                pass: password 
+            });
+            if (student) {
+                return res.json({ 
+                    success: true, 
+                    user: {
+                        id: student.student_id,
+                        name: student.student_name,
+                        type: 'student',
+                        class: student.student_class
+                    }
+                });
+            }
+        }
+        
+        if (userType === 'teacher') {
+            const teacher = await Teacher.findOne({
+                teacher_id: userId,
+                pass: password
+            });
+            if (teacher) {
+                return res.json({ 
+                    success: true, 
+                    user: {
+                        id: teacher.teacher_id,
+                        name: teacher.teacher_name,
+                        type: 'teacher',
+                        title: 'Mentor'
+                    }
+                });
+            }
+        }
+        
+        if (userType === 'admin') {
+            const admin = await AdminProfile.findOne({
+                admin_userid: userId,
+                admin_pass: password
+            });
+            if (admin) {
+                return res.json({ 
+                    success: true, 
+                    user: {
+                        id: admin.admin_userid,
+                        name: admin.admin_name,
+                        type: 'admin',
+                        title: 'Admin'
+                    }
+                });
+            }
+        }
+        
+        res.json({ success: false, error: 'Invalid credentials' });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 ////////////////////////////////////////////////////////////////////////
 app.get('/api/get-all-classes', (req, res) => {
     res.json([
@@ -654,6 +849,10 @@ app.get('/api/get-all-class-configs', async (req, res) => {
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+// CHANGE THIS LINE:
+// app.listen(PORT, () => {
+// TO THIS:
+server.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📡 Socket.IO ready for classroom`);
 });
