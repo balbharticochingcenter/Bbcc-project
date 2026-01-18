@@ -1,43 +1,27 @@
-// classroom.js में सबसे पहले ये code add करें:
+// 🔐 SECURITY CHECK - सबसे पहले
 window.addEventListener('load', function() {
     const urlParams = new URLSearchParams(window.location.search);
-    const authToken = urlParams.get('auth');
-    
-    // Check if coming from login
-    if (!authToken || !sessionStorage.getItem('classroom_auth')) {
-        alert('Access denied! Please login first.');
-        window.location.href = '/classroom-login.html';
-        return;
-    }
-    
-    // Verify user ID
     const userId = urlParams.get('userId');
-    const storedUserId = sessionStorage.getItem('user_id');
     
-    if (userId !== storedUserId) {
-        alert('Session mismatch! Please login again.');
-        sessionStorage.clear();
+    if (!userId) {
+        alert('❌ Access denied! Please login first.');
         window.location.href = '/classroom-login.html';
         return;
     }
     
-    // Clear session on page unload (optional)
-    window.addEventListener('beforeunload', function() {
-        sessionStorage.removeItem('classroom_auth');
-    });
+    console.log('✅ Security check passed for:', userId);
 });
 
-// Configuration
+// 🔧 CONFIGURATION
 let socket;
 let localStream;
 let peerConnections = {};
-let currentRoomId;
 let currentUser = {};
 let isMuted = false;
 let isVideoOff = false;
 let isDND = false;
 
-// DOM Elements
+// 📺 DOM Elements
 const localVideo = document.getElementById('localVideo');
 const videoGrid = document.getElementById('videoGrid');
 const toggleMicBtn = document.getElementById('toggleMic');
@@ -50,50 +34,60 @@ const sendMessageBtn = document.getElementById('sendMessage');
 const chatMessages = document.getElementById('chatMessages');
 const participantsList = document.getElementById('participantsList');
 
-// Get URL parameters
+// 📍 URL Parameters
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get('userId');
-const userType = urlParams.get('userType');
-const userName = urlParams.get('name');
-const roomId = urlParams.get('roomId') || 'default_class';
+const userType = urlParams.get('userType') || 'student';
+const userName = urlParams.get('name') || 'User';
+const roomId = urlParams.get('roomId') || `room_${Date.now()}`;
 
-// Initialize
+// 🚀 INITIALIZE
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🎬 Classroom starting...');
     initializeUser();
     initializeSocket();
     initializeMedia();
     setupEventListeners();
+    startConnectionCheck();
 });
 
 function initializeUser() {
     currentUser = { userId, userType, userName, roomId };
     
+    console.log('👤 User:', currentUser);
+    
     // Update UI
     document.getElementById('userName').textContent = userName;
-    document.getElementById('roomIdDisplay').textContent = roomId;
+    document.getElementById('roomIdDisplay').textContent = roomId.substring(0, 10) + '...';
     document.getElementById('localUserName').textContent = userName;
     
-    // Set user badge color
+    // User badge
     const userBadge = document.getElementById('userBadge');
     const userRole = document.getElementById('userRole');
     
     if (userType === 'teacher') {
         userBadge.classList.add('teacher');
-        userRole.textContent = 'Mentor';
+        userRole.textContent = '👨‍🏫 Mentor';
     } else if (userType === 'admin') {
         userBadge.classList.add('admin');
-        userRole.textContent = 'Admin';
+        userRole.textContent = '👑 Admin';
     } else {
-        userRole.textContent = 'Student';
+        userRole.textContent = '🎓 Student';
     }
+    
+    // Show user info in console
+    console.log(`✅ ${userName} (${userType}) joined room: ${roomId}`);
 }
 
+// 🌐 SOCKET.IO
 function initializeSocket() {
+    console.log('🔌 Connecting to server...');
+    
     // Connect to Socket.IO server
     socket = io();
     
     socket.on('connect', () => {
-        console.log('Connected to server with ID:', socket.id);
+        console.log('✅ Socket connected:', socket.id);
         
         // Join classroom
         socket.emit('join-classroom', {
@@ -102,59 +96,101 @@ function initializeSocket() {
             userName: currentUser.userName,
             userType: currentUser.userType
         });
+        
+        console.log('📨 Sent join request for room:', currentUser.roomId);
     });
     
-    // Listen for other users joining
+    // 🆕 Existing users in room
+    socket.on('existing-users', (users) => {
+        console.log('👥 Existing users:', users.length);
+        
+        if (users.length === 0) {
+            console.log('😊 You are the first one in this room!');
+            return;
+        }
+        
+        // Connect to all existing users
+        users.forEach(user => {
+            console.log(`🔗 Connecting to: ${user.userName} (${user.socketId})`);
+            connectToUser(user.socketId, user.userName);
+        });
+    });
+    
+    // ➕ New user joined
     socket.on('user-joined', (data) => {
-        console.log('User joined:', data.userName);
+        console.log('➕ New user joined:', data.userName);
+        
+        // Add to participants list
         addParticipant(data);
-        createPeerConnection(data.socketId, data.userName);
-        sendOffer(data.socketId);
+        
+        // Connect to new user
+        connectToUser(data.socketId, data.userName);
     });
     
-    // Listen for WebRTC offers
+    // 📞 WebRTC Offers
     socket.on('offer', async (data) => {
+        console.log('📩 Received offer from:', data.senderName);
         await handleOffer(data);
     });
     
-    // Listen for WebRTC answers
+    // 📞 WebRTC Answers
     socket.on('answer', async (data) => {
+        console.log('📨 Received answer from:', data.sender);
         await handleAnswer(data);
     });
     
-    // Listen for ICE candidates
+    // 🧊 ICE Candidates
     socket.on('ice-candidate', async (data) => {
         await handleIceCandidate(data);
     });
     
-    // Listen for mute/unmute events
+    // 🔇 Mute events
     socket.on('user-muted', (data) => {
         updateUserStatus(data.socketId, 'muted', data.muted);
     });
     
-    // Listen for video on/off events
+    // 📹 Video events
     socket.on('user-video-off', (data) => {
         updateUserStatus(data.socketId, 'videoOff', data.videoOff);
     });
     
-    // Listen for chat messages
+    // 💬 Chat messages
     socket.on('new-message', (data) => {
         addMessage(data);
     });
     
-    // Listen for user leaving
+    // 🚪 User left
     socket.on('user-left', (data) => {
+        console.log('👋 User left:', data.socketId);
         removeUser(data.socketId);
+    });
+    
+    // ❌ Connection error
+    socket.on('connect_error', (error) => {
+        console.error('❌ Socket connection error:', error);
+        alert('Connection error. Please refresh the page.');
     });
 }
 
+// 🎥 MEDIA SETUP
 async function initializeMedia() {
     try {
+        console.log('🎥 Getting camera and microphone...');
+        
         // Get user media
         localStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
+            video: {
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+            }
         });
+        
+        console.log('✅ Media access granted');
         
         // Display local video
         localVideo.srcObject = localStream;
@@ -162,14 +198,25 @@ async function initializeMedia() {
         // Set initial states
         updateControlButtons();
         
+        // Show success message
+        showNotification('Camera and microphone connected successfully!', 'success');
+        
     } catch (error) {
-        console.error('Error accessing media devices:', error);
-        alert('Camera/microphone access required for classroom.');
+        console.error('❌ Media access error:', error);
+        
+        if (error.name === 'NotAllowedError') {
+            alert('⚠️ Camera/microphone access was denied. Please allow access to join the classroom.');
+        } else if (error.name === 'NotFoundError') {
+            alert('⚠️ No camera/microphone found. Please connect a device.');
+        } else {
+            alert('⚠️ Error accessing media devices: ' + error.message);
+        }
     }
 }
 
+// 🎮 EVENT LISTENERS
 function setupEventListeners() {
-    // Toggle microphone
+    // 🎤 Toggle microphone
     toggleMicBtn.addEventListener('click', () => {
         isMuted = !isMuted;
         localStream.getAudioTracks().forEach(track => {
@@ -177,9 +224,11 @@ function setupEventListeners() {
         });
         updateControlButtons();
         socket.emit('toggle-mute', { muted: isMuted });
+        
+        showNotification(isMuted ? 'Microphone muted' : 'Microphone unmuted', 'info');
     });
     
-    // Toggle camera
+    // 📹 Toggle camera
     toggleVideoBtn.addEventListener('click', () => {
         isVideoOff = !isVideoOff;
         localStream.getVideoTracks().forEach(track => {
@@ -187,9 +236,11 @@ function setupEventListeners() {
         });
         updateControlButtons();
         socket.emit('toggle-video', { videoOff: isVideoOff });
+        
+        showNotification(isVideoOff ? 'Camera turned off' : 'Camera turned on', 'info');
     });
     
-    // Toggle DND
+    // 🔕 Toggle Do Not Disturb
     toggleDndBtn.addEventListener('click', () => {
         isDND = !isDND;
         updateControlButtons();
@@ -203,6 +254,7 @@ function setupEventListeners() {
                     });
                 }
             });
+            showNotification('🔕 Do Not Disturb mode ON', 'warning');
         } else {
             // Unmute all remote audio
             Object.values(peerConnections).forEach(pc => {
@@ -212,82 +264,144 @@ function setupEventListeners() {
                     });
                 }
             });
+            showNotification('🔔 Do Not Disturb mode OFF', 'success');
         }
     });
     
-    // Share screen
+    // 🖥️ Share screen
     shareScreenBtn.addEventListener('click', async () => {
         try {
+            console.log('🖥️ Starting screen share...');
+            
             const screenStream = await navigator.mediaDevices.getDisplayMedia({
                 video: true,
                 audio: true
             });
             
-            // Replace video track in all peer connections
             const videoTrack = screenStream.getVideoTracks()[0];
-            Object.values(peerConnections).forEach(pc => {
-                const sender = pc.getSenders().find(s => s.track.kind === 'video');
-                if (sender) sender.replaceTrack(videoTrack);
+            
+            // Replace video track in all peer connections
+            Object.values(peerConnections).forEach(pcData => {
+                const sender = pcData.pc.getSenders().find(s => s.track.kind === 'video');
+                if (sender) {
+                    sender.replaceTrack(videoTrack);
+                }
             });
             
             // Update local video
-            localStream.getVideoTracks()[0].stop();
-            localStream.removeTrack(localStream.getVideoTracks()[0]);
+            if (localStream.getVideoTracks()[0]) {
+                localStream.getVideoTracks()[0].stop();
+                localStream.removeTrack(localStream.getVideoTracks()[0]);
+            }
             localStream.addTrack(videoTrack);
+            
+            showNotification('Screen sharing started', 'success');
             
             // Handle when user stops sharing
             videoTrack.onended = () => {
-                initializeMedia();
+                console.log('🖥️ Screen sharing stopped');
+                showNotification('Screen sharing stopped', 'info');
+                initializeMedia(); // Restore camera
             };
             
         } catch (error) {
-            console.error('Screen sharing failed:', error);
+            console.error('❌ Screen share error:', error);
+            showNotification('Screen sharing cancelled', 'error');
         }
     });
     
-    // End call
+    // 🚪 End call
     endCallBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to leave the classroom?')) {
-            window.location.href = '/classroom-login.html';
+            leaveClassroom();
         }
     });
     
-    // Send message
+    // 💬 Send message
     sendMessageBtn.addEventListener('click', sendChatMessage);
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendChatMessage();
     });
+    
+    // Auto-focus message input
+    messageInput.addEventListener('focus', () => {
+        messageInput.placeholder = 'Type your message and press Enter...';
+    });
+    
+    messageInput.addEventListener('blur', () => {
+        messageInput.placeholder = 'Type your message...';
+    });
 }
 
+// 🔄 UPDATE CONTROL BUTTONS
 function updateControlButtons() {
     toggleMicBtn.classList.toggle('active', isMuted);
-    toggleMicBtn.innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+    toggleMicBtn.innerHTML = isMuted ? 
+        '<i class="fas fa-microphone-slash"></i>' : 
+        '<i class="fas fa-microphone"></i>';
     
     toggleVideoBtn.classList.toggle('active', isVideoOff);
-    toggleVideoBtn.innerHTML = isVideoOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
+    toggleVideoBtn.innerHTML = isVideoOff ? 
+        '<i class="fas fa-video-slash"></i>' : 
+        '<i class="fas fa-video"></i>';
     
     toggleDndBtn.classList.toggle('active', isDND);
-    toggleDndBtn.innerHTML = isDND ? '<i class="fas fa-bell"></i>' : '<i class="fas fa-bell-slash"></i>';
+    toggleDndBtn.innerHTML = isDND ? 
+        '<i class="fas fa-bell"></i>' : 
+        '<i class="fas fa-bell-slash"></i>';
 }
 
-// WebRTC Functions
+// 🌐 WEBRTC FUNCTIONS
+
+// Connect to a specific user
+function connectToUser(socketId, userName) {
+    console.log(`🔗 Connecting to ${userName}...`);
+    
+    if (peerConnections[socketId]) {
+        console.log(`⚠️ Already connected to ${userName}`);
+        return;
+    }
+    
+    createPeerConnection(socketId, userName);
+    
+    // Send offer after a short delay
+    setTimeout(() => {
+        sendOffer(socketId);
+    }, 1000);
+}
+
+// Create peer connection
 function createPeerConnection(socketId, userName) {
+    console.log(`🤝 Creating peer connection for ${userName}`);
+    
     const peerConnection = new RTCPeerConnection({
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' }
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' }
         ]
     });
     
-    // Add local stream to connection
-    localStream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, localStream);
-    });
+    // Add local stream tracks
+    if (localStream) {
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+    }
     
-    // Handle remote stream
+    // Handle incoming remote stream
     peerConnection.ontrack = (event) => {
+        console.log(`📺 Received stream from ${userName}`);
         const remoteStream = event.streams[0];
         displayRemoteVideo(socketId, userName, remoteStream);
+        
+        // Store remote stream
+        if (peerConnections[socketId]) {
+            peerConnections[socketId].remoteStream = remoteStream;
+        }
+        
+        updateConnectionStats();
     };
     
     // Handle ICE candidates
@@ -300,20 +414,50 @@ function createPeerConnection(socketId, userName) {
         }
     };
     
+    // Connection state changes
+    peerConnection.oniceconnectionstatechange = () => {
+        console.log(`❄️ ICE state for ${userName}: ${peerConnection.iceConnectionState}`);
+        
+        if (peerConnection.iceConnectionState === 'connected' || 
+            peerConnection.iceConnectionState === 'completed') {
+            console.log(`✅ Connected to ${userName}`);
+            showNotification(`Connected to ${userName}`, 'success');
+        }
+        
+        if (peerConnection.iceConnectionState === 'disconnected' || 
+            peerConnection.iceConnectionState === 'failed') {
+            console.log(`❌ Lost connection to ${userName}`);
+            showNotification(`Lost connection to ${userName}`, 'error');
+        }
+    };
+    
     // Store connection
     peerConnections[socketId] = {
         pc: peerConnection,
-        userName: userName
+        userName: userName,
+        connected: false
     };
     
     return peerConnection;
 }
 
+// Send WebRTC offer
 async function sendOffer(targetSocketId) {
-    const peerConnection = peerConnections[targetSocketId].pc;
+    const peerConnection = peerConnections[targetSocketId]?.pc;
+    
+    if (!peerConnection) {
+        console.error(`❌ No peer connection for ${targetSocketId}`);
+        return;
+    }
     
     try {
-        const offer = await peerConnection.createOffer();
+        console.log(`📤 Sending offer to ${peerConnections[targetSocketId].userName}`);
+        
+        const offer = await peerConnection.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true
+        });
+        
         await peerConnection.setLocalDescription(offer);
         
         socket.emit('offer', {
@@ -321,15 +465,20 @@ async function sendOffer(targetSocketId) {
             offer: offer,
             senderName: currentUser.userName
         });
+        
     } catch (error) {
-        console.error('Error creating offer:', error);
+        console.error('❌ Error creating offer:', error);
     }
 }
 
+// Handle incoming offer
 async function handleOffer(data) {
     const { sender, offer, senderName } = data;
     
+    console.log(`📥 Handling offer from ${senderName}`);
+    
     if (!peerConnections[sender]) {
+        console.log(`🆕 Creating new connection for ${senderName}`);
         createPeerConnection(sender, senderName);
     }
     
@@ -344,59 +493,82 @@ async function handleOffer(data) {
             target: sender,
             answer: answer
         });
+        
+        console.log(`📤 Sent answer to ${senderName}`);
+        
     } catch (error) {
-        console.error('Error handling offer:', error);
+        console.error('❌ Error handling offer:', error);
     }
 }
 
+// Handle incoming answer
 async function handleAnswer(data) {
     const { sender, answer } = data;
+    
+    console.log(`📥 Handling answer from ${sender}`);
     
     if (peerConnections[sender]) {
         const peerConnection = peerConnections[sender].pc;
         try {
             await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            console.log(`✅ Answer processed for ${peerConnections[sender].userName}`);
         } catch (error) {
-            console.error('Error handling answer:', error);
+            console.error('❌ Error handling answer:', error);
         }
     }
 }
 
+// Handle ICE candidate
 async function handleIceCandidate(data) {
     const { sender, candidate } = data;
     
     if (peerConnections[sender]) {
         const peerConnection = peerConnections[sender].pc;
         try {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            if (candidate) {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            }
         } catch (error) {
-            console.error('Error adding ICE candidate:', error);
+            console.error('❌ Error adding ICE candidate:', error);
         }
     }
 }
 
-// UI Functions
+// 🎬 VIDEO DISPLAY FUNCTIONS
+
+// Display remote video
 function displayRemoteVideo(socketId, userName, stream) {
+    console.log(`🎬 Displaying video for ${userName}`);
+    
     // Remove existing video if present
-    const existingVideo = document.getElementById(`video-${socketId}`);
-    if (existingVideo) {
-        existingVideo.remove();
+    const existingVideoBox = document.getElementById(`video-box-${socketId}`);
+    if (existingVideoBox) {
+        existingVideoBox.remove();
     }
     
-    // Create video element
+    // Create video container
     const videoBox = document.createElement('div');
     videoBox.className = 'video-box';
     videoBox.id = `video-box-${socketId}`;
     
+    // Create video element
     const video = document.createElement('video');
     video.id = `video-${socketId}`;
     video.autoplay = true;
+    video.playsInline = true;
     video.srcObject = stream;
     
+    // Video info overlay
     const videoInfo = document.createElement('div');
     videoInfo.className = 'video-info';
-    videoInfo.innerHTML = `<span>${userName}</span>`;
+    videoInfo.innerHTML = `
+        <i class="fas fa-user"></i>
+        <span>${userName}</span>
+        ${currentUser.userType === 'teacher' ? '<span class="teacher-tag">👨‍🏫</span>' : ''}
+        ${currentUser.userType === 'admin' ? '<span class="admin-tag">👑</span>' : ''}
+    `;
     
+    // Status icons
     const videoStatus = document.createElement('div');
     videoStatus.className = 'video-status';
     videoStatus.innerHTML = `
@@ -408,36 +580,42 @@ function displayRemoteVideo(socketId, userName, stream) {
         </div>
     `;
     
+    // Assemble video box
     videoBox.appendChild(video);
     videoBox.appendChild(videoInfo);
     videoBox.appendChild(videoStatus);
     
+    // Add to video grid
     videoGrid.appendChild(videoBox);
     
-    // Store remote stream
-    if (peerConnections[socketId]) {
-        peerConnections[socketId].remoteStream = stream;
-    }
+    // Update stats
+    updateConnectionStats();
+    
+    console.log(`✅ Video displayed for ${userName}`);
 }
 
+// Update user status icons
 function updateUserStatus(socketId, type, value) {
     const micIcon = document.getElementById(`mic-status-${socketId}`);
     const videoIcon = document.getElementById(`video-status-${socketId}`);
     
     if (micIcon) {
         micIcon.innerHTML = value ? 
-            '<i class="fas fa-microphone-slash"></i>' : 
-            '<i class="fas fa-microphone"></i>';
+            '<i class="fas fa-microphone-slash" style="color:#ef4444;"></i>' : 
+            '<i class="fas fa-microphone" style="color:#10b981;"></i>';
     }
     
     if (videoIcon) {
         videoIcon.innerHTML = value ? 
-            '<i class="fas fa-video-slash"></i>' : 
-            '<i class="fas fa-video"></i>';
+            '<i class="fas fa-video-slash" style="color:#ef4444;"></i>' : 
+            '<i class="fas fa-video" style="color:#10b981;"></i>';
     }
 }
 
+// Remove user
 function removeUser(socketId) {
+    console.log(`🗑️ Removing user: ${socketId}`);
+    
     // Remove video element
     const videoBox = document.getElementById(`video-box-${socketId}`);
     if (videoBox) {
@@ -456,13 +634,20 @@ function removeUser(socketId) {
         participant.remove();
     }
     
+    // Update counts
     updateParticipantCount();
+    updateConnectionStats();
+    
+    showNotification('A participant left the classroom', 'info');
 }
 
-// Chat Functions
+// 💬 CHAT FUNCTIONS
+
 function sendChatMessage() {
     const message = messageInput.value.trim();
     if (!message) return;
+    
+    console.log(`💬 Sending message: ${message.substring(0, 20)}...`);
     
     socket.emit('send-message', {
         message: message
@@ -477,7 +662,9 @@ function sendChatMessage() {
         userType: currentUser.userType
     }, true);
     
+    // Clear input
     messageInput.value = '';
+    messageInput.focus();
 }
 
 function addMessage(data, isSelf = false) {
@@ -489,42 +676,73 @@ function addMessage(data, isSelf = false) {
         minute: '2-digit' 
     });
     
+    // User icon based on type
+    let userIcon = '👤';
+    if (data.userType === 'teacher') userIcon = '👨‍🏫';
+    if (data.userType === 'admin') userIcon = '👑';
+    
     messageDiv.innerHTML = `
         <div class="message-header">
+            <span class="user-icon">${userIcon}</span>
             <strong>${data.userName}</strong>
-            <span>${time}</span>
+            <span class="message-time">${time}</span>
         </div>
         <div class="message-body">${data.message}</div>
     `;
     
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Notification sound for new message (not from self)
+    if (!isSelf) {
+        playNotificationSound();
+    }
 }
 
-// Participants Functions
+// 👥 PARTICIPANTS FUNCTIONS
+
 function addParticipant(data) {
+    console.log(`👥 Adding participant: ${data.userName}`);
+    
     const participantDiv = document.createElement('div');
     participantDiv.className = 'participant';
     participantDiv.id = `participant-${data.socketId}`;
     
-    const iconColor = data.userType === 'teacher' ? '#059669' : 
-                     data.userType === 'admin' ? '#dc2626' : '#4f46e5';
+    // Icon color based on user type
+    let iconColor = '#4f46e5'; // Student - blue
+    let userIcon = '<i class="fas fa-user-graduate"></i>';
+    
+    if (data.userType === 'teacher') {
+        iconColor = '#059669'; // Teacher - green
+        userIcon = '<i class="fas fa-chalkboard-teacher"></i>';
+    } else if (data.userType === 'admin') {
+        iconColor = '#dc2626'; // Admin - red
+        userIcon = '<i class="fas fa-user-shield"></i>';
+    }
     
     participantDiv.innerHTML = `
         <div class="participant-icon" style="background:${iconColor};">
-            <i class="fas fa-user"></i>
+            ${userIcon}
         </div>
-        <div>
-            <div style="font-weight:bold;">${data.userName}</div>
-            <div style="font-size:12px;color:#94a3b8;">
+        <div class="participant-info">
+            <div class="participant-name">${data.userName}</div>
+            <div class="participant-role">
                 ${data.userType === 'teacher' ? 'Mentor' : 
                   data.userType === 'admin' ? 'Admin' : 'Student'}
             </div>
+        </div>
+        <div class="participant-status">
+            <div class="status-dot online"></div>
         </div>
     `;
     
     participantsList.appendChild(participantDiv);
     updateParticipantCount();
+    
+    // Notification for new participant
+    if (data.userName !== currentUser.userName) {
+        showNotification(`${data.userName} joined the classroom`, 'success');
+    }
 }
 
 function updateParticipantCount() {
@@ -532,8 +750,100 @@ function updateParticipantCount() {
     document.getElementById('participantCount').textContent = count;
 }
 
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
+// 📊 STATISTICS & MONITORING
+
+function updateConnectionStats() {
+    const connectedCount = Object.keys(peerConnections).length;
+    const videoCount = document.querySelectorAll('.video-box').length;
+    
+    // Update debug panel if exists
+    const debugConnected = document.getElementById('debugConnected');
+    const debugVideos = document.getElementById('debugVideos');
+    
+    if (debugConnected) debugConnected.textContent = connectedCount;
+    if (debugVideos) debugVideos.textContent = videoCount;
+    
+    console.log(`📊 Stats: ${connectedCount} connections, ${videoCount} videos`);
+}
+
+function startConnectionCheck() {
+    // Check connections every 10 seconds
+    setInterval(() => {
+        const connectedCount = Object.keys(peerConnections).length;
+        const expectedCount = document.querySelectorAll('.participant').length;
+        
+        if (connectedCount < expectedCount) {
+            console.log(`⚠️ Missing connections: ${expectedCount - connectedCount}`);
+            // Try to reconnect
+            socket.emit('get-room-users', { roomId: currentUser.roomId });
+        }
+    }, 10000);
+}
+
+// 🔔 NOTIFICATION FUNCTIONS
+
+function showNotification(message, type = 'info') {
+    console.log(`🔔 ${type.toUpperCase()}: ${message}`);
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                             type === 'error' ? 'exclamation-circle' : 
+                             type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('fade-out');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+
+function playNotificationSound() {
+    // Simple beep sound for notifications
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+        console.log('🔇 Audio notification not supported');
+    }
+}
+
+// 🚪 LEAVE CLASSROOM
+
+function leaveClassroom() {
+    console.log('🚪 Leaving classroom...');
+    
+    // Notify others
+    socket.emit('leave-classroom', {
+        roomId: currentUser.roomId,
+        userId: currentUser.userId
+    });
+    
+    // Cleanup
     if (socket) {
         socket.disconnect();
     }
@@ -547,4 +857,144 @@ window.addEventListener('beforeunload', () => {
     Object.values(peerConnections).forEach(pc => {
         pc.pc.close();
     });
+    
+    // Clear session
+    sessionStorage.removeItem('classroom_auth');
+    
+    // Redirect to login
+    window.location.href = '/classroom-login.html';
+}
+
+// 🆘 EMERGENCY FUNCTIONS
+
+function forceReconnectAll() {
+    console.log('🔄 Force reconnecting to all users...');
+    
+    // Get all users in room
+    socket.emit('get-room-users', { roomId: currentUser.roomId }, (users) => {
+        users.forEach(user => {
+            if (user.socketId !== socket.id) {
+                // Close existing connection
+                if (peerConnections[user.socketId]) {
+                    peerConnections[user.socketId].pc.close();
+                    delete peerConnections[user.socketId];
+                }
+                
+                // Create new connection
+                setTimeout(() => {
+                    connectToUser(user.socketId, user.userName);
+                }, 500);
+            }
+        });
+    });
+    
+    showNotification('Reconnecting to all participants...', 'warning');
+}
+
+// 📱 RESPONSIVE HELPERS
+
+function toggleFullscreen() {
+    const elem = document.documentElement;
+    
+    if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+}
+
+// 🎮 KEYBOARD SHORTCUTS
+
+document.addEventListener('keydown', (e) => {
+    // Mute/unmute with Ctrl+M
+    if (e.ctrlKey && e.key === 'm') {
+        e.preventDefault();
+        toggleMicBtn.click();
+    }
+    
+    // Toggle video with Ctrl+V
+    if (e.ctrlKey && e.key === 'v') {
+        e.preventDefault();
+        toggleVideoBtn.click();
+    }
+    
+    // Focus chat with Ctrl+Enter
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        messageInput.focus();
+    }
+    
+    // Leave with Ctrl+L
+    if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault();
+        endCallBtn.click();
+    }
 });
+
+// 🌟 INITIALIZATION COMPLETE
+
+console.log('✅ Classroom.js loaded successfully!');
+console.log('📋 Current room:', currentUser.roomId);
+console.log('👤 Current user:', currentUser.userName);
+
+// Auto-reconnect on visibility change
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        console.log('🔄 Page became visible, checking connections...');
+        updateConnectionStats();
+    }
+});
+
+// 🔧 DEBUG PANEL (Optional)
+
+setTimeout(() => {
+    // Create debug panel
+    const debugPanel = document.createElement('div');
+    debugPanel.id = 'debugPanel';
+    debugPanel.style.cssText = `
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 9999;
+        font-family: monospace;
+        max-width: 250px;
+    `;
+    
+    debugPanel.innerHTML = `
+        <div style="font-weight:bold; margin-bottom:5px;">🔧 DEBUG PANEL</div>
+        <div>Room: <span id="debugRoom">${currentUser.roomId.substring(0, 15)}...</span></div>
+        <div>Connections: <span id="debugConnected">0</span></div>
+        <div>Videos: <span id="debugVideos">1</span></div>
+        <div>Participants: <span id="debugParticipants">1</span></div>
+        <button onclick="forceReconnectAll()" style="margin-top:5px; padding:3px 6px; font-size:10px; background:#4f46e5; color:white; border:none; border-radius:3px;">
+            🔄 Reconnect All
+        </button>
+    `;
+    
+    document.body.appendChild(debugPanel);
+    
+    // Update debug info
+    setInterval(() => {
+        document.getElementById('debugConnected').textContent = Object.keys(peerConnections).length;
+        document.getElementById('debugVideos').textContent = document.querySelectorAll('.video-box').length;
+        document.getElementById('debugParticipants').textContent = document.querySelectorAll('.participant').length + 1;
+    }, 2000);
+    
+}, 3000);
