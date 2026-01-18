@@ -95,7 +95,9 @@ function initializeSocket() {
             userName: currentUser.userName,
             userType: currentUser.userType
         });
-        
+        setTimeout(() => {
+    socket.emit('get-room-users', { roomId: currentUser.roomId });
+}, 2000);
         console.log('📨 Sent join request for room:', currentUser.roomId);
     });
     
@@ -171,9 +173,29 @@ function initializeSocket() {
     });
     
     // ✅ Get room users
-   socket.on('room-users-list', (users) => {
-    console.log('📋 Users in room (from server):', users);
-    // यहाँ users की list मिलेगी, जिससे reconnect कर सकते हो
+   // ✅ FIXED: Room users list receive करो
+socket.on('room-users-list', (users) => {
+    console.log('📋 Received room users list:', users.length);
+    
+    // Filter out self
+    const otherUsers = users.filter(u => u.socketId !== socket.id);
+    
+    if (otherUsers.length === 0) {
+        console.log('😊 No other users in room yet');
+        return;
+    }
+    
+    console.log('🔗 Connecting to', otherUsers.length, 'users...');
+    
+    // Connect to all other users
+    otherUsers.forEach(user => {
+        if (!peerConnections[user.socketId]) {
+            console.log(`🤝 Connecting to ${user.userName} (${user.socketId})`);
+            connectToUser(user.socketId, user.userName);
+        }
+    });
+    
+    updateParticipantCount();
 });
 }
 
@@ -874,27 +896,19 @@ function leaveClassroom() {
 function forceReconnectAll() {
     console.log('🔄 Force reconnecting to all users...');
     
-    // Get all users in room
-    socket.emit('get-room-users', { roomId: currentUser.roomId }, (users) => {
-        users.forEach(user => {
-            if (user.socketId !== socket.id) {
-                // Close existing connection
-                if (peerConnections[user.socketId]) {
-                    peerConnections[user.socketId].pc.close();
-                    delete peerConnections[user.socketId];
-                }
-                
-                // Create new connection
-                setTimeout(() => {
-                    connectToUser(user.socketId, user.userName);
-                }, 500);
-            }
-        });
+    // पहले सभी existing connections बंद करो
+    Object.keys(peerConnections).forEach(socketId => {
+        if (peerConnections[socketId]) {
+            peerConnections[socketId].pc.close();
+            delete peerConnections[socketId];
+        }
     });
+    
+    // फिर नई list मांगो
+    socket.emit('get-room-users', { roomId: currentUser.roomId });
     
     showNotification('Reconnecting to all participants...', 'warning');
 }
-
 // 📱 RESPONSIVE HELPERS
 
 function toggleFullscreen() {
@@ -1006,3 +1020,16 @@ setTimeout(() => {
     }, 2000);
     
 }, 3000);
+// ✅ PERIODIC CONNECTION CHECK
+setInterval(() => {
+    const expectedUsers = Array.from(document.querySelectorAll('.participant')).length;
+    const connectedUsers = Object.keys(peerConnections).length;
+    
+    console.log(`📊 Connection Check: ${connectedUsers} connections, ${expectedUsers} expected`);
+    
+    // अगर connections कम हैं तो automatically reconnect करो
+    if (connectedUsers < expectedUsers && expectedUsers > 0) {
+        console.log('⚠️ Missing connections, auto-reconnecting...');
+        socket.emit('get-room-users', { roomId: currentUser.roomId });
+    }
+}, 10000); // हर 10 सेकंड में check करो
