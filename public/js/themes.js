@@ -393,27 +393,60 @@ class ThemeManager {
         return new Date(year, 10, 10);
     }
 
-    checkSpecialDays() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+   checkSpecialDays() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const activeFestivals = [];  // सभी एक्टिव फेस्टिवल इकट्ठा करें
+    
+    for (const day of this.specialDays) {
+        const startDate = new Date(day.date);
+        startDate.setDate(startDate.getDate() - day.startDaysBefore);
+        startDate.setHours(0, 0, 0, 0);
 
-        for (const day of this.specialDays) {
-            const startDate = new Date(day.date);
-            startDate.setDate(startDate.getDate() - day.startDaysBefore);
-            startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(day.date);
+        endDate.setDate(endDate.getDate() + day.endDaysAfter);
+        endDate.setHours(23, 59, 59, 999);
 
-            const endDate = new Date(day.date);
-            endDate.setDate(endDate.getDate() + day.endDaysAfter);
-            endDate.setHours(23, 59, 59, 999);
-
-            if (today >= startDate && today <= endDate) {
-                this.currentTheme = day;
-                console.log(`🎉 Active Theme: ${day.name} (${day.englishName})`);
-                return;
-            }
+        if (today >= startDate && today <= endDate) {
+            activeFestivals.push(day);  // सभी जोड़ें
         }
     }
-
+    
+    // अब सॉर्ट करें
+    if (activeFestivals.length > 0) {
+        // 1. पहले ठीक आज वाले फेस्टिवल (exact date match)
+        // 2. फिर शुरू हुए लेकिन आज नहीं वाले
+        // 3. फिर आने वाले (upcoming)
+        
+        activeFestivals.sort((a, b) => {
+            // Exact festival date today - highest priority
+            const aIsToday = today.getDate() === a.date.getDate() && 
+                            today.getMonth() === a.date.getMonth();
+            const bIsToday = today.getDate() === b.date.getDate() && 
+                            today.getMonth() === b.date.getMonth();
+            
+            if (aIsToday && !bIsToday) return -1;
+            if (!aIsToday && bIsToday) return 1;
+            
+            // Closest festival gets priority
+            const aDiff = Math.abs(a.date - today);
+            const bDiff = Math.abs(b.date - today);
+            return aDiff - bDiff;
+        });
+        
+        // पहला सबसे इम्पोर्टेन्ट थीम
+        this.currentTheme = activeFestivals[0];
+        
+        // सभी एक्टिव फेस्टिवल स्टोर करें
+        this.activeFestivals = activeFestivals;
+        
+        console.log(`🎊 ${activeFestivals.length} फेस्टिवल एक्टिव:`);
+        activeFestivals.forEach(f => {
+            console.log(`   - ${f.name} (${f.date.toLocaleDateString()})`);
+        });
+    }
+}
     applyTheme() {
         if (!this.currentTheme) return;
 
