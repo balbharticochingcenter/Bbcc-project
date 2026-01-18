@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bal Bharti Virtual Classroom</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body {
+            background: #1e293b;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background: #0f172a;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4f46e5;
+        }
+        
+        .room-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .room-id {
+            background: #4f46e5;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #334155;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .user-badge.teacher { background: #059669; }
+        .user-badge.admin { background: #dc2626; }
+        
+        .controls-bar {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: #334155;
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover { transform: scale(1.1); }
+        .control-btn.active { background: #4f46e5; }
+        .control-btn.mic.active { background: #dc2626; }
+        .control-btn.video.active { background: #dc2626; }
+        .control-btn.dnd.active { background: #f59e0b; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        /* Video Grid */
+        .video-container {
+            flex: 3;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .video-box {
+            background: #0f172a;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            min-height: 250px;
+            border: 2px solid #334155;
+        }
+        
+        .video-box.active-speaker {
+            border-color: #4f46e5;
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+        }
+        
+        .video-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .video-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-icon {
+            background: rgba(0,0,0,0.7);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            flex: 1;
+            background: #0f172a;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-width: 300px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            font-size: 18px;
+            font-weight: bold;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 15px;
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding-right: 5px;
+        }
+        
+        .message {
+            background: #334155;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            max-width: 90%;
+        }
+        
+        .message.teacher { background: #065f46; }
+        .message.admin { background: #7f1d1d; }
+        .message.self { background: #4f46e5; margin-left: auto; }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            background: #1e293b;
+            color: white;
+        }
+        
+        .message-input button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            width: 50px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        /* Participants */
+        .participants {
+            margin-top: 20px;
+            border-top: 1px solid #334155;
+            padding-top: 15px;
+        }
+        
+        .participant {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #1e293b;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .participant-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #0f172a;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #334155;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            .sidebar {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="room-info">
+            <h2>🎓 Bal Bharti Classroom</h2>
+            <div class="room-id" id="roomIdDisplay">Loading...</div>
+        </div>
+        
+        <div class="user-badge" id="userBadge">
+            <i class="fas fa-user"></i>
+            <span id="userName">Loading...</span>
+            <span id="userRole" class="role-tag">Student</span>
+        </div>
+        
+        <div class="controls-bar">
+            <button class="control-btn mic" id="toggleMic" title="Mute/Unmute">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="control-btn video" id="toggleVideo" title="Camera On/Off">
+                <i class="fas fa-video"></i>
+            </button>
+            <button class="control-btn dnd" id="toggleDnd" title="Do Not Disturb">
+                <i class="fas fa-bell-slash"></i>
+            </button>
+            <button class="control-btn" id="shareScreen" title="Share Screen">
+                <i class="fas fa-desktop"></i>
+            </button>
+            <button class="control-btn end-call" style="background:#dc2626;" id="endCall" title="Leave Class">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Video Grid -->
+        <div class="video-container" id="videoGrid">
+            <!-- Videos will be added here dynamically -->
+            <div class="video-box" id="localVideoBox">
+                <video id="localVideo" autoplay muted></video>
+                <div class="video-info">
+                    <span id="localUserName">You</span>
+                    <span class="status-text">(You)</span>
+                </div>
+                <div class="video-status">
+                    <div class="status-icon mic-status">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <div class="status-icon video-status">
+                        <i class="fas fa-video"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Chat -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <i class="fas fa-comments"></i> Class Chat
+                </div>
+                <div class="messages" id="chatMessages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="message-input">
+                    <input type="text" id="messageInput" placeholder="Type your message...">
+                    <button id="sendMessage">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Participants -->
+            <div class="participants">
+                <div class="chat-header">
+                    <i class="fas fa-users"></i> Participants (<span id="participantCount">1</span>)
+                </div>
+                <div id="participantsList">
+                    <!-- Participants will be listed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <p>Bal Bharti Coaching Center - Virtual Classroom System</p>
+        <p style="font-size:12px; margin-top:5px;">All rights reserved © 2024</p>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="classroom.js"></script>
+</body>
+</html>
