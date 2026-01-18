@@ -164,15 +164,15 @@ function initializeSocket() {
         console.log('👋 User left:', data.socketId);
         removeUser(data.socketId);
     });
-    
-   socket.on('connect_error', (error) => {
+  socket.on('connect_error', (error) => {
     console.error('❌ Socket connection error:', error);
     alert('Connection error. Please refresh the page.');
 });
 
-// ✅ ये 1 LINE ADD करो यहाँ:
+// ✅ ये function initializeSocket() के अंदर होना चाहिए:
 socket.on('get-room-users', (users) => {
-    console.log('📋 Users in room:', users);
+    console.log('📋 Users in room:', users.length);
+    console.log('👥 Users details:', users);
 });
 // 🎥 MEDIA SETUP
 async function initializeMedia() {
@@ -365,8 +365,7 @@ function connectToUser(socketId, userName) {
     }
     
     createPeerConnection(socketId, userName);
-    // ✅ ये 1 LINE ADD करो यहाँ:
-setTimeout(() => { socket.emit('get-room-users', { roomId: currentUser.roomId }); }, 3000);
+    
     // Send offer after a short delay
     setTimeout(() => {
         sendOffer(socketId);
@@ -959,9 +958,12 @@ document.addEventListener('visibilitychange', () => {
         updateConnectionStats();
     }
 });
+// ✅ Auto request room users
+setTimeout(() => {
+    socket.emit('get-room-users', { roomId: currentUser.roomId });
+}, 3000);
 
-// 🔧 DEBUG PANEL (Optional)
-
+// ✅ DEBUG PANEL (Optional)
 setTimeout(() => {
     // Create debug panel
     const debugPanel = document.createElement('div');
