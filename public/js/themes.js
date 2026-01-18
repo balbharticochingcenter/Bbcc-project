@@ -91,7 +91,7 @@ class ThemeManager {
                 endDaysAfter: 5,
                 colors: ["#FF9933", "#FFFFFF", "#138808"],
                 message: "🇮🇳 गणतंत्र दिवस की हार्दिक शुभकामनाएँ! 🇮🇳",
-                background: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+                background: "https://share.google/3r3qO0u2PnrRExFAU",
                 hashtags: ["#RepublicDay", "#26January", "#India", "#BBCCMadhubani"],
                 shareText: "गणतंत्र दिवस की शुभकामनाएँ! बाल भारती कोचिंग सेंटर, मधुबनी 🇮🇳",
                 emoji: "🇮🇳",
