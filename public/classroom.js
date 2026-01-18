@@ -171,9 +171,10 @@ function initializeSocket() {
     });
     
     // ✅ Get room users
-    socket.on('get-room-users', (users) => {
-        console.log('📋 Users in room:', users);
-    });
+   socket.on('room-users-list', (users) => {
+    console.log('📋 Users in room (from server):', users);
+    // यहाँ users की list मिलेगी, जिससे reconnect कर सकते हो
+});
 }
 
 // 🎥 MEDIA SETUP
