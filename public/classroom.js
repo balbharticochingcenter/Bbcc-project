@@ -165,13 +165,15 @@ function initializeSocket() {
         removeUser(data.socketId);
     });
     
-    // ❌ Connection error
-    socket.on('connect_error', (error) => {
-        console.error('❌ Socket connection error:', error);
-        alert('Connection error. Please refresh the page.');
-    });
-}
+   socket.on('connect_error', (error) => {
+    console.error('❌ Socket connection error:', error);
+    alert('Connection error. Please refresh the page.');
+});
 
+// ✅ ये 1 LINE ADD करो यहाँ:
+socket.on('get-room-users', (users) => {
+    console.log('📋 Users in room:', users);
+});
 // 🎥 MEDIA SETUP
 async function initializeMedia() {
     try {
@@ -363,7 +365,8 @@ function connectToUser(socketId, userName) {
     }
     
     createPeerConnection(socketId, userName);
-    
+    // ✅ ये 1 LINE ADD करो यहाँ:
+setTimeout(() => { socket.emit('get-room-users', { roomId: currentUser.roomId }); }, 3000);
     // Send offer after a short delay
     setTimeout(() => {
         sendOffer(socketId);
