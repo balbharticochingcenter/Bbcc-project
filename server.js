@@ -475,14 +475,16 @@ socket.on('join-classroom', (data) => {
         socket.to(data.target).emit('answer', data);
     });
     
-  
-// इसे बदलो:
-socket.on('ice-candidate', (data) => {
-    console.log(`🧊 ICE: ${socket.id} -> ${data.target}`);
-    socket.to(data.target).emit('ice-candidate', {
-        sender: socket.id,        // ये जोड़ो
-        candidate: data.candidate // ये जोड़ो
-    });
+ socket.on('ice-candidate', (data) => {
+    console.log('🧊 ICE from', socket.id, 'to', data.target);
+    
+    // FIX: सही format में भेजो
+    const iceData = {
+        sender: socket.id,           // जो भेज रहा है
+        candidate: data.candidate    // ICE candidate
+    };
+    
+    socket.to(data.target).emit('ice-candidate', iceData);
 });
     
     // Toggle controls
