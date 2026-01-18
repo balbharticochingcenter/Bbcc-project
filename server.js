@@ -477,12 +477,15 @@ socket.on('join-classroom', (data) => {
     
    // ✅ FIXED: ICE Candidate forwarding
 socket.on('ice-candidate', (data) => {
-    console.log('🧊 ICE Candidate from:', socket.id, 'to:', data.target);
-    
-    // FIX: सही format में भेजो
+    socket.to(data.target).emit('ice-candidate', data);
+});
+
+// इसे बदलो:
+socket.on('ice-candidate', (data) => {
+    console.log(`🧊 ICE: ${socket.id} -> ${data.target}`);
     socket.to(data.target).emit('ice-candidate', {
-        sender: socket.id,  // ये जोड़ो
-        candidate: data.candidate
+        sender: socket.id,        // ये जोड़ो
+        candidate: data.candidate // ये जोड़ो
     });
 });
     
