@@ -123,7 +123,10 @@ app.get('/api/get-all-subjects', (req, res) => {
     ]);
 });
 
-
+// Line 90-110 के बीच (HTML ROUTES section में) ये ADD करो:
+app.get('/classroom.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'classroom.html'));
+});
 // ---------------- HTML ROUTES ----------------
 app.get('/', (req, res) =>
     res.sendFile(path.join(__dirname, 'public', 'login.html'))
