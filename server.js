@@ -424,6 +424,10 @@ Main sirf yahi bolungi:
 });
 
 // ---------------- CLASSROOM SOCKET EVENTS ----------------
+
+
+
+
 io.on('connection', (socket) => {
     console.log('📱 New classroom connection:', socket.id);
     
@@ -510,7 +514,21 @@ socket.on('join-classroom', (data) => {
             });
         }
     });
-    
+    // ✅ ये code ADD करो Line 335 के बाद (socket.on('disconnect') से पहले):
+socket.on('get-room-users', (data, callback) => {
+    const roomUsers = [];
+    connectedUsers.forEach(user => {
+        if (user.roomId === data.roomId) {
+            roomUsers.push({
+                socketId: user.socketId,
+                userId: user.userId,
+                userName: user.userName,
+                userType: user.userType
+            });
+        }
+    });
+    callback(roomUsers);
+});
     // Disconnect
     socket.on('disconnect', () => {
         const user = connectedUsers.get(socket.id);
