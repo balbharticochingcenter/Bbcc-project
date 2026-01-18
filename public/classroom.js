@@ -1039,3 +1039,30 @@ setInterval(() => {
         socket.emit('get-room-users', { roomId: currentUser.roomId });
     }
 }, 10000); // हर 10 सेकंड में check करो
+// 🐛 DEBUG FUNCTION - Console में चलाओ
+function checkAllConnections() {
+    console.log('=== DEBUG START ===');
+    console.log('Socket ID:', socket.id);
+    console.log('Local stream:', localStream ? '✅ Available' : '❌ Not available');
+    console.log('Local tracks:', localStream ? localStream.getTracks().length : 0);
+    
+    if (localStream) {
+        localStream.getTracks().forEach((track, i) => {
+            console.log(`Track ${i}: ${track.kind}, enabled: ${track.enabled}`);
+        });
+    }
+    
+    console.log('Peer connections:', Object.keys(peerConnections).length);
+    
+    Object.entries(peerConnections).forEach(([id, pcData]) => {
+        console.log(`--- ${pcData.userName} ---`);
+        console.log('ICE State:', pcData.pc.iceConnectionState);
+        console.log('Signaling State:', pcData.pc.signalingState);
+        console.log('Connected:', pcData.connected ? '✅' : '❌');
+    });
+    console.log('=== DEBUG END ===');
+}
+
+// Console से चलाने के लिए available करो
+window.checkAll = checkAllConnections;
+window.peers = peerConnections;
