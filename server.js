@@ -475,9 +475,17 @@ socket.on('join-classroom', (data) => {
         socket.to(data.target).emit('answer', data);
     });
     
-    socket.on('ice-candidate', (data) => {
-        socket.to(data.target).emit('ice-candidate', data);
+   // ✅ FIXED: ICE Candidate forwarding
+socket.on('ice-candidate', (data) => {
+    const { target, candidate, sender } = data;
+    console.log(`🧊 Forwarding ICE candidate from ${socket.id} to ${target}`);
+    
+    // सीधे target socket को भेजो
+    socket.to(target).emit('ice-candidate', {
+        sender: socket.id,
+        candidate: candidate
     });
+});
     
     // Toggle controls
     socket.on('toggle-mute', (data) => {
