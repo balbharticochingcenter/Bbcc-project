@@ -475,11 +475,7 @@ socket.on('join-classroom', (data) => {
         socket.to(data.target).emit('answer', data);
     });
     
-   // ✅ FIXED: ICE Candidate forwarding
-socket.on('ice-candidate', (data) => {
-    socket.to(data.target).emit('ice-candidate', data);
-});
-
+  
 // इसे बदलो:
 socket.on('ice-candidate', (data) => {
     console.log(`🧊 ICE: ${socket.id} -> ${data.target}`);
