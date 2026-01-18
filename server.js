@@ -515,6 +515,7 @@ socket.on('join-classroom', (data) => {
         }
     });
     // ✅ ये code ADD करो Line 335 के बाद (socket.on('disconnect') से पहले):
+// ✅ ये code ADD करो socket.on('disconnect') से पहले:
 socket.on('get-room-users', (data, callback) => {
     const roomUsers = [];
     connectedUsers.forEach(user => {
@@ -527,6 +528,7 @@ socket.on('get-room-users', (data, callback) => {
             });
         }
     });
+    // सीधे callback में भेजो
     callback(roomUsers);
 });
     // Disconnect
