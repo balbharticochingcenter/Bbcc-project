@@ -428,23 +428,39 @@ io.on('connection', (socket) => {
     console.log('📱 New classroom connection:', socket.id);
     
     // Join classroom
-    socket.on('join-classroom', (data) => {
-        const { roomId, userId, userName, userType } = data;
-        
-        socket.join(roomId);
-        connectedUsers.set(socket.id, { roomId, userId, userName, userType, socketId: socket.id });
-        
-        // Notify others
-        socket.to(roomId).emit('user-joined', {
-            userId,
-            userName,
-            userType,
-            socketId: socket.id,
-            timestamp: new Date().toISOString()
-        });
-        
-        console.log(`✅ ${userName} joined room ${roomId}`);
+socket.on('join-classroom', (data) => {
+    const { roomId, userId, userName, userType } = data;
+    
+    socket.join(roomId);
+    connectedUsers.set(socket.id, { roomId, userId, userName, userType, socketId: socket.id });
+    
+    // ✅ पहले: सबको बताओ नया user आया
+    socket.to(roomId).emit('user-joined', {
+        userId,
+        userName,
+        userType,
+        socketId: socket.id,
+        timestamp: new Date().toISOString()
     });
+    
+    // ✅ अब: नए user को बताओ पहले से कौन-कौन है
+    const existingUsers = [];
+    connectedUsers.forEach(user => {
+        if (user.roomId === roomId && user.socketId !== socket.id) {
+            existingUsers.push({
+                socketId: user.socketId,
+                userId: user.userId,
+                userName: user.userName,
+                userType: user.userType
+            });
+        }
+    });
+    
+    // नए user को existing users की list भेजो
+    socket.emit('existing-users', existingUsers);
+    
+    console.log(`✅ ${userName} joined room ${roomId}, Total: ${existingUsers.length + 1}`);
+});
     
     // WebRTC signaling
     socket.on('offer', (data) => {
