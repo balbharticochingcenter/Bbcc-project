@@ -486,6 +486,46 @@ app.post("/api/classroom/create", (req, res) => {
 app.get("/api/classroom/active-rooms", (req, res) => {
     res.json({ rooms: activeRooms });
 });
+// ================= LOGIN VERIFICATION =================
+app.get('/api/classroom/verify', async (req, res) => {
+    try {
+        const { userId, password, userType } = req.query;
+
+        if (!userId || !password || !userType) {
+            return res.status(400).json({ success: false, message: "All fields required" });
+        }
+
+        let user = null;
+
+        if (userType === 'student') {
+            user = await Student.findOne({ student_id: userId, pass: password });
+        } else if (userType === 'teacher') {
+            user = await Teacher.findOne({ teacher_id: userId, pass: password });
+        } else if (userType === 'admin') {
+            user = await AdminProfile.findOne({ admin_userid: userId, admin_pass: password });
+        } else {
+            return res.status(400).json({ success: false, message: "Invalid user type" });
+        }
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: "Invalid ID or password" });
+        }
+
+        // Login successful
+        res.json({
+            success: true,
+            user: {
+                name: user.student_name || user.teacher_name || user.admin_name,
+                userId,
+                userType
+            }
+        });
+
+    } catch (err) {
+        console.error("Login Error:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get('/api/get-all-classes', (req, res) => {
