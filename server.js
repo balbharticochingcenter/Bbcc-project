@@ -431,6 +431,61 @@ app.get("/api/live-token", (req, res) => {
 
     res.json({ token: token.toJwt() });
 });
+// ---------------- CLASSROOM / LIVE CLASSROOM ----------------
+let activeRooms = []; // in-memory active rooms list
+
+function generateRoomId() {
+    return "ROOM-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+// 1️⃣ Verify login (student/teacher/admin)
+app.get("/api/classroom/verify", async (req, res) => {
+    const { userId, password, userType } = req.query;
+    if (!userId || !password) return res.status(400).json({ success: false });
+
+    try {
+        let user = null;
+        if (userType === "student") user = await Student.findOne({ student_id: userId, pass: password });
+        else if (userType === "teacher") user = await Teacher.findOne({ teacher_id: userId, pass: password });
+        else if (userType === "admin") user = await AdminProfile.findOne({ admin_userid: userId, admin_pass: password });
+
+        if (!user) return res.json({ success: false });
+
+        res.json({
+            success: true,
+            userType,
+            user: {
+                id: userId,
+                name: user.student_name || user.teacher_name || user.admin_name
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 2️⃣ Create Classroom (teacher/admin)
+app.post("/api/classroom/create", (req, res) => {
+    const { teacherId, className } = req.body;
+    if (!teacherId) return res.status(400).json({ success: false, error: "teacherId required" });
+
+    let room = activeRooms.find(r => r.teacherId === teacherId);
+    if (!room) {
+        room = {
+            roomId: generateRoomId(),
+            teacherId,
+            className: className || "Classroom",
+            createdAt: Date.now()
+        };
+        activeRooms.push(room);
+    }
+    res.json({ success: true, roomId: room.roomId });
+});
+
+// 3️⃣ Get Active Rooms (for students)
+app.get("/api/classroom/active-rooms", (req, res) => {
+    res.json({ rooms: activeRooms });
+});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get('/api/get-all-classes', (req, res) => {
