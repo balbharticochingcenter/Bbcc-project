@@ -431,14 +431,13 @@ app.get("/api/live-token", (req, res) => {
 
     res.json({ token: token.toJwt() });
 });
+
 // ---------------- CLASSROOM / LIVE CLASSROOM ----------------
 let activeRooms = []; // in-memory active rooms list
 
 function generateRoomId() {
     return "ROOM-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 }
-
-
 
 // 2️⃣ Create Classroom (teacher/admin)
 app.post("/api/classroom/create", (req, res) => {
@@ -462,36 +461,50 @@ app.post("/api/classroom/create", (req, res) => {
 app.get("/api/classroom/active-rooms", (req, res) => {
     res.json({ rooms: activeRooms });
 });
+
 // ================= LOGIN VERIFICATION =================
 app.get('/api/classroom/verify', async (req, res) => {
-    const { userId, password, userType } = req.query;
-
-    if (!userId || !password || !userType) {
-        return res.status(400).json({ success: false, message: "All fields required" });
-    }
-
     try {
+        const { userId, password, userType } = req.query;
+
+        if (!userId || !password || !userType) {
+            return res.status(400).json({ success: false, message: "All fields required" });
+        }
+
+        // Remove whitespace / hidden chars
+        const cleanId = userId.trim();
+        const cleanPass = password.trim();
+
         let user = null;
 
         if (userType === 'student') {
-            user = await Student.findOne({ student_id: userId, pass: password });
+            user = await Student.findOne({ student_id: cleanId, pass: cleanPass });
+            if (!user) return res.status(401).json({ success: false, message: "Invalid ID or password" });
+
+            // ✅ Check if student ka class me teacher active hai
+            const teacherActive = activeRooms.find(r => r.teacherId === user.student_class);
+            if (!teacherActive) {
+                return res.status(403).json({ success: false, message: "Teacher abhi login nahi hua, student wait karein" });
+            }
+
         } else if (userType === 'teacher') {
-            user = await Teacher.findOne({ teacher_id: userId, pass: password });
+            user = await Teacher.findOne({ teacher_id: cleanId, pass: cleanPass });
+            if (!user) return res.status(401).json({ success: false, message: "Invalid ID or password" });
+
         } else if (userType === 'admin') {
-            user = await AdminProfile.findOne({ admin_userid: userId, admin_pass: password });
+            user = await AdminProfile.findOne({ admin_userid: cleanId, admin_pass: cleanPass });
+            if (!user) return res.status(401).json({ success: false, message: "Invalid ID or password" });
+
         } else {
             return res.status(400).json({ success: false, message: "Invalid user type" });
         }
 
-        if (!user) {
-            return res.status(401).json({ success: false, message: "Invalid ID or password" });
-        }
-
+        // ✅ Login successful
         res.json({
             success: true,
             userType,
             user: {
-                id: userId,
+                id: cleanId,
                 name: user.student_name || user.teacher_name || user.admin_name
             }
         });
