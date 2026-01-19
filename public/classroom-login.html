@@ -1,553 +1,176 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Room Login - Bal Bharti Coaching</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Room Login - Bal Bharti Coaching</title>
 
-        body {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        .login-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .logo {
-            margin-bottom: 25px;
-        }
-
-        .logo h1 {
-            color: #1e3c72;
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .logo p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .input-with-icon {
-            position: relative;
-        }
-
-        .input-with-icon i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
-
-        .input-with-icon input {
-            width: 100%;
-            padding: 12px 12px 12px 45px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .input-with-icon input:focus {
-            border-color: #1e3c72;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: #1e3c72;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-
-        .btn:hover {
-            background: #2a5298;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .message {
-            padding: 12px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-size: 14px;
-            display: none;
-        }
-
-        .error {
-            background: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fca5a5;
-            display: block;
-        }
-
-        .success {
-            background: #d1fae5;
-            color: #059669;
-            border: 1px solid #a7f3d0;
-            display: block;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .user-type-indicator {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f3f4f6;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .user-type-indicator.show {
-            display: block;
-        }
-
-        .type-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        .student-badge {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .teacher-badge {
-            background: #10b981;
-            color: white;
-        }
-
-        .admin-badge {
-            background: #dc2626;
-            color: white;
-        }
-
-        .info-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .security-note {
-            background: #fffbeb;
-            border: 1px solid #fcd34d;
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 15px;
-            font-size: 12px;
-            color: #92400e;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 20px;
-            }
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Tahoma;}
+body{
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+min-height:100vh;display:flex;align-items:center;justify-content:center
+}
+.login-container{
+background:#fff;border-radius:15px;max-width:420px;width:100%;
+padding:30px;box-shadow:0 15px 35px rgba(0,0,0,.3)
+}
+.logo{text-align:center;margin-bottom:25px}
+.logo h1{color:#1e3c72;font-size:28px}
+.logo p{color:#666;font-size:14px}
+.form-group{margin-bottom:18px}
+label{font-weight:600;color:#333;font-size:14px}
+.input-with-icon{position:relative}
+.input-with-icon i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#666}
+input{
+width:100%;padding:12px 12px 12px 44px;
+border:2px solid #ddd;border-radius:8px;font-size:16px
+}
+input:focus{border-color:#1e3c72;outline:none}
+.btn{
+width:100%;padding:14px;background:#1e3c72;
+color:#fff;border:none;border-radius:8px;
+font-size:16px;font-weight:600;cursor:pointer
+}
+.btn:disabled{background:#aaa}
+.message{margin:15px 0;padding:10px;border-radius:8px;font-size:14px;display:none}
+.error{background:#fee2e2;color:#b91c1c;display:block}
+.success{background:#dcfce7;color:#166534;display:block}
+.user-type-indicator{display:none;margin-top:15px;font-size:14px}
+.type-badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.student{background:#3b82f6;color:#fff}
+.teacher{background:#10b981;color:#fff}
+.admin{background:#dc2626;color:#fff}
+.security-note{
+margin-top:20px;background:#fffbeb;border:1px solid #facc15;
+padding:10px;border-radius:8px;font-size:12px;color:#92400e
+}
+</style>
 </head>
+
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <h1>🔐 Class Room Login</h1>
-            <p>Bal Bharti Coaching Center</p>
-        </div>
 
-        <div id="message" class="message"></div>
+<div class="login-container">
+<div class="logo">
+<h1>🔐 Class Room Login</h1>
+<p>Bal Bharti Coaching Center</p>
+</div>
 
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="userId"><i class="fas fa-user"></i> User ID</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-id-card"></i>
-                    <input type="text" id="userId" placeholder="Enter your ID" required autocomplete="off">
-                </div>
-            </div>
+<div id="msg" class="message"></div>
 
-            <div class="form-group">
-                <label for="password"><i class="fas fa-lock"></i> Password</label>
-                <div class="input-with-icon">
-                    <i class="fas fa-key"></i>
-                    <input type="password" id="password" placeholder="Enter password" required autocomplete="off">
-                </div>
-            </div>
+<form id="loginForm">
+<div class="form-group">
+<label>User ID</label>
+<div class="input-with-icon">
+<i class="fas fa-user"></i>
+<input id="userId" required autocomplete="off">
+</div>
+</div>
 
-            <button type="submit" class="btn" id="loginBtn">
-                <i class="fas fa-sign-in-alt"></i> Join Class Room
-            </button>
-        </form>
+<div class="form-group">
+<label>Password</label>
+<div class="input-with-icon">
+<i class="fas fa-lock"></i>
+<input id="password" type="password" required autocomplete="off">
+</div>
+</div>
 
-        <div id="userTypeIndicator" class="user-type-indicator">
-            <span>Detected as:</span>
-            <span id="userTypeBadge" class="type-badge">Checking...</span>
-            <span id="userNameDisplay"></span>
-        </div>
+<button class="btn" id="btn">Join Classroom</button>
+</form>
 
-        <div class="info-text">
-            <p><i class="fas fa-info-circle"></i> System will automatically detect your role (Student/Teacher/Admin)</p>
-        </div>
+<div id="typeBox" class="user-type-indicator">
+Detected as: <span id="badge" class="type-badge"></span>
+<span id="uname"></span>
+</div>
 
-        <div class="security-note">
-            <i class="fas fa-shield-alt"></i>
-            <strong>Security Note:</strong> Direct classroom links won't work. Login is mandatory for every session.
-        </div>
-    </div>
+<div class="security-note">
+<i class="fas fa-shield-alt"></i>
+Direct classroom access is blocked. Login required.
+</div>
+</div>
 
-    <script>
-        // DOM Elements
-        const loginForm = document.getElementById('loginForm');
-        const userIdInput = document.getElementById('userId');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const messageDiv = document.getElementById('message');
-        const userTypeIndicator = document.getElementById('userTypeIndicator');
-        const userTypeBadge = document.getElementById('userTypeBadge');
-        const userNameDisplay = document.getElementById('userNameDisplay');
+<script>
+const form=document.getElementById("loginForm");
+const msg=document.getElementById("msg");
+const btn=document.getElementById("btn");
+const badge=document.getElementById("badge");
+const typeBox=document.getElementById("typeBox");
+const uname=document.getElementById("uname");
 
-        // Show message
-        function showMessage(text, type = 'error') {
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 3000);
-            }
-        }
+function show(text,type){
+msg.textContent=text;
+msg.className="message "+type;
+msg.style.display="block";
+}
 
-        // Hide message
-        function hideMessage() {
-            messageDiv.style.display = 'none';
-        }
+function detect(id){
+id=id.toUpperCase();
+if(id.startsWith("ADM")) return "admin";
+if(id.startsWith("TCH")||id.startsWith("TEA")) return "teacher";
+return "student";
+}
 
-        // Set loading state
-        function setLoading(isLoading) {
-            if (isLoading) {
-                loginBtn.disabled = true;
-                loginBtn.innerHTML = `<span class="loading"></span> Verifying...`;
-            } else {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> Join Class Room`;
-            }
-        }
+function setType(type,name=""){
+typeBox.style.display="block";
+badge.className="type-badge "+type;
+badge.textContent=type.toUpperCase();
+uname.textContent=name?(" • "+name):"";
+}
 
-        // Detect user type from ID
-        function detectUserType(userId) {
-            // Student IDs usually start with STU or numbers
-            if (userId.toUpperCase().startsWith('STU') || /^\d+$/.test(userId)) {
-                return 'student';
-            }
-            // Teacher IDs usually start with TCH or TEA
-            else if (userId.toUpperCase().startsWith('TCH') || userId.toUpperCase().startsWith('TEA')) {
-                return 'teacher';
-            }
-            // Admin IDs usually start with ADM or ADMIN
-            else if (userId.toUpperCase().startsWith('ADM') || userId.toLowerCase().includes('admin')) {
-                return 'admin';
-            }
-            // Default to student
-            return 'student';
-        }
+form.onsubmit=async e=>{
+e.preventDefault();
+btn.disabled=true;
 
-        // Update user type indicator
-        function updateUserTypeIndicator(type, name = '') {
-            userTypeIndicator.classList.add('show');
-            
-            // Set badge
-            userTypeBadge.className = 'type-badge ';
-            if (type === 'student') {
-                userTypeBadge.classList.add('student-badge');
-                userTypeBadge.textContent = 'Student';
-                userTypeBadge.innerHTML = '<i class="fas fa-user-graduate"></i> Student';
-            } else if (type === 'teacher') {
-                userTypeBadge.classList.add('teacher-badge');
-                userTypeBadge.textContent = 'Mentor';
-                userTypeBadge.innerHTML = '<i class="fas fa-chalkboard-teacher"></i> Mentor';
-            } else if (type === 'admin') {
-                userTypeBadge.classList.add('admin-badge');
-                userTypeBadge.textContent = 'Admin';
-                userTypeBadge.innerHTML = '<i class="fas fa-user-shield"></i> Admin';
-            }
-            
-            // Set name if available
-            if (name) {
-                userNameDisplay.textContent = ` • ${name}`;
-            } else {
-                userNameDisplay.textContent = '';
-            }
-        }
+const userId=userId.value.trim();
+const password=password.value.trim();
+const guess=detect(userId);
+setType(guess);
 
-        // Validate credentials
-        async function validateCredentials(userId, password) {
-            // First try as student
-            try {
-                const studentResponse = await fetch(`/api/classroom/verify?userId=${userId}&password=${password}&userType=student`);
-                const studentData = await studentResponse.json();
-                
-                if (studentData.success) {
-                    return {
-                        valid: true,
-                        userType: 'student',
-                        userData: studentData.user
-                    };
-                }
-            } catch (error) {
-                // Continue to next check
-            }
-            
-            // Try as teacher
-            try {
-                const teacherResponse = await fetch(`/api/classroom/verify?userId=${userId}&password=${password}&userType=teacher`);
-                const teacherData = await teacherResponse.json();
-                
-                if (teacherData.success) {
-                    return {
-                        valid: true,
-                        userType: 'teacher',
-                        userData: teacherData.user
-                    };
-                }
-            } catch (error) {
-                // Continue to next check
-            }
-            
-            // Try as admin
-            try {
-                const adminResponse = await fetch(`/api/classroom/verify?userId=${userId}&password=${password}&userType=admin`);
-                const adminData = await adminResponse.json();
-                
-                if (adminData.success) {
-                    return {
-                        valid: true,
-                        userType: 'admin',
-                        userData: adminData.user
-                    };
-                }
-            } catch (error) {
-                // Continue
-            }
-            
-            return { valid: false };
-        }
+try{
+const res=await fetch(`/api/classroom/verify?userId=${userId}&password=${password}&userType=${guess}`);
+const data=await res.json();
 
-        // Create classroom
-        async function createClassRoom(teacherId, className) {
-            try {
-                const response = await fetch('/api/classroom/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        teacherId: teacherId,
-                        className: className
-                    })
-                });
-                return await response.json();
-            } catch (error) {
-                return { success: false, error: error.message };
-            }
-        }
+if(!data.success){
+show("Invalid ID or Password","error");
+btn.disabled=false;return;
+}
 
-        // Handle form submission
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const userId = userIdInput.value.trim();
-            const password = passwordInput.value.trim();
-            
-            if (!userId || !password) {
-                showMessage('Please enter both ID and Password', 'error');
-                return;
-            }
+setType(data.userType,data.user.name);
 
-            // Show detecting message
-            const detectedType = detectUserType(userId);
-            updateUserTypeIndicator(detectedType);
-            showMessage('Verifying your credentials...', 'success');
-            
-            setLoading(true);
+let roomId=null;
 
-            try {
-                // Validate credentials
-                const validation = await validateCredentials(userId, password);
-                
-                if (!validation.valid) {
-                    showMessage('Invalid ID or Password. Please check and try again.', 'error');
-                    userTypeIndicator.classList.remove('show');
-                    setLoading(false);
-                    return;
-                }
+if(data.userType!=="student"){
+const r=await fetch("/api/classroom/create",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({teacherId:userId,className:data.user.name+"'s Class"})
+});
+const rd=await r.json();
+roomId=rd.roomId;
+}else{
+const r=await fetch("/api/classroom/active-rooms");
+const rd=await r.json();
+if(!rd.rooms.length){
+show("Classroom not started yet. Wait for teacher.","error");
+btn.disabled=false;return;
+}
+roomId=rd.rooms[0].roomId;
+}
 
-                // Update with actual user type
-                updateUserTypeIndicator(validation.userType, validation.userData.name);
-                
-                // Create classroom
-                let roomId;
-                if (validation.userType === 'teacher' || validation.userType === 'admin') {
-                    const roomResponse = await createClassRoom(
-                        userId,
-                        `${validation.userData.name}'s Class`
-                    );
-                    
-                    if (roomResponse.success) {
-                        roomId = roomResponse.roomId;
-                    } else {
-                        // Fallback room ID
-                        roomId = `class_${Date.now()}`;
-                    }
-                } else {
-                    // For students, use a default room or join existing
-                    // Check if there are active teacher rooms
-                    try {
-                        const roomsResponse = await fetch('/api/classroom/active-rooms');
-                        const roomsData = await roomsResponse.json();
-                        
-                        if (roomsData.rooms.length > 0) {
-                            // Join first available room
-                            roomId = roomsData.rooms[0].roomId;
-                        } else {
-                            // Create a student room
-                            const roomResponse = await createClassRoom(
-                                'system',
-                                'Student Class'
-                            );
-                            roomId = roomResponse.roomId;
-                        }
-                    } catch (error) {
-                        roomId = `class_${Date.now()}`;
-                    }
-                }
+show("Login successful. Joining class…","success");
 
-                // Show success message
-                showMessage('Login successful! Redirecting to classroom...', 'success');
-                
-                // Store login session
-                sessionStorage.setItem('classroom_auth', 'true');
-                sessionStorage.setItem('user_id', userId);
-                sessionStorage.setItem('user_type', validation.userType);
-                sessionStorage.setItem('user_name', validation.userData.name);
-                
-                // Redirect to classroom with parameters
-                setTimeout(() => {
-                    const params = new URLSearchParams({
-                        userId: userId,
-                        userType: validation.userType,
-                        name: validation.userData.name,
-                        roomId: roomId,
-                        auth: btoa(`${userId}:${Date.now()}`) // Simple auth token
-                    });
-                    
-                    window.location.href = `/classroom.html?${params.toString()}`;
-                }, 1000);
+setTimeout(()=>{
+location.href=`/classroom.html?userId=${userId}&userType=${data.userType}&name=${encodeURIComponent(data.user.name)}&roomId=${roomId}`;
+},800);
 
-            } catch (error) {
-                console.error('Login error:', error);
-                showMessage('Login failed. Please try again.', 'error');
-                setLoading(false);
-            }
-        });
+}catch(err){
+show("Server error. Try again.","error");
+btn.disabled=false;
+}
+};
+</script>
 
-        // Auto-detect user type while typing
-        userIdInput.addEventListener('input', function() {
-            const userId = this.value.trim();
-            if (userId.length >= 3) {
-                const detectedType = detectUserType(userId);
-                updateUserTypeIndicator(detectedType);
-            } else {
-                userTypeIndicator.classList.remove('show');
-            }
-        });
-
-        // Check if already logged in (prevent multiple logins)
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('auth')) {
-                // Remove auth params to prevent direct access
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            
-            // Clear any previous session
-            sessionStorage.removeItem('classroom_auth');
-            
-            // Focus on user ID input
-            userIdInput.focus();
-        });
-
-        // Prevent direct access to classroom without login
-        function preventDirectAccess() {
-            // This function is called from classroom.html
-            console.log('Direct access prevention active');
-        }
-    </script>
 </body>
 </html>
