@@ -1,175 +1,221 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Class Room Login - Bal Bharti Coaching</title>
+<title>Classroom Login | BBCC</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Tahoma;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Tahoma}
 body{
-background:linear-gradient(135deg,#1e3c72,#2a5298);
-min-height:100vh;display:flex;align-items:center;justify-content:center
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#1e3c72,#2a5298)
 }
-.login-container{
-background:#fff;border-radius:15px;max-width:420px;width:100%;
-padding:30px;box-shadow:0 15px 35px rgba(0,0,0,.3)
+.box{
+background:#fff;
+width:100%;
+max-width:420px;
+padding:30px;
+border-radius:14px;
+box-shadow:0 15px 35px rgba(0,0,0,.3)
 }
-.logo{text-align:center;margin-bottom:25px}
-.logo h1{color:#1e3c72;font-size:28px}
-.logo p{color:#666;font-size:14px}
-.form-group{margin-bottom:18px}
-label{font-weight:600;color:#333;font-size:14px}
-.input-with-icon{position:relative}
-.input-with-icon i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#666}
-input{
-width:100%;padding:12px 12px 12px 44px;
-border:2px solid #ddd;border-radius:8px;font-size:16px
+h2{text-align:center;color:#1e3c72;margin-bottom:5px}
+p{text-align:center;color:#666;margin-bottom:20px;font-size:14px}
+
+.group{margin-bottom:15px}
+label{font-size:14px;font-weight:600;color:#333}
+.input{
+position:relative
 }
-input:focus{border-color:#1e3c72;outline:none}
-.btn{
-width:100%;padding:14px;background:#1e3c72;
-color:#fff;border:none;border-radius:8px;
-font-size:16px;font-weight:600;cursor:pointer
+.input i{
+position:absolute;
+left:12px;
+top:50%;
+transform:translateY(-50%);
+color:#777
 }
-.btn:disabled{background:#aaa}
-.message{margin:15px 0;padding:10px;border-radius:8px;font-size:14px;display:none}
+.input input{
+width:100%;
+padding:12px 12px 12px 40px;
+border-radius:8px;
+border:2px solid #ddd;
+font-size:15px
+}
+.input input:focus{outline:none;border-color:#1e3c72}
+
+button{
+width:100%;
+padding:13px;
+border:none;
+border-radius:8px;
+background:#1e3c72;
+color:#fff;
+font-size:16px;
+font-weight:600;
+cursor:pointer
+}
+button:disabled{background:#999}
+
+.msg{
+margin-top:15px;
+padding:10px;
+border-radius:8px;
+font-size:14px;
+display:none
+}
 .error{background:#fee2e2;color:#b91c1c;display:block}
 .success{background:#dcfce7;color:#166534;display:block}
-.user-type-indicator{display:none;margin-top:15px;font-size:14px}
-.type-badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700}
-.student{background:#3b82f6;color:#fff}
-.teacher{background:#10b981;color:#fff}
-.admin{background:#dc2626;color:#fff}
-.security-note{
-margin-top:20px;background:#fffbeb;border:1px solid #facc15;
-padding:10px;border-radius:8px;font-size:12px;color:#92400e
+
+.type{
+margin-top:15px;
+font-size:13px;
+display:none
 }
+.badge{
+padding:4px 10px;
+border-radius:20px;
+font-weight:700;
+font-size:12px;
+color:#fff
+}
+.student{background:#3b82f6}
+.teacher{background:#10b981}
+.admin{background:#dc2626}
 </style>
 </head>
 
 <body>
 
-<div class="login-container">
-<div class="logo">
-<h1>🔐 Class Room Login</h1>
+<div class="box">
+<h2>🔐 Classroom Login</h2>
 <p>Bal Bharti Coaching Center</p>
-</div>
 
-<div id="msg" class="message"></div>
+<div id="msg" class="msg"></div>
 
 <form id="loginForm">
-<div class="form-group">
+<div class="group">
 <label>User ID</label>
-<div class="input-with-icon">
+<div class="input">
 <i class="fas fa-user"></i>
-<input id="userId" required autocomplete="off">
+<input id="userIdInput" required autocomplete="off">
 </div>
 </div>
 
-<div class="form-group">
+<div class="group">
 <label>Password</label>
-<div class="input-with-icon">
+<div class="input">
 <i class="fas fa-lock"></i>
-<input id="password" type="password" required autocomplete="off">
+<input id="passwordInput" type="password" required autocomplete="off">
 </div>
 </div>
 
-<button class="btn" id="btn">Join Classroom</button>
+<button id="loginBtn">Join Classroom</button>
 </form>
 
-<div id="typeBox" class="user-type-indicator">
-Detected as: <span id="badge" class="type-badge"></span>
-<span id="uname"></span>
-</div>
-
-<div class="security-note">
-<i class="fas fa-shield-alt"></i>
-Direct classroom access is blocked. Login required.
+<div id="typeBox" class="type">
+Detected:
+<span id="badge" class="badge"></span>
+<span id="userName"></span>
 </div>
 </div>
 
 <script>
-const form=document.getElementById("loginForm");
-const msg=document.getElementById("msg");
-const btn=document.getElementById("btn");
-const badge=document.getElementById("badge");
-const typeBox=document.getElementById("typeBox");
-const uname=document.getElementById("uname");
+const form = document.getElementById("loginForm");
+const msg = document.getElementById("msg");
+const btn = document.getElementById("loginBtn");
+
+const userIdInput = document.getElementById("userIdInput");
+const passwordInput = document.getElementById("passwordInput");
+
+const typeBox = document.getElementById("typeBox");
+const badge = document.getElementById("badge");
+const userNameSpan = document.getElementById("userName");
 
 function show(text,type){
 msg.textContent=text;
-msg.className="message "+type;
+msg.className="msg "+type;
 msg.style.display="block";
 }
 
-function detect(id){
+function detectType(id){
 id=id.toUpperCase();
 if(id.startsWith("ADM")) return "admin";
 if(id.startsWith("TCH")||id.startsWith("TEA")) return "teacher";
 return "student";
 }
 
-function setType(type,name=""){
+function showType(type,name=""){
 typeBox.style.display="block";
-badge.className="type-badge "+type;
+badge.className="badge "+type;
 badge.textContent=type.toUpperCase();
-uname.textContent=name?(" • "+name):"";
+userNameSpan.textContent=name?(" • "+name):"";
 }
 
-form.onsubmit=async e=>{
+form.addEventListener("submit",async e=>{
 e.preventDefault();
 btn.disabled=true;
 
-const userId=userId.value.trim();
-const password=password.value.trim();
-const guess=detect(userId);
-setType(guess);
+const userId = userIdInput.value.trim();
+const password = passwordInput.value.trim();
+const guessedType = detectType(userId);
+
+showType(guessedType);
 
 try{
-const res=await fetch(`/api/classroom/verify?userId=${userId}&password=${password}&userType=${guess}`);
-const data=await res.json();
+const res = await fetch(
+`/api/classroom/verify?userId=${encodeURIComponent(userId)}&password=${encodeURIComponent(password)}&userType=${guessedType}`
+);
+const data = await res.json();
 
 if(!data.success){
 show("Invalid ID or Password","error");
-btn.disabled=false;return;
+btn.disabled=false;
+return;
 }
 
-setType(data.userType,data.user.name);
+showType(data.userType,data.user.name);
 
-let roomId=null;
+let roomId = null;
 
-if(data.userType!=="student"){
-const r=await fetch("/api/classroom/create",{
+if(data.userType !== "student"){
+const r = await fetch("/api/classroom/create",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({teacherId:userId,className:data.user.name+"'s Class"})
+body:JSON.stringify({
+teacherId:userId,
+className:data.user.name+"'s Class"
+})
 });
-const rd=await r.json();
-roomId=rd.roomId;
+const rd = await r.json();
+roomId = rd.roomId;
 }else{
-const r=await fetch("/api/classroom/active-rooms");
-const rd=await r.json();
-if(!rd.rooms.length){
-show("Classroom not started yet. Wait for teacher.","error");
-btn.disabled=false;return;
+const r = await fetch("/api/classroom/active-rooms");
+const rd = await r.json();
+if(!rd.rooms || !rd.rooms.length){
+show("Class not started yet. Wait for teacher.","error");
+btn.disabled=false;
+return;
 }
-roomId=rd.rooms[0].roomId;
+roomId = rd.rooms[0].roomId;
 }
 
-show("Login successful. Joining class…","success");
+show("Login successful. Joining classroom…","success");
 
 setTimeout(()=>{
-location.href=`/classroom.html?userId=${userId}&userType=${data.userType}&name=${encodeURIComponent(data.user.name)}&roomId=${roomId}`;
-},800);
+window.location.href =
+`/classroom.html?userId=${encodeURIComponent(userId)}&userType=${data.userType}&name=${encodeURIComponent(data.user.name)}&roomId=${roomId}`;
+},700);
 
 }catch(err){
-show("Server error. Try again.","error");
+show("Server error. Try again later.","error");
 btn.disabled=false;
 }
-};
+});
 </script>
 
 </body>
