@@ -438,31 +438,7 @@ function generateRoomId() {
     return "ROOM-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-// 1️⃣ Verify login (student/teacher/admin)
-app.get("/api/classroom/verify", async (req, res) => {
-    const { userId, password, userType } = req.query;
-    if (!userId || !password) return res.status(400).json({ success: false });
 
-    try {
-        let user = null;
-        if (userType === "student") user = await Student.findOne({ student_id: userId, pass: password });
-        else if (userType === "teacher") user = await Teacher.findOne({ teacher_id: userId, pass: password });
-        else if (userType === "admin") user = await AdminProfile.findOne({ admin_userid: userId, admin_pass: password });
-
-        if (!user) return res.json({ success: false });
-
-        res.json({
-            success: true,
-            userType,
-            user: {
-                id: userId,
-                name: user.student_name || user.teacher_name || user.admin_name
-            }
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
 
 // 2️⃣ Create Classroom (teacher/admin)
 app.post("/api/classroom/create", (req, res) => {
@@ -488,13 +464,13 @@ app.get("/api/classroom/active-rooms", (req, res) => {
 });
 // ================= LOGIN VERIFICATION =================
 app.get('/api/classroom/verify', async (req, res) => {
+    const { userId, password, userType } = req.query;
+
+    if (!userId || !password || !userType) {
+        return res.status(400).json({ success: false, message: "All fields required" });
+    }
+
     try {
-        const { userId, password, userType } = req.query;
-
-        if (!userId || !password || !userType) {
-            return res.status(400).json({ success: false, message: "All fields required" });
-        }
-
         let user = null;
 
         if (userType === 'student') {
@@ -511,13 +487,12 @@ app.get('/api/classroom/verify', async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid ID or password" });
         }
 
-        // Login successful
         res.json({
             success: true,
+            userType,
             user: {
-                name: user.student_name || user.teacher_name || user.admin_name,
-                userId,
-                userType
+                id: userId,
+                name: user.student_name || user.teacher_name || user.admin_name
             }
         });
 
