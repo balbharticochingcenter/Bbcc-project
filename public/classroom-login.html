@@ -167,9 +167,12 @@ const guessedType = detectType(userId);
 showType(guessedType);
 
 try{
-const res = await fetch(
-`/api/classroom/verify?userId=${encodeURIComponent(userId)}&password=${encodeURIComponent(password)}&userType=${guessedType}`
-);
+const res = await fetch('/api/classroom/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, password, userType: guessedType })
+});
+
 const data = await res.json();
 
 if(!data.success){
