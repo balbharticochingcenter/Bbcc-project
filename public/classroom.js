@@ -74,7 +74,7 @@ async function joinLiveKitRoom() {
     try {
         await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 
-        const res = await fetch(`/api/live-token?room=${roomId}&name=${userName}`);
+        const res = await fetch(`/api/live-token?room=${roomId}&name=${encodeURIComponent(userName)}`);
         const { token, url } = await res.json();
 
         room = new LiveKit.Room();
