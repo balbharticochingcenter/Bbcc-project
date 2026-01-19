@@ -429,7 +429,10 @@ app.get("/api/live-token", (req, res) => {
         canSubscribe: true
     });
 
-    res.json({ token: token.toJwt() });
+    // 🔹 FIX: Add LiveKit server URL along with token
+    const LIVEKIT_URL = process.env.LIVEKIT_URL || 'wss://your-livekit-server:7880';
+
+    res.json({ token: token.toJwt(), url: LIVEKIT_URL });
 });
 
 // ---------------- CLASSROOM / LIVE CLASSROOM ----------------
@@ -463,57 +466,47 @@ app.get("/api/classroom/active-rooms", (req, res) => {
 });
 
 // ================= LOGIN VERIFICATION =================
-app.get('/api/classroom/verify', async (req, res) => {
+app.post('/api/classroom/verify', async (req, res) => {
     try {
-        const { userId, password, userType } = req.query;
-
-        if (!userId || !password || !userType) {
+        const { userId, password, userType } = req.body;
+        if (!userId || !password || !userType)
             return res.status(400).json({ success: false, message: "All fields required" });
-        }
-
-        // Remove whitespace / hidden chars
-        const cleanId = userId.trim();
-        const cleanPass = password.trim();
 
         let user = null;
 
         if (userType === 'student') {
-            user = await Student.findOne({ student_id: cleanId, pass: cleanPass });
+            user = await Student.findOne({ student_id: userId.trim(), pass: password.trim() });
             if (!user) return res.status(401).json({ success: false, message: "Invalid ID or password" });
 
-            // ✅ Check if student ka class me teacher active hai
-            const teacherActive = activeRooms.find(r => r.teacherId === user.student_class);
-            if (!teacherActive) {
+            // ✅ FIX: Match room by className, not teacherId
+            const teacherActive = activeRooms.find(r => r.className === user.student_class);
+            if (!teacherActive)
                 return res.status(403).json({ success: false, message: "Teacher abhi login nahi hua, student wait karein" });
-            }
 
         } else if (userType === 'teacher') {
-            user = await Teacher.findOne({ teacher_id: cleanId, pass: cleanPass });
+            user = await Teacher.findOne({ teacher_id: userId.trim(), pass: password.trim() });
             if (!user) return res.status(401).json({ success: false, message: "Invalid ID or password" });
-
         } else if (userType === 'admin') {
-            user = await AdminProfile.findOne({ admin_userid: cleanId, admin_pass: cleanPass });
+            user = await AdminProfile.findOne({ admin_userid: userId.trim(), admin_pass: password.trim() });
             if (!user) return res.status(401).json({ success: false, message: "Invalid ID or password" });
-
         } else {
             return res.status(400).json({ success: false, message: "Invalid user type" });
         }
 
-        // ✅ Login successful
         res.json({
             success: true,
             userType,
             user: {
-                id: cleanId,
+                id: userId,
                 name: user.student_name || user.teacher_name || user.admin_name
             }
         });
-
     } catch (err) {
         console.error("Login Error:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
 });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get('/api/get-all-classes', (req, res) => {
