@@ -88,7 +88,7 @@ const ClassConfig = mongoose.model('ClassConfig', new mongoose.Schema({
 
     banner: String,
     intro_video: String,
-
+batch_start_date: Date,
     subjects: {
         type: Map,
         of: {
