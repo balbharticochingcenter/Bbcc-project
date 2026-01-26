@@ -128,7 +128,10 @@
   <div class="modal-content" style="max-width:95%">
     <span class="close">&times;</span>
     <h3>📊 Student Dashboard (Excel View)</h3>
-
+<div style="margin: 10px 0;">
+  <label>📅 Class Batch Start Date</label>
+  <input type="date" id="batchStartDate" style="width: 100%; padding: 8px;">
+</div>
     <div style="display:flex;gap:10px;margin-bottom:10px;">
       <select id="dash_class"></select>
       <select id="dash_year"></select>
@@ -146,7 +149,7 @@
         <thead>
           <tr>
             <th>Photo</th><th>ID</th><th>Name</th><th>Pass</th>
-            <th>Class</th><th>DOJ</th><th>Fees</th>
+            <th>Class</th><th>Batch Start</th><th>DOJ</th><th>Fees</th>
             <th>Exam</th><th>Total</th><th>Obt</th>
             <th>Div</th><th>Save</th><th>Delete</th>
           </tr>
