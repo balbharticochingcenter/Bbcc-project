@@ -213,12 +213,15 @@ function prepareDashboardFilters(){
 async function loadDashboardStudents(){
   if(!dash_class.value || !dash_year.value)
     return alert("Class & Year select karo");
-
+const classRes = await fetch(API + '/api/get-all-class-configs');
+  const classConfigs = await classRes.json();
+  const classBatchDate = classConfigs[dash_class.value]?.batch_start_date || "";
+  
   let students = await (await fetch(API+'/api/get-students')).json();
 
   students = students.filter(s =>
     s.student_class===dash_class.value &&
-    new Date(s.joining_date).getFullYear()==dash_year.value
+   new Date(classBatchDate).getFullYear() == dash_year.value 
   );
 
   dashTotal.innerText = students.length;
@@ -233,6 +236,7 @@ async function loadDashboardStudents(){
 <td><input value="${s.student_name||''}"></td>
 <td><input value="${s.pass||''}"></td>
 <td>${s.student_class}</td>
+<td>${classBatchDate ? new Date(classBatchDate).toLocaleDateString() : 'N/A'}</td>
 <td><input type="date" value="${s.joining_date||''}"></td>
 <td><input value="${s.fees||''}" style="width:70px"></td>
 <td>
@@ -543,7 +547,7 @@ function downloadStudentExcel() {
     const rows = document.querySelectorAll("#dashboardBody tr");
     if (rows.length === 0) return alert("Pehle data load karein!");
 
-    let csv = "ID,Name,Pass,Class,Joining Date,Fees,Exam Date,Total,Obtained,Division\n";
+    let csv = "ID,Name,Pass,Class,Batch Start Date,Joining Date,Fees,Exam Date,Total,Obtained,Division\n";
     
     rows.forEach(row => {
         const cols = row.querySelectorAll("td");
@@ -554,6 +558,7 @@ function downloadStudentExcel() {
         const name = inputs[0].value;
         const pass = inputs[1].value;
         const cls = cols[4].innerText;
+      const batchStart = cols[5].innerText; 
         const doj = inputs[2].value;
         const fees = inputs[3].value;
         const exam = inputs[4].value;
@@ -624,17 +629,41 @@ async function loadExamStudents() {
     if (!cls || !yr) return;
 
     try {
+        // ✅ Pehle class ka batch start date fetch karen
+        let classResponse = await fetch(API + '/api/get-all-class-configs');
+        let classConfigs = await classResponse.json();
+        
+        // Class ka batch start date nikalein
+        const classBatchDate = classConfigs[cls]?.batch_start_date;
+        if (!classBatchDate) {
+            alert("Is class ka batch start date set nahi hai. Pehle class management se set karein.");
+            return;
+        }
+        
+        // Batch date ke year ko extract karein
+        const batchYear = new Date(classBatchDate).getFullYear();
+        
         let response = await fetch(API + '/api/get-students');
         let students = await response.json();
 
-        // Filter: Class aur Year ke hisab se
+        // ✅ Filter: Class aur Batch Year ke hisab se (joining_date nahi)
         students = students.filter(s => 
             s.student_class === cls && 
-            new Date(s.joining_date).getFullYear() == yr
+            batchYear == yr  // ✅ Batch year se compare karenge
         );
 
         const body = document.getElementById("examDashboardBody");
         body.innerHTML = ""; // Purana data saaf karne ke liye
+
+        if (students.length === 0) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 20px; color: #666;">
+                        📭 Is class aur batch year mein koi students nahi mile
+                    </td>
+                </tr>`;
+            return;
+        }
 
         students.forEach(s => {
             body.innerHTML += `
@@ -650,10 +679,18 @@ async function loadExamStudents() {
                 <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
             </tr>`;
         });
+        
+        // ✅ Optional: Batch info show karein
+        const batchInfo = document.getElementById("batchInfo");
+        if (batchInfo) {
+            batchInfo.innerHTML = `Class: ${cls} | Batch Start: ${new Date(classBatchDate).toLocaleDateString()} | Students: ${students.length}`;
+        }
+        
     } catch (error) {
         console.error("Data load karne mein error:", error);
+        alert("Data load karne mein error aaya. Kripya console check karein.");
     }
-} 
+}
 // Bulk Apply Button Logic
 function applyBulkSettings() {
     const sub = document.getElementById("bulk_subject").value;
@@ -1060,7 +1097,9 @@ function openModal(cls){
   document.getElementById("modalTitle").innerText = cls;
   document.getElementById("introVideo").value = classData.intro_video || "";
   document.getElementById("feesInput").value = feeMap[cls] || "";
-
+ document.getElementById("batchStartDate").value = 
+    classData.batch_start_date ? 
+    new Date(classData.batch_start_date).toISOString().split('T')[0] : "";
   // 🔥 BANNER PREVIEW
   bannerBase64 = classData.banner || "";
   const preview = document.getElementById("bannerPreview");
@@ -1203,6 +1242,7 @@ function saveAll() {
     banner: bannerBase64,
     intro_video: document.getElementById("introVideo").value,
     fees: document.getElementById("feesInput").value,
+    batch_start_date: document.getElementById("batchStartDate").value, // ✅ नया
     subjects: classData.subjects   // ✅ CORRECT
   };
 
