@@ -113,6 +113,73 @@ app.get('/api/get-all-subjects', (req, res) => {
 
 
 // ---------------- HTML ROUTES ----------------
+// Student के साथ Class का batch_start_date भी fetch करने के लिए API बनाएँ
+app.get('/api/get-students-with-batchdate', async (req, res) => {
+    try {
+        // Sab students fetch karo
+        const students = await Student.find().sort({ _id: -1 });
+        
+        // Sab classes ka config fetch karo
+        const classConfigs = await ClassConfig.find();
+        const classConfigMap = {};
+        
+        // Map banayein: class_name -> batch_start_date
+        classConfigs.forEach(config => {
+            if (config.class_name) {
+                classConfigMap[config.class_name] = {
+                    batch_start_date: config.batch_start_date || null
+                };
+            }
+        });
+        
+        // Har student ke saath uska class batch date add karo
+        const studentsWithBatchDate = students.map(student => {
+            const classInfo = classConfigMap[student.student_class] || {};
+            return {
+                ...student.toObject(),
+                class_batch_start_date: classInfo.batch_start_date
+            };
+        });
+        
+        res.json(studentsWithBatchDate);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+// ✅ Students ka batch date update karne ka API
+app.post('/api/update-class-batch-date', async (req, res) => {
+    try {
+        const { class_name, batch_start_date } = req.body;
+        
+        if (!class_name || !batch_start_date) {
+            return res.status(400).json({ error: "Class name aur batch date required hai" });
+        }
+        
+        // Sirf ClassConfig update karo, students ke existing joining_date ko nahi change karo
+        await ClassConfig.findOneAndUpdate(
+            { class_name },
+            { batch_start_date },
+            { upsert: true }
+        );
+        
+        res.json({ 
+            success: true, 
+            message: `Class ${class_name} ka batch date update ho gaya` 
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+async function getClassBatchDate(className) {
+    try {
+        const res = await fetch(API + '/api/get-all-class-configs');
+        const classConfigs = await res.json();
+        return classConfigs[className]?.batch_start_date || null;
+    } catch (error) {
+        return null;
+    }
+}
+
 app.get('/', (req, res) =>
     res.sendFile(path.join(__dirname, 'public', 'login.html'))
 );
