@@ -88,6 +88,81 @@
             border-color: #764ba2;
         }
 
+        .batch-date-section {
+            padding: 15px 40px;
+            background: #e8f4fc;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .batch-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .batch-info label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        #batchDateInput {
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .save-batch-btn {
+            padding: 10px 20px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .save-batch-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .add-class-section {
+            padding: 15px 40px;
+            background: #fff8e1;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .add-class-input {
+            padding: 10px 15px;
+            border: 2px solid #f59e0b;
+            border-radius: 6px;
+            width: 200px;
+            font-size: 1rem;
+        }
+
+        .add-class-btn {
+            padding: 10px 20px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .add-class-btn:hover {
+            background: #d97706;
+        }
+
         .students-container {
             padding: 30px 40px;
         }
@@ -515,6 +590,17 @@
                 width: 100%;
                 max-width: 250px;
             }
+            
+            .batch-date-section, .add-class-section {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            
+            .batch-info {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -532,6 +618,24 @@
             <div class="class-grid" id="classGrid">
                 <!-- Classes will be loaded dynamically -->
             </div>
+        </div>
+
+        <!-- Batch Date Section -->
+        <div class="batch-date-section" id="batchDateSection" style="display: none;">
+            <div class="batch-info">
+                <label>📅 Batch Start Date:</label>
+                <input type="date" id="batchDateInput">
+                <button class="save-batch-btn" onclick="saveBatchDate()">💾 Save Batch Date</button>
+            </div>
+            <div>
+                <span id="batchInfoText" style="color: #666; font-style: italic;"></span>
+            </div>
+        </div>
+
+        <!-- Add New Class Section -->
+        <div class="add-class-section">
+            <input type="text" id="newClassName" class="add-class-input" placeholder="New Class Name">
+            <button class="add-class-btn" onclick="addNewClass()">➕ Add New Class</button>
         </div>
 
         <!-- Students Container -->
@@ -600,14 +704,10 @@
         let stream = null;
         let capturedPhoto = null;
         let currentCamera = 'user'; // 'user' for front, 'environment' for back
+        let classBatchDates = {}; // Store batch dates for all classes
 
-        // Available classes
-        const classes = [
-            "1st", "2nd", "3rd", "4th", "5th",
-            "6th", "7th", "8th", "9th", "10th",
-            "I.A.", "I.Sc", "I.Com",
-            "B.A.", "B.Sc", "B.Com"
-        ];
+        // Available classes - initially empty, will load from server
+        let classes = [];
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
@@ -615,13 +715,63 @@
             setupEventListeners();
         });
 
-        // Load classes into grid
-        function loadClasses() {
+        // Load classes from server
+        async function loadClasses() {
+            try {
+                const response = await fetch('/api/get-all-classes');
+                classes = await response.json();
+                
+                // Also load class configs to get batch dates
+                await loadClassConfigs();
+                
+                displayClasses();
+            } catch (error) {
+                console.error('Error loading classes:', error);
+                // Fallback to default classes
+                classes = [
+                    "1st", "2nd", "3rd", "4th", "5th",
+                    "6th", "7th", "8th", "9th", "10th",
+                    "I.A.", "I.Sc", "I.Com",
+                    "B.A.", "B.Sc", "B.Com"
+                ];
+                displayClasses();
+            }
+        }
+
+        // Load class configurations including batch dates
+        async function loadClassConfigs() {
+            try {
+                const response = await fetch('/api/get-all-class-configs');
+                const configs = await response.json();
+                
+                // Extract batch dates from configs
+                classBatchDates = {};
+                Object.keys(configs).forEach(className => {
+                    if (configs[className].batch_start_date) {
+                        classBatchDates[className] = configs[className].batch_start_date;
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading class configs:', error);
+            }
+        }
+
+        // Display classes in grid
+        function displayClasses() {
             const classGrid = document.getElementById('classGrid');
+            classGrid.innerHTML = '';
+            
             classes.forEach(className => {
                 const btn = document.createElement('button');
                 btn.className = 'class-btn';
                 btn.textContent = className;
+                
+                // Add batch date indicator if available
+                if (classBatchDates[className]) {
+                    const batchDate = new Date(classBatchDates[className]);
+                    btn.title = `Batch Start: ${batchDate.toLocaleDateString()}`;
+                }
+                
                 btn.onclick = () => selectClass(className);
                 classGrid.appendChild(btn);
             });
@@ -642,8 +792,182 @@
             // Update title
             document.getElementById('selectedClassTitle').textContent = `Students - Class ${className}`;
             
+            // Show batch date section
+            document.getElementById('batchDateSection').style.display = 'flex';
+            
+            // Load and display batch date for this class
+            await loadClassBatchDate(className);
+            
             // Load students
             await loadStudents(className);
+        }
+
+        // Load batch date for selected class
+        async function loadClassBatchDate(className) {
+            try {
+                const response = await fetch('/api/get-all-class-configs');
+                const configs = await response.json();
+                
+                if (configs[className] && configs[className].batch_start_date) {
+                    const batchDate = new Date(configs[className].batch_start_date);
+                    document.getElementById('batchDateInput').value = batchDate.toISOString().split('T')[0];
+                    
+                    // Calculate students count by joining date year
+                    const studentsRes = await fetch('/api/get-students');
+                    const students = await studentsRes.json();
+                    const classStudents = students.filter(s => s.student_class === className);
+                    
+                    // Group students by joining year
+                    const yearGroups = {};
+                    classStudents.forEach(s => {
+                        if (s.joining_date) {
+                            const year = new Date(s.joining_date).getFullYear();
+                            if (!yearGroups[year]) yearGroups[year] = [];
+                            yearGroups[year].push(s);
+                        }
+                    });
+                    
+                    // Create info text
+                    let infoText = `Batch: ${batchDate.toLocaleDateString()}`;
+                    if (Object.keys(yearGroups).length > 0) {
+                        infoText += ` | `;
+                        Object.keys(yearGroups).sort().forEach(year => {
+                            infoText += `Year ${year}: ${yearGroups[year].length} students | `;
+                        });
+                        infoText = infoText.slice(0, -3);
+                    }
+                    
+                    document.getElementById('batchInfoText').innerText = infoText;
+                } else {
+                    // Auto-calculate batch date from students' joining dates
+                    await autoCalculateBatchDate(className);
+                }
+            } catch (error) {
+                console.error('Error loading batch date:', error);
+            }
+        }
+
+        // Auto-calculate batch date from students' joining dates
+        async function autoCalculateBatchDate(className) {
+            try {
+                const response = await fetch('/api/get-students');
+                const students = await response.json();
+                
+                const classStudents = students.filter(s => s.student_class === className);
+                
+                if (classStudents.length > 0) {
+                    // Find earliest joining date
+                    let earliestDate = null;
+                    classStudents.forEach(student => {
+                        if (student.joining_date) {
+                            const date = new Date(student.joining_date);
+                            if (!earliestDate || date < earliestDate) {
+                                earliestDate = date;
+                            }
+                        }
+                    });
+                    
+                    if (earliestDate) {
+                        document.getElementById('batchDateInput').value = earliestDate.toISOString().split('T')[0];
+                        document.getElementById('batchInfoText').innerText = 
+                            `Auto-calculated from earliest joining date: ${earliestDate.toLocaleDateString()}`;
+                    }
+                } else {
+                    document.getElementById('batchDateInput').value = '';
+                    document.getElementById('batchInfoText').innerText = 'No students in this class yet';
+                }
+            } catch (error) {
+                console.error('Error auto-calculating batch date:', error);
+            }
+        }
+
+        // Save batch date to server
+        async function saveBatchDate() {
+            const batchDate = document.getElementById('batchDateInput').value;
+            
+            if (!batchDate) {
+                showMessage('Please select a batch date', 'error');
+                return;
+            }
+            
+            if (!currentClass) {
+                showMessage('Please select a class first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/save-class-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        class_name: currentClass,
+                        batch_start_date: batchDate,
+                        subjects: {}
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage('Batch date saved successfully!', 'success');
+                    await loadClassBatchDate(currentClass);
+                    await loadClassConfigs();
+                    displayClasses(); // Refresh class grid with updated batch dates
+                } else {
+                    throw new Error('Failed to save batch date');
+                }
+            } catch (error) {
+                showMessage('Error saving batch date', 'error');
+                console.error('Save batch date error:', error);
+            }
+        }
+
+        // Add new class
+        async function addNewClass() {
+            const newClassName = document.getElementById('newClassName').value.trim();
+            
+            if (!newClassName) {
+                showMessage('Please enter a class name', 'error');
+                return;
+            }
+            
+            if (classes.includes(newClassName)) {
+                showMessage('Class already exists', 'error');
+                return;
+            }
+            
+            try {
+                // Add to classes array
+                classes.push(newClassName);
+                classes.sort();
+                
+                // Save to server (add batch date as today)
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch('/api/save-class-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        class_name: newClassName,
+                        batch_start_date: today,
+                        subjects: {}
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage(`Class "${newClassName}" added successfully!`, 'success');
+                    document.getElementById('newClassName').value = '';
+                    
+                    // Update display
+                    await loadClassConfigs();
+                    displayClasses();
+                    
+                    // Auto-select the new class
+                    selectClass(newClassName);
+                } else {
+                    throw new Error('Failed to add class');
+                }
+            } catch (error) {
+                showMessage('Error adding class', 'error');
+                console.error('Add class error:', error);
+            }
         }
 
         // Load students for selected class
@@ -667,6 +991,13 @@
                     );
                 }
                 
+                // Sort by joining date
+                filteredStudents.sort((a, b) => {
+                    const dateA = a.joining_date ? new Date(a.joining_date) : new Date(0);
+                    const dateB = b.joining_date ? new Date(b.joining_date) : new Date(0);
+                    return dateA - dateB;
+                });
+                
                 displayStudents(filteredStudents);
             } catch (error) {
                 showMessage('Error loading students', 'error');
@@ -688,6 +1019,10 @@
                 return;
             }
             
+            // Get batch date for this class
+            const batchDate = classBatchDates[currentClass] ? new Date(classBatchDates[currentClass]) : null;
+            const batchYear = batchDate ? batchDate.getFullYear() : 'N/A';
+            
             let tableHTML = `
                 <table>
                     <thead>
@@ -698,6 +1033,7 @@
                             <th>Password</th>
                             <th>Class</th>
                             <th>Joining Date</th>
+                            <th>Batch Year</th>
                             <th>Fees</th>
                             <th>Parent Mobile</th>
                             <th>Student Mobile</th>
@@ -708,6 +1044,9 @@
             `;
             
             students.forEach(student => {
+                const joinDate = student.joining_date ? new Date(student.joining_date) : null;
+                const joinYear = joinDate ? joinDate.getFullYear() : 'N/A';
+                
                 tableHTML += `
                     <tr>
                         <td class="photo-cell">
@@ -755,14 +1094,20 @@
                         </td>
                         <td>
                             <div class="textbox-container">
-                                <input type="text" 
-                                       value="${student.joining_date || ''}" 
+                                <input type="date" 
+                                       value="${student.joining_date ? new Date(student.joining_date).toISOString().split('T')[0] : ''}" 
                                        id="doj_${student.student_id}" 
-                                       placeholder="DD-MM-YYYY"
                                        class="expandable"
                                        onfocus="expandInput(this)"
                                        onblur="shrinkInput(this)">
                             </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span style="background: #e8f4fc; padding: 5px 10px; border-radius: 5px; font-weight: 600;">
+                                ${joinYear}
+                            </span>
+                            <br>
+                            <small style="color: #666;">Batch: ${batchYear}</small>
                         </td>
                         <td>
                             <div class="textbox-container">
@@ -1057,12 +1402,6 @@
                     mobile: document.getElementById(`mobile_${studentId}`).value
                 };
                 
-                // Validate date format
-                if (studentData.joining_date && !validateDate(studentData.joining_date)) {
-                    showMessage('Please enter date in DD-MM-YYYY format', 'error');
-                    return;
-                }
-                
                 const response = await fetch('/api/update-student-data', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1105,120 +1444,14 @@
                     searchStudents();
                 }
             });
-        }
-
-        // Date format validation helper
-        function validateDate(dateStr) {
-            const pattern = /^\d{2}-\d{2}-\d{4}$/;
-            if (!pattern.test(dateStr)) return false;
             
-            const [day, month, year] = dateStr.split('-').map(Number);
-            const date = new Date(year, month - 1, day);
-            return date.getDate() === day && 
-                   date.getMonth() === month - 1 && 
-                   date.getFullYear() === year;
+            // Add class on Enter key
+            document.getElementById('newClassName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewClass();
+                }
+            });
         }
-// Countdown timer with redirect
-function checkExpiryAndRedirect() {
-    const expiryDate = new Date('1/28/2026 20:59:00');
-    const currentDate = new Date();
-    
-    // If expired, redirect immediately
-    if (currentDate > expiryDate) {
-        // Create a message overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        `;
-        
-        overlay.innerHTML = `
-            <h1 style="font-size: 2.5rem; margin-bottom: 20px; color: #ff6b6b;">⚠️ Session Expired</h1>
-            <p style="font-size: 1.2rem; margin-bottom: 30px;">This page is no longer accessible.</p>
-            <p style="font-size: 1rem; opacity: 0.8;">Redirecting to login page in <span id="countdown">5</span> seconds...</p>
-        `;
-        
-        document.body.appendChild(overlay);
-        
-        // Countdown before redirect
-        let countdown = 5;
-        const countdownElement = document.getElementById('countdown');
-        
-        const timer = setInterval(() => {
-            countdown--;
-            countdownElement.textContent = countdown;
-            
-            if (countdown <= 0) {
-                clearInterval(timer);
-                window.location.href = 'login.html';
-            }
-        }, 1000);
-        
-        return true;
-    }
-    
-    return false;
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    // Check expiry first
-    if (!checkExpiryAndRedirect()) {
-        // If not expired, continue with normal flow
-        loadClasses();
-        setupEventListeners();
-        
-        // Optional: Show expiry warning if close to expiry
-        showExpiryWarning();
-    }
-});
-
-// Optional: Show warning when close to expiry
-function showExpiryWarning() {
-    const expiryDate = new Date('1/28/2026 20:59:00');
-    const currentDate = new Date();
-    const hoursLeft = (expiryDate - currentDate) / (1000 * 60 * 60);
-    
-    // Show warning if less than 24 hours left
-    if (hoursLeft > 0 && hoursLeft < 24) {
-        const warning = document.createElement('div');
-        warning.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #f59e0b;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 10px;
-            z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            font-weight: 600;
-        `;
-        
-        const hours = Math.floor(hoursLeft);
-        const minutes = Math.floor((hoursLeft - hours) * 60);
-        warning.textContent = `⚠️ This page will expire in ${hours}h ${minutes}m`;
-        
-        document.body.appendChild(warning);
-        
-        // Remove warning after 10 seconds
-        setTimeout(() => {
-            warning.remove();
-        }, 10000);
-    }
-}
     </script>
 </body>
 </html>
