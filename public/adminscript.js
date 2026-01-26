@@ -213,45 +213,67 @@ function prepareDashboardFilters(){
 async function loadDashboardStudents(){
   if(!dash_class.value || !dash_year.value)
     return alert("Class & Year select karo");
-const classRes = await fetch(API + '/api/get-all-class-configs');
-  const classConfigs = await classRes.json();
-  const classBatchDate = classConfigs[dash_class.value]?.batch_start_date || "";
-  
-  let students = await (await fetch(API+'/api/get-students')).json();
 
-  students = students.filter(s =>
-    s.student_class===dash_class.value &&
-   new Date(classBatchDate).getFullYear() == dash_year.value 
-  );
+  try {
+    // ✅ नया API use karein jo batch date leke aata hai
+    const res = await fetch(API + '/api/get-students-with-batchdate');
+    let students = await res.json();
 
-  dashTotal.innerText = students.length;
-  dashboardBody.innerHTML="";
+    // ✅ Class और Batch Start Date के hisaab se filter karo
+    students = students.filter(s => {
+      // Pehle class match karo
+      if (s.student_class !== dash_class.value) return false;
+      
+      // Batch start date check karo
+      if (!s.class_batch_start_date) return false;
+      
+      // Batch start date ka year check karo
+      const batchYear = new Date(s.class_batch_start_date).getFullYear();
+      return batchYear == dash_year.value;
+    });
 
-  students.forEach(s=>{
-    dashboardBody.innerHTML+=`
+    dashTotal.innerText = students.length;
+    dashboardBody.innerHTML = "";
+
+    // ✅ Batch date format karo
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'N/A';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    };
+
+    students.forEach(s => {
+      dashboardBody.innerHTML += `
 <tr>
-
-<td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" onclick="openFeesExcelPopup('${s.student_id}')" style="cursor:pointer; border-radius:4px;"></td>
-<td>${s.student_id}</td>
-<td><input value="${s.student_name||''}"></td>
-<td><input value="${s.pass||''}"></td>
-<td>${s.student_class}</td>
-<td>${classBatchDate ? new Date(classBatchDate).toLocaleDateString() : 'N/A'}</td>
-<td><input type="date" value="${s.joining_date||''}"></td>
-<td><input value="${s.fees||''}" style="width:70px"></td>
-<td>
- <input type="date" value="${s.exam_date||''}">
- <button onclick="this.previousElementSibling.value=''">❌</button>
-</td>
-<td><input value="${s.total_marks||''}" style="width:60px"></td>
-<td><input value="${s.obtained_marks||''}" style="width:60px"></td>
-<td>${calculateDivision(s.obtained_marks,s.total_marks)}</td>
-<td><button onclick="saveDashStudent('${s.student_id}',this)">💾</button></td>
-<td><button onclick="deleteDashStudent('${s.student_id}')">🗑</button></td>
+  <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" onclick="openFeesExcelPopup('${s.student_id}')" style="cursor:pointer; border-radius:4px;"></td>
+  <td>${s.student_id}</td>
+  <td><input value="${s.student_name||''}"></td>
+  <td><input value="${s.pass||''}"></td>
+  <td>${s.student_class}</td>
+  <td>${formatDate(s.class_batch_start_date)}</td> <!-- ✅ Batch Start Date -->
+  <td><input type="date" value="${s.joining_date||''}"></td>
+  <td><input value="${s.fees||''}" style="width:70px"></td>
+  <td>
+   <input type="date" value="${s.exam_date||''}">
+   <button onclick="this.previousElementSibling.value=''">❌</button>
+  </td>
+  <td><input value="${s.total_marks||''}" style="width:60px"></td>
+  <td><input value="${s.obtained_marks||''}" style="width:60px"></td>
+  <td>${calculateDivision(s.obtained_marks, s.total_marks)}</td>
+  <td><button onclick="saveDashStudent('${s.student_id}',this)">💾</button></td>
+  <td><button onclick="deleteDashStudent('${s.student_id}')">🗑</button></td>
 </tr>`;
-  });
-}
+    });
 
+  } catch (error) {
+    console.error("Error loading students:", error);
+    alert("Data load karne mein error aaya!");
+  }
+}
 async function saveDashStudent(id,btn){
   const i=btn.closest('tr').querySelectorAll('input');
   await fetch(API+'/api/update-student-data',{
@@ -625,70 +647,40 @@ async function loadExamStudents() {
     const cls = document.getElementById("exam_dash_class").value;
     const yr = document.getElementById("exam_dash_year").value;
     
-    // Agar dono filter select nahi hain to function yahi ruk jayega
     if (!cls || !yr) return;
 
     try {
-        // ✅ Pehle class ka batch start date fetch karen
-        let classResponse = await fetch(API + '/api/get-all-class-configs');
-        let classConfigs = await classResponse.json();
-        
-        // Class ka batch start date nikalein
-        const classBatchDate = classConfigs[cls]?.batch_start_date;
-        if (!classBatchDate) {
-            alert("Is class ka batch start date set nahi hai. Pehle class management se set karein.");
-            return;
-        }
-        
-        // Batch date ke year ko extract karein
-        const batchYear = new Date(classBatchDate).getFullYear();
-        
-        let response = await fetch(API + '/api/get-students');
-        let students = await response.json();
+        // ✅ नया API use karo
+        const res = await fetch(API + '/api/get-students-with-batchdate');
+        let students = await res.json();
 
-        // ✅ Filter: Class aur Batch Year ke hisab se (joining_date nahi)
-        students = students.filter(s => 
-            s.student_class === cls && 
-            batchYear == yr  // ✅ Batch year se compare karenge
-        );
+        // ✅ Class और Batch Date से filter karo
+        students = students.filter(s => {
+            if (s.student_class !== cls) return false;
+            if (!s.class_batch_start_date) return false;
+            
+            const batchYear = new Date(s.class_batch_start_date).getFullYear();
+            return batchYear == yr;
+        });
 
         const body = document.getElementById("examDashboardBody");
-        body.innerHTML = ""; // Purana data saaf karne ke liye
-
-        if (students.length === 0) {
-            body.innerHTML = `
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 20px; color: #666;">
-                        📭 Is class aur batch year mein koi students nahi mile
-                    </td>
-                </tr>`;
-            return;
-        }
+        body.innerHTML = "";
 
         students.forEach(s => {
             body.innerHTML += `
             <tr data-id="${s.student_id}">
                 <td><img src="${s.photo || ''}" width="40" onerror="handleImgError(this)" style="border-radius:4px;"></td>
                 <td><b>${s.student_name}</b><br><small>${s.student_id}</small></td>
+                <td>${formatDate(s.class_batch_start_date)}</td> <!-- ✅ Batch Date add -->
                 <td><input type="date" class="row-date" value="${s.exam_date || ''}"></td>
-                
                 <td><input type="text" class="row-subject" value="${s.exam_subject || ''}" placeholder="Subject"></td>
-                
                 <td><input type="number" class="row-total" value="${s.total_marks || ''}" style="width:60px"></td>
                 <td><input type="number" class="row-obt" value="${s.obtained_marks || ''}" style="width:60px" oninput="updateRowDiv(this)"></td>
                 <td class="row-div">${calculateDivision(s.obtained_marks, s.total_marks)}</td>
             </tr>`;
         });
-        
-        // ✅ Optional: Batch info show karein
-        const batchInfo = document.getElementById("batchInfo");
-        if (batchInfo) {
-            batchInfo.innerHTML = `Class: ${cls} | Batch Start: ${new Date(classBatchDate).toLocaleDateString()} | Students: ${students.length}`;
-        }
-        
     } catch (error) {
         console.error("Data load karne mein error:", error);
-        alert("Data load karne mein error aaya. Kripya console check karein.");
     }
 }
 // Bulk Apply Button Logic
@@ -1236,14 +1228,15 @@ function addVideo(sub){
 
 /* ================= SAVE ================= */
 
+// Class Management Modal में saveAll() function update करें
 function saveAll() {
   const data = {
     class_name: currentClass,
     banner: bannerBase64,
     intro_video: document.getElementById("introVideo").value,
     fees: document.getElementById("feesInput").value,
-    batch_start_date: document.getElementById("batchStartDate").value, // ✅ नया
-    subjects: classData.subjects   // ✅ CORRECT
+    batch_start_date: document.getElementById("batchStartDate").value,
+    subjects: classData.subjects
   };
 
   fetch('/api/save-class-config', {
@@ -1252,9 +1245,33 @@ function saveAll() {
     body: JSON.stringify(data)
   })
   .then(r => r.json())
-  .then(() => alert("Class saved successfully ✅"));
+  .then(() => {
+    alert("Class saved successfully ✅");
+    // ✅ Agar naya batch date set kiya hai toh existing students ka batch date update karo
+    updateStudentsBatchDate(currentClass, data.batch_start_date);
+  });
 }
 
+// ✅ Existing students ka batch date update karne ka function
+async function updateStudentsBatchDate(className, newBatchDate) {
+  try {
+    const response = await fetch('/api/update-class-batch-date', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        class_name: className,
+        batch_start_date: newBatchDate
+      })
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      console.log(`✅ Batch date updated for class ${className}`);
+    }
+  } catch (error) {
+    console.error("Batch date update error:", error);
+  }
+}
 function handleBannerUpload(input) {
   const file = input.files[0];
   if (!file) return;
