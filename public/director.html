@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Dashboard - Bal Bharti Coaching</title>
+    <title>Director Panel - Bal Bharti Coaching</title>
     <link rel="stylesheet" href="director.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Header Section -->
+    <!-- Header -->
     <header class="header">
         <div class="header-left">
             <div class="logo-container">
                 <img id="logo-img" src="" alt="Logo" class="logo">
-                <button class="edit-logo-btn" onclick="openLogoEdit()">
+                <button class="edit-btn" onclick="editLogo()">
                     <i class="fas fa-camera"></i>
                 </button>
             </div>
@@ -32,122 +32,45 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Settings Section -->
-        <section class="settings-section">
-            <div class="section-header">
-                <h2><i class="fas fa-cog"></i> System Settings</h2>
-            </div>
-            
-            <div class="settings-grid">
-                <!-- Contact Info -->
-                <div class="settings-card">
-                    <h3><i class="fas fa-phone"></i> Contact Information</h3>
-                    <div class="info-group">
-                        <label>Contact Number:</label>
-                        <div class="editable-field" onclick="editField('contact')">
-                            <span id="contact-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                    <div class="info-group">
-                        <label>Call Number:</label>
-                        <div class="editable-field" onclick="editField('call_no')">
-                            <span id="call_no-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                    <div class="info-group">
-                        <label>Gmail:</label>
-                        <div class="editable-field" onclick="editField('gmail')">
-                            <span id="gmail-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Social Media -->
-                <div class="settings-card">
-                    <h3><i class="fas fa-share-alt"></i> Social Media Links</h3>
-                    <div class="info-group">
-                        <label>Facebook:</label>
-                        <div class="editable-field" onclick="editField('facebook')">
-                            <span id="facebook-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                    <div class="info-group">
-                        <label>YouTube:</label>
-                        <div class="editable-field" onclick="editField('youtube_link')">
-                            <span id="youtube_link-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                    <div class="info-group">
-                        <label>Instagram:</label>
-                        <div class="editable-field" onclick="editField('instagram')">
-                            <span id="instagram-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                    <div class="info-group">
-                        <label>Twitter:</label>
-                        <div class="editable-field" onclick="editField('twitter')">
-                            <span id="twitter-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Admin & Help -->
-                <div class="settings-card">
-                    <h3><i class="fas fa-user-shield"></i> Admin & Help</h3>
-                    <div class="info-group">
-                        <label>Admin Name:</label>
-                        <div class="editable-field" onclick="editField('admin_name')">
-                            <span id="admin_name-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                    <div class="info-group">
-                        <label>Help Text:</label>
-                        <div class="editable-field" onclick="editField('help')">
-                            <span id="help-value"></span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                    <div class="info-group">
-                        <label>GROQ API Key:</label>
-                        <div class="editable-field" onclick="editField('groq_key')">
-                            <span id="groq_key-value" class="masked-text">••••••••••••••••</span>
-                            <i class="fas fa-edit"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
-                <h4>Bal Bharti Coaching Center</h4>
-                <p id="help-footer" class="help-text"></p>
+                <h4 id="footer-title" onclick="editFooterTitle()"></h4>
+                <p id="help-text" class="help-text" onclick="editHelpText()"></p>
             </div>
+            
             <div class="footer-section">
-                <p><i class="fas fa-phone"></i> Helpline: <span id="contact-footer"></span></p>
-                <p><i class="fas fa-envelope"></i> Email: <span id="gmail-footer"></span></p>
+                <p>
+                    <i class="fas fa-phone"></i> 
+                    <span id="contact-number" onclick="editContactNumber()"></span>
+                </p>
+                <p>
+                    <i class="fas fa-envelope"></i> 
+                    <span id="email-address" onclick="editEmail()"></span>
+                </p>
+                <p>
+                    <i class="fas fa-phone-volume"></i> 
+                    <span id="helpline-number" onclick="editHelpline()"></span>
+                </p>
             </div>
+            
             <div class="footer-section">
-                <div class="social-icons">
-                    <a id="facebook-link" href="#" target="_blank"><i class="fab fa-facebook"></i></a>
-                    <a id="youtube-link" href="#" target="_blank"><i class="fab fa-youtube"></i></a>
-                    <a id="instagram-link" href="#" target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a id="twitter-link" href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                <div class="social-links">
+                    <a id="facebook-link" href="#" target="_blank" onclick="editFacebook()">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a id="youtube-link" href="#" target="_blank" onclick="editYouTube()">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a id="instagram-link" href="#" target="_blank" onclick="editInstagram()">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a id="twitter-link" href="#" target="_blank" onclick="editTwitter()">
+                        <i class="fab fa-twitter"></i>
+                    </a>
                 </div>
-                <p class="copyright">© 2024 Bal Bharti Coaching. All rights reserved.</p>
+                <p class="copyright">© 2024 Bal Bharti Coaching Center</p>
             </div>
         </div>
     </footer>
@@ -156,43 +79,19 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Edit Field</h3>
+                <h3 id="modal-title">Edit</h3>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label id="edit-label"></label>
-                    <input type="text" id="edit-input" class="edit-input">
-                    <small class="hint" id="edit-hint"></small>
+                    <label id="field-label">Value</label>
+                    <input type="text" id="edit-input" class="edit-input" placeholder="Enter value">
+                    <textarea id="edit-textarea" class="edit-textarea" placeholder="Enter text" style="display:none;"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-save" onclick="saveChanges()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logo Upload Modal -->
-    <div id="logoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Change Logo</h3>
-                <button class="close-btn" onclick="closeLogoModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="logo-preview">
-                    <img id="logo-preview-img" src="" alt="Logo Preview">
-                </div>
-                <div class="form-group">
-                    <label>Enter Base64 Image Data:</label>
-                    <textarea id="logo-base64" class="logo-textarea" placeholder="Paste base64 image data here..."></textarea>
-                    <small class="hint">Upload image to base64 converter: <a href="https://www.base64-image.de/" target="_blank">base64-image.de</a></small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-cancel" onclick="closeLogoModal()">Cancel</button>
-                <button class="btn btn-save" onclick="saveLogo()">Update Logo</button>
+                <button class="btn btn-save" onclick="saveChanges()">Update</button>
             </div>
         </div>
     </div>
