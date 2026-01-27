@@ -819,7 +819,74 @@ app.get('/api/get-all-class-configs', async (req, res) => {
     data.forEach(c => map[c.class_name] = c);
     res.json(map);
 });
+/////////////////////////////////////////dayrector//////////////////////////////////////////////////////////
+// Add these routes to your existing server.js file:
 
+// Director Settings Schema (Add to your schemas)
+const DirectorSettings = mongoose.model('DirectorSettings', new mongoose.Schema({
+    logo: String,
+    title: String,
+    sub_title: String,
+    contact: String,
+    call_no: String,
+    gmail: String,
+    facebook: String,
+    youtube_link: String,
+    instagram: String,
+    twitter: String,
+    help: String
+}, { collection: 'director_settings' }));
+
+// Director page route
+app.get('/director', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'director.html'));
+});
+
+// Get director settings
+app.get('/api/director/get-settings', async (req, res) => {
+    try {
+        let settings = await DirectorSettings.findOne();
+        
+        if (!settings) {
+            // Create default settings if not exists
+            settings = await DirectorSettings.create({
+                title: "not set",
+                sub_title: "not set",
+                help: "not set",
+                contact: "not set",
+                call_no: "not set",
+                gmail: "not set",
+                admin_name: "not set"
+            });
+        }
+        
+        res.json(settings);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Update director settings
+app.post('/api/director/update-settings', async (req, res) => {
+    try {
+        const { field, value } = req.body;
+        
+        if (!field) {
+            return res.status(400).json({ error: "Field is required" });
+        }
+        
+        await DirectorSettings.findOneAndUpdate(
+            {},
+            { [field]: value },
+            { upsert: true, new: true }
+        );
+        
+        res.json({ success: true, message: "Settings updated" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+////////////////////////////////////////dyr end //////////////////////////////////////////////////////////
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
