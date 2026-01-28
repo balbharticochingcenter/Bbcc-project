@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Bal Bharti Coaching Center</title>
+    <link rel="stylesheet" href="student-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <img id="logo-img" src="" alt="Logo" class="logo">
+            <div class="title-section">
+                <h1 id="main-title">Bal Bharti Coaching Center</h1>
+                <p id="sub-title">Student Dashboard</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Controls Section -->
+        <section class="controls-section">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="class-select"><i class="fas fa-chalkboard"></i> Select Class:</label>
+                    <select id="class-select" onchange="loadBatches()">
+                        <option value="">Loading classes...</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="batch-select"><i class="fas fa-calendar-alt"></i> Select Batch:</label>
+                    <select id="batch-select">
+                        <option value="">Select class first</option>
+                    </select>
+                </div>
+                
+                <button class="btn-load" onclick="loadStudents()">
+                    <i class="fas fa-sync-alt"></i> Load Students
+                </button>
+                
+                <div class="promote-section">
+                    <input type="checkbox" id="bulk-promote">
+                    <label for="bulk-promote">Bulk Class Promote</label>
+                </div>
+            </div>
+            
+            <!-- Add Student Button -->
+            <button class="btn-add" onclick="openAddStudentModal()">
+                <i class="fas fa-user-plus"></i> Add New Student
+            </button>
+        </section>
+
+        <!-- Student Table -->
+        <section class="student-section">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i> Student List</h2>
+                <div class="stats">
+                    <span id="total-students">0 Students</span>
+                    <span id="total-fees">Total Fees: ₹0</span>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table id="student-table">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Student Name</th>
+                            <th>Roll No/ID</th>
+                            <th>Password</th>
+                            <th>Parent Name</th>
+                            <th>Parent Mobile</th>
+                            <th>Student Mobile</th>
+                            <th>DOJ</th>
+                            <th>Class</th>
+                            <th>Batch Year</th>
+                            <th>Fees</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-table-body">
+                        <!-- Students will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="table-footer">
+                <div class="pagination">
+                    <button id="prev-btn" onclick="prevPage()"><i class="fas fa-chevron-left"></i></button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button id="next-btn" onclick="nextPage()"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <!-- Footer content loaded from settings -->
+    </footer>
+
+    <!-- Add/Edit Student Modal -->
+    <div class="modal" id="student-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Student</h3>
+                <span class="close" onclick="closeStudentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="student-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="student-photo">Student Photo (Base64)</label>
+                            <textarea id="student-photo" placeholder="Paste base64 image data or leave empty for default"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="student-name">Student Name *</label>
+                            <input type="text" id="student-name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="roll-number">Roll Number/ID *</label>
+                            <input type="text" id="roll-number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password *</label>
+                            <input type="text" id="password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="parent-name">Parent Name *</label>
+                            <input type="text" id="parent-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="parent-mobile">Parent Mobile *</label>
+                            <input type="tel" id="parent-mobile" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="student-mobile">Student Mobile</label>
+                            <input type="tel" id="student-mobile">
+                        </div>
+                        <div class="form-group">
+                            <label for="doj">Date of Joining *</label>
+                            <input type="date" id="doj" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal-class">Class *</label>
+                            <select id="modal-class" required>
+                                <option value="">Select Class</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-batch">Batch Year *</label>
+                            <select id="modal-batch" required>
+                                <option value="">Select Class First</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="fees">Fees (₹) *</label>
+                            <input type="number" id="fees" required>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="student-id">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeStudentModal()">Cancel</button>
+                <button class="btn-delete" id="delete-btn" onclick="deleteStudent()" style="display: none;">Delete</button>
+                <button class="btn-save" onclick="saveStudent()">Save Student</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fees Tracker Modal -->
+    <div class="modal" id="fees-modal">
+        <div class="modal-content fees-modal">
+            <div class="modal-header">
+                <h3 id="fees-title">Fees Tracker</h3>
+                <span class="close" onclick="closeFeesModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="student-info">
+                    <img id="fees-photo" src="" alt="Student Photo" class="student-photo">
+                    <div>
+                        <h4 id="fees-student-name"></h4>
+                        <p id="fees-details"></p>
+                    </div>
+                </div>
+                
+                <div class="fees-summary">
+                    <div class="summary-item">
+                        <span>Total Fees:</span>
+                        <strong id="total-fees-amount">₹0</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Paid:</span>
+                        <strong id="total-paid-amount" class="paid">₹0</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Due:</span>
+                        <strong id="total-due-amount" class="due">₹0</strong>
+                    </div>
+                </div>
+                
+                <div class="fees-history">
+                    <h4><i class="fas fa-history"></i> Payment History</h4>
+                    <div class="table-container">
+                        <table id="payment-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Year</th>
+                                    <th>Class</th>
+                                    <th>Batch</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payment-table-body">
+                                <!-- Payment history will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="make-payment">
+                    <h4><i class="fas fa-rupee-sign"></i> Make Payment</h4>
+                    <div class="payment-form">
+                        <div class="form-group">
+                            <label for="payment-month">Month</label>
+                            <select id="payment-month">
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-year">Year</label>
+                            <input type="number" id="payment-year" min="2020" max="2030" value="2024">
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-amount">Amount (₹)</label>
+                            <input type="number" id="payment-amount" min="1">
+                        </div>
+                        <button class="btn-pay" onclick="recordPayment()">
+                            <i class="fas fa-check"></i> Record Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Promote Modal -->
+    <div class="modal" id="promote-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Bulk Class Promotion</h3>
+                <span class="close" onclick="closePromoteModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Promote <span id="promote-count">0</span> students to new class:</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new-class">New Class</label>
+                        <select id="new-class">
+                            <option value="">Select Class</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-batch">New Batch Year</label>
+                        <select id="new-batch">
+                            <option value="">Select Class First</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-fees">New Fees (₹)</label>
+                        <input type="number" id="new-fees" min="0">
+                    </div>
+                </div>
+                
+                <div class="note">
+                    <p><i class="fas fa-info-circle"></i> Note: Students will be registered in the new class while keeping their old registration.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closePromoteModal()">Cancel</button>
+                <button class="btn-save" onclick="promoteStudents()">Promote Students</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script src="student-dashboard.js"></script>
+</body>
+</html>
