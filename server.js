@@ -171,7 +171,10 @@ app.post('/api/student-reg', async (req, res) => {
 app.get('/api/get-students', async (req, res) => {
     res.json(await Student.find().sort({ _id: -1 }));
 });
-
+app.put('/api/update-student/:id', async (req, res) => {
+    await Student.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ success: true });
+});
 /************************************************************
  *  FEES & PAYMENT APIs
  ************************************************************/
