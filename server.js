@@ -50,7 +50,8 @@ const Teacher = mongoose.model('Teacher', new mongoose.Schema({
     subjects: [String],
     paid_months: { type: [Number], default: [] }
 }));
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Existing Student Schema ko UPDATE karein:
 const Student = mongoose.model('Student', new mongoose.Schema({
     student_name: String,
     student_id: { type: String, unique: true },
@@ -67,9 +68,57 @@ const Student = mongoose.model('Student', new mongoose.Schema({
     exam_subject: { type: String, default: "" },
     photo: String,
     paid_months: { type: [Number], default: [] },
-    fees_data: { type: Map, of: Object, default: {} }
+    fees_data: { type: Map, of: Object, default: {} },
+    
+    // NAYE FIELDS ADD KAREIN:
+    roll_number: { type: String, unique: true },  // Roll number/ID (unique)
+    batch_year: { type: String, default: "2024" }, // Batch year
+    doj: { type: Date, default: Date.now },        // Date of joining
+    promoted_from: { type: String, default: "" },  // Previous class
+    current_status: { type: String, default: "Active" }, // Active/Inactive
+    address: String,                               // Student address
+    last_payment_date: Date,                       // Last payment date
+    total_paid: { type: Number, default: 0 },      // Total paid amount
+    due_amount: { type: Number, default: 0 },      // Due amount
+    payment_history: [                             // Payment history array
+        {
+            month: Number,
+            year: Number,
+            amount: Number,
+            payment_date: Date,
+            mode: String,
+            receipt_no: String
+        }
+    ]
 }));
 
+// NAYA SCHEMA ADD KAREIN: StudentBatch (Class aur Batch ke liye)
+const StudentBatch = mongoose.model('StudentBatch', new mongoose.Schema({
+    class_name: { type: String, required: true },
+    batch_year: { type: String, required: true },
+    class_fee: { type: Number, required: true },
+    start_date: { type: Date, default: Date.now },
+    end_date: Date,
+    is_active: { type: Boolean, default: true },
+    students_count: { type: Number, default: 0 },
+    total_collection: { type: Number, default: 0 },
+    total_due: { type: Number, default: 0 }
+}));
+
+// NAYA SCHEMA: StudentPromotion
+const StudentPromotion = mongoose.model('StudentPromotion', new mongoose.Schema({
+    student_id: { type: String, required: true },
+    old_class: String,
+    old_batch: String,
+    new_class: String,
+    new_batch: String,
+    old_fees: Number,
+    new_fees: Number,
+    promotion_date: { type: Date, default: Date.now },
+    promoted_by: String, // Admin/Teacher ID
+    remarks: String
+}));
+/////////////////////////////////////////////////////////////////////////////////////////////////
 const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
     admin_name: String,
     admin_photo: String,
