@@ -50,580 +50,258 @@ const Teacher = mongoose.model('Teacher', new mongoose.Schema({
     subjects: [String],
     paid_months: { type: [Number], default: [] }
 }));
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Existing Student Schema ko UPDATE karein:
-const Student = mongoose.model('Student', new mongoose.Schema({
-    student_name: String,
+const express = require('express');
+const mongoose = require('mongoose');
+const app = express();
+
+// Middleware
+app.use(express.json({ limit: '10mb' }));
+
+// ==================== SCHEMAS ====================
+
+// 1. Student Schema
+const studentSchema = new mongoose.Schema({
+    student_name: { type: String, required: true },
     student_id: { type: String, unique: true },
     pass: String,
     parent_name: String,
     mobile: String,
     parent_mobile: String,
     student_class: String,
-    fees: String,
+    fees: { type: String, default: "0" },
     joining_date: String,
     total_marks: { type: String, default: "" },
     obtained_marks: { type: String, default: "" },
     exam_date: { type: String, default: "" },
     exam_subject: { type: String, default: "" },
-    photo: String,
+    photo: String, // Base64 string from frontend
     paid_months: { type: [Number], default: [] },
     fees_data: { type: Map, of: Object, default: {} },
     
-    // NAYE FIELDS ADD KAREIN:
-    roll_number: { type: String, unique: true },  // Roll number/ID (unique)
-    batch_year: { type: String, default: "2024" }, // Batch year
-    doj: { type: Date, default: Date.now },        // Date of joining
-    promoted_from: { type: String, default: "" },  // Previous class
-    current_status: { type: String, default: "Active" }, // Active/Inactive
-    address: String,                               // Student address
-    last_payment_date: Date,                       // Last payment date
-    total_paid: { type: Number, default: 0 },      // Total paid amount
-    due_amount: { type: Number, default: 0 },      // Due amount
-    payment_history: [                             // Payment history array
+    // Naye Fields
+    roll_number: { type: String, unique: true },
+    batch_year: { type: String, default: "2024" },
+    doj: { type: Date, default: Date.now },
+    promoted_from: { type: String, default: "" },
+    current_status: { type: String, default: "Active" },
+    address: String,
+    last_payment_date: Date,
+    total_paid: { type: Number, default: 0 },
+    due_amount: { type: Number, default: 0 },
+    payment_history: [
         {
             month: Number,
             year: Number,
             amount: Number,
-            payment_date: Date,
-            mode: String,
+            payment_date: { type: Date, default: Date.now },
+            mode: { type: String, default: "Cash" },
             receipt_no: String
         }
     ]
-}));
+});
 
-// NAYA SCHEMA ADD KAREIN: StudentBatch (Class aur Batch ke liye)
+const Student = mongoose.model('Student', studentSchema);
+
+// 2. StudentBatch Schema (Inventory of Classes/Batches)
 const StudentBatch = mongoose.model('StudentBatch', new mongoose.Schema({
     class_name: { type: String, required: true },
     batch_year: { type: String, required: true },
     class_fee: { type: Number, required: true },
     start_date: { type: Date, default: Date.now },
-    end_date: Date,
     is_active: { type: Boolean, default: true },
-    students_count: { type: Number, default: 0 },
-    total_collection: { type: Number, default: 0 },
-    total_due: { type: Number, default: 0 }
+    students_count: { type: Number, default: 0 }
 }));
 
-// NAYA SCHEMA: StudentPromotion
-const StudentPromotion = mongoose.model('StudentPromotion', new mongoose.Schema({
-    student_id: { type: String, required: true },
-    old_class: String,
-    old_batch: String,
-    new_class: String,
-    new_batch: String,
-    old_fees: Number,
-    new_fees: Number,
-    promotion_date: { type: Date, default: Date.now },
-    promoted_by: String, // Admin/Teacher ID
-    remarks: String
-}));
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// ==================== STUDENT DASHBOARD APIS ====================
+// ==================== APIS ====================
 
-// 1. Get all classes with batches for student dashboard
+// 1. Get all classes with batches
 app.get('/api/student-dashboard/classes', async (req, res) => {
     try {
-        // Sab classes fetch karein (jo aapke system mein already hain)
-        const classes = await ClassConfig.find({}, 'class_name');
+        // Distinct classes find karein
+        const classList = await Student.distinct('student_class');
         
         const classesWithBatches = await Promise.all(
-            classes.map(async (cls) => {
-                // Find batches for this class
-                const studentsInClass = await Student.find({ 
-                    student_class: cls.class_name 
-                }).distinct('batch_year');
-                
-                // Get fees for this class
-                const classFee = await ClassFee.findOne({ class_name: cls.class_name });
-                
-                const batches = studentsInClass.map(year => ({
-                    year: year || "2024",
-                    fee: classFee?.monthly_fees || "0"
-                }));
-                
-                // Agar koi batch nahi hai toh default batch add karein
-                if (batches.length === 0) {
-                    batches.push({
-                        year: "2024",
-                        fee: classFee?.monthly_fees || "0"
-                    });
-                }
+            classList.map(async (clsName) => {
+                const batches = await Student.find({ student_class: clsName }).distinct('batch_year');
                 
                 return {
-                    class_name: cls.class_name,
-                    batches: batches
+                    class_name: clsName,
+                    batches: batches.map(b => ({
+                        year: b || "2024",
+                        fee: "Check Student Record" 
+                    }))
                 };
             })
         );
-        
         res.json({ success: true, classes: classesWithBatches });
     } catch (err) {
-        console.error('Error in /api/student-dashboard/classes:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// 2. Get students by class and batch
+// 2. Fetch Students with Pagination & Filters
 app.get('/api/student-dashboard/students', async (req, res) => {
     try {
         const { class_name, batch_year, page = 1, limit = 10 } = req.query;
-        
-        const skip = (page - 1) * limit;
-        
-        // Filter conditions
         const filter = { student_class: class_name };
-        if (batch_year && batch_year !== "undefined") {
-            filter.batch_year = batch_year;
-        }
-        
-        // Total count
+        if (batch_year) filter.batch_year = batch_year;
+
         const total = await Student.countDocuments(filter);
-        
-        // Students with pagination
         const students = await Student.find(filter)
             .sort({ roll_number: 1 })
-            .skip(skip)
+            .skip((page - 1) * limit)
             .limit(parseInt(limit))
             .lean();
-        
-        // Calculate fees status for each student
-        const studentsWithStatus = students.map(student => {
-            const totalFees = parseFloat(student.fees) || 0;
-            const totalPaid = student.total_paid || 0;
-            const dueAmount = totalFees - totalPaid;
-            const status = dueAmount <= 0 ? 'Paid' : 'Due';
-            
-            return {
-                ...student,
-                total_fees: totalFees,
-                total_paid: totalPaid,
-                due_amount: dueAmount,
-                fees_status: status,
-                photo_url: student.photo || ''
-            };
-        });
-        
+
         res.json({
             success: true,
-            students: studentsWithStatus,
+            students,
             total,
-            page: parseInt(page),
             totalPages: Math.ceil(total / limit)
         });
     } catch (err) {
-        console.error('Error in /api/student-dashboard/students:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// 3. Get single student details
-app.get('/api/student-dashboard/student/:id', async (req, res) => {
-    try {
-        const studentId = req.params.id;
-        
-        // Try by student_id first
-        let student = await Student.findOne({ student_id: studentId });
-        
-        // If not found, try by _id
-        if (!student) {
-            try {
-                student = await Student.findById(studentId);
-            } catch (err) {
-                // Ignore cast error
-            }
-        }
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
-        
-        res.json({ success: true, student });
-    } catch (err) {
-        console.error('Error in /api/student-dashboard/student/:id:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// 4. Add new student
+// 3. Add Student (Auto-ID & Auto-Roll Generation)
 app.post('/api/student-dashboard/add-student', async (req, res) => {
     try {
-        const studentData = req.body;
-        
-        // Generate unique student_id if not provided
-        if (!studentData.student_id) {
-            studentData.student_id = 'STU' + Date.now().toString().slice(-8);
-        }
-        
-        // Generate roll number if not provided
-        if (!studentData.roll_number) {
-            // Find max roll number in same class+batch
-            const maxRoll = await Student.findOne(
-                { 
-                    student_class: studentData.student_class,
-                    batch_year: studentData.batch_year || "2024"
-                },
-                { roll_number: 1 },
-                { sort: { roll_number: -1 } }
-            );
-            
-            let nextRoll = 1;
-            if (maxRoll && maxRoll.roll_number) {
-                const lastNum = parseInt(maxRoll.roll_number.match(/\d+/)?.[0] || '0');
-                nextRoll = lastNum + 1;
+        const data = req.body;
+
+        // Auto ID
+        if (!data.student_id) data.student_id = 'STU' + Date.now().toString().slice(-6);
+
+        // Auto Roll Number Logic
+        if (!data.roll_number) {
+            const lastStudent = await Student.findOne({ 
+                student_class: data.student_class, 
+                batch_year: data.batch_year 
+            }).sort({ roll_number: -1 });
+
+            let nextNum = 1;
+            if (lastStudent && lastStudent.roll_number) {
+                const match = lastStudent.roll_number.match(/\d+/);
+                nextNum = match ? parseInt(match[0]) + 1 : 1;
             }
-            
-            studentData.roll_number = `BB${nextRoll.toString().padStart(3, '0')}`;
+            data.roll_number = `BB${nextNum.toString().padStart(3, '0')}`;
         }
+
+        data.due_amount = parseFloat(data.fees) || 0;
         
-        // Set DOJ to current date if not provided
-        if (!studentData.doj) {
-            studentData.doj = new Date();
-        }
-        
-        // Set batch_year if not provided
-        if (!studentData.batch_year) {
-            studentData.batch_year = "2024";
-        }
-        
-        // Set initial payment data
-        studentData.total_paid = 0;
-        studentData.due_amount = parseFloat(studentData.fees) || 0;
-        studentData.payment_history = [];
-        
-        const newStudent = new Student(studentData);
+        const newStudent = new Student(data);
         await newStudent.save();
-        
-        res.json({ 
-            success: true, 
-            message: 'Student added successfully',
-            student_id: studentData.student_id,
-            roll_number: studentData.roll_number
-        });
+        res.json({ success: true, message: 'Student added!', student_id: data.student_id });
     } catch (err) {
-        console.error('Error in /api/student-dashboard/add-student:', err);
-        
-        // Duplicate key error handling
-        if (err.code === 11000) {
-            const field = Object.keys(err.keyPattern)[0];
-            return res.status(400).json({
-                success: false,
-                message: `${field} already exists. Please use a different value.`
-            });
-        }
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// 5. Update student
-app.put('/api/student-dashboard/update-student/:id', async (req, res) => {
-    try {
-        const studentId = req.params.id;
-        const updateData = req.body;
-        
-        // Remove fields that shouldn't be updated
-        delete updateData._id;
-        delete updateData.student_id;
-        delete updateData.roll_number;
-        
-        // Try to update by student_id
-        const updated = await Student.findOneAndUpdate(
-            { student_id: studentId },
-            updateData,
-            { new: true, runValidators: true }
-        );
-        
-        if (!updated) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
-        
-        res.json({ success: true, message: 'Student updated successfully', student: updated });
-    } catch (err) {
-        console.error('Error in /api/student-dashboard/update-student/:id:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// 6. Delete student
-app.delete('/api/student-dashboard/delete-student/:id', async (req, res) => {
-    try {
-        const studentId = req.params.id;
-        
-        const student = await Student.findOne({ student_id: studentId });
-        if (!student) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
-        
-        await Student.deleteOne({ student_id: studentId });
-        
-        res.json({ success: true, message: 'Student deleted successfully' });
-    } catch (err) {
-        console.error('Error in /api/student-dashboard/delete-student/:id:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// 7. Get student fees details
-app.get('/api/student-dashboard/fees/:studentId', async (req, res) => {
-    try {
-        const studentId = req.params.studentId;
-        
-        // Try by student_id first
-        let student = await Student.findOne({ student_id: studentId });
-        
-        // If not found, try by _id
-        if (!student) {
-            try {
-                student = await Student.findById(studentId);
-            } catch (err) {
-                // Ignore cast error
-            }
-        }
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
-        
-        // Calculate months since joining
-        const joiningDate = student.doj || new Date(student.joining_date);
-        const currentDate = new Date();
-        
-        const monthsPassed = Math.max(0, 
-            (currentDate.getFullYear() - joiningDate.getFullYear()) * 12 +
-            (currentDate.getMonth() - joiningDate.getMonth())
-        );
-        
-        // Prepare month-wise fee status
-        const feeMonths = [];
-        for (let i = 0; i <= monthsPassed; i++) {
-            const date = new Date(joiningDate);
-            date.setMonth(joiningDate.getMonth() + i);
-            
-            const month = date.getMonth() + 1;
-            const year = date.getFullYear();
-            const monthName = date.toLocaleString('default', { month: 'long' });
-            
-            // Check if paid
-            const isPaid = student.paid_months?.includes(month) || 
-                          (student.payment_history && student.payment_history.some(p => 
-                              p.month === month && p.year === year));
-            
-            // Get payment details if paid
-            let payment = null;
-            if (student.payment_history) {
-                payment = student.payment_history.find(p => 
-                    p.month === month && p.year === year);
-            }
-            
-            feeMonths.push({
-                month,
-                year,
-                month_name: monthName,
-                is_paid: isPaid,
-                payment_date: payment?.payment_date,
-                amount: payment?.amount || (isPaid ? (parseFloat(student.fees) || 0) / 12 : 0),
-                mode: payment?.mode,
-                receipt_no: payment?.receipt_no
-            });
-        }
-        
-        // Calculate totals
-        const totalFees = parseFloat(student.fees) || 0;
-        const totalPaid = student.total_paid || 0;
-        const dueAmount = totalFees - totalPaid;
-        
-        res.json({
-            success: true,
-            student: {
-                id: student.student_id,
-                name: student.student_name,
-                class: student.student_class,
-                batch: student.batch_year || "2024",
-                photo: student.photo,
-                roll_number: student.roll_number || student.student_id,
-                doj: student.doj || student.joining_date
-            },
-            fee_summary: {
-                total_fees: totalFees,
-                total_paid: totalPaid,
-                due_amount: dueAmount,
-                paid_percentage: totalFees > 0 ? (totalPaid / totalFees * 100).toFixed(2) : 0
-            },
-            fee_months: feeMonths,
-            payment_history: student.payment_history || []
-        });
-    } catch (err) {
-        console.error('Error in /api/student-dashboard/fees/:studentId:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// 8. Record payment
+// 4. Record Payment & Update Balances
 app.post('/api/student-dashboard/record-payment', async (req, res) => {
     try {
-        const { student_id, month, year, amount, mode, receipt_no } = req.body;
-        
-        const student = await Student.findOne({ student_id: student_id });
-        if (!student) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
-        
-        // Create payment record
-        const paymentRecord = {
+        const { student_id, month, year, amount, mode } = req.body;
+        const student = await Student.findOne({ student_id });
+
+        if (!student) return res.status(404).json({ message: 'Not found' });
+
+        const payment = {
             month: parseInt(month),
             year: parseInt(year),
             amount: parseFloat(amount),
             payment_date: new Date(),
-            mode: mode || 'Cash',
-            receipt_no: receipt_no || `RCPT${Date.now()}`
+            mode: mode || "Cash",
+            receipt_no: "REC" + Date.now().toString().slice(-5)
         };
-        
-        // Initialize payment_history if not exists
-        if (!student.payment_history) {
-            student.payment_history = [];
-        }
-        
-        // Check if payment already exists for this month
-        const existingIndex = student.payment_history.findIndex(p => 
-            p.month === paymentRecord.month && p.year === paymentRecord.year);
-        
-        if (existingIndex >= 0) {
-            // Update existing payment
-            student.payment_history[existingIndex] = paymentRecord;
-        } else {
-            // Add new payment
-            student.payment_history.push(paymentRecord);
-        }
-        
-        // Update paid months
-        if (!student.paid_months.includes(paymentRecord.month)) {
-            student.paid_months.push(paymentRecord.month);
-        }
-        
-        // Update totals
-        student.total_paid = (student.total_paid || 0) + parseFloat(amount);
+
+        student.payment_history.push(payment);
+        student.total_paid += payment.amount;
         student.due_amount = Math.max(0, (parseFloat(student.fees) || 0) - student.total_paid);
         student.last_payment_date = new Date();
-        
+
+        if (!student.paid_months.includes(payment.month)) {
+            student.paid_months.push(payment.month);
+        }
+
         await student.save();
-        
-        res.json({ success: true, message: 'Payment recorded successfully' });
-        
+        res.json({ success: true, message: 'Payment recorded!' });
     } catch (err) {
-        console.error('Error in /api/student-dashboard/record-payment:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// 9. Bulk promote students
+// 5. Bulk Promote Students
 app.post('/api/student-dashboard/bulk-promote', async (req, res) => {
     try {
         const { student_ids, new_class, new_batch, new_fees } = req.body;
         
-        if (!Array.isArray(student_ids) || student_ids.length === 0) {
-            return res.status(400).json({ success: false, message: 'No students selected' });
-        }
-        
-        const promotedCount = 0;
-        
-        // Process each student
-        for (const studentId of student_ids) {
-            const student = await Student.findOne({ student_id: studentId });
-            if (!student) continue;
+        for (const id of student_ids) {
+            const oldStudent = await Student.findOne({ student_id: id });
+            if (!oldStudent) continue;
+
+            // Naya record create karein (History maintain karne ke liye)
+            const promotedData = oldStudent.toObject();
+            delete promotedData._id;
             
-            // Create new student for promoted class (keep old record)
-            const newStudentData = {
-                ...student.toObject(),
-                _id: undefined, // New ID generate hoga
-                student_class: new_class,
-                batch_year: new_batch || "2024",
-                fees: new_fees,
-                promoted_from: studentId,
-                doj: new Date(), // New joining date
-                total_paid: 0, // Reset for new class
-                due_amount: parseFloat(new_fees),
-                paid_months: [],
-                payment_history: []
-            };
-            
-            // Generate new student_id for promoted student
-            newStudentData.student_id = `STU${Date.now()}${Math.floor(Math.random() * 1000)}`;
-            
-            // Generate new roll number
-            const maxRoll = await Student.findOne(
-                { student_class: new_class, batch_year: new_batch || "2024" },
-                { roll_number: 1 },
-                { sort: { roll_number: -1 } }
-            );
-            
-            let nextRoll = 1;
-            if (maxRoll && maxRoll.roll_number) {
-                const lastNum = parseInt(maxRoll.roll_number.match(/\d+/)?.[0] || '0');
-                nextRoll = lastNum + 1;
-            }
-            newStudentData.roll_number = `BB${nextRoll.toString().padStart(3, '0')}`;
-            
-            const newStudent = new Student(newStudentData);
+            promotedData.student_class = new_class;
+            promotedData.batch_year = new_batch;
+            promotedData.fees = new_fees;
+            promotedData.total_paid = 0; // Reset for new class
+            promotedData.due_amount = parseFloat(new_fees);
+            promotedData.payment_history = [];
+            promotedData.paid_months = [];
+            promotedData.promoted_from = id;
+            promotedData.student_id = 'STU' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+            const newStudent = new Student(promotedData);
             await newStudent.save();
-            
-            promotedCount++;
         }
-        
-        res.json({ 
-            success: true, 
-            message: `${promotedCount} students promoted successfully`,
-            promoted_count: promotedCount
-        });
-        
+
+        res.json({ success: true, message: 'Students promoted successfully!' });
     } catch (err) {
-        console.error('Error in /api/student-dashboard/bulk-promote:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// 10. Search students
-app.get('/api/student-dashboard/search', async (req, res) => {
+// 6. Delete Student
+app.delete('/api/student-dashboard/delete-student/:id', async (req, res) => {
     try {
-        const { query, class_name, batch_year } = req.query;
-        
-        let filter = {};
-        
-        if (class_name) filter.student_class = class_name;
-        if (batch_year) filter.batch_year = batch_year;
-        
-        if (query) {
-            filter.$or = [
-                { student_name: { $regex: query, $options: 'i' } },
-                { student_id: { $regex: query, $options: 'i' } },
-                { roll_number: { $regex: query, $options: 'i' } },
-                { parent_mobile: { $regex: query, $options: 'i' } },
-                { mobile: { $regex: query, $options: 'i' } }
-            ];
-        }
-        
-        const students = await Student.find(filter)
-            .limit(20)
-            .sort({ student_name: 1 })
-            .lean();
-        
-        const results = students.map(s => ({
-            id: s.student_id,
-            name: s.student_name,
-            roll_number: s.roll_number || s.student_id,
-            class: s.student_class,
-            batch: s.batch_year || "2024",
-            parent_mobile: s.parent_mobile,
-            fees_status: (s.total_paid || 0) >= (parseFloat(s.fees) || 0) ? 'Paid' : 'Due'
-        }));
-        
-        res.json({ success: true, results });
+        await Student.findOneAndDelete({ student_id: req.params.id });
+        res.json({ success: true, message: 'Student deleted' });
     } catch (err) {
-        console.error('Error in /api/student-dashboard/search:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-///////////////////////////////////////////////////////////////////////////////////////////////////kkkkkkkkkkkkkkk
+// 7. Get Fees details
+app.get('/api/student-dashboard/fees/:id', async (req, res) => {
+    try {
+        const student = await Student.findOne({ student_id: req.params.id });
+        if (!student) return res.status(404).json({ message: 'Not found' });
+
+        res.json({
+            success: true,
+            student: {
+                name: student.student_name,
+                class: student.student_class,
+                batch: student.batch_year,
+                total_fees: student.fees,
+                total_paid: student.total_paid,
+                due_amount: student.due_amount
+            },
+            payment_history: student.payment_history,
+            fee_summary: {
+                total_fees: student.fees,
+                total_paid: student.total_paid,
+                due_amount: student.due_amount
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/////////////////////////////////////////////////////////////////////////////////
 const AdminProfile = mongoose.model('AdminProfile', new mongoose.Schema({
     admin_name: String,
     admin_photo: String,
