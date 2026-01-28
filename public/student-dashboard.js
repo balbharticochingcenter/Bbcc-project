@@ -112,10 +112,11 @@ function updateUI() {
     elements.doj.value = today;
 }
 
-// Load classes from database
+// Load classes from database (MongoDB compatible)
 async function loadClasses() {
     try {
-        const response = await fetch(`${API_BASE}/api/student/get-classes`);
+        // Aapke existing API use karein
+        const response = await fetch(`${API_BASE}/api/get-all-classes`);
         if (!response.ok) throw new Error('Failed to load classes');
         const classes = await response.json();
         
@@ -127,18 +128,18 @@ async function loadClasses() {
         // Add classes to all selects
         classes.forEach(cls => {
             const option1 = document.createElement('option');
-            option1.value = cls.name;
-            option1.textContent = cls.name;
+            option1.value = cls;
+            option1.textContent = cls;
             elements.classSelect.appendChild(option1);
             
             const option2 = document.createElement('option');
-            option2.value = cls.name;
-            option2.textContent = cls.name;
+            option2.value = cls;
+            option2.textContent = cls;
             elements.modalClass.appendChild(option2);
             
             const option3 = document.createElement('option');
-            option3.value = cls.name;
-            option3.textContent = cls.name;
+            option3.value = cls;
+            option3.textContent = cls;
             elements.newClass.appendChild(option3);
         });
     } catch (error) {
@@ -146,7 +147,7 @@ async function loadClasses() {
     }
 }
 
-// Load batches for selected class
+// Load batches for selected class (MongoDB compatible)
 async function loadBatches() {
     const className = elements.classSelect.value;
     if (!className) {
@@ -155,24 +156,37 @@ async function loadBatches() {
     }
     
     try {
-        const response = await fetch(`${API_BASE}/api/student/get-batches?class=${className}`);
+        // Naya API call - MongoDB ke according
+        const response = await fetch(`${API_BASE}/api/student-dashboard/classes`);
         if (!response.ok) throw new Error('Failed to load batches');
-        const batches = await response.json();
+        const data = await response.json();
+        
+        // Find the selected class
+        const selectedClass = data.classes.find(c => c.class_name === className);
         
         elements.batchSelect.innerHTML = '<option value="">Select Batch</option>';
-        batches.forEach(batch => {
+        if (selectedClass && selectedClass.batches) {
+            selectedClass.batches.forEach(batch => {
+                const option = document.createElement('option');
+                option.value = batch.year;
+                option.textContent = `${batch.year} - Fee: ₹${batch.fee}`;
+                elements.batchSelect.appendChild(option);
+            });
+        } else {
+            // Agar batch nahi hai toh current year show karein
+            const currentYear = new Date().getFullYear();
             const option = document.createElement('option');
-            option.value = batch.year;
-            option.textContent = `${batch.year} - Fee: ₹${batch.fees}`;
+            option.value = currentYear;
+            option.textContent = `${currentYear}`;
             elements.batchSelect.appendChild(option);
-        });
+        }
     } catch (error) {
         console.error('Error loading batches:', error);
-        elements.batchSelect.innerHTML = '<option value="">Error loading batches</option>';
+        elements.batchSelect.innerHTML = '<option value="">2024</option>';
     }
 }
 
-// Load batches for modal
+// Load batches for modal (MongoDB compatible)
 async function loadModalBatches() {
     const className = elements.modalClass.value;
     if (!className) {
@@ -181,25 +195,29 @@ async function loadModalBatches() {
     }
     
     try {
-        const response = await fetch(`${API_BASE}/api/student/get-batches?class=${className}`);
-        if (!response.ok) throw new Error('Failed to load batches');
-        const batches = await response.json();
-        
-        elements.modalBatch.innerHTML = '<option value="">Select Batch</option>';
-        batches.forEach(batch => {
-            const option = document.createElement('option');
-            option.value = batch.year;
-            option.textContent = `${batch.year}`;
-            elements.modalBatch.appendChild(option);
-        });
-        
-        // Auto-fill fees if available
-        if (batches.length > 0) {
-            elements.feesInput.value = batches[0].fees || '';
+        const response = await fetch(`${API_BASE}/api/student-dashboard/classes`);
+        if (response.ok) {
+            const data = await response.json();
+            const selectedClass = data.classes.find(c => c.class_name === className);
+            
+            elements.modalBatch.innerHTML = '<option value="">Select Batch</option>';
+            if (selectedClass && selectedClass.batches) {
+                selectedClass.batches.forEach(batch => {
+                    const option = document.createElement('option');
+                    option.value = batch.year;
+                    option.textContent = `${batch.year}`;
+                    elements.modalBatch.appendChild(option);
+                });
+                
+                // Auto-fill fees if available
+                if (selectedClass.batches.length > 0) {
+                    elements.feesInput.value = selectedClass.batches[0].fee || '';
+                }
+            }
         }
     } catch (error) {
         console.error('Error loading batches:', error);
-        elements.modalBatch.innerHTML = '<option value="">Error loading batches</option>';
+        elements.modalBatch.innerHTML = '<option value="">2024</option>';
     }
 }
 
@@ -212,51 +230,62 @@ async function loadPromoteBatches() {
     }
     
     try {
-        const response = await fetch(`${API_BASE}/api/student/get-batches?class=${className}`);
-        if (!response.ok) throw new Error('Failed to load batches');
-        const batches = await response.json();
-        
-        elements.newBatch.innerHTML = '<option value="">Select Batch</option>';
-        batches.forEach(batch => {
-            const option = document.createElement('option');
-            option.value = batch.year;
-            option.textContent = `${batch.year}`;
-            elements.newBatch.appendChild(option);
-        });
-        
-        // Auto-fill fees if available
-        if (batches.length > 0) {
-            elements.newFees.value = batches[0].fees || '';
+        const response = await fetch(`${API_BASE}/api/student-dashboard/classes`);
+        if (response.ok) {
+            const data = await response.json();
+            const selectedClass = data.classes.find(c => c.class_name === className);
+            
+            elements.newBatch.innerHTML = '<option value="">Select Batch</option>';
+            if (selectedClass && selectedClass.batches) {
+                selectedClass.batches.forEach(batch => {
+                    const option = document.createElement('option');
+                    option.value = batch.year;
+                    option.textContent = `${batch.year}`;
+                    elements.newBatch.appendChild(option);
+                });
+                
+                // Auto-fill fees if available
+                if (selectedClass.batches.length > 0) {
+                    elements.newFees.value = selectedClass.batches[0].fee || '';
+                }
+            }
         }
     } catch (error) {
         console.error('Error loading batches:', error);
-        elements.newBatch.innerHTML = '<option value="">Error loading batches</option>';
+        elements.newBatch.innerHTML = '<option value="">2024</option>';
     }
 }
 
-// Load students
+// Load students (MongoDB compatible)
 async function loadStudents() {
     const className = elements.classSelect.value;
     const batchYear = elements.batchSelect.value;
     
-    if (!className || !batchYear) {
-        alert('Please select both class and batch');
+    if (!className) {
+        alert('Please select a class');
         return;
     }
     
     try {
         showLoading();
-        const response = await fetch(`${API_BASE}/api/student/get-students?class=${className}&batch=${batchYear}`);
+        
+        // Naya API call - MongoDB compatible
+        const response = await fetch(
+            `${API_BASE}/api/student-dashboard/students?class_name=${className}` + 
+            (batchYear ? `&batch_year=${batchYear}` : '')
+        );
+        
         if (!response.ok) throw new Error('Failed to load students');
         
-        currentStudents = await response.json();
+        const data = await response.json();
+        currentStudents = data.students || [];
         currentPage = 1;
         renderStudents();
         updatePagination();
         
         // Update selected students for bulk promote
         if (elements.bulkPromote.checked) {
-            selectedStudents = currentStudents.map(s => s.id);
+            selectedStudents = currentStudents.map(s => s.student_id);
             elements.bulkPromote.checked = false;
         }
         
@@ -268,7 +297,7 @@ async function loadStudents() {
     }
 }
 
-// Render students in table
+// Render students in table (MongoDB compatible)
 function renderStudents() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -299,35 +328,46 @@ function renderStudents() {
     pageStudents.forEach(student => {
         const row = document.createElement('tr');
         
-        // Calculate fees status
-        const totalPaid = student.payments?.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0) || 0;
-        const feesDue = (parseFloat(student.fees) || 0) - totalPaid;
+        // Calculate fees status - MongoDB ke according
+        const totalFees = parseFloat(student.fees) || 0;
+        const totalPaid = student.total_paid || 0;
+        const feesDue = totalFees - totalPaid;
         const status = feesDue <= 0 ? 'Paid' : 'Due';
+        
+        // Photo URL handle karein
+        let photoUrl = 'default-avatar.png';
+        if (student.photo) {
+            if (student.photo.startsWith('data:image')) {
+                photoUrl = student.photo;
+            } else if (student.photo.startsWith('http')) {
+                photoUrl = student.photo;
+            }
+        }
         
         row.innerHTML = `
             <td>
-                <img src="${student.photo || 'default-avatar.png'}" 
-                     alt="${student.name}" 
+                <img src="${photoUrl}" 
+                     alt="${student.student_name}" 
                      class="student-photo"
                      onerror="this.src='default-avatar.png'">
             </td>
-            <td>${student.name}</td>
-            <td>${student.roll_number}</td>
-            <td>${student.password}</td>
-            <td>${student.parent_name}</td>
-            <td>${student.parent_mobile}</td>
-            <td>${student.student_mobile || 'N/A'}</td>
-            <td>${formatDate(student.doj)}</td>
-            <td>${student.class}</td>
-            <td>${student.batch_year}</td>
-            <td>₹${parseFloat(student.fees).toLocaleString()}</td>
+            <td>${student.student_name || 'N/A'}</td>
+            <td>${student.roll_number || student.student_id || 'N/A'}</td>
+            <td>${student.pass || 'N/A'}</td>
+            <td>${student.parent_name || 'N/A'}</td>
+            <td>${student.parent_mobile || 'N/A'}</td>
+            <td>${student.mobile || student.student_mobile || 'N/A'}</td>
+            <td>${formatDate(student.doj || student.joining_date)}</td>
+            <td>${student.student_class || 'N/A'}</td>
+            <td>${student.batch_year || '2024'}</td>
+            <td>₹${parseFloat(student.fees || 0).toLocaleString()}</td>
             <td><span class="status-${status.toLowerCase()}">${status}</span></td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-edit" onclick="editStudent('${student.id}')">
+                    <button class="btn-edit" onclick="editStudent('${student.student_id || student._id}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn-fees" onclick="openFeesTracker('${student.id}')">
+                    <button class="btn-fees" onclick="openFeesTracker('${student.student_id || student._id}')">
                         <i class="fas fa-rupee-sign"></i> Fees
                     </button>
                 </div>
@@ -375,38 +415,49 @@ function openAddStudentModal() {
     elements.studentModal.style.display = 'flex';
 }
 
-// Edit student
+// Edit student (MongoDB compatible)
 async function editStudent(studentId) {
     try {
         showLoading();
-        const response = await fetch(`${API_BASE}/api/student/get-student?id=${studentId}`);
+        // Naya API call
+        const response = await fetch(`${API_BASE}/api/student-dashboard/student/${studentId}`);
         if (!response.ok) throw new Error('Failed to load student');
         
-        const student = await response.json();
+        const data = await response.json();
+        const student = data.student;
         currentEditingStudent = student;
         
         // Fill form
         elements.modalTitle.textContent = 'Edit Student';
         elements.deleteBtn.style.display = 'block';
-        elements.studentId.value = student.id;
+        elements.studentId.value = student.student_id || student._id;
         elements.studentPhoto.value = student.photo || '';
-        elements.studentName.value = student.name;
-        elements.rollNumber.value = student.roll_number;
-        elements.password.value = student.password;
-        elements.parentName.value = student.parent_name;
-        elements.parentMobile.value = student.parent_mobile;
-        elements.studentMobile.value = student.student_mobile || '';
-        elements.doj.value = student.doj.split('T')[0];
-        elements.feesInput.value = student.fees;
+        elements.studentName.value = student.student_name || '';
+        elements.rollNumber.value = student.roll_number || student.student_id || '';
+        elements.password.value = student.pass || '';
+        elements.parentName.value = student.parent_name || '';
+        elements.parentMobile.value = student.parent_mobile || '';
+        elements.studentMobile.value = student.mobile || student.student_mobile || '';
+        
+        // Date format handle karein
+        let dojValue = '';
+        if (student.doj) {
+            dojValue = student.doj.split('T')[0];
+        } else if (student.joining_date) {
+            dojValue = student.joining_date.split('T')[0];
+        }
+        elements.doj.value = dojValue;
+        
+        elements.feesInput.value = student.fees || '';
         
         // Load classes and select current
         await loadClasses();
-        elements.modalClass.value = student.class;
+        elements.modalClass.value = student.student_class || '';
         
         // Load batches for the class
         await loadModalBatches();
         setTimeout(() => {
-            elements.modalBatch.value = student.batch_year;
+            elements.modalBatch.value = student.batch_year || '';
         }, 100);
         
         elements.studentModal.style.display = 'flex';
@@ -443,38 +494,52 @@ function generatePassword() {
     return password;
 }
 
-// Save student
+// Save student (MongoDB compatible)
 async function saveStudent() {
     const studentData = {
-        id: elements.studentId.value || null,
-        photo: elements.studentPhoto.value.trim(),
-        name: elements.studentName.value.trim(),
-        roll_number: elements.rollNumber.value.trim(),
-        password: elements.password.value.trim(),
+        student_id: elements.studentId.value || undefined,
+        photo: elements.studentPhoto.value.trim() || undefined,
+        student_name: elements.studentName.value.trim(),
+        roll_number: elements.rollNumber.value.trim() || undefined,
+        pass: elements.password.value.trim(),
         parent_name: elements.parentName.value.trim(),
         parent_mobile: elements.parentMobile.value.trim(),
-        student_mobile: elements.studentMobile.value.trim(),
+        mobile: elements.studentMobile.value.trim() || undefined,
         doj: elements.doj.value,
-        class: elements.modalClass.value,
+        student_class: elements.modalClass.value,
         batch_year: elements.modalBatch.value,
         fees: elements.feesInput.value
     };
     
     // Validate
-    if (!studentData.name || !studentData.roll_number || !studentData.class || !studentData.batch_year) {
-        alert('Please fill all required fields');
+    if (!studentData.student_name || !studentData.student_class) {
+        alert('Please fill all required fields (Name and Class)');
         return;
     }
     
     try {
         showLoading();
-        const response = await fetch(`${API_BASE}/api/student/save-student`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(studentData)
-        });
+        let response;
+        
+        if (elements.studentId.value) {
+            // Update existing student
+            response = await fetch(`${API_BASE}/api/student-dashboard/update-student/${elements.studentId.value}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(studentData)
+            });
+        } else {
+            // Add new student
+            response = await fetch(`${API_BASE}/api/student-dashboard/add-student`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(studentData)
+            });
+        }
         
         if (!response.ok) throw new Error('Failed to save student');
         
@@ -486,7 +551,8 @@ async function saveStudent() {
         const currentClass = elements.classSelect.value;
         const currentBatch = elements.batchSelect.value;
         
-        if (currentClass === studentData.class && currentBatch === studentData.batch_year) {
+        if (currentClass === studentData.student_class && 
+            (!currentBatch || currentBatch === studentData.batch_year)) {
             await loadStudents();
         }
         
@@ -499,7 +565,7 @@ async function saveStudent() {
     }
 }
 
-// Delete student
+// Delete student (MongoDB compatible)
 async function deleteStudent() {
     if (!confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
         return;
@@ -510,12 +576,11 @@ async function deleteStudent() {
     
     try {
         showLoading();
-        const response = await fetch(`${API_BASE}/api/student/delete-student`, {
+        const response = await fetch(`${API_BASE}/api/student-dashboard/delete-student/${studentId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: studentId })
+            }
         });
         
         if (!response.ok) throw new Error('Failed to delete student');
@@ -540,40 +605,51 @@ function closeStudentModal() {
     currentEditingStudent = null;
 }
 
-// Open fees tracker
+// Open fees tracker (MongoDB compatible)
 async function openFeesTracker(studentId) {
     try {
         showLoading();
         
-        // Get student details
-        const studentResponse = await fetch(`${API_BASE}/api/student/get-student?id=${studentId}`);
-        if (!studentResponse.ok) throw new Error('Failed to load student');
-        const student = await studentResponse.json();
+        // Naya API call
+        const response = await fetch(`${API_BASE}/api/student-dashboard/fees/${studentId}`);
+        if (!response.ok) throw new Error('Failed to load fees details');
         
-        // Get payment history
-        const paymentsResponse = await fetch(`${API_BASE}/api/student/get-payments?student_id=${studentId}`);
-        const payments = paymentsResponse.ok ? await paymentsResponse.json() : [];
-        
-        currentFeesStudent = { ...student, payments };
+        const data = await response.json();
+        currentFeesStudent = { 
+            ...data.student, 
+            payment_history: data.payment_history || [],
+            fee_months: data.fee_months || []
+        };
         
         // Update UI
-        elements.feesTitle.textContent = `Fees Tracker - ${student.name}`;
-        elements.feesPhoto.src = student.photo || 'default-avatar.png';
+        elements.feesTitle.textContent = `Fees Tracker - ${data.student.name}`;
+        
+        // Photo handle karein
+        let photoUrl = 'default-avatar.png';
+        if (data.student.photo) {
+            if (data.student.photo.startsWith('data:image')) {
+                photoUrl = data.student.photo;
+            } else if (data.student.photo.startsWith('http')) {
+                photoUrl = data.student.photo;
+            }
+        }
+        elements.feesPhoto.src = photoUrl;
         elements.feesPhoto.onerror = function() { this.src = 'default-avatar.png'; };
-        elements.feesStudentName.textContent = student.name;
-        elements.feesDetails.textContent = `${student.class} - Batch ${student.batch_year} | Roll No: ${student.roll_number}`;
+        
+        elements.feesStudentName.textContent = data.student.name;
+        elements.feesDetails.textContent = `${data.student.class} - Batch ${data.student.batch} | Roll No: ${data.student.roll_number}`;
         
         // Calculate totals
-        const totalFees = parseFloat(student.fees) || 0;
-        const totalPaid = payments.reduce((sum, payment) => sum + (parseFloat(payment.amount) || 0), 0);
-        const totalDue = totalFees - totalPaid;
+        const totalFees = data.fee_summary?.total_fees || 0;
+        const totalPaid = data.fee_summary?.total_paid || 0;
+        const totalDue = data.fee_summary?.due_amount || 0;
         
         elements.totalFeesAmount.textContent = `₹${totalFees.toLocaleString()}`;
         elements.totalPaidAmount.textContent = `₹${totalPaid.toLocaleString()}`;
         elements.totalDueAmount.textContent = `₹${totalDue.toLocaleString()}`;
         
         // Render payment history
-        renderPaymentHistory(payments);
+        renderPaymentHistory(data.payment_history || []);
         
         elements.feesModal.style.display = 'flex';
         hideLoading();
@@ -584,7 +660,7 @@ async function openFeesTracker(studentId) {
     }
 }
 
-// Render payment history
+// Render payment history (MongoDB compatible)
 function renderPaymentHistory(payments) {
     elements.paymentTableBody.innerHTML = '';
     
@@ -604,13 +680,13 @@ function renderPaymentHistory(payments) {
         row.innerHTML = `
             <td>${getMonthName(payment.month)}</td>
             <td>${payment.year}</td>
-            <td>${payment.class}</td>
-            <td>${payment.batch_year}</td>
-            <td>₹${parseFloat(payment.amount).toLocaleString()}</td>
+            <td>${payment.class || currentFeesStudent?.class}</td>
+            <td>${payment.batch_year || currentFeesStudent?.batch}</td>
+            <td>₹${parseFloat(payment.amount || 0).toLocaleString()}</td>
             <td><span class="status-paid">Paid</span></td>
             <td>${formatDate(payment.payment_date)}</td>
             <td>
-                <button class="btn-edit" onclick="editPayment('${payment.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                <button class="btn-edit" onclick="editPayment('${payment._id || payment.id}')" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
                     <i class="fas fa-edit"></i>
                 </button>
             </td>
@@ -628,7 +704,7 @@ function getMonthName(monthNumber) {
     return months[monthNumber - 1] || 'Unknown';
 }
 
-// Record payment
+// Record payment (MongoDB compatible)
 async function recordPayment() {
     if (!currentFeesStudent) return;
     
@@ -642,17 +718,17 @@ async function recordPayment() {
     }
     
     const paymentData = {
-        student_id: currentFeesStudent.id,
+        student_id: currentFeesStudent.id || currentFeesStudent._id,
         month: month,
         year: year,
         amount: amount,
-        class: currentFeesStudent.class,
-        batch_year: currentFeesStudent.batch_year
+        mode: 'Cash',
+        receipt_no: `RCPT${Date.now()}`
     };
     
     try {
         showLoading();
-        const response = await fetch(`${API_BASE}/api/student/record-payment`, {
+        const response = await fetch(`${API_BASE}/api/student-dashboard/record-payment`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -666,7 +742,7 @@ async function recordPayment() {
         elements.paymentAmount.value = '';
         
         // Refresh fees tracker
-        await openFeesTracker(currentFeesStudent.id);
+        await openFeesTracker(currentFeesStudent.id || currentFeesStudent._id);
         
         alert('Payment recorded successfully!');
         hideLoading();
@@ -677,7 +753,7 @@ async function recordPayment() {
     }
 }
 
-// Edit payment (placeholder - implement as needed)
+// Edit payment (placeholder)
 function editPayment(paymentId) {
     alert('Edit payment functionality to be implemented');
 }
@@ -703,7 +779,7 @@ function openPromoteModal() {
     elements.promoteModal.style.display = 'flex';
 }
 
-// Promote students
+// Promote students (MongoDB compatible)
 async function promoteStudents() {
     const newClass = elements.newClass.value;
     const newBatch = elements.newBatch.value;
@@ -727,7 +803,7 @@ async function promoteStudents() {
     
     try {
         showLoading();
-        const response = await fetch(`${API_BASE}/api/student/promote-students`, {
+        const response = await fetch(`${API_BASE}/api/student-dashboard/bulk-promote`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -737,12 +813,14 @@ async function promoteStudents() {
         
         if (!response.ok) throw new Error('Failed to promote students');
         
+        const result = await response.json();
+        
         closePromoteModal();
         
         // Reload current students
         await loadStudents();
         
-        alert('Students promoted successfully!');
+        alert(result.message || 'Students promoted successfully!');
         hideLoading();
     } catch (error) {
         console.error('Error promoting students:', error);
@@ -766,7 +844,7 @@ function setupEventListeners() {
     // Bulk promote checkbox
     elements.bulkPromote.addEventListener('change', function() {
         if (this.checked && currentStudents.length > 0) {
-            selectedStudents = currentStudents.map(s => s.id);
+            selectedStudents = currentStudents.map(s => s.student_id || s._id);
             openPromoteModal();
         }
     });
@@ -775,18 +853,26 @@ function setupEventListeners() {
 // Format date
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN');
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN');
+    } catch (e) {
+        return dateString;
+    }
 }
 
 // Show loading
 function showLoading() {
-    elements.loading.style.display = 'flex';
+    if (elements.loading) {
+        elements.loading.style.display = 'flex';
+    }
 }
 
 // Hide loading
 function hideLoading() {
-    elements.loading.style.display = 'none';
+    if (elements.loading) {
+        elements.loading.style.display = 'none';
+    }
 }
 
 // Logout
