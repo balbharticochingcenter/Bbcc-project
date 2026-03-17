@@ -2,31 +2,24 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const helmet = require('helmet'); // Security Headers
-const rateLimit = require('express-rate-limit'); // Stop Spamming
-const crypto = require('crypto'); // For generating nonces
-
-// ============================================
-// 📦 NEW PACKAGES ADDED FOR SECURITY
-// ============================================
-const bcrypt = require('bcrypt'); // Password hashing ke liye
-const jwt = require('jsonwebtoken'); // Token based authentication ke liye
-const Joi = require('joi'); // Input validation ke liye
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const Joi = require('joi');
+const path = require('path'); // Add this for serving HTML
 
 dotenv.config();
 const app = express();
 
-// ============================================
-// 🆕 GENERATE NONCE FOR CSP
-// ============================================
+// Generate nonce for CSP
 app.use((req, res, next) => {
     res.locals.nonce = crypto.randomBytes(16).toString('base64');
     next();
 });
 
-// ============================================
-// ✅ FIXED HELMET CONFIGURATION - CSP ISSUE SOLVED
-// ============================================
+// Helmet configuration
 app.use(
     helmet({
         contentSecurityPolicy: {
@@ -34,7 +27,7 @@ app.use(
                 defaultSrc: ["'self'"],
                 scriptSrc: [
                     "'self'",
-                    "'unsafe-inline'",  // For inline scripts
+                    "'unsafe-inline'",
                     "'unsafe-eval'",
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
@@ -83,14 +76,14 @@ app.use(
 );
 
 app.use(cors({
-    origin: '*', // Allow all origins (for development)
+    origin: '*',
     credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Increase limit for images
 app.use(express.static('public'));
 
-// Rate Limiter: Ek IP se 15 minute mein sirf 100 requests
+// Rate Limiter
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -98,47 +91,16 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// --- MONGODB CONNECTION ---
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ Secure Connection Established"))
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc')
+    .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.log("❌ DB Error:", err.message));
 
 // ============================================
-// 🆕 CREATE DEFAULT ADMIN (SIRF EK BAAR CHALEGA)
+// SCHEMAS
 // ============================================
-async function createDefaultAdmin() {
-    try {
-        // Check if Admin model exists
-        if (!mongoose.models.Admin) {
-            console.log("⏳ Admin model not ready yet...");
-            return;
-        }
-        
-        const Admin = mongoose.model('Admin');
-        const adminExists = await Admin.findOne({ adminID: 'admin' });
-        
-        if (!adminExists) {
-            // Password hash karo
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            
-            const newAdmin = new Admin({
-                adminID: 'admin',
-                pws: hashedPassword
-            });
-            
-            await newAdmin.save();
-            console.log("✅ Default Admin Created: Username = admin, Password = admin123");
-            console.log("⚠️ PLEASE CHANGE PASSWORD AFTER FIRST LOGIN!");
-        } else {
-            console.log("✅ Admin already exists, skipping creation");
-        }
-    } catch (err) {
-        console.log("❌ Admin creation error:", err.message);
-    }
-}
 
-/////////////////////////////////////////// index page /////////////////////
-// Schema (Same as before) - IMPROVED WITH VALIDATION
+// Web Config Schema
 const WebConfigSchema = new mongoose.Schema({
     logoText: {
         type: String,
@@ -178,7 +140,146 @@ const WebConfigSchema = new mongoose.Schema({
 
 const WebConfig = mongoose.model('WebConfig', WebConfigSchema);
 
-// Initialize default config if none exists
+// Admin Schema
+const AdminSchema = new mongoose.Schema({
+    adminID: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true
+    },
+    pws: {
+        type: String,
+        required: true
+    }
+}, {
+    timestamps: true
+});
+
+const Admin = mongoose.model('Admin', AdminSchema);
+
+// ============================================
+// 🆕 STUDENT SCHEMA - ADD THIS
+// ============================================
+const StudentSchema = new mongoose.Schema({
+    studentId: { 
+        type: String, 
+        required: true, 
+        unique: true,
+        index: true 
+    },
+    password: { 
+        type: String, 
+        required: true 
+    },
+    photo: {
+        type: String,
+        required: true
+    },
+    studentName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    mobile: { 
+        type: String, 
+        required: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{10}$/.test(v);
+            },
+            message: 'Mobile number must be 10 digits'
+        }
+    },
+    aadharNumber: { 
+        type: String, 
+        required: true,
+        unique: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{12}$/.test(v);
+            },
+            message: 'Aadhar number must be 12 digits'
+        }
+    },
+    aadharDocument: { 
+        type: String, 
+        required: true 
+    },
+    registrationDate: { 
+        type: Date, 
+        required: true,
+        default: Date.now 
+    },
+    joiningDate: { 
+        type: Date, 
+        required: true 
+    },
+    fees: { 
+        type: Number, 
+        default: 0 
+    },
+    fatherName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    fatherMobile: { 
+        type: String, 
+        required: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{10}$/.test(v);
+            },
+            message: 'Father mobile must be 10 digits'
+        }
+    },
+    motherName: {
+        first: { type: String, default: '' },
+        middle: { type: String, default: '' },
+        last: { type: String, default: '' }
+    },
+    address: {
+        current: { type: String, required: true },
+        permanent: { type: String, required: true }
+    },
+    education: {
+        board: { type: String, required: true },
+        class: { type: String, required: true }
+    }
+}, { 
+    timestamps: true 
+});
+
+const Student = mongoose.model('Student', StudentSchema);
+
+// ============================================
+// INITIALIZATION FUNCTIONS
+// ============================================
+
+async function createDefaultAdmin() {
+    try {
+        const adminExists = await Admin.findOne({ adminID: 'admin' });
+        
+        if (!adminExists) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            
+            const newAdmin = new Admin({
+                adminID: 'admin',
+                pws: hashedPassword
+            });
+            
+            await newAdmin.save();
+            console.log("✅ Default Admin Created: Username = admin, Password = admin123");
+            console.log("⚠️ PLEASE CHANGE PASSWORD AFTER FIRST LOGIN!");
+        } else {
+            console.log("✅ Admin already exists");
+        }
+    } catch (err) {
+        console.log("❌ Admin creation error:", err.message);
+    }
+}
+
 async function initializeDefaultConfig() {
     try {
         const configExists = await WebConfig.findOne();
@@ -198,15 +299,33 @@ async function initializeDefaultConfig() {
             console.log("✅ Default website config created");
         }
     } catch (err) {
-        console.log("❌ Config initialization error:", err.message);
+            console.log("❌ Config initialization error:", err.message);
     }
 }
 
+// ============================================
+// API ROUTES
+// ============================================
+
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: "Server is running",
+        timestamp: new Date().toISOString(),
+        endpoints: {
+            register: "/api/student-register",
+            config: "/api/config",
+            login: "/api/admin-login"
+        }
+    });
+});
+
+// Get website config
 app.get('/api/config', async (req, res) => {
     try {
         let config = await WebConfig.findOne().lean();
         
-        // Agar config nahi hai toh default bana do
         if (!config) {
             const defaultConfig = new WebConfig({
                 logoText: 'BBCC',
@@ -230,38 +349,7 @@ app.get('/api/config', async (req, res) => {
     }
 });
 
-/////////////////////////////////////////// Admin page /////////////////////
-
-// 1. Admin Schema - IMPROVED WITH VALIDATION
-const AdminSchema = new mongoose.Schema({
-    adminID: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
-    },
-    pws: {
-        type: String,
-        required: true
-    }
-}, {
-    timestamps: true
-});
-
-const Admin = mongoose.model('Admin', AdminSchema);
-
-// ============================================
-// 🆕 CALL DEFAULT ADMIN CREATION FUNCTION
-// ============================================
-mongoose.connection.once('open', async () => {
-    console.log("🔄 MongoDB connected, initializing data...");
-    await createDefaultAdmin();
-    await initializeDefaultConfig();
-});
-
-// ============================================
-// 🆕 LOGIN RATE LIMITER
-// ============================================
+// Admin login
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -272,11 +360,9 @@ const loginLimiter = rateLimit({
     }
 });
 
-// 2. Login API Route - UPDATED WITH BCRYPT + JWT
 app.post('/api/admin-login', loginLimiter, async (req, res) => {
     const { userid, password } = req.body;
     
-    // Input validation
     if (!userid || !password) {
         return res.status(400).json({
             success: false,
@@ -285,16 +371,12 @@ app.post('/api/admin-login', loginLimiter, async (req, res) => {
     }
     
     try {
-        // Pehle admin find karo sirf ID se
         const admin = await Admin.findOne({ adminID: userid });
         
-        // Agar admin mil gaya toh password check karo
         if (admin) {
-            // Compare password with hashed password
             const isPasswordValid = await bcrypt.compare(password, admin.pws);
             
             if (isPasswordValid) {
-                // Generate JWT token
                 const token = jwt.sign(
                     {
                         id: admin._id,
@@ -313,14 +395,12 @@ app.post('/api/admin-login', loginLimiter, async (req, res) => {
                     token: token
                 });
             } else {
-                // Wrong password
                 res.status(401).json({
                     success: false,
                     message: "Wrong ID or Password!"
                 });
             }
         } else {
-            // Admin not found
             res.status(401).json({
                 success: false,
                 message: "Wrong ID or Password!"
@@ -335,9 +415,7 @@ app.post('/api/admin-login', loginLimiter, async (req, res) => {
     }
 });
 
-// ============================================
-// 🆕 TOKEN VERIFICATION MIDDLEWARE
-// ============================================
+// Token verification middleware
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -362,69 +440,7 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// ============================================
-// 🆕 CONFIG UPDATE VALIDATION SCHEMA
-// ============================================
-const configUpdateSchema = Joi.object({
-    logoText: Joi.string().required().messages({
-        'string.empty': 'Logo text cannot be empty',
-        'any.required': 'Logo text is required'
-    }),
-    title: Joi.string().required(),
-    subTitle: Joi.string().allow('').optional(),
-    aboutText: Joi.string().allow('').optional(),
-    whatsapp: Joi.string().uri().allow('').optional(),
-    insta: Joi.string().uri().allow('').optional(),
-    fb: Joi.string().uri().allow('').optional(),
-    twitter: Joi.string().uri().allow('').optional(),
-    slides: Joi.array().items(Joi.string().uri()).optional()
-});
-
-///////////////////////////////////////////////////////////////////////////////////admin page for edit hedar and footer////////////////////
-// Data Update karne ki Secure API - UPDATED WITH TOKEN AUTH + VALIDATION
-app.post('/api/update-config', verifyToken, async (req, res) => {
-    try {
-        // 📝 INPUT VALIDATION
-        const { error, value } = configUpdateSchema.validate(req.body);
-        
-        if (error) {
-            return res.status(400).json({
-                success: false,
-                message: "Validation Error: " + error.details[0].message
-            });
-        }
-        
-        // ✅ VALIDATION PASS - Ab database update karo
-        const config = await WebConfig.findOneAndUpdate(
-            {},
-            value,
-            {
-                upsert: true,
-                new: true,
-                runValidators: true
-            }
-        );
-        
-        console.log(`✅ Website updated by admin: ${req.user.adminID} at ${new Date().toLocaleString()}`);
-        
-        res.json({
-            success: true,
-            message: "Website Updated Successfully!",
-            data: config
-        });
-        
-    } catch (err) {
-        console.error("Update Config Error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Update Fail Ho Gaya. Please try again."
-        });
-    }
-});
-
-// ============================================
-// 🆕 VERIFY TOKEN API
-// ============================================
+// Verify token
 app.get('/api/verify-token', verifyToken, (req, res) => {
     res.json({
         success: true,
@@ -438,159 +454,48 @@ app.get('/api/verify-token', verifyToken, (req, res) => {
 });
 
 // ============================================
-// 🆕 CHANGE PASSWORD API
-// ============================================
-app.post('/api/change-password', verifyToken, async (req, res) => {
-    try {
-        const { oldPassword, newPassword } = req.body;
-        
-        // Validation
-        if (!oldPassword || !newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: "Old password and new password are required"
-            });
-        }
-        
-        if (newPassword.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: "New password must be at least 6 characters long"
-            });
-        }
-        
-        // Admin find karo
-        const admin = await Admin.findById(req.user.id);
-        
-        if (!admin) {
-            return res.status(404).json({
-                success: false,
-                message: "Admin not found"
-            });
-        }
-        
-        // Old password verify karo
-        const isPasswordValid = await bcrypt.compare(oldPassword, admin.pws);
-        
-        if (!isPasswordValid) {
-            return res.status(401).json({
-                success: false,
-                message: "Old password is incorrect"
-            });
-        }
-        
-        // New password hash karo
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-        
-        // Update password
-        admin.pws = hashedNewPassword;
-        await admin.save();
-        
-        console.log(`✅ Password changed for admin: ${req.user.adminID}`);
-        
-        res.json({
-            success: true,
-            message: "Password changed successfully!"
-        });
-        
-    } catch (err) {
-        console.error("Change Password Error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Server error. Please try again."
-        });
-    }
-});
-
-// ============================================
-// 🆕 HEALTH CHECK API
-// ============================================
-app.get('/api/health', (req, res) => {
-    res.json({
-        success: true,
-        message: "Server is running",
-        timestamp: new Date().toISOString()
-    });
-});
-
-// ============================================
-// 🆕 GLOBAL ERROR HANDLER
-// ============================================
-app.use((err, req, res, next) => {
-    console.error("Global Error:", err.stack);
-    res.status(500).json({
-        success: false,
-        message: "Something went wrong! Please try again later."
-    });
-});
-
-// ============================================
-// 404 HANDLER
-// ============================================
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: "API endpoint not found"
-    });
-});
-////////////////////register student ///////////////////////////////////////////////////////////////
-
-////////////////////register student ///////////////////////////////////////////////////////////////
-
-const StudentSchema = new mongoose.Schema({
-    studentId: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    photo: String,
-    studentName: {
-        first: String,
-        middle: String,
-        last: String
-    },
-    mobile: String,
-    aadharNumber: String,
-    aadharDocument: String,
-    registrationDate: { type: Date, required: true },
-    joiningDate: { type: Date, required: true },
-    fees: { type: Number, default: 0 }, // ✅ Default 0
-    fatherName: {
-        first: String,
-        middle: String,
-        last: String
-    },
-    fatherMobile: String,
-    motherName: {
-        first: String,
-        middle: String,
-        last: String
-    },
-    address: {
-        current: String,
-        permanent: String
-    },
-    education: {
-        board: String,
-        class: String
-    }
-}, { timestamps: true });
-
-const Student = mongoose.model('Student', StudentSchema);
-
-// ============================================
-// 📌 STUDENT REGISTRATION API - YEH CODE ADD KARO
+// ✅ FIXED: STUDENT REGISTRATION API
 // ============================================
 app.post('/api/student-register', async (req, res) => {
+    console.log("📝 Registration request received");
+    
     try {
         const studentData = req.body;
         
-        // Check if student already exists (by Aadhar number)
+        // Validate required fields
+        if (!studentData.studentId || !studentData.password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Student ID and password are required" 
+            });
+        }
+        
+        if (!studentData.photo) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Photo is required" 
+            });
+        }
+        
+        if (!studentData.aadharDocument) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Aadhar document is required" 
+            });
+        }
+        
+        // Check if student already exists
         const existingStudent = await Student.findOne({ 
-            studentId: studentData.studentId 
+            $or: [
+                { studentId: studentData.studentId },
+                { aadharNumber: studentData.aadhar }
+            ]
         });
         
         if (existingStudent) {
             return res.status(400).json({ 
                 success: false, 
-                message: "Student already registered with this Aadhar number" 
+                message: "Student already registered with this Aadhar number or ID" 
             });
         }
         
@@ -643,7 +548,16 @@ app.post('/api/student-register', async (req, res) => {
         });
         
     } catch (err) {
-        console.error("Registration Error:", err);
+        console.error("❌ Registration Error:", err);
+        
+        // Handle duplicate key error
+        if (err.code === 11000) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Duplicate entry: Student with this Aadhar or ID already exists" 
+            });
+        }
+        
         res.status(500).json({ 
             success: false, 
             message: "Registration failed: " + err.message 
@@ -652,8 +566,10 @@ app.post('/api/student-register', async (req, res) => {
 });
 
 // ============================================
-// 📌 GET ALL STUDENTS API (OPTIONAL - Admin ke liye)
+// STUDENT MANAGEMENT APIs (Admin only)
 // ============================================
+
+// Get all students
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
         const students = await Student.find().sort({ createdAt: -1 });
@@ -663,9 +579,7 @@ app.get('/api/students', verifyToken, async (req, res) => {
     }
 });
 
-// ============================================
-// 📌 GET SINGLE STUDENT BY ID (OPTIONAL)
-// ============================================
+// Get single student by ID
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
@@ -678,9 +592,7 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ============================================
-// 📌 UPDATE STUDENT FEES (Admin ke liye)
-// ============================================
+// Update student fees
 app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
     try {
         const { fees } = req.body;
@@ -700,9 +612,7 @@ app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
     }
 });
 
-// ============================================
-// 📌 DELETE STUDENT (Admin ke liye)
-// ============================================
+// Delete student
 app.delete('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOneAndDelete({ studentId: req.params.id });
@@ -717,10 +627,166 @@ app.delete('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Update config
+const configUpdateSchema = Joi.object({
+    logoText: Joi.string().required(),
+    title: Joi.string().required(),
+    subTitle: Joi.string().allow('').optional(),
+    aboutText: Joi.string().allow('').optional(),
+    whatsapp: Joi.string().uri().allow('').optional(),
+    insta: Joi.string().uri().allow('').optional(),
+    fb: Joi.string().uri().allow('').optional(),
+    twitter: Joi.string().uri().allow('').optional(),
+    slides: Joi.array().items(Joi.string().uri()).optional()
+});
+
+app.post('/api/update-config', verifyToken, async (req, res) => {
+    try {
+        const { error, value } = configUpdateSchema.validate(req.body);
+        
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: "Validation Error: " + error.details[0].message
+            });
+        }
+        
+        const config = await WebConfig.findOneAndUpdate(
+            {},
+            value,
+            {
+                upsert: true,
+                new: true,
+                runValidators: true
+            }
+        );
+        
+        console.log(`✅ Website updated by admin: ${req.user.adminID}`);
+        
+        res.json({
+            success: true,
+            message: "Website Updated Successfully!",
+            data: config
+        });
+        
+    } catch (err) {
+        console.error("Update Config Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Update Fail Ho Gaya. Please try again."
+        });
+    }
+});
+
+// Change password
+app.post('/api/change-password', verifyToken, async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Old password and new password are required"
+            });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "New password must be at least 6 characters long"
+            });
+        }
+        
+        const admin = await Admin.findById(req.user.id);
+        
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found"
+            });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(oldPassword, admin.pws);
+        
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: "Old password is incorrect"
+            });
+        }
+        
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        
+        admin.pws = hashedNewPassword;
+        await admin.save();
+        
+        console.log(`✅ Password changed for admin: ${req.user.adminID}`);
+        
+        res.json({
+            success: true,
+            message: "Password changed successfully!"
+        });
+        
+    } catch (err) {
+        console.error("Change Password Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Server error. Please try again."
+        });
+    }
+});
+
+// ============================================
+// SERVE HTML FILES
+// ============================================
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ============================================
+// ERROR HANDLERS
+// ============================================
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error("Global Error:", err.stack);
+    res.status(500).json({
+        success: false,
+        message: "Something went wrong! Please try again later."
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "API endpoint not found",
+        path: req.path
+    });
+});
+
+// ============================================
+// START SERVER
+// ============================================
 const PORT = process.env.PORT || 5000;
+
+mongoose.connection.once('open', async () => {
+    console.log("🔄 Initializing data...");
+    await createDefaultAdmin();
+    await initializeDefaultConfig();
+});
+
 app.listen(PORT, () => {
-    console.log(`🔐 Secure Server running on port ${PORT}`);
+    console.log(`🔐 Server running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 http://localhost:${PORT}`);
+    console.log(`📌 API Endpoints:`);
+    console.log(`   - POST /api/student-register - Student Registration`);
+    console.log(`   - POST /api/admin-login - Admin Login`);
+    console.log(`   - GET /api/config - Website Config`);
+    console.log(`   - GET /api/health - Health Check`);
 });
