@@ -83,6 +83,10 @@
             box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
         }
         
+        .btn-save:active {
+            transform: translateY(0);
+        }
+        
         .btn-save.loading {
             background: #94a3b8;
             pointer-events: none;
@@ -116,6 +120,7 @@
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s;
+            cursor: pointer;
         }
         
         .logout-btn:hover {
@@ -237,6 +242,11 @@
             padding: 8px 15px;
             font-size: 0.9rem;
             margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        .btn-add-slide:hover {
+            background: #1e293b;
         }
         
         .btn-remove-slide {
@@ -249,6 +259,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+        }
+        
+        .btn-remove-slide:hover {
+            background: #dc2626;
         }
         
         .nav-tabs .nav-link {
@@ -278,6 +293,24 @@
                 width: 100%;
             }
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            z-index: 10;
+        }
+        
+        .toggle-password:hover {
+            color: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -294,7 +327,7 @@
             </h5>
             <small>Update Your Website in Real-time</small>
         </div>
-        <button class="logout-btn" onclick="logout()">
+        <button class="logout-btn" id="logoutBtn">
             <i class="fas fa-sign-out-alt me-2"></i>Logout
         </button>
     </header>
@@ -384,7 +417,7 @@
                                         </div>
                                         <div class="col-md-4">
                                             <input type="text" id="edit-logo" class="form-control" 
-                                                   placeholder="Or enter logo URL" readonly>
+                                                   placeholder="Logo URL" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -536,6 +569,7 @@
         </small>
     </footer>
 
+    <!-- Bootstrap JS - IMPORTANT for tabs to work -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
@@ -553,7 +587,8 @@
         // ============================================
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
-            const icon = event.target;
+            // Fix for event parameter
+            const icon = window.event ? window.event.target : document.querySelector(`[onclick="togglePassword('${inputId}')"]`);
             
             if (input.type === 'password') {
                 input.type = 'text';
@@ -757,6 +792,7 @@
             if (slides && slides.length > 0) {
                 slides.forEach(slide => addSlideField(slide));
             } else {
+                // Add 3 default empty slides
                 for (let i = 0; i < 3; i++) addSlideField('');
             }
         }
@@ -1014,6 +1050,9 @@
             fetchCurrentData();
             fetchAdminData();
             
+            // Add logout button event listener
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
             const inputs = document.querySelectorAll('#updateForm input, #updateForm textarea');
             inputs.forEach(input => {
                 input.addEventListener('input', () => {
@@ -1029,25 +1068,5 @@
             });
         });
     </script>
-    
-    <style>
-        .password-wrapper {
-            position: relative;
-        }
-        
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #666;
-            z-index: 10;
-        }
-        
-        .toggle-password:hover {
-            color: var(--accent);
-        }
-    </style>
 </body>
 </html>
