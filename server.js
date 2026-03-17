@@ -44,6 +44,30 @@ app.get('/api/config', async (req, res) => {
         res.status(500).send("Server Error");
     }
 });
-/////////////////////////////////////////// index page /////////////////////
+/////////////////////////////////////////// Admin page /////////////////////
+
+// 1. Admin Schema
+const AdminSchema = new mongoose.Schema({
+    adminID: String,
+    pws: String
+});
+const Admin = mongoose.model('Admin', AdminSchema);
+
+// 2. Login API Route
+app.post('/api/admin-login', async (req, res) => {
+    const { userid, password } = req.body;
+    try {
+        const admin = await Admin.findOne({ adminID: userid, pws: password });
+        if (admin) {
+            res.json({ success: true, message: "Login Successful" });
+        } else {
+            res.status(401).json({ success: false, message: "Wrong ID or Password!" });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+///////////////////////////////////////////////////////////////////////////////////admin////////////////////
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Secure Server on ${PORT}`));
