@@ -1,23 +1,108 @@
 // ============================================
-// COMPLETE STUDENT MANAGEMENT SYSTEM
+// COMPLETE STUDENT MANAGEMENT SYSTEM - FIXED
 // ============================================
 
 (function() {
+    console.log("📚 Student Management Loading...");
+    
     // Check if we're on admin page
-    if (!document.getElementById('students-tab')) return;
+    const isAdminPage = document.getElementById('myTab') !== null;
+    if (!isAdminPage) {
+        console.log("❌ Not admin page, exiting");
+        return;
+    }
+    
+    // Check token
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.log("❌ No token found");
+        return;
+    }
     
     // ============================================
-    // CREATE ALL HTML ELEMENTS PROGRAMMATICALLY
+    // GLOBAL VARIABLES
     // ============================================
+    let allStudents = [];
+    let filteredStudents = [];
+    let feeChart = null;
+    let boardFilter = '';
+    let classFilter = '';
     
-    // Create Student Tab Content
-    function createStudentTabContent() {
+    // ============================================
+    // TOAST NOTIFICATION
+    // ============================================
+    function showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            alert(message);
+            return;
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type}`;
+        toast.innerHTML = `
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    // ============================================
+    // ADD STUDENT TAB TO NAVIGATION
+    // ============================================
+    function addStudentTab() {
+        console.log("Adding student tab...");
+        
+        const tabList = document.getElementById('myTab');
+        if (!tabList) {
+            console.log("❌ Tab list not found");
+            return false;
+        }
+        
         // Check if tab already exists
-        if (document.getElementById('students-tab-content')) return;
+        if (document.getElementById('students-tab')) {
+            console.log("✅ Student tab already exists");
+            return true;
+        }
+        
+        const studentTab = document.createElement('li');
+        studentTab.className = 'nav-item';
+        studentTab.setAttribute('role', 'presentation');
+        studentTab.innerHTML = `
+            <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">
+                <i class="fas fa-users me-2"></i>Students
+            </button>
+        `;
+        
+        tabList.appendChild(studentTab);
+        console.log("✅ Student tab added");
+        return true;
+    }
+    
+    // ============================================
+    // CREATE STUDENT TAB CONTENT
+    // ============================================
+    function createStudentTabContent() {
+        console.log("Creating tab content...");
+        
+        // Check if already exists
+        if (document.getElementById('students')) {
+            console.log("✅ Student content already exists");
+            return true;
+        }
         
         // Get the tab content container
         const tabContent = document.querySelector('.tab-content');
-        if (!tabContent) return;
+        if (!tabContent) {
+            console.log("❌ Tab content not found");
+            return false;
+        }
         
         // Create student tab pane
         const studentPane = document.createElement('div');
@@ -119,9 +204,13 @@
         `;
         
         tabContent.appendChild(studentPane);
+        console.log("✅ Student content created");
+        return true;
     }
     
-    // Create Student Details Modal
+    // ============================================
+    // CREATE STUDENT DETAILS MODAL
+    // ============================================
     function createStudentDetailsModal() {
         if (document.getElementById('studentDetailsModal')) return;
         
@@ -238,7 +327,9 @@
         document.body.appendChild(modal);
     }
     
-    // Create Edit Fees Modal
+    // ============================================
+    // CREATE EDIT FEES MODAL
+    // ============================================
     function createEditFeesModal() {
         if (document.getElementById('editFeesModal')) return;
         
@@ -288,38 +379,6 @@
     }
     
     // ============================================
-    // GLOBAL VARIABLES
-    // ============================================
-    let allStudents = [];
-    let filteredStudents = [];
-    let feeChart = null;
-    let boardFilter = '';
-    let classFilter = '';
-    const token = localStorage.getItem('token');
-    
-    // ============================================
-    // TOAST NOTIFICATION
-    // ============================================
-    function showToast(message, type = 'success') {
-        const toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) return;
-        
-        const toast = document.createElement('div');
-        toast.className = `toast-message ${type}`;
-        toast.innerHTML = `
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            <span>${message}</span>
-        `;
-        
-        toastContainer.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.classList.add('fade-out');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-    
-    // ============================================
     // FEE CALCULATION
     // ============================================
     function calculateMonths(joiningDate) {
@@ -327,23 +386,28 @@
         const current = new Date();
         const years = current.getFullYear() - join.getFullYear();
         const months = current.getMonth() - join.getMonth();
-        return (years * 12) + months;
+        return Math.max(1, (years * 12) + months);
     }
     
     function calculateMonthlyFee(student) {
         const baseFee = 1000;
-        if (student.education.class.includes('11') || student.education.class.includes('12')) {
+        if (!student || !student.education) return baseFee;
+        
+        const className = student.education.class || '';
+        if (className.includes('11') || className.includes('12')) {
             return baseFee + 500;
         }
-        if (student.education.class.includes('BA') || student.education.class.includes('BSc') || 
-            student.education.class.includes('BCom') || student.education.class.includes('BTech')) {
+        if (className.includes('BA') || className.includes('BSc') || 
+            className.includes('BCom') || className.includes('BTech')) {
             return baseFee + 1000;
         }
         return baseFee;
     }
     
     function calculateFeeDetails(student) {
-        const totalMonths = Math.max(1, calculateMonths(student.joiningDate));
+        if (!student) return { totalMonths: 0, monthlyFee: 0, totalFee: 0, paidFee: 0, dueFee: 0, months: [] };
+        
+        const totalMonths = calculateMonths(student.joiningDate);
         const monthlyFee = calculateMonthlyFee(student);
         const totalFee = totalMonths * monthlyFee;
         const paidFee = student.fees || 0;
@@ -372,14 +436,22 @@
     // FETCH ALL STUDENTS
     // ============================================
     async function fetchAllStudents() {
+        console.log("Fetching students...");
+        
         try {
             const response = await fetch('/api/students', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
-            if (!response.ok) throw new Error('Failed to fetch');
+            console.log("Response status:", response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
             
             const result = await response.json();
+            console.log("Students received:", result.data?.length || 0);
+            
             allStudents = result.data || [];
             filteredStudents = [...allStudents];
             
@@ -390,12 +462,16 @@
             
         } catch (err) {
             console.error('Fetch error:', err);
-            document.getElementById('studentTableBody').innerHTML = `
-                <tr><td colspan="8" class="text-center py-5 text-danger">
-                    <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
-                    <p>Failed to load students. Please refresh.</p>
-                </td></tr>
-            `;
+            const tbody = document.getElementById('studentTableBody');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="text-center py-5 text-danger">
+                        <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                        <p>Error: ${err.message}</p>
+                        <button class="btn btn-sm btn-primary" onclick="location.reload()">Refresh</button>
+                    </td></tr>
+                `;
+            }
         }
     }
     
@@ -403,7 +479,7 @@
     // POPULATE BOARD FILTER
     // ============================================
     function populateBoardFilter() {
-        const boards = [...new Set(allStudents.map(s => s.education.board))];
+        const boards = [...new Set(allStudents.map(s => s.education?.board).filter(b => b))];
         const boardSelect = document.getElementById('filterBoard');
         if (!boardSelect) return;
         
@@ -426,8 +502,9 @@
         if (!board) return;
         
         const classes = [...new Set(allStudents
-            .filter(s => s.education.board === board)
-            .map(s => s.education.class)
+            .filter(s => s.education?.board === board)
+            .map(s => s.education?.class)
+            .filter(c => c)
         )].sort();
         
         classes.forEach(cls => {
@@ -444,14 +521,14 @@
         const searchText = document.getElementById('searchStudent')?.value.toLowerCase() || '';
         
         filteredStudents = allStudents.filter(student => {
-            if (board && student.education.board !== board) return false;
-            if (classVal && student.education.class !== classVal) return false;
+            if (board && student.education?.board !== board) return false;
+            if (classVal && student.education?.class !== classVal) return false;
             
             if (searchText) {
-                const fullName = `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`.toLowerCase();
+                const fullName = `${student.studentName?.first || ''} ${student.studentName?.middle || ''} ${student.studentName?.last || ''}`.toLowerCase();
                 return fullName.includes(searchText) || 
-                       student.studentId.includes(searchText) ||
-                       student.mobile.includes(searchText);
+                       (student.studentId || '').includes(searchText) ||
+                       (student.mobile || '').includes(searchText);
             }
             return true;
         });
@@ -487,23 +564,23 @@
             return `
                 <tr>
                     <td>
-                        <strong>${student.studentName.first} ${student.studentName.last}</strong>
-                        <br><small class="text-muted">ID: ${student.studentId}</small>
+                        <strong>${student.studentName?.first || ''} ${student.studentName?.last || ''}</strong>
+                        <br><small class="text-muted">ID: ${student.studentId || ''}</small>
                     </td>
-                    <td>${student.mobile}</td>
-                    <td>${student.education.board.toUpperCase()}</td>
-                    <td>${student.education.class}</td>
+                    <td>${student.mobile || ''}</td>
+                    <td>${(student.education?.board || '').toUpperCase()}</td>
+                    <td>${student.education?.class || ''}</td>
                     <td>₹${feeDetails.totalFee}</td>
                     <td>₹${feeDetails.paidFee}</td>
                     <td>${status}</td>
                     <td>
-                        <button class="btn btn-sm btn-info text-white" onclick="viewStudent('${student.studentId}')">
+                        <button class="btn btn-sm btn-info text-white" onclick="window.viewStudent('${student.studentId}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-warning" onclick="editStudentFees('${student.studentId}')">
+                        <button class="btn btn-sm btn-warning" onclick="window.editStudentFees('${student.studentId}')">
                             <i class="fas fa-rupee-sign"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteStudent('${student.studentId}')">
+                        <button class="btn btn-sm btn-danger" onclick="window.deleteStudent('${student.studentId}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -536,7 +613,12 @@
     // ============================================
     function renderFeeChart() {
         const canvas = document.getElementById('feeChart');
-        if (!canvas || typeof Chart === 'undefined') return;
+        if (!canvas) return;
+        
+        if (typeof Chart === 'undefined') {
+            console.log("Chart.js not loaded");
+            return;
+        }
         
         const paidFees = filteredStudents.reduce((sum, s) => sum + (s.fees || 0), 0);
         const dueFees = filteredStudents.reduce((sum, s) => {
@@ -580,21 +662,21 @@
             const feeDetails = calculateFeeDetails(student);
             
             document.getElementById('modalStudentName').textContent = 
-                `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`;
-            document.getElementById('modalStudentId').textContent = student.studentId;
-            document.getElementById('modalStudentMobile').textContent = student.mobile;
-            document.getElementById('modalStudentAadhar').textContent = student.aadharNumber;
-            document.getElementById('modalJoiningDate').textContent = new Date(student.joiningDate).toLocaleDateString();
+                `${student.studentName?.first || ''} ${student.studentName?.middle || ''} ${student.studentName?.last || ''}`;
+            document.getElementById('modalStudentId').textContent = student.studentId || '';
+            document.getElementById('modalStudentMobile').textContent = student.mobile || '';
+            document.getElementById('modalStudentAadhar').textContent = student.aadharNumber || '';
+            document.getElementById('modalJoiningDate').textContent = student.joiningDate ? new Date(student.joiningDate).toLocaleDateString() : '';
             document.getElementById('modalTotalMonths').textContent = feeDetails.totalMonths;
-            document.getElementById('modalBoard').textContent = student.education.board.toUpperCase();
-            document.getElementById('modalClass').textContent = student.education.class;
+            document.getElementById('modalBoard').textContent = (student.education?.board || '').toUpperCase();
+            document.getElementById('modalClass').textContent = student.education?.class || '';
             document.getElementById('modalFatherName').textContent = 
-                `${student.fatherName.first} ${student.fatherName.middle} ${student.fatherName.last}`;
-            document.getElementById('modalFatherMobile').textContent = student.fatherMobile;
+                `${student.fatherName?.first || ''} ${student.fatherName?.middle || ''} ${student.fatherName?.last || ''}`;
+            document.getElementById('modalFatherMobile').textContent = student.fatherMobile || '';
             document.getElementById('modalMotherName').textContent = 
-                student.motherName.first ? `${student.motherName.first} ${student.motherName.last}` : 'N/A';
-            document.getElementById('modalCurrentAddress').textContent = student.address.current;
-            document.getElementById('modalPermanentAddress').textContent = student.address.permanent;
+                student.motherName?.first ? `${student.motherName.first} ${student.motherName.last}` : 'N/A';
+            document.getElementById('modalCurrentAddress').textContent = student.address?.current || '';
+            document.getElementById('modalPermanentAddress').textContent = student.address?.permanent || '';
             
             document.getElementById('modalMonthlyFee').textContent = `₹${feeDetails.monthlyFee}`;
             document.getElementById('modalTotalFee').textContent = `₹${feeDetails.totalFee}`;
@@ -614,6 +696,7 @@
             modal.show();
             
         } catch (err) {
+            console.error(err);
             showToast('Failed to load student details', 'error');
         }
     };
@@ -627,7 +710,7 @@
         
         document.getElementById('editStudentId').value = studentId;
         document.getElementById('editStudentName').value = 
-            `${student.studentName.first} ${student.studentName.last}`;
+            `${student.studentName?.first || ''} ${student.studentName?.last || ''}`;
         document.getElementById('editCurrentFees').value = student.fees || 0;
         document.getElementById('editNewFees').value = '';
         
@@ -722,12 +805,12 @@
         filteredStudents.forEach(s => {
             const fee = calculateFeeDetails(s);
             rows.push([
-                s.studentId,
-                `${s.studentName.first} ${s.studentName.last}`,
-                s.mobile,
-                s.education.board.toUpperCase(),
-                s.education.class,
-                new Date(s.joiningDate).toLocaleDateString(),
+                s.studentId || '',
+                `${s.studentName?.first || ''} ${s.studentName?.last || ''}`,
+                s.mobile || '',
+                (s.education?.board || '').toUpperCase(),
+                s.education?.class || '',
+                s.joiningDate ? new Date(s.joiningDate).toLocaleDateString() : '',
                 fee.totalFee,
                 fee.paidFee,
                 fee.dueFee
@@ -747,101 +830,80 @@
     };
     
     // ============================================
-    // ADD STUDENT TAB TO NAVIGATION
-    // ============================================
-    function addStudentTab() {
-        const tabList = document.getElementById('myTab');
-        if (!tabList) return;
-        
-        // Check if tab already exists
-        if (document.getElementById('students-tab')) return;
-        
-        const studentTab = document.createElement('li');
-        studentTab.className = 'nav-item';
-        studentTab.setAttribute('role', 'presentation');
-        studentTab.innerHTML = `
-            <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">
-                <i class="fas fa-users me-2"></i>Students
-            </button>
-        `;
-        
-        tabList.appendChild(studentTab);
-    }
-    
-    // ============================================
     // INITIALIZE EVENT LISTENERS
     // ============================================
     function initEventListeners() {
-        document.getElementById('filterBoard')?.addEventListener('change', function(e) {
-            boardFilter = e.target.value;
-            populateClassFilter(boardFilter);
-            filterStudents();
-        });
+        const filterBoard = document.getElementById('filterBoard');
+        if (filterBoard) {
+            filterBoard.addEventListener('change', function(e) {
+                boardFilter = e.target.value;
+                populateClassFilter(boardFilter);
+                filterStudents();
+            });
+        }
         
-        document.getElementById('filterClass')?.addEventListener('change', function(e) {
-            classFilter = e.target.value;
-            filterStudents();
-        });
+        const filterClass = document.getElementById('filterClass');
+        if (filterClass) {
+            filterClass.addEventListener('change', function(e) {
+                classFilter = e.target.value;
+                filterStudents();
+            });
+        }
         
-        document.getElementById('searchStudent')?.addEventListener('input', filterStudents);
+        const searchStudent = document.getElementById('searchStudent');
+        if (searchStudent) {
+            searchStudent.addEventListener('input', filterStudents);
+        }
         
-        document.getElementById('refreshStudents')?.addEventListener('click', function() {
-            fetchAllStudents();
-            showToast('Refreshing...', 'info');
-        });
+        const refreshBtn = document.getElementById('refreshStudents');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                fetchAllStudents();
+                showToast('Refreshing...', 'info');
+            });
+        }
         
-        document.getElementById('exportCSV')?.addEventListener('click', window.exportToCSV);
+        const exportBtn = document.getElementById('exportCSV');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', window.exportToCSV);
+        }
         
-        document.getElementById('updateFeesBtn')?.addEventListener('click', window.updateFees);
+        const updateBtn = document.getElementById('updateFeesBtn');
+        if (updateBtn) {
+            updateBtn.addEventListener('click', window.updateFees);
+        }
         
-        // Clear new fees input when modal is hidden
-        document.getElementById('editFeesModal')?.addEventListener('hidden.bs.modal', function() {
-            document.getElementById('editNewFees').value = '';
-        });
-    }
-    
-    // ============================================
-    // LOAD CHART.JS DYNAMICALLY
-    // ============================================
-    function loadChartJS() {
-        return new Promise((resolve, reject) => {
-            if (typeof Chart !== 'undefined') {
-                resolve();
-                return;
-            }
-            
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
+        const editModal = document.getElementById('editFeesModal');
+        if (editModal) {
+            editModal.addEventListener('hidden.bs.modal', function() {
+                document.getElementById('editNewFees').value = '';
+            });
+        }
     }
     
     // ============================================
     // INITIALIZE EVERYTHING
     // ============================================
-    async function init() {
+    function init() {
+        console.log("🚀 Initializing Student Management...");
+        
         // Add student tab to navigation
-        addStudentTab();
+        const tabAdded = addStudentTab();
+        if (!tabAdded) return;
         
         // Create all HTML elements
         createStudentTabContent();
         createStudentDetailsModal();
         createEditFeesModal();
         
-        // Load Chart.js
-        try {
-            await loadChartJS();
-        } catch (err) {
-            console.log('Chart.js loading failed, using fallback');
-        }
-        
-        // Initialize event listeners
-        initEventListeners();
-        
-        // Load student data
-        fetchAllStudents();
+        // Small delay for DOM to update
+        setTimeout(() => {
+            // Initialize event listeners
+            initEventListeners();
+            
+            // Load student data
+            fetchAllStudents();
+        }, 100);
     }
     
     // Start when DOM ready
