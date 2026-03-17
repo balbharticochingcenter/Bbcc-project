@@ -2,59 +2,44 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const helmet = require('helmet'); // Security Headers
+const rateLimit = require('express-rate-limit'); // Stop Spamming
 
-// 1. Config setup
 dotenv.config();
 const app = express();
 
-// 2. Middlewares
-app.use(express.json()); // JSON data read karne ke liye
+// --- SECURITY MIDDLEWARES ---
+app.use(helmet()); // XSS aur baaki attacks se bachata hai
+app.use(cors());
+app.use(express.json());
 app.use(express.static('public'));
-app.use(cors());         // Frontend se connect karne mein problem na ho isliye
 
-// 3. MongoDB Connection
-// Yaad rahe: .env file mein MONGO_URI zaroor hona chahiye
-const dbURI = process.env.MONGO_URI;
-
-mongoose.connect(dbURI)
-    .then(() => console.log("✅ MongoDB Connect Ho Gaya!"))
-    .catch((err) => console.error("❌ Connection Error:", err));
-
-// 4. Basic Routes
-app.get('/', (req, res) => {
-    res.send("Server successfully chal raha hai! 🚀");
+// Rate Limiter: Ek IP se 15 minute mein sirf 100 requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100 
 });
+app.use('/api/', limiter);
 
-// Test Route: Check karne ke liye ki API sahi kaam kar rahi hai
-app.get('/status', (req, res) => {
-    res.json({ message: "API active hai", database: "Connected" });
-});
-//-------------------------------------index page ----hedar to footer ----------------------------//
-// 1. Schema Design
-const WebConfigSchema = new mongoose.Schema({
-    logoText: String,
-    title: String,
-    subTitle: String,
-    whatsapp: String,
-    insta: String,
-    fb: String,
-    twitter: String
-});
+// --- MONGODB CONNECTION ---
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Secure Connection Established"))
+  .catch(err => console.log("❌ DB Error"));
 
-const WebConfig = mongoose.model('WebConfig', WebConfigSchema);
+// Schema (Same as before)
+const WebConfig = mongoose.model('WebConfig', new mongoose.Schema({
+    logoText: String, title: String, subTitle: String,
+    whatsapp: String, insta: String, fb: String, twitter: String
+}));
 
-// 2. API to get Data (Frontend ke liye)
 app.get('/api/config', async (req, res) => {
     try {
-        const config = await WebConfig.findOne(); // Pehla document uthayega
+        const config = await WebConfig.findOne().lean(); // lean() performance badhata hai
         res.json(config);
     } catch (err) {
-        res.status(500).json({ message: "Data nahi mil raha" });
+        res.status(500).send("Server Error");
     }
 });
-//-------------------------------------index page ----hedar to footer ----------------------------//
-// 5. Port Listening
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on: http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Secure Server on ${PORT}`));
