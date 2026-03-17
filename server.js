@@ -25,12 +25,16 @@ app.use('/api/', limiter);
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ Secure Connection Established"))
   .catch(err => console.log("❌ DB Error"));
-
+/////////////////////////////////////////// index page /////////////////////
 // Schema (Same as before)
-const WebConfig = mongoose.model('WebConfig', new mongoose.Schema({
-    logoText: String, title: String, subTitle: String,
+const WebConfigSchema = new mongoose.Schema({
+    logoText: String,
+    title: String,
+    subTitle: String,
+    aboutText: String, // Naya field
+    slides: [String],  // Photo URLs ki array
     whatsapp: String, insta: String, fb: String, twitter: String
-}));
+});
 
 app.get('/api/config', async (req, res) => {
     try {
@@ -40,6 +44,6 @@ app.get('/api/config', async (req, res) => {
         res.status(500).send("Server Error");
     }
 });
-
+/////////////////////////////////////////// index page /////////////////////
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Secure Server on ${PORT}`));
