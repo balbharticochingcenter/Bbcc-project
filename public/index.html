@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coaching Center | VIP Theme</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #f4f7f6; color: #333; }
+
+        /* Header VIP Style */
+        header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 1000;
+        }
+
+        .logo { font-size: 1.8rem; font-weight: 700; color: #ffd700; }
+        .center-text { text-align: center; flex-grow: 1; }
+        .center-text h1 { font-size: 1.5rem; letter-spacing: 1px; }
+        .center-text p { font-size: 0.8rem; opacity: 0.8; }
+
+        nav ul { display: flex; list-style: none; gap: 20px; }
+        nav a { color: white; text-decoration: none; font-weight: 500; transition: 0.3s; }
+        nav a:hover { color: #ffd700; }
+
+        .auth-btns { margin-left: 20px; }
+        .btn { padding: 8px 20px; border-radius: 5px; cursor: pointer; border: none; font-weight: 600; }
+        .login { background: transparent; color: white; border: 1px solid white; margin-right: 10px; }
+        .reg { background: #ffd700; color: #1e3c72; }
+
+        /* Footer Style */
+        footer {
+            background: #1a1a1a; color: white; padding: 40px 5%; margin-top: 50px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;
+        }
+        .footer-section h3 { border-bottom: 2px solid #ffd700; width: fit-content; margin-bottom: 15px; }
+        .social-links a { color: white; font-size: 1.5rem; margin-right: 15px; transition: 0.3s; }
+        .social-links a:hover { color: #ffd700; transform: translateY(-5px); display: inline-block; }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; text-align: center; }
+            footer { grid-template-columns: 1fr; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo" id="db-logo">Loading...</div>
+        <div class="center-text">
+            <h1 id="db-title">Coaching Name</h1>
+            <p id="db-subtitle">Loading Subtitle...</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li class="auth-btns">
+                    <button class="btn login">Login</button>
+                    <button class="btn reg">Register</button>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <section style="padding: 100px 5%; text-align: center; background: white;">
+        <h2>Welcome to Our Premium Coaching</h2>
+        <p>Expert Education for Your Bright Future</p>
+    </section>
+
+    <footer>
+        <div class="footer-section">
+            <h3>Quick Links</h3>
+            <p>Home</p><p>About</p><p>Help</p>
+        </div>
+        <div class="footer-section">
+            <h3>Support</h3>
+            <p>Terms & Conditions</p>
+            <p>Privacy Policy</p>
+        </div>
+        <div class="footer-section">
+            <h3>Connect With Us</h3>
+            <div class="social-links" id="db-socials">
+                </div>
+        </div>
+    </footer>
+
+    <script>
+        // Data fetch karne ka function
+        async function loadData() {
+            try {
+                const response = await fetch('http://localhost:5000/api/config');
+                const data = await response.json();
+
+                if(data) {
+                    document.getElementById('db-logo').innerText = data.logoText;
+                    document.getElementById('db-title').innerText = data.title;
+                    document.getElementById('db-subtitle').innerText = data.subTitle;
+
+                    const socialHtml = `
+                        <a href="${data.whatsapp}"><i class="fab fa-whatsapp"></i></a>
+                        <a href="${data.insta}"><i class="fab fa-instagram"></i></a>
+                        <a href="${data.fb}"><i class="fab fa-facebook"></i></a>
+                        <a href="${data.twitter}"><i class="fab fa-twitter"></i></a>
+                    `;
+                    document.getElementById('db-socials').innerHTML = socialHtml;
+                }
+            } catch (err) {
+                console.log("Error fetching data:", err);
+            }
+        }
+        loadData();
+    </script>
+</body>
+</html>
