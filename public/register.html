@@ -2,30 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Registration | BBCC</title>
     
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { 
-            --primary: #0f172a; 
-            --accent: #ffd700; 
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        body { 
+
+        body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
         }
 
+        /* Header */
         .vip-nav {
-            background: var(--primary);
-            padding: 10px 5%;
+            background: #0f172a;
+            padding: 15px 5%;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -33,350 +34,356 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         
-        .header-center { 
-            text-align: center; 
-            flex-grow: 1; 
+        .header-center {
+            text-align: center;
         }
         
-        .header-center h1 { 
-            font-size: 1.4rem; 
-            margin: 0; 
-            color: var(--accent); 
-            letter-spacing: 1px; 
+        .header-center h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #ffd700;
         }
         
-        .header-center small { 
-            font-size: 0.75rem; 
-            opacity: 0.8; 
+        .header-center small {
+            font-size: 0.8rem;
+            opacity: 0.8;
         }
 
-        .registration-container {
-            padding: 40px 20px;
-            perspective: 1000px;
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
         }
-        
-        .form-3d {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            padding: 40px;
-            box-shadow: 
-                0 20px 40px rgba(0,0,0,0.3),
-                0 0 0 2px var(--accent) inset;
-            transform: rotateX(2deg) rotateY(-2deg);
-            transition: transform 0.5s;
+
+        .btn-vip {
+            background: #ffd700;
+            color: #0f172a;
+            padding: 8px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* Form Container */
+        .container {
             max-width: 1200px;
-            margin: 0 auto;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-        
-        .form-3d:hover {
-            transform: rotateX(0deg) rotateY(0deg);
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
-        .section-header {
-            background: var(--primary);
-            color: var(--accent);
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 2px solid #ffd700;
+        }
+
+        .section-title {
+            background: #0f172a;
+            color: #ffd700;
             padding: 15px 25px;
             border-radius: 50px;
             margin: 30px 0 20px;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
+            font-size: 1.2rem;
         }
-        
-        .section-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.2), transparent);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes shine {
-            to { left: 100%; }
+
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
         }
 
         .form-control, .form-select {
-            border-radius: 15px;
             border: 2px solid #e2e8f0;
-            padding: 12px 20px;
-            transition: all 0.3s;
-            background: white;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2);
-            transform: scale(1.02);
+            border-radius: 10px;
+            padding: 12px;
+            width: 100%;
+            font-size: 1rem;
         }
 
-        .photo-upload-container {
+        .form-control:focus, .form-select:focus {
+            border-color: #ffd700;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255,215,0,0.2);
+        }
+
+        /* Photo Upload */
+        .photo-section {
             text-align: center;
             margin-bottom: 30px;
         }
-        
+
         .photo-preview {
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            border: 4px solid var(--accent);
+            border: 3px solid #ffd700;
             margin: 0 auto 20px;
             overflow: hidden;
-            position: relative;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
+
         .photo-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         .photo-preview i {
             font-size: 50px;
-            color: #ccc;
-            line-height: 150px;
-        }
-        
-        .photo-upload-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .photo-upload-btn:hover {
-            background: #1e293b;
-            transform: translateY(-2px);
+            color: #94a3b8;
         }
 
-        .same-address-check {
+        .btn-upload {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-upload:hover {
+            background: #1e293b;
+        }
+
+        /* Checkbox */
+        .address-checkbox {
             background: #f8fafc;
             padding: 15px;
-            border-radius: 15px;
+            border-radius: 10px;
             margin: 15px 0;
         }
-        
-        .same-address-check input {
+
+        .address-checkbox input {
             width: 20px;
             height: 20px;
             margin-right: 10px;
-            accent-color: var(--accent);
+            accent-color: #ffd700;
         }
 
-        .btn-register {
-            background: var(--primary);
+        /* Submit Button */
+        .btn-submit {
+            background: #0f172a;
             color: white;
             border: none;
-            padding: 15px 40px;
+            padding: 15px 50px;
             border-radius: 50px;
             font-size: 1.2rem;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
             cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-            margin-top: 30px;
-        }
-        
-        .btn-register:hover {
-            background: #1e293b;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .btn-register::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            animation: shine 2s infinite;
+            margin: 30px auto;
+            display: block;
         }
 
+        .btn-submit:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .btn-submit:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Error Messages */
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Modal */
         .modal-content {
-            border-radius: 30px;
-            border: 3px solid var(--accent);
+            border-radius: 20px;
+            border: 2px solid #ffd700;
         }
-        
-        .preview-detail {
+
+        .modal-header {
+            background: #0f172a;
+            color: #ffd700;
+            border-radius: 18px 18px 0 0;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .preview-item {
             padding: 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #e2e8f0;
         }
-        
-        .preview-detail strong {
-            color: var(--primary);
+
+        .preview-item strong {
+            color: #0f172a;
             width: 150px;
             display: inline-block;
         }
 
-        .success-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            background: white;
-            padding: 40px;
-            border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            z-index: 9999;
-            transition: transform 0.3s;
-            border: 3px solid var(--accent);
-            max-width: 400px;
-            width: 90%;
-        }
-        
-        .success-popup.show {
-            transform: translate(-50%, -50%) scale(1);
-        }
-        
-        .popup-overlay {
+        /* Success Popup */
+        .overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 9998;
+            z-index: 9999;
             display: none;
         }
-        
-        .credentials-box {
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #ffd700;
+            z-index: 10000;
+            max-width: 400px;
+            width: 90%;
+            transition: transform 0.3s;
+        }
+
+        .popup.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .credentials {
             background: #f8fafc;
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 10px;
             margin: 20px 0;
             font-family: monospace;
             font-size: 1.2rem;
         }
 
+        .btn-ok {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
         footer {
             background: #1a1a1a;
             color: white;
-            padding: 30px 0;
+            text-align: center;
+            padding: 20px;
             margin-top: 50px;
-        }
-
-        input[type="date"] {
-            padding: 10px;
-        }
-
-        .error-feedback {
-            color: var(--danger);
-            font-size: 0.875rem;
-            margin-top: 5px;
-            display: none;
-        }
-        
-        .error-feedback.show {
-            display: block;
         }
     </style>
 </head>
 <body>
 
-    <header class="vip-nav sticky-top">
-        <div class="logo fw-bold fs-4" id="db-logo">
-            <i class="fas fa-graduation-cap me-2"></i>BBCC
+    <!-- Header -->
+    <header class="vip-nav">
+        <div class="logo fw-bold fs-4">
+            <i class="fas fa-graduation-cap me-2" style="color: #ffd700;"></i>BBCC
         </div>
         
         <div class="header-center">
-            <h1>Student Registration</h1>
-            <small>New Admission 2026</small>
+            <h1>Student Registration 2026</h1>
+            <small>New Admission Open</small>
         </div>
 
         <div class="nav-links">
-            <a href="index.html"><i class="fas fa-home me-1"></i>Home</a>
-            <a href="#about"><i class="fas fa-info-circle me-1"></i>About</a>
-            <a href="login.html" class="btn-vip ms-2" style="background: var(--accent); color: var(--primary); padding: 5px 15px; border-radius: 8px; text-decoration: none;">
+            <a href="index.html">Home</a>
+            <a href="login.html" class="btn-vip">
                 <i class="fas fa-sign-in-alt me-1"></i>Login
             </a>
         </div>
     </header>
 
-    <div class="registration-container">
-        <div class="form-3d">
-            <h2 class="text-center mb-4" style="color: var(--primary);">
-                <i class="fas fa-user-graduate me-2"></i>Student Registration Form
+    <!-- Main Form -->
+    <div class="container">
+        <div class="form-card">
+            <h2 class="text-center mb-4" style="color: #0f172a;">
+                <i class="fas fa-user-graduate me-2" style="color: #ffd700;"></i>
+                Registration Form
             </h2>
             
-            <form id="registrationForm" novalidate>
-                <!-- Photo Upload Section -->
-                <div class="photo-upload-container">
+            <form id="registrationForm">
+                <!-- Photo Upload -->
+                <div class="photo-section">
                     <div class="photo-preview" onclick="document.getElementById('studentPhoto').click()">
-                        <img id="photoPreviewImg" src="" style="display: none;">
-                        <i id="photoPreviewIcon" class="fas fa-camera"></i>
+                        <img id="photoPreview" src="" style="display: none;">
+                        <i id="photoIcon" class="fas fa-camera"></i>
                     </div>
-                    <input type="file" id="studentPhoto" accept="image/*" style="display: none;" onchange="previewPhoto(this)">
-                    <button type="button" class="photo-upload-btn" onclick="document.getElementById('studentPhoto').click()">
-                        <i class="fas fa-upload me-2"></i>Upload Student Photo
+                    <input type="file" id="studentPhoto" accept="image/*" style="display: none;">
+                    <button type="button" class="btn-upload" onclick="document.getElementById('studentPhoto').click()">
+                        <i class="fas fa-upload me-2"></i>Upload Photo
                     </button>
-                    <small class="d-block text-muted mt-2">Photo auto-compress hoga 5KB me</small>
+                    <p class="text-muted small mt-2">Photo 5KB se kam compress ho jayegi</p>
                 </div>
 
-                <!-- Student Details Section -->
-                <div class="section-header">
+                <!-- Student Details -->
+                <div class="section-title">
                     <i class="fas fa-user me-2"></i>Student Details
                 </div>
                 
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label">First Name *</label>
-                        <input type="text" class="form-control" id="studentFirstName" required>
+                        <input type="text" class="form-control" id="firstName" required>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Middle Name</label>
-                        <input type="text" class="form-control" id="studentMiddleName">
+                        <input type="text" class="form-control" id="middleName">
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Last Name *</label>
-                        <input type="text" class="form-control" id="studentLastName" required>
+                        <input type="text" class="form-control" id="lastName" required>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Mobile Number *</label>
-                        <input type="tel" class="form-control" id="studentMobile" pattern="[0-9]{10}" maxlength="10" required>
-                        <div class="error-feedback" id="mobileError">Please enter valid 10-digit mobile number</div>
+                        <input type="tel" class="form-control" id="mobile" maxlength="10" required>
+                        <div class="error-message" id="mobileError">10 digits ka mobile number daalein</div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Aadhar Card Number *</label>
-                        <input type="text" class="form-control" id="aadharNumber" pattern="[0-9]{12}" maxlength="12" required>
-                        <small class="text-muted">12 digits ka Aadhar number</small>
-                        <div class="error-feedback" id="aadharError">Please enter valid 12-digit Aadhar number</div>
+                        <label class="form-label">Aadhar Number *</label>
+                        <input type="text" class="form-control" id="aadhar" maxlength="12" required>
+                        <div class="error-message" id="aadharError">12 digits ka Aadhar number daalein</div>
                     </div>
                 </div>
 
-                <!-- Registration Date and Joining Date -->
+                <!-- Dates -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Registration Date *</label>
-                        <input type="date" class="form-control" id="registrationDate" required>
+                        <input type="date" class="form-control" id="regDate" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Joining Date *</label>
-                        <input type="date" class="form-control" id="joiningDate" required>
+                        <input type="date" class="form-control" id="joinDate" required>
                     </div>
                 </div>
 
                 <!-- Father Details -->
-                <div class="section-header">
+                <div class="section-title">
                     <i class="fas fa-male me-2"></i>Father's Details
                 </div>
                 
@@ -397,44 +404,41 @@
 
                 <div class="mb-3">
                     <label class="form-label">Father's Mobile *</label>
-                    <input type="tel" class="form-control" id="fatherMobile" pattern="[0-9]{10}" maxlength="10" required>
-                    <div class="error-feedback" id="fatherMobileError">Please enter valid 10-digit mobile number</div>
+                    <input type="tel" class="form-control" id="fatherMobile" maxlength="10" required>
+                    <div class="error-message" id="fatherMobileError">10 digits ka mobile number daalein</div>
                 </div>
 
-                <!-- Mother Details (Optional) -->
-                <div class="section-header">
+                <!-- Mother Details -->
+                <div class="section-title">
                     <i class="fas fa-female me-2"></i>Mother's Details (Optional)
                 </div>
                 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="motherFirstName">
+                        <input type="text" class="form-control" id="motherFirstName" placeholder="First Name">
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Middle Name</label>
-                        <input type="text" class="form-control" id="motherMiddleName">
+                        <input type="text" class="form-control" id="motherMiddleName" placeholder="Middle Name">
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="motherLastName">
+                        <input type="text" class="form-control" id="motherLastName" placeholder="Last Name">
                     </div>
                 </div>
 
-                <!-- Aadhar Card Upload -->
-                <div class="section-header">
-                    <i class="fas fa-id-card me-2"></i>Aadhar Card Document
+                <!-- Aadhar Document -->
+                <div class="section-title">
+                    <i class="fas fa-id-card me-2"></i>Aadhar Document
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Upload Aadhar Card (PDF/Image) *</label>
-                    <input type="file" class="form-control" id="aadharDocument" accept=".pdf,image/*" required>
-                    <small class="text-muted">PDF ya image file (Auto-compress hoga)</small>
+                    <label class="form-label">Upload Aadhar Card *</label>
+                    <input type="file" class="form-control" id="aadharDoc" accept=".pdf,image/*" required>
+                    <small class="text-muted">PDF ya image file</small>
                 </div>
 
-                <!-- Address Section -->
-                <div class="section-header">
-                    <i class="fas fa-map-marker-alt me-2"></i>Address Details
+                <!-- Address -->
+                <div class="section-title">
+                    <i class="fas fa-map-marker-alt me-2"></i>Address
                 </div>
                 
                 <div class="mb-3">
@@ -442,34 +446,34 @@
                     <textarea class="form-control" id="currentAddress" rows="3" required></textarea>
                 </div>
 
-                <div class="same-address-check">
-                    <input type="checkbox" id="sameAsCurrent" onchange="togglePermanentAddress()">
-                    <label for="sameAsCurrent">Permanent address same as current address</label>
+                <div class="address-checkbox">
+                    <input type="checkbox" id="sameAddress" onclick="copyAddress()">
+                    <label for="sameAddress">Permanent address same as current address</label>
                 </div>
 
-                <div class="mb-3" id="permanentAddressDiv">
+                <div class="mb-3" id="permanentDiv">
                     <label class="form-label">Permanent Address *</label>
                     <textarea class="form-control" id="permanentAddress" rows="3" required></textarea>
                 </div>
 
-                <!-- Education Section -->
-                <div class="section-header">
-                    <i class="fas fa-book me-2"></i>Education Details
+                <!-- Education -->
+                <div class="section-title">
+                    <i class="fas fa-book me-2"></i>Education
                 </div>
                 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Select Board *</label>
+                        <label class="form-label">Board *</label>
                         <select class="form-select" id="board" required onchange="loadClasses()">
-                            <option value="">Choose Board</option>
+                            <option value="">Select Board</option>
                             <option value="cbse">CBSE</option>
                             <option value="icse">ICSE</option>
                             <option value="state">State Board</option>
-                            <option value="nios">NIOS (Open)</option>
+                            <option value="nios">NIOS</option>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Select Class *</label>
+                        <label class="form-label">Class *</label>
                         <select class="form-select" id="class" required>
                             <option value="">First select board</option>
                         </select>
@@ -477,43 +481,37 @@
                 </div>
 
                 <!-- Submit Button -->
-                <div class="text-center">
-                    <button type="submit" class="btn-register" id="submitBtn">
-                        <i class="fas fa-check-circle me-2"></i>Register Student
-                    </button>
-                </div>
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fas fa-check-circle me-2"></i>Register Student
+                </button>
             </form>
         </div>
     </div>
 
-    <footer class="text-center">
-        <div class="container">
-            <p class="m-0 small">
-                <i class="far fa-copyright me-1"></i>2026 Bal Bharti Coaching Center | 
-                <i class="fas fa-shield-alt me-1"></i>Secure Registration
-            </p>
-        </div>
+    <!-- Footer -->
+    <footer>
+        <p class="mb-0">© 2026 Bal Bharti Coaching Center | Secure Registration</p>
     </footer>
 
     <!-- Preview Modal -->
-    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="previewModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header" style="background: var(--primary); color: var(--accent);">
+                <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="fas fa-eye me-2"></i>Preview Registration Details
+                        <i class="fas fa-eye me-2"></i>Preview Details
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="previewContent">
-                    Loading preview...
+                <div class="modal-body" id="previewBody">
+                    Loading...
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-edit me-2"></i>Edit
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="submitRegistration()" style="background: var(--primary); border: none;">
-                        <i class="fas fa-check me-2"></i>Confirm & Submit
+                    <button type="button" class="btn btn-primary" onclick="submitData()" style="background: #0f172a; border: none;">
+                        <i class="fas fa-check me-2"></i>Confirm
                     </button>
                 </div>
             </div>
@@ -521,143 +519,116 @@
     </div>
 
     <!-- Success Popup -->
-    <div class="popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
-    <div class="success-popup" id="successPopup">
+    <div class="overlay" id="overlay" onclick="closePopup()"></div>
+    <div class="popup" id="successPopup">
         <div class="text-center">
-            <i class="fas fa-check-circle fa-4x" style="color: var(--success);"></i>
-            <h3 class="mt-3">Registration Successful!</h3>
-            <div class="credentials-box" id="credentials">
-                <!-- Credentials will be shown here -->
-            </div>
-            <p class="text-muted small">Please save these credentials for login</p>
-            <button class="btn btn-primary w-100" onclick="closePopup()" style="background: var(--primary); border: none;">
-                <i class="fas fa-check me-2"></i>OK
-            </button>
+            <i class="fas fa-check-circle fa-4x" style="color: #10b981;"></i>
+            <h3 class="mt-3">Success!</h3>
+            <div class="credentials" id="credentials"></div>
+            <p class="text-muted small">Screen shot le lein</p>
+            <button class="btn-ok" onclick="closePopup()">OK</button>
         </div>
     </div>
 
-    <!-- Bootstrap JS and Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         // ============================================
-        // INITIALIZE ON PAGE LOAD
+        // SET DEFAULT DATES
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Set default dates
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('registrationDate').value = today;
-            document.getElementById('joiningDate').value = today;
-            
-            // Initialize permanent address
-            document.getElementById('permanentAddressDiv').style.display = 'block';
+            document.getElementById('regDate').value = today;
+            document.getElementById('joinDate').value = today;
         });
 
         // ============================================
         // CLASS DATA
         // ============================================
-        const classData = {
-            school: [
-                "Nursery", "LKG", "UKG",
-                "Class 1st", "Class 2nd", "Class 3rd", "Class 4th", "Class 5th",
-                "Class 6th", "Class 7th", "Class 8th", "Class 9th", "Class 10th",
-                "Class 11th", "Class 12th"
-            ],
-            graduation: [
-                "B.A.", "B.Sc.", "B.Com.", "B.Tech", "B.E.", "BCA", "BBA",
-                "B.Ed.", "B.Pharma", "BDS", "MBBS", "B.Arch", "LLB"
-            ]
+        const classes = {
+            school: ["Nursery", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"],
+            graduation: ["BA", "BSc", "BCom", "BTech", "BCA", "BBA", "BEd", "LLB"]
         };
 
-        // ============================================
-        // LOAD CLASSES BASED ON BOARD
-        // ============================================
         function loadClasses() {
             const board = document.getElementById('board').value;
             const classSelect = document.getElementById('class');
             
             classSelect.innerHTML = '<option value="">Select Class</option>';
             
-            if (board === 'cbse' || board === 'icse' || board === 'state') {
-                // Add school classes
-                classData.school.forEach(cls => {
-                    classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
-                });
-                // Add graduation classes
-                classData.graduation.forEach(cls => {
-                    classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
-                });
-            } else if (board === 'nios') {
-                // NIOS mein class 9th se start hota hai
-                classData.school.slice(8).forEach(cls => {
-                    classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
-                });
+            if (board) {
+                if (board === 'nios') {
+                    classes.school.slice(8).forEach(c => {
+                        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                    });
+                } else {
+                    classes.school.forEach(c => {
+                        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                    });
+                    classes.graduation.forEach(c => {
+                        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                    });
+                }
             }
         }
 
         // ============================================
-        // TOGGLE PERMANENT ADDRESS - FIXED
+        // COPY ADDRESS
         // ============================================
-        function togglePermanentAddress() {
-            const checkbox = document.getElementById('sameAsCurrent');
-            const permDiv = document.getElementById('permanentAddressDiv');
-            const permInput = document.getElementById('permanentAddress');
-            const currentInput = document.getElementById('currentAddress');
+        function copyAddress() {
+            const checkbox = document.getElementById('sameAddress');
+            const permanentDiv = document.getElementById('permanentDiv');
+            const current = document.getElementById('currentAddress');
+            const permanent = document.getElementById('permanentAddress');
             
             if (checkbox.checked) {
-                permDiv.style.display = 'none';
-                permInput.value = currentInput.value;
-                permInput.required = false;
+                permanentDiv.style.display = 'none';
+                permanent.value = current.value;
+                permanent.required = false;
             } else {
-                permDiv.style.display = 'block';
-                permInput.required = true;
+                permanentDiv.style.display = 'block';
+                permanent.required = true;
             }
         }
 
         // ============================================
-        // COMPRESS IMAGE TO <5KB - FIXED
+        // COMPRESS IMAGE
         // ============================================
-        function compressImage(file, maxSizeKB = 5) {
+        function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 
-                reader.onload = (e) => {
+                reader.onload = function(e) {
                     const img = new Image();
                     img.src = e.target.result;
                     
-                    img.onload = () => {
+                    img.onload = function() {
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-                        let quality = 0.9;
-                        let compressedData = '';
+                        let quality = 0.7;
                         
-                        const compress = () => {
+                        function compress() {
                             canvas.width = width;
                             canvas.height = height;
                             
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
                             
-                            compressedData = canvas.toDataURL('image/jpeg', quality);
+                            const data = canvas.toDataURL('image/jpeg', quality);
+                            const size = Math.round((data.length * 3) / 4 / 1024);
                             
-                            // Approximate size calculation
-                            const sizeInKB = Math.round((compressedData.length * 3) / 4 / 1024);
-                            
-                            if (sizeInKB > maxSizeKB && width > 50 && quality > 0.1) {
-                                if (quality > 0.3) {
-                                    quality -= 0.2;
-                                } else {
-                                    width = Math.floor(width * 0.7);
-                                    height = Math.floor(height * 0.7);
-                                }
+                            if (size > 5 && width > 100) {
+                                width = width * 0.8;
+                                height = height * 0.8;
+                                quality = quality * 0.8;
                                 compress();
                             } else {
-                                resolve(compressedData);
+                                resolve(data);
                             }
-                        };
+                        }
                         
                         compress();
                     };
@@ -670,43 +641,33 @@
         }
 
         // ============================================
-        // PREVIEW PHOTO - FIXED
+        // PHOTO PREVIEW
         // ============================================
-        async function previewPhoto(input) {
-            if (input.files && input.files[0]) {
+        document.getElementById('studentPhoto').addEventListener('change', async function(e) {
+            if (this.files && this.files[0]) {
                 try {
-                    const file = input.files[0];
+                    const compressed = await compressImage(this.files[0]);
                     
-                    // Check file size (rough estimate)
-                    if (file.size > 5 * 1024 * 1024) { // 5MB se bada
-                        alert('File too large! Please select image under 5MB');
-                        return;
-                    }
+                    document.getElementById('photoPreview').src = compressed;
+                    document.getElementById('photoPreview').style.display = 'block';
+                    document.getElementById('photoIcon').style.display = 'none';
                     
-                    const compressed = await compressImage(file);
-                    
-                    const previewImg = document.getElementById('photoPreviewImg');
-                    const previewIcon = document.getElementById('photoPreviewIcon');
-                    
-                    previewImg.src = compressed;
-                    previewImg.style.display = 'block';
-                    previewIcon.style.display = 'none';
-                    
+                    // Store compressed photo
+                    this.compressedPhoto = compressed;
                 } catch (err) {
-                    console.error('Compression error:', err);
-                    alert('Error compressing image. Please try another image.');
+                    alert('Error: ' + err.message);
                 }
             }
-        }
+        });
 
         // ============================================
-        // VALIDATE MOBILE NUMBER
+        // VALIDATION
         // ============================================
         function validateMobile(input, errorId) {
-            const value = input.value;
+            const val = input.value;
             const error = document.getElementById(errorId);
             
-            if (value && !/^[0-9]{10}$/.test(value)) {
+            if (val && !/^\d{10}$/.test(val)) {
                 error.classList.add('show');
                 return false;
             } else {
@@ -715,14 +676,11 @@
             }
         }
 
-        // ============================================
-        // VALIDATE AADHAR NUMBER
-        // ============================================
         function validateAadhar(input) {
-            const value = input.value;
+            const val = input.value;
             const error = document.getElementById('aadharError');
             
-            if (value && !/^[0-9]{12}$/.test(value)) {
+            if (val && !/^\d{12}$/.test(val)) {
                 error.classList.add('show');
                 return false;
             } else {
@@ -732,7 +690,7 @@
         }
 
         // Add validation listeners
-        document.getElementById('studentMobile').addEventListener('input', function() {
+        document.getElementById('mobile').addEventListener('input', function() {
             validateMobile(this, 'mobileError');
         });
         
@@ -740,7 +698,7 @@
             validateMobile(this, 'fatherMobileError');
         });
         
-        document.getElementById('aadharNumber').addEventListener('input', function() {
+        document.getElementById('aadhar').addEventListener('input', function() {
             validateAadhar(this);
         });
 
@@ -748,31 +706,41 @@
         // GENERATE PASSWORD
         // ============================================
         function generatePassword(firstName, aadhar) {
-            // First 4 letters of first name (capital)
             const namePart = firstName.toUpperCase().slice(0, 4).padEnd(4, 'X');
-            // Last 6 digits of aadhar
             const aadharPart = aadhar.slice(-6);
             return namePart + aadharPart;
         }
 
         // ============================================
-        // SHOW PREVIEW - FIXED
+        // FORM SUBMIT - SHOW PREVIEW
         // ============================================
-        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Validate all fields
-            if (!validateMobile(document.getElementById('studentMobile'), 'mobileError')) return;
+            // Validate all
+            if (!validateMobile(document.getElementById('mobile'), 'mobileError')) return;
             if (!validateMobile(document.getElementById('fatherMobile'), 'fatherMobileError')) return;
-            if (!validateAadhar(document.getElementById('aadharNumber'))) return;
+            if (!validateAadhar(document.getElementById('aadhar'))) return;
             
-            // Collect all data
-            const formData = {
+            const board = document.getElementById('board').value;
+            const studentClass = document.getElementById('class').value;
+            
+            if (!board) {
+                alert('Select board');
+                return;
+            }
+            if (!studentClass) {
+                alert('Select class');
+                return;
+            }
+            
+            // Get form data
+            const data = {
                 student: {
-                    firstName: document.getElementById('studentFirstName').value,
-                    middleName: document.getElementById('studentMiddleName').value,
-                    lastName: document.getElementById('studentLastName').value,
-                    mobile: document.getElementById('studentMobile').value
+                    firstName: document.getElementById('firstName').value,
+                    middleName: document.getElementById('middleName').value,
+                    lastName: document.getElementById('lastName').value,
+                    mobile: document.getElementById('mobile').value
                 },
                 father: {
                     firstName: document.getElementById('fatherFirstName').value,
@@ -781,156 +749,110 @@
                     mobile: document.getElementById('fatherMobile').value
                 },
                 mother: {
-                    firstName: document.getElementById('motherFirstName').value || '',
+                    firstName: document.getElementById('motherFirstName').value || 'N/A',
                     middleName: document.getElementById('motherMiddleName').value || '',
                     lastName: document.getElementById('motherLastName').value || ''
                 },
-                aadhar: {
-                    number: document.getElementById('aadharNumber').value
-                },
+                aadhar: document.getElementById('aadhar').value,
                 dates: {
-                    registration: document.getElementById('registrationDate').value,
-                    joining: document.getElementById('joiningDate').value
+                    reg: document.getElementById('regDate').value,
+                    join: document.getElementById('joinDate').value
                 },
                 address: {
                     current: document.getElementById('currentAddress').value,
-                    permanent: document.getElementById('sameAsCurrent').checked ? 
-                              document.getElementById('currentAddress').value : 
-                              document.getElementById('permanentAddress').value
+                    permanent: document.getElementById('permanentAddress').value
                 },
                 education: {
-                    board: document.getElementById('board').value,
-                    class: document.getElementById('class').value
+                    board: board,
+                    class: studentClass
                 }
             };
-
-            // Validate board and class
-            if (!formData.education.board) {
-                alert('Please select board');
-                return;
-            }
             
-            if (!formData.education.class) {
-                alert('Please select class');
-                return;
-            }
-
-            // Generate student ID (Aadhar number)
-            const studentId = formData.aadhar.number;
+            // Generate ID and password
+            const studentId = data.aadhar;
+            const password = generatePassword(data.student.firstName, data.aadhar);
             
-            // Generate password
-            const password = generatePassword(
-                formData.student.firstName,
-                formData.aadhar.number
-            );
-
-            // Format dates for display
-            const formatDate = (dateStr) => {
-                if (!dateStr) return 'Not set';
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
+            // Format date
+            function formatDate(d) {
+                return new Date(d).toLocaleDateString('en-IN', {
+                    day: 'numeric', month: 'long', year: 'numeric'
                 });
-            };
-
+            }
+            
             // Show preview
-            const previewContent = document.getElementById('previewContent');
-            previewContent.innerHTML = `
-                <div class="preview-detail"><strong>Student Name:</strong> ${formData.student.firstName} ${formData.student.middleName} ${formData.student.lastName}</div>
-                <div class="preview-detail"><strong>Student Mobile:</strong> ${formData.student.mobile}</div>
-                <div class="preview-detail"><strong>Registration Date:</strong> ${formatDate(formData.dates.registration)}</div>
-                <div class="preview-detail"><strong>Joining Date:</strong> ${formatDate(formData.dates.joining)}</div>
-                <div class="preview-detail"><strong>Father's Name:</strong> ${formData.father.firstName} ${formData.father.middleName} ${formData.father.lastName}</div>
-                <div class="preview-detail"><strong>Father's Mobile:</strong> ${formData.father.mobile}</div>
-                <div class="preview-detail"><strong>Mother's Name:</strong> ${formData.mother.firstName} ${formData.mother.middleName} ${formData.mother.lastName || 'Not provided'}</div>
-                <div class="preview-detail"><strong>Aadhar Number:</strong> ${formData.aadhar.number}</div>
-                <div class="preview-detail"><strong>Board:</strong> ${formData.education.board.toUpperCase()}</div>
-                <div class="preview-detail"><strong>Class:</strong> ${formData.education.class}</div>
-                <div class="preview-detail"><strong>Student ID:</strong> ${studentId}</div>
-                <div class="preview-detail"><strong>Password:</strong> ${password}</div>
-                <div class="preview-detail"><strong>Fees Status:</strong> ₹0 (Pending)</div>
+            document.getElementById('previewBody').innerHTML = `
+                <div class="preview-item"><strong>Name:</strong> ${data.student.firstName} ${data.student.middleName} ${data.student.lastName}</div>
+                <div class="preview-item"><strong>Mobile:</strong> ${data.student.mobile}</div>
+                <div class="preview-item"><strong>Aadhar:</strong> ${data.aadhar}</div>
+                <div class="preview-item"><strong>Reg Date:</strong> ${formatDate(data.dates.reg)}</div>
+                <div class="preview-item"><strong>Join Date:</strong> ${formatDate(data.dates.join)}</div>
+                <div class="preview-item"><strong>Father:</strong> ${data.father.firstName} ${data.father.middleName} ${data.father.lastName}</div>
+                <div class="preview-item"><strong>Board:</strong> ${data.education.board.toUpperCase()}</div>
+                <div class="preview-item"><strong>Class:</strong> ${data.education.class}</div>
+                <div class="preview-item"><strong>Student ID:</strong> ${studentId}</div>
+                <div class="preview-item"><strong>Password:</strong> ${password}</div>
+                <div class="preview-item"><strong>Fees:</strong> ₹0 (Pending)</div>
             `;
-
-            // Store data for submission (fees = 0 by default)
-            window.pendingRegistration = {
-                ...formData,
+            
+            // Save for submission
+            window.registrationData = {
+                ...data,
                 studentId,
                 password,
                 fees: 0
             };
-
+            
             // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('previewModal'));
-            modal.show();
+            new bootstrap.Modal(document.getElementById('previewModal')).show();
         });
 
         // ============================================
-        // SUBMIT REGISTRATION - FIXED
+        // SUBMIT DATA
         // ============================================
-        async function submitRegistration() {
-            const data = window.pendingRegistration;
-            const submitBtn = document.querySelector('.btn-primary[onclick="submitRegistration()"]');
+        async function submitData() {
+            const data = window.registrationData;
             
             if (!data) {
-                alert('No data to submit');
+                alert('No data');
                 return;
             }
             
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
             try {
-                // Disable button and show loading
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
-                }
-                
-                // Here you would send data to server
-                console.log('Sending to server:', data);
-                
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Show success popup with credentials
-                document.getElementById('credentials').innerHTML = `
-                    <strong>Student ID:</strong> ${data.studentId}<br>
-                    <strong>Password:</strong> ${data.password}<br>
-                    <strong>Fees:</strong> ₹0 (Pending)
-                `;
+                // API call here
+                await new Promise(r => setTimeout(r, 1000));
                 
                 // Hide modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('previewModal'));
-                if (modal) modal.hide();
+                bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
                 
-                // Show popup
-                document.getElementById('popupOverlay').style.display = 'block';
+                // Show success
+                document.getElementById('credentials').innerHTML = `
+                    <strong>ID:</strong> ${data.studentId}<br>
+                    <strong>Password:</strong> ${data.password}<br>
+                    <strong>Fees:</strong> ₹0
+                `;
+                
+                document.getElementById('overlay').style.display = 'block';
                 document.getElementById('successPopup').classList.add('show');
                 
                 // Reset form
                 document.getElementById('registrationForm').reset();
+                document.getElementById('photoPreview').style.display = 'none';
+                document.getElementById('photoIcon').style.display = 'block';
                 
-                // Reset photo preview
-                document.getElementById('photoPreviewImg').style.display = 'none';
-                document.getElementById('photoPreviewIcon').style.display = 'block';
-                
-                // Reset dates to today
+                // Reset dates
                 const today = new Date().toISOString().split('T')[0];
-                document.getElementById('registrationDate').value = today;
-                document.getElementById('joiningDate').value = today;
-                
-                // Reset permanent address visibility
-                document.getElementById('permanentAddressDiv').style.display = 'block';
-                document.getElementById('sameAsCurrent').checked = false;
+                document.getElementById('regDate').value = today;
+                document.getElementById('joinDate').value = today;
                 
             } catch (err) {
-                console.error('Submission error:', err);
-                alert('Registration failed. Please try again.');
+                alert('Error: ' + err.message);
             } finally {
-                // Re-enable button
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Confirm & Submit';
-                }
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check me-2"></i>Confirm';
             }
         }
 
@@ -938,28 +860,9 @@
         // CLOSE POPUP
         // ============================================
         function closePopup() {
-            document.getElementById('popupOverlay').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
             document.getElementById('successPopup').classList.remove('show');
         }
-
-        // ============================================
-        // UPDATE CURRENT ADDRESS TO PERMANENT
-        // ============================================
-        document.getElementById('currentAddress').addEventListener('input', function() {
-            if (document.getElementById('sameAsCurrent').checked) {
-                document.getElementById('permanentAddress').value = this.value;
-            }
-        });
-
-        // ============================================
-        // PREVENT DEFAULT ON ENTER KEY
-        // ============================================
-        document.getElementById('registrationForm').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                return false;
-            }
-        });
     </script>
 </body>
 </html>
