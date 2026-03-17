@@ -533,7 +533,43 @@ app.use((req, res) => {
         message: "API endpoint not found"
     });
 });
+////////////////////register student ///////////////////////////////////////////////////////////////
 
+const StudentSchema = new mongoose.Schema({
+    studentId: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    photo: String,
+    studentName: {
+        first: String,
+        middle: String,
+        last: String
+    },
+    mobile: String,
+    aadharNumber: String,
+    aadharDocument: String,
+    registrationDate: { type: Date, required: true },
+    joiningDate: { type: Date, required: true },
+    fees: { type: Number, default: 0 }, // ✅ Default 0
+    fatherName: {
+        first: String,
+        middle: String,
+        last: String
+    },
+    fatherMobile: String,
+    motherName: {
+        first: String,
+        middle: String,
+        last: String
+    },
+    address: {
+        current: String,
+        permanent: String
+    },
+    education: {
+        board: String,
+        class: String
+    }
+}, { timestamps: true });
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
