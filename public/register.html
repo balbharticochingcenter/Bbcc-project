@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        /* SAME STYLES - no changes */
         * {
             margin: 0;
             padding: 0;
@@ -23,7 +24,6 @@
             min-height: 100vh;
         }
 
-        /* Header */
         .vip-nav {
             background: #0f172a;
             padding: 15px 5%;
@@ -64,7 +64,6 @@
             display: inline-block;
         }
 
-        /* Form Container */
         .container {
             max-width: 1200px;
             margin: 40px auto;
@@ -109,7 +108,6 @@
             box-shadow: 0 0 0 3px rgba(255,215,0,0.2);
         }
 
-        /* Photo Upload */
         .photo-section {
             text-align: center;
             margin-bottom: 30px;
@@ -154,7 +152,6 @@
             background: #1e293b;
         }
 
-        /* Checkbox */
         .address-checkbox {
             background: #f8fafc;
             padding: 15px;
@@ -169,7 +166,6 @@
             accent-color: #ffd700;
         }
 
-        /* Submit Button */
         .btn-submit {
             background: #0f172a;
             color: white;
@@ -195,7 +191,6 @@
             transform: none;
         }
 
-        /* Error Messages */
         .error-message {
             color: #dc2626;
             font-size: 0.875rem;
@@ -207,7 +202,6 @@
             display: block;
         }
 
-        /* Modal */
         .modal-content {
             border-radius: 20px;
             border: 2px solid #ffd700;
@@ -234,7 +228,6 @@
             display: inline-block;
         }
 
-        /* Success Popup */
         .overlay {
             position: fixed;
             top: 0;
@@ -326,12 +319,12 @@
             <form id="registrationForm">
                 <!-- Photo Upload -->
                 <div class="photo-section">
-                    <div class="photo-preview" onclick="document.getElementById('studentPhoto').click()">
+                    <div class="photo-preview" id="photoPreviewDiv">
                         <img id="photoPreview" src="" style="display: none;">
                         <i id="photoIcon" class="fas fa-camera"></i>
                     </div>
                     <input type="file" id="studentPhoto" accept="image/*" style="display: none;">
-                    <button type="button" class="btn-upload" onclick="document.getElementById('studentPhoto').click()">
+                    <button type="button" class="btn-upload" id="uploadBtn">
                         <i class="fas fa-upload me-2"></i>Upload Photo
                     </button>
                     <p class="text-muted small mt-2">Photo 5KB se kam compress ho jayegi</p>
@@ -447,7 +440,7 @@
                 </div>
 
                 <div class="address-checkbox">
-                    <input type="checkbox" id="sameAddress" onclick="copyAddress()">
+                    <input type="checkbox" id="sameAddress">
                     <label for="sameAddress">Permanent address same as current address</label>
                 </div>
 
@@ -464,7 +457,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Board *</label>
-                        <select class="form-select" id="board" required onchange="loadClasses()">
+                        <select class="form-select" id="board" required>
                             <option value="">Select Board</option>
                             <option value="cbse">CBSE</option>
                             <option value="icse">ICSE</option>
@@ -510,7 +503,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-edit me-2"></i>Edit
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="submitData()" style="background: #0f172a; border: none;">
+                    <button type="button" class="btn btn-primary" id="confirmBtn" style="background: #0f172a; border: none;">
                         <i class="fas fa-check me-2"></i>Confirm
                     </button>
                 </div>
@@ -519,14 +512,14 @@
     </div>
 
     <!-- Success Popup -->
-    <div class="overlay" id="overlay" onclick="closePopup()"></div>
+    <div class="overlay" id="overlay"></div>
     <div class="popup" id="successPopup">
         <div class="text-center">
             <i class="fas fa-check-circle fa-4x" style="color: #10b981;"></i>
             <h3 class="mt-3">Success!</h3>
             <div class="credentials" id="credentials"></div>
             <p class="text-muted small">Screen shot le lein</p>
-            <button class="btn-ok" onclick="closePopup()">OK</button>
+            <button class="btn-ok" id="okBtn">OK</button>
         </div>
     </div>
 
@@ -535,334 +528,372 @@
     
     <script>
         // ============================================
-        // SET DEFAULT DATES
+        // WAIT FOR DOM TO LOAD
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
+            
+            // ============================================
+            // SET DEFAULT DATES
+            // ============================================
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('regDate').value = today;
             document.getElementById('joinDate').value = today;
-        });
 
-        // ============================================
-        // CLASS DATA
-        // ============================================
-        const classes = {
-            school: ["Nursery", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"],
-            graduation: ["BA", "BSc", "BCom", "BTech", "BCA", "BBA", "BEd", "LLB"]
-        };
+            // ============================================
+            // CLASS DATA
+            // ============================================
+            const classes = {
+                school: ["Nursery", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"],
+                graduation: ["BA", "BSc", "BCom", "BTech", "BCA", "BBA", "BEd", "LLB"]
+            };
 
-        function loadClasses() {
-            const board = document.getElementById('board').value;
-            const classSelect = document.getElementById('class');
-            
-            classSelect.innerHTML = '<option value="">Select Class</option>';
-            
-            if (board) {
-                if (board === 'nios') {
-                    classes.school.slice(8).forEach(c => {
-                        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
-                    });
-                } else {
-                    classes.school.forEach(c => {
-                        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
-                    });
-                    classes.graduation.forEach(c => {
-                        classSelect.innerHTML += `<option value="${c}">${c}</option>`;
-                    });
+            // ============================================
+            // LOAD CLASSES FUNCTION
+            // ============================================
+            function loadClasses() {
+                const board = document.getElementById('board').value;
+                const classSelect = document.getElementById('class');
+                
+                classSelect.innerHTML = '<option value="">Select Class</option>';
+                
+                if (board) {
+                    if (board === 'nios') {
+                        classes.school.slice(8).forEach(c => {
+                            classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                        });
+                    } else {
+                        classes.school.forEach(c => {
+                            classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                        });
+                        classes.graduation.forEach(c => {
+                            classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                        });
+                    }
                 }
             }
-        }
 
-        // ============================================
-        // COPY ADDRESS
-        // ============================================
-        function copyAddress() {
-            const checkbox = document.getElementById('sameAddress');
-            const permanentDiv = document.getElementById('permanentDiv');
-            const current = document.getElementById('currentAddress');
-            const permanent = document.getElementById('permanentAddress');
+            // Board change event - NO INLINE ONCHANGE
+            document.getElementById('board').addEventListener('change', loadClasses);
+
+            // ============================================
+            // PHOTO UPLOAD - NO INLINE ONCLICK
+            // ============================================
+            document.getElementById('photoPreviewDiv').addEventListener('click', function() {
+                document.getElementById('studentPhoto').click();
+            });
             
-            if (checkbox.checked) {
-                permanentDiv.style.display = 'none';
-                permanent.value = current.value;
-                permanent.required = false;
-            } else {
-                permanentDiv.style.display = 'block';
-                permanent.required = true;
-            }
-        }
+            document.getElementById('uploadBtn').addEventListener('click', function() {
+                document.getElementById('studentPhoto').click();
+            });
 
-        // ============================================
-        // COMPRESS IMAGE
-        // ============================================
-        function compressImage(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
+            // ============================================
+            // COMPRESS IMAGE FUNCTION
+            // ============================================
+            async function compressImage(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
                     
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        let quality = 0.7;
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.src = e.target.result;
                         
-                        function compress() {
-                            canvas.width = width;
-                            canvas.height = height;
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            let quality = 0.7;
                             
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            
-                            const data = canvas.toDataURL('image/jpeg', quality);
-                            const size = Math.round((data.length * 3) / 4 / 1024);
-                            
-                            if (size > 5 && width > 100) {
-                                width = width * 0.8;
-                                height = height * 0.8;
-                                quality = quality * 0.8;
-                                compress();
-                            } else {
-                                resolve(data);
+                            function compress() {
+                                canvas.width = width;
+                                canvas.height = height;
+                                
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                const data = canvas.toDataURL('image/jpeg', quality);
+                                const size = Math.round((data.length * 3) / 4 / 1024);
+                                
+                                if (size > 5 && width > 100) {
+                                    width = width * 0.8;
+                                    height = height * 0.8;
+                                    quality = quality * 0.8;
+                                    compress();
+                                } else {
+                                    resolve(data);
+                                }
                             }
-                        }
+                            
+                            compress();
+                        };
                         
-                        compress();
+                        img.onerror = reject;
                     };
                     
-                    img.onerror = reject;
-                };
-                
-                reader.onerror = reject;
-            });
-        }
-
-        // ============================================
-        // PHOTO PREVIEW
-        // ============================================
-        document.getElementById('studentPhoto').addEventListener('change', async function(e) {
-            if (this.files && this.files[0]) {
-                try {
-                    const compressed = await compressImage(this.files[0]);
-                    
-                    document.getElementById('photoPreview').src = compressed;
-                    document.getElementById('photoPreview').style.display = 'block';
-                    document.getElementById('photoIcon').style.display = 'none';
-                    
-                    // Store compressed photo
-                    this.compressedPhoto = compressed;
-                } catch (err) {
-                    alert('Error: ' + err.message);
-                }
-            }
-        });
-
-        // ============================================
-        // VALIDATION
-        // ============================================
-        function validateMobile(input, errorId) {
-            const val = input.value;
-            const error = document.getElementById(errorId);
-            
-            if (val && !/^\d{10}$/.test(val)) {
-                error.classList.add('show');
-                return false;
-            } else {
-                error.classList.remove('show');
-                return true;
-            }
-        }
-
-        function validateAadhar(input) {
-            const val = input.value;
-            const error = document.getElementById('aadharError');
-            
-            if (val && !/^\d{12}$/.test(val)) {
-                error.classList.add('show');
-                return false;
-            } else {
-                error.classList.remove('show');
-                return true;
-            }
-        }
-
-        // Add validation listeners
-        document.getElementById('mobile').addEventListener('input', function() {
-            validateMobile(this, 'mobileError');
-        });
-        
-        document.getElementById('fatherMobile').addEventListener('input', function() {
-            validateMobile(this, 'fatherMobileError');
-        });
-        
-        document.getElementById('aadhar').addEventListener('input', function() {
-            validateAadhar(this);
-        });
-
-        // ============================================
-        // GENERATE PASSWORD
-        // ============================================
-        function generatePassword(firstName, aadhar) {
-            const namePart = firstName.toUpperCase().slice(0, 4).padEnd(4, 'X');
-            const aadharPart = aadhar.slice(-6);
-            return namePart + aadharPart;
-        }
-
-        // ============================================
-        // FORM SUBMIT - SHOW PREVIEW
-        // ============================================
-        document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Validate all
-            if (!validateMobile(document.getElementById('mobile'), 'mobileError')) return;
-            if (!validateMobile(document.getElementById('fatherMobile'), 'fatherMobileError')) return;
-            if (!validateAadhar(document.getElementById('aadhar'))) return;
-            
-            const board = document.getElementById('board').value;
-            const studentClass = document.getElementById('class').value;
-            
-            if (!board) {
-                alert('Select board');
-                return;
-            }
-            if (!studentClass) {
-                alert('Select class');
-                return;
-            }
-            
-            // Get form data
-            const data = {
-                student: {
-                    firstName: document.getElementById('firstName').value,
-                    middleName: document.getElementById('middleName').value,
-                    lastName: document.getElementById('lastName').value,
-                    mobile: document.getElementById('mobile').value
-                },
-                father: {
-                    firstName: document.getElementById('fatherFirstName').value,
-                    middleName: document.getElementById('fatherMiddleName').value,
-                    lastName: document.getElementById('fatherLastName').value,
-                    mobile: document.getElementById('fatherMobile').value
-                },
-                mother: {
-                    firstName: document.getElementById('motherFirstName').value || 'N/A',
-                    middleName: document.getElementById('motherMiddleName').value || '',
-                    lastName: document.getElementById('motherLastName').value || ''
-                },
-                aadhar: document.getElementById('aadhar').value,
-                dates: {
-                    reg: document.getElementById('regDate').value,
-                    join: document.getElementById('joinDate').value
-                },
-                address: {
-                    current: document.getElementById('currentAddress').value,
-                    permanent: document.getElementById('permanentAddress').value
-                },
-                education: {
-                    board: board,
-                    class: studentClass
-                }
-            };
-            
-            // Generate ID and password
-            const studentId = data.aadhar;
-            const password = generatePassword(data.student.firstName, data.aadhar);
-            
-            // Format date
-            function formatDate(d) {
-                return new Date(d).toLocaleDateString('en-IN', {
-                    day: 'numeric', month: 'long', year: 'numeric'
+                    reader.onerror = reject;
                 });
             }
-            
-            // Show preview
-            document.getElementById('previewBody').innerHTML = `
-                <div class="preview-item"><strong>Name:</strong> ${data.student.firstName} ${data.student.middleName} ${data.student.lastName}</div>
-                <div class="preview-item"><strong>Mobile:</strong> ${data.student.mobile}</div>
-                <div class="preview-item"><strong>Aadhar:</strong> ${data.aadhar}</div>
-                <div class="preview-item"><strong>Reg Date:</strong> ${formatDate(data.dates.reg)}</div>
-                <div class="preview-item"><strong>Join Date:</strong> ${formatDate(data.dates.join)}</div>
-                <div class="preview-item"><strong>Father:</strong> ${data.father.firstName} ${data.father.middleName} ${data.father.lastName}</div>
-                <div class="preview-item"><strong>Board:</strong> ${data.education.board.toUpperCase()}</div>
-                <div class="preview-item"><strong>Class:</strong> ${data.education.class}</div>
-                <div class="preview-item"><strong>Student ID:</strong> ${studentId}</div>
-                <div class="preview-item"><strong>Password:</strong> ${password}</div>
-                <div class="preview-item"><strong>Fees:</strong> ₹0 (Pending)</div>
-            `;
-            
-            // Save for submission
-            window.registrationData = {
-                ...data,
-                studentId,
-                password,
-                fees: 0
-            };
-            
-            // Show modal
-            new bootstrap.Modal(document.getElementById('previewModal')).show();
-        });
 
-        // ============================================
-        // SUBMIT DATA
-        // ============================================
-        async function submitData() {
-            const data = window.registrationData;
-            
-            if (!data) {
-                alert('No data');
-                return;
+            // ============================================
+            // PHOTO CHANGE EVENT
+            // ============================================
+            document.getElementById('studentPhoto').addEventListener('change', async function(e) {
+                if (this.files && this.files[0]) {
+                    try {
+                        const compressed = await compressImage(this.files[0]);
+                        
+                        document.getElementById('photoPreview').src = compressed;
+                        document.getElementById('photoPreview').style.display = 'block';
+                        document.getElementById('photoIcon').style.display = 'none';
+                        
+                        // Store compressed photo
+                        this.compressedPhoto = compressed;
+                    } catch (err) {
+                        alert('Error: ' + err.message);
+                    }
+                }
+            });
+
+            // ============================================
+            // COPY ADDRESS - NO INLINE ONCLICK
+            // ============================================
+            document.getElementById('sameAddress').addEventListener('change', function() {
+                const permanentDiv = document.getElementById('permanentDiv');
+                const current = document.getElementById('currentAddress');
+                const permanent = document.getElementById('permanentAddress');
+                
+                if (this.checked) {
+                    permanentDiv.style.display = 'none';
+                    permanent.value = current.value;
+                    permanent.required = false;
+                } else {
+                    permanentDiv.style.display = 'block';
+                    permanent.required = true;
+                }
+            });
+
+            // ============================================
+            // VALIDATION FUNCTIONS
+            // ============================================
+            function validateMobile(input, errorId) {
+                const val = input.value;
+                const error = document.getElementById(errorId);
+                
+                if (val && !/^\d{10}$/.test(val)) {
+                    error.classList.add('show');
+                    return false;
+                } else {
+                    error.classList.remove('show');
+                    return true;
+                }
             }
-            
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
-            
-            try {
-                // API call here
-                await new Promise(r => setTimeout(r, 1000));
+
+            function validateAadhar(input) {
+                const val = input.value;
+                const error = document.getElementById('aadharError');
                 
-                // Hide modal
-                bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
+                if (val && !/^\d{12}$/.test(val)) {
+                    error.classList.add('show');
+                    return false;
+                } else {
+                    error.classList.remove('show');
+                    return true;
+                }
+            }
+
+            // Add validation listeners
+            document.getElementById('mobile').addEventListener('input', function() {
+                validateMobile(this, 'mobileError');
+            });
+            
+            document.getElementById('fatherMobile').addEventListener('input', function() {
+                validateMobile(this, 'fatherMobileError');
+            });
+            
+            document.getElementById('aadhar').addEventListener('input', function() {
+                validateAadhar(this);
+            });
+
+            // ============================================
+            // GENERATE PASSWORD
+            // ============================================
+            function generatePassword(firstName, aadhar) {
+                const namePart = firstName.toUpperCase().slice(0, 4).padEnd(4, 'X');
+                const aadharPart = aadhar.slice(-6);
+                return namePart + aadharPart;
+            }
+
+            // ============================================
+            // FORM SUBMIT - NO INLINE SUBMIT
+            // ============================================
+            document.getElementById('registrationForm').addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                // Show success
-                document.getElementById('credentials').innerHTML = `
-                    <strong>ID:</strong> ${data.studentId}<br>
-                    <strong>Password:</strong> ${data.password}<br>
-                    <strong>Fees:</strong> ₹0
+                // Validate all
+                if (!validateMobile(document.getElementById('mobile'), 'mobileError')) return;
+                if (!validateMobile(document.getElementById('fatherMobile'), 'fatherMobileError')) return;
+                if (!validateAadhar(document.getElementById('aadhar'))) return;
+                
+                const board = document.getElementById('board').value;
+                const studentClass = document.getElementById('class').value;
+                
+                if (!board) {
+                    alert('Select board');
+                    return;
+                }
+                if (!studentClass) {
+                    alert('Select class');
+                    return;
+                }
+                
+                // Get form data
+                const data = {
+                    student: {
+                        firstName: document.getElementById('firstName').value,
+                        middleName: document.getElementById('middleName').value,
+                        lastName: document.getElementById('lastName').value,
+                        mobile: document.getElementById('mobile').value
+                    },
+                    father: {
+                        firstName: document.getElementById('fatherFirstName').value,
+                        middleName: document.getElementById('fatherMiddleName').value,
+                        lastName: document.getElementById('fatherLastName').value,
+                        mobile: document.getElementById('fatherMobile').value
+                    },
+                    mother: {
+                        firstName: document.getElementById('motherFirstName').value || 'N/A',
+                        middleName: document.getElementById('motherMiddleName').value || '',
+                        lastName: document.getElementById('motherLastName').value || ''
+                    },
+                    aadhar: document.getElementById('aadhar').value,
+                    dates: {
+                        reg: document.getElementById('regDate').value,
+                        join: document.getElementById('joinDate').value
+                    },
+                    address: {
+                        current: document.getElementById('currentAddress').value,
+                        permanent: document.getElementById('permanentAddress').value
+                    },
+                    education: {
+                        board: board,
+                        class: studentClass
+                    }
+                };
+                
+                // Generate ID and password
+                const studentId = data.aadhar;
+                const password = generatePassword(data.student.firstName, data.aadhar);
+                
+                // Format date
+                function formatDate(d) {
+                    return new Date(d).toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'long', year: 'numeric'
+                    });
+                }
+                
+                // Show preview
+                document.getElementById('previewBody').innerHTML = `
+                    <div class="preview-item"><strong>Name:</strong> ${data.student.firstName} ${data.student.middleName} ${data.student.lastName}</div>
+                    <div class="preview-item"><strong>Mobile:</strong> ${data.student.mobile}</div>
+                    <div class="preview-item"><strong>Aadhar:</strong> ${data.aadhar}</div>
+                    <div class="preview-item"><strong>Reg Date:</strong> ${formatDate(data.dates.reg)}</div>
+                    <div class="preview-item"><strong>Join Date:</strong> ${formatDate(data.dates.join)}</div>
+                    <div class="preview-item"><strong>Father:</strong> ${data.father.firstName} ${data.father.middleName} ${data.father.lastName}</div>
+                    <div class="preview-item"><strong>Board:</strong> ${data.education.board.toUpperCase()}</div>
+                    <div class="preview-item"><strong>Class:</strong> ${data.education.class}</div>
+                    <div class="preview-item"><strong>Student ID:</strong> ${studentId}</div>
+                    <div class="preview-item"><strong>Password:</strong> ${password}</div>
+                    <div class="preview-item"><strong>Fees:</strong> ₹0 (Pending)</div>
                 `;
                 
-                document.getElementById('overlay').style.display = 'block';
-                document.getElementById('successPopup').classList.add('show');
+                // Save for submission
+                window.registrationData = {
+                    ...data,
+                    studentId,
+                    password,
+                    fees: 0
+                };
                 
-                // Reset form
-                document.getElementById('registrationForm').reset();
-                document.getElementById('photoPreview').style.display = 'none';
-                document.getElementById('photoIcon').style.display = 'block';
-                
-                // Reset dates
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('regDate').value = today;
-                document.getElementById('joinDate').value = today;
-                
-            } catch (err) {
-                alert('Error: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check me-2"></i>Confirm';
-            }
-        }
+                // Show modal
+                new bootstrap.Modal(document.getElementById('previewModal')).show();
+            });
 
-        // ============================================
-        // CLOSE POPUP
-        // ============================================
-        function closePopup() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('successPopup').classList.remove('show');
-        }
+            // ============================================
+            // CONFIRM BUTTON - NO INLINE ONCLICK
+            // ============================================
+            document.getElementById('confirmBtn').addEventListener('click', async function() {
+                const data = window.registrationData;
+                
+                if (!data) {
+                    alert('No data');
+                    return;
+                }
+                
+                const btn = this;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+                
+                try {
+                    // API call here
+                    await new Promise(r => setTimeout(r, 1000));
+                    
+                    // Hide modal
+                    bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
+                    
+                    // Show success
+                    document.getElementById('credentials').innerHTML = `
+                        <strong>ID:</strong> ${data.studentId}<br>
+                        <strong>Password:</strong> ${data.password}<br>
+                        <strong>Fees:</strong> ₹0
+                    `;
+                    
+                    document.getElementById('overlay').style.display = 'block';
+                    document.getElementById('successPopup').classList.add('show');
+                    
+                    // Reset form
+                    document.getElementById('registrationForm').reset();
+                    document.getElementById('photoPreview').style.display = 'none';
+                    document.getElementById('photoIcon').style.display = 'block';
+                    
+                    // Reset dates
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('regDate').value = today;
+                    document.getElementById('joinDate').value = today;
+                    
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check me-2"></i>Confirm';
+                }
+            });
+
+            // ============================================
+            // OK BUTTON - NO INLINE ONCLICK
+            // ============================================
+            document.getElementById('okBtn').addEventListener('click', function() {
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('successPopup').classList.remove('show');
+            });
+
+            // ============================================
+            // OVERLAY CLICK
+            // ============================================
+            document.getElementById('overlay').addEventListener('click', function() {
+                this.style.display = 'none';
+                document.getElementById('successPopup').classList.remove('show');
+            });
+
+            // ============================================
+            // UPDATE PERMANENT ADDRESS WHEN CURRENT CHANGES
+            // ============================================
+            document.getElementById('currentAddress').addEventListener('input', function() {
+                if (document.getElementById('sameAddress').checked) {
+                    document.getElementById('permanentAddress').value = this.value;
+                }
+            });
+
+        }); // END DOMContentLoaded
     </script>
 </body>
 </html>
