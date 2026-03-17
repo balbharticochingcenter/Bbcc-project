@@ -24,8 +24,8 @@
     // ============================================
     let allStudents = [];
     let filteredStudents = [];
-    let currentBoard = '';
-    let currentClass = '';
+    let currentBoard = 'all';
+    let currentClass = 'all';
     let currentStudentId = null;
     let currentStudentData = null;
     let monthlyFeeChart = null;
@@ -123,30 +123,31 @@
         studentPane.setAttribute('role', 'tabpanel');
         
         studentPane.innerHTML = `
-            <!-- Board and Class Selection -->
+            <!-- Board and Class Selection with All Options -->
             <div class="row mb-4">
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Select Board & Class</h5>
+                            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Students</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-5 mb-2">
+                                <div class="col-md-4 mb-2">
                                     <label class="form-label">Select Board</label>
                                     <select class="form-select" id="studentBoardSelect">
-                                        <option value="">-- Choose Board --</option>
+                                        <option value="all">-- All Boards --</option>
                                         ${BOARDS.map(board => `<option value="${board}">${board}</option>`).join('')}
                                     </select>
                                 </div>
-                                <div class="col-md-5 mb-2">
+                                <div class="col-md-4 mb-2">
                                     <label class="form-label">Select Class</label>
-                                    <select class="form-select" id="studentClassSelect" disabled>
-                                        <option value="">-- First Select Board --</option>
+                                    <select class="form-select" id="studentClassSelect">
+                                        <option value="all">-- All Classes --</option>
+                                        ${CLASSES.map(cls => `<option value="${cls}">${cls}</option>`).join('')}
                                     </select>
                                 </div>
-                                <div class="col-md-2 mb-2 d-flex align-items-end">
-                                    <button class="btn btn-primary w-100" id="loadStudentsBtn" disabled>
+                                <div class="col-md-4 mb-2 d-flex align-items-end">
+                                    <button class="btn btn-primary w-100" id="loadStudentsBtn">
                                         <i class="fas fa-search me-2"></i>Load Students
                                     </button>
                                 </div>
@@ -212,8 +213,9 @@
             <div class="row" id="studentsTableContainer" style="display: none;">
                 <div class="col-md-12">
                     <div class="card">
-                        <div class="card-header bg-info text-white">
+                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0"><i class="fas fa-list me-2"></i>Students List - <span id="selectedBoardClass"></span></h5>
+                            <span class="badge bg-light text-dark" id="studentCount">0 students</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -223,6 +225,7 @@
                                             <th>Photo</th>
                                             <th>Student ID</th>
                                             <th>Student Name</th>
+                                            <th>Board/Class</th>
                                             <th>Mobile</th>
                                             <th>Aadhar</th>
                                             <th>Father's Mobile</th>
@@ -235,7 +238,7 @@
                                     </thead>
                                     <tbody id="studentTableBody">
                                         <tr>
-                                            <td colspan="11" class="text-center py-4">
+                                            <td colspan="12" class="text-center py-4">
                                                 <i class="fas fa-spinner fa-spin fa-2x"></i>
                                                 <p class="mt-2">Loading students...</p>
                                             </td>
@@ -261,10 +264,10 @@
                         <div class="card-body">
                             <!-- Student Quick Info -->
                             <div class="row mb-3">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <img id="trackerStudentPhoto" src="" class="img-fluid rounded" style="max-height: 80px;">
                                 </div>
-                                <div class="col-md-9">
+                                <div class="col-md-10">
                                     <div class="row">
                                         <div class="col-md-3">
                                             <strong>ID:</strong> <span id="trackerStudentId"></span>
@@ -545,23 +548,6 @@
     }
     
     // ============================================
-    // POPULATE CLASS DROPDOWN
-    // ============================================
-    function populateClassDropdown(board) {
-        const classSelect = document.getElementById('studentClassSelect');
-        if (!classSelect) return;
-        
-        classSelect.innerHTML = '<option value="">-- Select Class --</option>';
-        classSelect.disabled = !board;
-        
-        if (board) {
-            CLASSES.forEach(cls => {
-                classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
-            });
-        }
-    }
-    
-    // ============================================
     // FEE CALCULATION (Joining till Current Date)
     // ============================================
     function calculateMonthsUntilNow(joiningDate) {
@@ -643,10 +629,10 @@
     }
     
     // ============================================
-    // FETCH STUDENTS BY BOARD AND CLASS
+    // FETCH ALL STUDENTS FROM DATABASE
     // ============================================
-    async function fetchStudentsByBoardAndClass(board, className) {
-        console.log(`Fetching students for ${board} - ${className}...`);
+    async function fetchAllStudents() {
+        console.log("Fetching all students...");
         
         try {
             const response = await fetch('/api/students', {
@@ -658,28 +644,63 @@
             const result = await response.json();
             allStudents = result.data || [];
             
-            // Filter by board and class
-            filteredStudents = allStudents.filter(student => 
-                student.education?.board === board && 
-                student.education?.class === className
-            );
+            // Apply filters
+            applyFilters();
             
-            // Show containers
-            document.getElementById('summaryCards').style.display = 'flex';
-            document.getElementById('searchBar').style.display = 'block';
-            document.getElementById('studentsTableContainer').style.display = 'block';
-            document.getElementById('selectedBoardClass').textContent = `${board} - ${className}`;
-            
-            // Update display
-            renderStudentTable();
-            updateSummaryCards();
-            
-            showToast(`Loaded ${filteredStudents.length} students`, 'success');
+            showToast(`Loaded ${allStudents.length} total students`, 'success');
             
         } catch (err) {
             console.error('Fetch error:', err);
             showToast('Failed to load students', 'error');
         }
+    }
+    
+    // ============================================
+    // APPLY BOARD AND CLASS FILTERS
+    // ============================================
+    function applyFilters() {
+        // Start with all students
+        let filtered = [...allStudents];
+        
+        // Apply board filter if not "all"
+        if (currentBoard !== 'all') {
+            filtered = filtered.filter(student => 
+                student.education?.board === currentBoard
+            );
+        }
+        
+        // Apply class filter if not "all"
+        if (currentClass !== 'all') {
+            filtered = filtered.filter(student => 
+                student.education?.class === currentClass
+            );
+        }
+        
+        filteredStudents = filtered;
+        
+        // Update display
+        if (filteredStudents.length > 0 || allStudents.length > 0) {
+            document.getElementById('summaryCards').style.display = 'flex';
+            document.getElementById('searchBar').style.display = 'block';
+            document.getElementById('studentsTableContainer').style.display = 'block';
+            
+            let filterText = '';
+            if (currentBoard === 'all' && currentClass === 'all') {
+                filterText = 'All Students';
+            } else if (currentBoard === 'all') {
+                filterText = `All Boards - ${currentClass}`;
+            } else if (currentClass === 'all') {
+                filterText = `${currentBoard} - All Classes`;
+            } else {
+                filterText = `${currentBoard} - ${currentClass}`;
+            }
+            
+            document.getElementById('selectedBoardClass').textContent = filterText;
+            document.getElementById('studentCount').textContent = `${filteredStudents.length} students`;
+        }
+        
+        renderStudentTable();
+        updateSummaryCards();
     }
     
     // ============================================
@@ -692,9 +713,9 @@
         if (filteredStudents.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="11" class="text-center py-4">
+                    <td colspan="12" class="text-center py-4">
                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No students found in this class</p>
+                        <p class="text-muted">No students found with selected filters</p>
                     </td>
                 </tr>
             `;
@@ -713,6 +734,10 @@
                     <td><span class="badge bg-info">${student.studentId || ''}</span></td>
                     <td>
                         <strong>${student.studentName?.first || ''} ${student.studentName?.middle || ''} ${student.studentName?.last || ''}</strong>
+                    </td>
+                    <td>
+                        ${student.education?.board || ''}<br>
+                        <small>${student.education?.class || ''}</small>
                     </td>
                     <td>${student.mobile || ''}</td>
                     <td>${student.aadharNumber ? student.aadharNumber.substring(0, 4) + '...' : ''}</td>
@@ -762,30 +787,34 @@
     // ============================================
     function filterStudentsBySearch(searchText) {
         if (!searchText) {
-            filteredStudents = allStudents.filter(student => 
-                student.education?.board === currentBoard && 
-                student.education?.class === currentClass
-            );
+            // Reset to filtered by board/class
+            applyFilters();
         } else {
             const lowerSearch = searchText.toLowerCase();
-            filteredStudents = allStudents.filter(student => {
-                // Check if student belongs to current board/class
-                if (student.education?.board !== currentBoard || 
-                    student.education?.class !== currentClass) {
+            const boardFiltered = allStudents.filter(student => {
+                // Apply board filter if not "all"
+                if (currentBoard !== 'all' && student.education?.board !== currentBoard) {
                     return false;
                 }
-                
-                // Search in fields
+                // Apply class filter if not "all"
+                if (currentClass !== 'all' && student.education?.class !== currentClass) {
+                    return false;
+                }
+                return true;
+            });
+            
+            // Then apply search
+            filteredStudents = boardFiltered.filter(student => {
                 const fullName = `${student.studentName?.first || ''} ${student.studentName?.middle || ''} ${student.studentName?.last || ''}`.toLowerCase();
                 return fullName.includes(lowerSearch) || 
                        (student.studentId || '').toLowerCase().includes(lowerSearch) ||
                        (student.mobile || '').includes(lowerSearch) ||
                        (student.aadharNumber || '').includes(lowerSearch);
             });
+            
+            renderStudentTable();
+            updateSummaryCards();
         }
-        
-        renderStudentTable();
-        updateSummaryCards();
     }
     
     // ============================================
@@ -1198,7 +1227,7 @@
                 showToast('Student updated in database successfully');
                 
                 // Refresh data
-                await fetchStudentsByBoardAndClass(currentBoard, currentClass);
+                await fetchAllStudents();
                 
                 // Close modal
                 bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide();
@@ -1234,14 +1263,7 @@
                 allStudents = allStudents.filter(s => s.studentId !== studentId);
                 
                 // Refresh current view
-                if (currentBoard && currentClass) {
-                    filteredStudents = allStudents.filter(s => 
-                        s.education?.board === currentBoard && 
-                        s.education?.class === currentClass
-                    );
-                    renderStudentTable();
-                    updateSummaryCards();
-                }
+                applyFilters();
                 
                 // Hide fee tracker if open
                 if (currentStudentId === studentId) {
@@ -1319,7 +1341,13 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${currentBoard}_${currentClass}_students.csv`;
+        
+        let filename = 'students';
+        if (currentBoard !== 'all') filename += `_${currentBoard}`;
+        if (currentClass !== 'all') filename += `_${currentClass}`;
+        filename += '.csv';
+        
+        a.download = filename;
         a.click();
         window.URL.revokeObjectURL(url);
         
@@ -1342,30 +1370,16 @@
         // Board select change
         document.getElementById('studentBoardSelect')?.addEventListener('change', function(e) {
             currentBoard = e.target.value;
-            populateClassDropdown(currentBoard);
-            
-            const loadBtn = document.getElementById('loadStudentsBtn');
-            const classSelect = document.getElementById('studentClassSelect');
-            
-            if (currentBoard) {
-                classSelect.disabled = false;
-            } else {
-                classSelect.disabled = true;
-                loadBtn.disabled = true;
-            }
         });
         
         // Class select change
         document.getElementById('studentClassSelect')?.addEventListener('change', function(e) {
             currentClass = e.target.value;
-            document.getElementById('loadStudentsBtn').disabled = !currentClass;
         });
         
         // Load students button
         document.getElementById('loadStudentsBtn')?.addEventListener('click', function() {
-            if (currentBoard && currentClass) {
-                fetchStudentsByBoardAndClass(currentBoard, currentClass);
-            }
+            fetchAllStudents();
         });
         
         // Search input
@@ -1375,9 +1389,7 @@
         
         // Refresh button
         document.getElementById('refreshStudentsBtn')?.addEventListener('click', function() {
-            if (currentBoard && currentClass) {
-                fetchStudentsByBoardAndClass(currentBoard, currentClass);
-            }
+            fetchAllStudents();
         });
         
         // Export button
@@ -1400,7 +1412,7 @@
     // INITIALIZE EVERYTHING
     // ============================================
     function init() {
-        console.log("🚀 Initializing Student Management System...");
+        console.log("🚀 Initializing Student Management System with All Boards/Classes...");
         
         addStudentTab();
         createStudentTabContent();
@@ -1408,6 +1420,7 @@
         
         setTimeout(() => {
             initEventListeners();
+            // Don't auto-load, wait for user to click Load button
         }, 100);
     }
     
