@@ -1,21 +1,21 @@
 {
-  "name": "bbcc-admin-system",
-  "version": "1.1.0",
-  "description": "BBCC Admin + Zoom-like Live Classroom System",
+  "name": "coaching-website",
+  "version": "1.0.0",
+  "description": "VIP Coaching Website with High Security",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "mongoose": "^7.0.0",
+    "dotenv": "^16.0.3",
     "cors": "^2.8.5",
-    "body-parser": "^1.20.2",
-    "node-fetch": "^2.6.7",
-    "dotenv": "^16.4.5",
-
-    "socket.io": "^4.7.0",
-
-    "livekit-server-sdk": "^1.2.7"
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.7.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
