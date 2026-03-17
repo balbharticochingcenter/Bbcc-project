@@ -22,7 +22,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Header Style */
         .vip-nav {
             background: var(--primary);
             padding: 10px 5%;
@@ -62,14 +61,12 @@
             color: var(--accent); 
         }
 
-        /* Logo Style for Images */
         .logo-img {
             max-height: 50px;
             max-width: 150px;
             border-radius: 8px;
         }
 
-        /* 3D Slider Container */
         .slider-section { 
             padding: 40px 0; 
             background: #e2e8f0; 
@@ -102,7 +99,6 @@
             object-fit: cover; 
         }
 
-        /* About Section */
         .about-card {
             background: white; 
             border-radius: 25px; 
@@ -113,7 +109,6 @@
             box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
         }
 
-        /* Loading Animation */
         .loading-spinner {
             display: flex;
             justify-content: center;
@@ -135,7 +130,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Mobile Bottom App Bar */
         .mobile-bar {
             display: none; 
             position: fixed; 
@@ -172,7 +166,6 @@
             box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
         }
 
-        /* Toast Notification */
         .toast-notification {
             position: fixed;
             bottom: 80px;
@@ -206,7 +199,6 @@
             }
         }
 
-        /* Back to Top Button */
         .back-to-top {
             position: fixed;
             bottom: 80px;
@@ -237,17 +229,22 @@
             color: var(--primary);
             transform: translateY(-5px);
         }
+
+        /* SIMPLE FIX: Make buttons more clickable */
+        .btn-vip {
+            position: relative;
+            z-index: 9999;
+            pointer-events: auto !important;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Toast Notification -->
     <div id="toast" class="toast-notification">
         <i class="fas fa-info-circle"></i>
         <span id="toast-message"></span>
     </div>
 
-    <!-- Back to Top Button -->
     <div class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
         <i class="fas fa-arrow-up"></i>
     </div>
@@ -266,20 +263,20 @@
             <a href="/"><i class="fas fa-home me-1"></i>Home</a>
             <a href="#about"><i class="fas fa-info-circle me-1"></i>About</a>
             <a href="/contact"><i class="fas fa-envelope me-1"></i>Contact</a>
-            <!-- ✅ FIXED: Direct onclick with return false -->
-            <button onclick="window.location.href='login.html'; return false;" class="btn-vip ms-2">
+            
+            <!-- ✅ SIMPLEST FIX: Use anchor tags instead of buttons -->
+            <a href="login.html" class="btn-vip ms-2" style="text-decoration: none; display: inline-block;">
                 <i class="fas fa-sign-in-alt me-1"></i>Login
-            </button>
-            <button onclick="window.location.href='register.html'; return false;" class="btn-vip ms-2" style="background: white;">
+            </a>
+            <a href="register.html" class="btn-vip ms-2" style="background: white; color: var(--primary); text-decoration: none; display: inline-block;">
                 <i class="fas fa-user-plus me-1"></i>Register
-            </button>
+            </a>
         </div>
     </header>
 
     <section class="slider-section">
         <div class="swiper mySwiper">
             <div class="swiper-wrapper" id="db-slides">
-                <!-- Loading Spinner (Default Slides) -->
                 <div class="swiper-slide loading-spinner">
                     <div class="spinner"></div>
                 </div>
@@ -315,9 +312,7 @@
                 
                 <div class="col-md-4 mb-4">
                     <h5 class="text-warning"><i class="fas fa-share-alt me-2"></i>Connect With Us</h5>
-                    <div id="db-socials" class="fs-2 mt-2">
-                        <!-- Social icons will be loaded here -->
-                    </div>
+                    <div id="db-socials" class="fs-2 mt-2"></div>
                 </div>
                 
                 <div class="col-md-4 mb-4">
@@ -334,18 +329,17 @@
         </div>
     </footer>
 
-    <!-- Mobile Bottom Bar -->
     <div class="mobile-bar">
         <a href="/" class="text-center text-dark text-decoration-none">
             <i class="fas fa-home d-block fs-4 text-primary"></i>
             <small>Home</small>
         </a>
-        <!-- ✅ FIXED: Direct onclick -->
-        <a href="javascript:void(0)" class="text-center text-dark text-decoration-none" onclick="window.location.href='login.html'; return false;">
+        <!-- ✅ Mobile mein bhi anchor tag use kiya -->
+        <a href="login.html" class="text-center text-dark text-decoration-none">
             <i class="fas fa-sign-in-alt d-block fs-4 text-primary"></i>
             <small>Login</small>
         </a>
-        <a href="javascript:void(0)" class="text-center text-dark text-decoration-none" onclick="window.location.href='register.html'; return false;">
+        <a href="register.html" class="text-center text-dark text-decoration-none">
             <i class="fas fa-user-plus d-block fs-4 text-primary"></i>
             <small>Join</small>
         </a>
@@ -359,28 +353,14 @@
     
     <script>
         // ============================================
-        // SIMPLE REDIRECT FUNCTIONS - DEFINED AT TOP LEVEL
-        // ============================================
-        window.redirectToLogin = function() {
-            console.log('Redirecting to login page...');
-            window.location.href = 'login.html';
-        };
-        
-        window.redirectToRegister = function() {
-            console.log('Redirecting to register page...');
-            window.location.href = 'register.html';
-        };
-
-        // ============================================
         // SHOW TOAST FUNCTION
         // ============================================
-        window.showToast = function(message, type = 'info') {
+        function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toast-message');
             
             toastMessage.innerText = message;
             
-            // Change color based on type
             if (type === 'success') {
                 toast.style.borderLeftColor = '#28a745';
             } else if (type === 'error') {
@@ -391,45 +371,37 @@
             
             toast.classList.add('show');
             
-            // Auto hide after 3 seconds
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
-        };
+        }
 
         // ============================================
-        // CHECK IF LOGGED IN - FOR HEADER
+        // CHECK IF LOGGED IN
         // ============================================
         function checkLoginStatus() {
             const token = localStorage.getItem('token');
             const isAdmin = localStorage.getItem('isAdmin');
             
-            // Agar admin logged in hai toh button change karo
             if (token && isAdmin === 'true') {
-                // Update login button to show Dashboard
-                const loginBtn = document.querySelector('.nav-links .btn-vip.ms-2');
-                if (loginBtn) {
-                    loginBtn.innerHTML = '<i class="fas fa-tachometer-alt me-1"></i>Dashboard';
-                    loginBtn.onclick = function() {
-                        window.location.href = 'admin-dashboard.html';
-                        return false;
-                    };
+                // Update login link to Dashboard
+                const loginLink = document.querySelector('.nav-links a[href="login.html"]');
+                if (loginLink) {
+                    loginLink.innerHTML = '<i class="fas fa-tachometer-alt me-1"></i>Dashboard';
+                    loginLink.href = 'admin-dashboard.html';
                 }
                 
-                // Update mobile login button
-                const mobileLoginBtn = document.querySelector('.mobile-bar a[onclick*="login"]');
-                if (mobileLoginBtn) {
-                    mobileLoginBtn.innerHTML = '<i class="fas fa-tachometer-alt d-block fs-4 text-primary"></i><small>Dashboard</small>';
-                    mobileLoginBtn.onclick = function() {
-                        window.location.href = 'admin-dashboard.html';
-                        return false;
-                    };
+                // Update mobile login link
+                const mobileLoginLink = document.querySelector('.mobile-bar a[href="login.html"]');
+                if (mobileLoginLink) {
+                    mobileLoginLink.innerHTML = '<i class="fas fa-tachometer-alt d-block fs-4 text-primary"></i><small>Dashboard</small>';
+                    mobileLoginLink.href = 'admin-dashboard.html';
                 }
             }
         }
 
         // ============================================
-        // BACK TO TOP BUTTON VISIBILITY
+        // BACK TO TOP
         // ============================================
         window.addEventListener('scroll', function() {
             const backToTop = document.getElementById('backToTop');
@@ -441,31 +413,26 @@
         });
 
         // ============================================
-        // DETECT IF LOGO IS IMAGE OR TEXT
+        // DISPLAY LOGO
         // ============================================
         function displayLogo(logoData) {
             const logoElement = document.getElementById('db-logo');
             
-            // Check if logo is a base64 image (starts with data:image)
             if (logoData && logoData.startsWith('data:image')) {
-                // It's an image logo
                 logoElement.innerHTML = `<img src="${logoData}" alt="Logo" class="logo-img">`;
             } else {
-                // It's text logo
                 logoElement.innerHTML = `<i class="fas fa-graduation-cap me-2"></i>${logoData || 'BBCC'}`;
             }
         }
 
         // ============================================
-        // MAIN FUNCTION TO LOAD SITE DATA
+        // LOAD SITE DATA
         // ============================================
         async function loadSiteData() {
             try {
-                // Show loading state
                 const slideWrapper = document.getElementById('db-slides');
                 const aboutElement = document.getElementById('db-about');
                 
-                // Fetch data from API
                 const res = await fetch('/api/config');
                 
                 if (!res.ok) {
@@ -474,23 +441,13 @@
                 
                 const data = await res.json();
 
-                // ============================================
-                // HEADER & CONTENT UPDATE
-                // ============================================
-                // Display logo (image or text)
                 displayLogo(data.logoText);
                     
                 document.getElementById('db-title').innerText = data.title || 'Bal Bharti Coaching';
                 document.getElementById('db-subtitle').innerText = data.subTitle || 'Excellence in Education';
-                
-                // Update about text
-                aboutElement.innerHTML = data.aboutText || 
-                    'Welcome to Bal Bharti Coaching Center. We provide quality education to students.';
+                aboutElement.innerHTML = data.aboutText || 'Welcome to Bal Bharti Coaching Center.';
 
-                // ============================================
-                // 3D SLIDER IMAGES UPDATE
-                // ============================================
-                slideWrapper.innerHTML = ''; // Clear loading spinner
+                slideWrapper.innerHTML = '';
                 
                 if (data.slides && data.slides.length > 0) {
                     data.slides.forEach(imgUrl => {
@@ -499,7 +456,6 @@
                         }
                     });
                 } else {
-                    // Default slides if no images in database
                     slideWrapper.innerHTML = `
                         <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500" alt="Default 1" loading="lazy" /></div>
                         <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500" alt="Default 2" loading="lazy" /></div>
@@ -507,150 +463,56 @@
                     `;
                 }
 
-                // ============================================
-                // SOCIAL MEDIA LINKS UPDATE
-                // ============================================
                 const socialsHtml = [];
                 
-                if (data.whatsapp) socialsHtml.push(`<a href="${data.whatsapp}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`);
-                if (data.insta) socialsHtml.push(`<a href="${data.insta}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="Instagram"><i class="fab fa-instagram"></i></a>`);
-                if (data.fb) socialsHtml.push(`<a href="${data.fb}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="Facebook"><i class="fab fa-facebook"></i></a>`);
-                if (data.twitter) socialsHtml.push(`<a href="${data.twitter}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="Twitter"><i class="fab fa-twitter"></i></a>`);
+                if (data.whatsapp) socialsHtml.push(`<a href="${data.whatsapp}" target="_blank" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>`);
+                if (data.insta) socialsHtml.push(`<a href="${data.insta}" target="_blank" class="text-white me-3"><i class="fab fa-instagram"></i></a>`);
+                if (data.fb) socialsHtml.push(`<a href="${data.fb}" target="_blank" class="text-white me-3"><i class="fab fa-facebook"></i></a>`);
                 
-                // Default social icons if none in database
-                if (socialsHtml.length === 0) {
-                    document.getElementById('db-socials').innerHTML = `
-                        <a href="#" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i></a>
-                    `;
-                } else {
-                    document.getElementById('db-socials').innerHTML = socialsHtml.join('');
-                }
+                document.getElementById('db-socials').innerHTML = socialsHtml.length ? socialsHtml.join('') : `
+                    <a href="#" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i></a>
+                `;
 
-                // ============================================
-                // INITIALIZE 3D CUBE EFFECT
-                // ============================================
                 try {
                     new Swiper(".mySwiper", {
                         effect: "cube",
                         grabCursor: true,
-                        cubeEffect: { 
-                            shadow: true, 
-                            slideShadows: true, 
-                            shadowOffset: 20, 
-                            shadowScale: 0.94 
-                        },
-                        pagination: { 
-                            el: ".swiper-pagination",
-                            clickable: true 
-                        },
-                        autoplay: { 
-                            delay: 2500,
-                            disableOnInteraction: false 
-                        },
-                        loop: true // Infinite loop
+                        cubeEffect: { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 },
+                        pagination: { el: ".swiper-pagination", clickable: true },
+                        autoplay: { delay: 2500, disableOnInteraction: false },
+                        loop: true
                     });
                     
-                    // Show success message
                     showToast('Website loaded successfully!', 'success');
                     
                 } catch (swiperError) {
-                    console.error("Swiper initialization error:", swiperError);
-                    showToast('Slider loaded with basic mode', 'info');
+                    console.error("Swiper error:", swiperError);
                 }
 
             } catch (err) { 
                 console.error("Data fetch error:", err);
-                
-                // Show error message to user
-                showToast('Failed to load content. Please refresh.', 'error');
-                
-                // Load default content
-                displayLogo('BBCC');
-                document.getElementById('db-title').innerText = 'Bal Bharti Coaching';
-                document.getElementById('db-subtitle').innerText = 'Excellence in Education';
-                document.getElementById('db-about').innerHTML = 'Welcome to Bal Bharti Coaching Center. We provide quality education to students.';
-                
-                // Default slides
-                document.getElementById('db-slides').innerHTML = `
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500" alt="Default 1" /></div>
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500" alt="Default 2" /></div>
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1503676260728-5177806628cb?w=500" alt="Default 3" /></div>
-                `;
-                
-                // Initialize Swiper with default images
-                new Swiper(".mySwiper", {
-                    effect: "cube",
-                    grabCursor: true,
-                    cubeEffect: { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 },
-                    pagination: { el: ".swiper-pagination", clickable: true },
-                    autoplay: { delay: 2500 },
-                    loop: true
-                });
+                showToast('Failed to load content.', 'error');
             }
         }
 
         // ============================================
-        // LOAD SITE DATA WHEN PAGE LOADS
+        // INITIALIZE
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             loadSiteData();
-            checkLoginStatus(); // Check if user is logged in
+            checkLoginStatus();
             
-            // ============================================
-            // ADD DIRECT CLICK HANDLERS AS BACKUP
-            // ============================================
-            const loginButtons = document.querySelectorAll('[onclick="redirectToLogin()"], .btn-vip:contains("Login")');
-            const registerButtons = document.querySelectorAll('[onclick="redirectToRegister()"], .btn-vip:contains("Register")');
-            
-            // Fallback: Agar onclick kaam nahi kar raha toh event listeners add karo
-            setTimeout(function() {
-                document.querySelectorAll('.btn-vip').forEach(btn => {
-                    if (btn.textContent.includes('Login') && !btn.hasAttribute('data-listener')) {
-                        btn.setAttribute('data-listener', 'true');
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            window.location.href = 'login.html';
-                        });
-                    }
-                    if (btn.textContent.includes('Register') && !btn.hasAttribute('data-listener')) {
-                        btn.setAttribute('data-listener', 'true');
-                        btn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            window.location.href = 'register.html';
-                        });
-                    }
-                });
-            }, 1000);
-            
-            // ============================================
-            // SMOOTH SCROLLING FOR ANCHOR LINKS
-            // ============================================
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
                     const target = document.querySelector(this.getAttribute('href'));
                     if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+                        target.scrollIntoView({ behavior: 'smooth' });
                     }
                 });
             });
-        });
-
-        // ============================================
-        // NETWORK STATUS CHECK
-        // ============================================
-        window.addEventListener('online', function() {
-            showToast('You are back online!', 'success');
-            loadSiteData(); // Reload data when online
-        });
-        
-        window.addEventListener('offline', function() {
-            showToast('You are offline. Using cached data.', 'error');
         });
     </script>
 </body>
