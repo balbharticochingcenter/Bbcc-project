@@ -535,6 +535,8 @@ app.use((req, res) => {
 });
 ////////////////////register student ///////////////////////////////////////////////////////////////
 
+////////////////////register student ///////////////////////////////////////////////////////////////
+
 const StudentSchema = new mongoose.Schema({
     studentId: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -570,6 +572,151 @@ const StudentSchema = new mongoose.Schema({
         class: String
     }
 }, { timestamps: true });
+
+const Student = mongoose.model('Student', StudentSchema);
+
+// ============================================
+// 📌 STUDENT REGISTRATION API - YEH CODE ADD KARO
+// ============================================
+app.post('/api/student-register', async (req, res) => {
+    try {
+        const studentData = req.body;
+        
+        // Check if student already exists (by Aadhar number)
+        const existingStudent = await Student.findOne({ 
+            studentId: studentData.studentId 
+        });
+        
+        if (existingStudent) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Student already registered with this Aadhar number" 
+            });
+        }
+        
+        // Create new student
+        const student = new Student({
+            studentId: studentData.studentId,
+            password: studentData.password,
+            fees: studentData.fees || 0,
+            photo: studentData.photo,
+            studentName: {
+                first: studentData.student.firstName,
+                middle: studentData.student.middleName || '',
+                last: studentData.student.lastName
+            },
+            mobile: studentData.student.mobile,
+            aadharNumber: studentData.aadhar,
+            aadharDocument: studentData.aadharDocument,
+            registrationDate: new Date(studentData.dates.reg),
+            joiningDate: new Date(studentData.dates.join),
+            fatherName: {
+                first: studentData.father.firstName,
+                middle: studentData.father.middleName || '',
+                last: studentData.father.lastName
+            },
+            fatherMobile: studentData.father.mobile,
+            motherName: {
+                first: studentData.mother.firstName || '',
+                middle: studentData.mother.middleName || '',
+                last: studentData.mother.lastName || ''
+            },
+            address: {
+                current: studentData.address.current,
+                permanent: studentData.address.permanent
+            },
+            education: {
+                board: studentData.education.board,
+                class: studentData.education.class
+            }
+        });
+        
+        await student.save();
+        
+        console.log(`✅ New student registered: ${studentData.student.firstName} ${studentData.student.lastName} (ID: ${studentData.studentId})`);
+        
+        res.json({ 
+            success: true, 
+            message: "Registration successful",
+            studentId: studentData.studentId,
+            password: studentData.password
+        });
+        
+    } catch (err) {
+        console.error("Registration Error:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Registration failed: " + err.message 
+        });
+    }
+});
+
+// ============================================
+// 📌 GET ALL STUDENTS API (OPTIONAL - Admin ke liye)
+// ============================================
+app.get('/api/students', verifyToken, async (req, res) => {
+    try {
+        const students = await Student.find().sort({ createdAt: -1 });
+        res.json({ success: true, data: students });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// 📌 GET SINGLE STUDENT BY ID (OPTIONAL)
+// ============================================
+app.get('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        res.json({ success: true, data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// 📌 UPDATE STUDENT FEES (Admin ke liye)
+// ============================================
+app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
+    try {
+        const { fees } = req.body;
+        const student = await Student.findOneAndUpdate(
+            { studentId: req.params.id },
+            { fees: fees },
+            { new: true }
+        );
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, message: "Fees updated successfully", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// 📌 DELETE STUDENT (Admin ke liye)
+// ============================================
+app.delete('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOneAndDelete({ studentId: req.params.id });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, message: "Student deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
