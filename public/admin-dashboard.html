@@ -6,15 +6,13 @@
     <title>Admin Dashboard | VIP Control</title>
     
     <!-- ============================================
-         🆕 TOKEN BASED AUTHENTICATION CHECK
+         TOKEN BASED AUTHENTICATION CHECK
          ============================================ -->
     <script>
-        // Enhanced authentication check with token
         (function() {
             const token = localStorage.getItem('token');
             const isAdmin = localStorage.getItem('isAdmin');
             
-            // Check both token and isAdmin flag
             if (!token || !isAdmin || isAdmin !== 'true') {
                 console.log('No token found, redirecting to login');
                 window.location.href = 'login.html';
@@ -25,9 +23,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- ============================================
-         🆕 ENHANCED STYLES
-         ============================================ -->
     <style>
         :root { 
             --primary: #0f172a; 
@@ -42,9 +37,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        /* ============================================
-             🆕 HEADER WITH SHADOW
-             ============================================ */
         .admin-header { 
             background: var(--primary); 
             color: white; 
@@ -58,9 +50,6 @@
             z-index: 1000;
         }
         
-        /* ============================================
-             🆕 SIDEBAR CARD WITH HOVER EFFECT
-             ============================================ */
         .sidebar-card { 
             background: white; 
             border-radius: 15px; 
@@ -76,9 +65,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
-        /* ============================================
-             🆕 BUTTON STYLES
-             ============================================ */
         .btn-save { 
             background: var(--primary); 
             color: white; 
@@ -95,10 +81,6 @@
             background: #1e293b; 
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
-        }
-        
-        .btn-save:active {
-            transform: translateY(0);
         }
         
         .btn-save.loading {
@@ -142,25 +124,19 @@
             box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
         }
         
-        /* ============================================
-             🆕 FORM CONTROL STYLES
-             ============================================ */
-        .form-control {
+        .form-control, .form-select {
             border-radius: 8px;
             border: 2px solid #e2e8f0;
             padding: 10px 15px;
             transition: all 0.3s;
         }
         
-        .form-control:focus {
+        .form-control:focus, .form-select:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
             outline: none;
         }
         
-        /* ============================================
-             🆕 TOAST NOTIFICATION
-             ============================================ */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -202,26 +178,6 @@
             }
         }
         
-        /* ============================================
-             🆕 LOADING SKELETON
-             ============================================ */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-            height: 20px;
-            margin-bottom: 10px;
-        }
-        
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        /* ============================================
-             🆕 PREVIEW CARD
-             ============================================ */
         .preview-card {
             background: #f8fafc;
             border-radius: 10px;
@@ -236,9 +192,25 @@
             margin-bottom: 10px;
         }
         
-        /* ============================================
-             🆕 SLIDES MANAGEMENT
-             ============================================ */
+        .logo-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            border: 2px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+            overflow: hidden;
+            background: #f1f5f9;
+        }
+        
+        .logo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
         .slides-container {
             margin-top: 20px;
             padding: 15px;
@@ -279,9 +251,17 @@
             justify-content: center;
         }
         
-        /* ============================================
-             🆕 RESPONSIVE FIXES
-             ============================================ */
+        .nav-tabs .nav-link {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--accent);
+            border-bottom: 3px solid var(--accent);
+            font-weight: bold;
+        }
+        
         @media (max-width: 768px) {
             .admin-header {
                 flex-direction: column;
@@ -302,9 +282,6 @@
 </head>
 <body>
 
-    <!-- ============================================
-         🆕 TOAST NOTIFICATION CONTAINER
-         ============================================ -->
     <div class="toast-container" id="toastContainer"></div>
 
     <header class="admin-header">
@@ -323,152 +300,230 @@
     </header>
 
     <div class="container my-5">
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="sidebar-card">
-                    <h4><i class="fas fa-cog me-2"></i>Settings</h4>
-                    <p class="text-muted small">Yahan se aap Logo, Title aur Social Links badal sakte hain. Save karne ke baad refresh karein.</p>
-                    <hr>
-                    
-                    <!-- ============================================
-                         🆕 ADMIN INFO
-                         ============================================ -->
-                    <div class="mb-3">
-                        <small class="text-muted d-block mb-2">
-                            <i class="fas fa-shield-alt me-1"></i>Security Status:
-                        </small>
-                        <span class="badge bg-success" id="securityBadge">
-                            <i class="fas fa-check-circle me-1"></i>Token Active
-                        </span>
-                    </div>
-                    
-                    <!-- ============================================
-                         🆕 QUICK PREVIEW SECTION
-                         ============================================ -->
-                    <div class="preview-card">
-                        <div class="preview-title">
-                            <i class="fas fa-eye me-1"></i>Live Preview
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="website-tab" data-bs-toggle="tab" data-bs-target="#website" type="button" role="tab">
+                    <i class="fas fa-globe me-2"></i>Website Settings
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab">
+                    <i class="fas fa-user-shield me-2"></i>Admin Settings
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <!-- Website Settings Tab -->
+            <div class="tab-pane fade show active" id="website" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="sidebar-card">
+                            <h4><i class="fas fa-cog me-2"></i>Settings</h4>
+                            <p class="text-muted small">Yahan se aap Logo, Title aur Social Links badal sakte hain.</p>
+                            <hr>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-2">
+                                    <i class="fas fa-shield-alt me-1"></i>Security Status:
+                                </small>
+                                <span class="badge bg-success" id="securityBadge">
+                                    <i class="fas fa-check-circle me-1"></i>Token Active
+                                </span>
+                            </div>
+                            
+                            <!-- Logo Preview -->
+                            <div class="text-center mb-3">
+                                <div class="logo-preview" id="logoPreview">
+                                    <img src="" alt="Logo Preview" id="previewImage" style="display: none;">
+                                    <i class="fas fa-image fa-3x text-muted" id="previewIcon"></i>
+                                </div>
+                                <small class="text-muted">Logo Preview</small>
+                            </div>
+                            
+                            <div class="preview-card">
+                                <div class="preview-title">
+                                    <i class="fas fa-eye me-1"></i>Live Preview
+                                </div>
+                                <div id="livePreview">
+                                    <div><strong>Title:</strong> <span id="previewTitle">Not set</span></div>
+                                    <div><strong>Subtitle:</strong> <span id="previewSubtitle">Not set</span></div>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            <a href="index.html" class="btn btn-outline-primary w-100" target="_blank">
+                                <i class="fas fa-external-link-alt me-2"></i>View Live Site
+                            </a>
+                            
+                            <div class="mt-3 text-center">
+                                <small class="text-muted" id="lastUpdate">
+                                    <i class="far fa-clock me-1"></i>Last updated: Never
+                                </small>
+                            </div>
                         </div>
-                        <div id="livePreview">
-                            <div class="skeleton" style="width: 60%"></div>
-                            <div class="skeleton" style="width: 80%"></div>
-                            <div class="skeleton" style="width: 40%"></div>
-                        </div>
                     </div>
-                    
-                    <hr>
-                    <a href="index.html" class="btn btn-outline-primary w-100" target="_blank">
-                        <i class="fas fa-external-link-alt me-2"></i>View Live Site
-                    </a>
-                    
-                    <!-- ============================================
-                         🆕 LAST UPDATE INFO
-                         ============================================ -->
-                    <div class="mt-3 text-center">
-                        <small class="text-muted" id="lastUpdate">
-                            <i class="far fa-clock me-1"></i>Last updated: Never
-                        </small>
+
+                    <div class="col-md-8">
+                        <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
+                            <h4 class="mb-4 fw-bold">
+                                <i class="fas fa-edit me-2"></i>Update Website Content
+                            </h4>
+                            
+                            <form id="updateForm">
+                                <!-- Logo Upload Section -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-image me-2"></i>Website Logo
+                                    </label>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <input type="file" id="logoUpload" class="form-control" accept="image/*">
+                                            <small class="text-muted">Max size: 5KB (Auto-compress hoga)</small>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" id="edit-logo" class="form-control" 
+                                                   placeholder="Or enter logo URL" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-heading me-2"></i>Main Title
+                                        </label>
+                                        <input type="text" id="edit-title" class="form-control" 
+                                               placeholder="Enter website title" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-subscript me-2"></i>Sub-Title
+                                        </label>
+                                        <input type="text" id="edit-subtitle" class="form-control" 
+                                               placeholder="Enter subtitle">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-align-left me-2"></i>About Text
+                                    </label>
+                                    <textarea id="edit-about" class="form-control" rows="4" 
+                                              placeholder="Enter about description"></textarea>
+                                </div>
+
+                                <div class="slides-container">
+                                    <h6 class="mb-3">
+                                        <i class="fas fa-images me-2"></i>Slider Images
+                                        <small class="text-muted ms-2">(Add/Remove Images)</small>
+                                    </h6>
+                                    <div id="slidesList"></div>
+                                    <button type="button" class="btn-add-slide" onclick="addSlideField()">
+                                        <i class="fas fa-plus-circle me-2"></i>Add New Slide
+                                    </button>
+                                </div>
+
+                                <hr>
+                                <h5 class="mb-3">
+                                    <i class="fas fa-share-alt me-2"></i>Social Media Links
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label text-success">
+                                            <i class="fab fa-whatsapp me-2"></i>WhatsApp URL
+                                        </label>
+                                        <input type="url" id="edit-whatsapp" class="form-control" 
+                                               placeholder="https://wa.me/...">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label text-danger">
+                                            <i class="fab fa-instagram me-2"></i>Instagram URL
+                                        </label>
+                                        <input type="url" id="edit-insta" class="form-control" 
+                                               placeholder="https://instagram.com/...">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label text-primary">
+                                            <i class="fab fa-facebook me-2"></i>Facebook URL
+                                        </label>
+                                        <input type="url" id="edit-fb" class="form-control" 
+                                               placeholder="https://facebook.com/...">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 justify-content-end mt-4">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                        <i class="fas fa-undo me-2"></i>Reset
+                                    </button>
+                                    <button type="submit" class="btn-save" id="saveBtn">
+                                        <i class="fas fa-save me-2"></i>Update Website
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-8">
-                <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
-                    <h4 class="mb-4 fw-bold">
-                        <i class="fas fa-edit me-2"></i>Update Content
-                    </h4>
-                    
-                    <form id="updateForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-font me-2"></i>Logo Text
-                                </label>
-                                <input type="text" id="edit-logo" class="form-control" 
-                                       placeholder="Enter logo text" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-heading me-2"></i>Main Title
-                                </label>
-                                <input type="text" id="edit-title" class="form-control" 
-                                       placeholder="Enter website title" required>
-                            </div>
+            
+            <!-- Admin Settings Tab -->
+            <div class="tab-pane fade" id="admin" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6 mx-auto">
+                        <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
+                            <h4 class="mb-4 fw-bold text-center">
+                                <i class="fas fa-user-cog me-2"></i>Admin Settings
+                            </h4>
+                            
+                            <form id="adminSettingsForm">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-id-card me-2"></i>Current Admin ID
+                                    </label>
+                                    <input type="text" class="form-control" id="currentAdminId" readonly>
+                                </div>
+                                
+                                <hr>
+                                <h5 class="mb-3">Change Password</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Current Password
+                                    </label>
+                                    <div class="password-wrapper">
+                                        <input type="password" class="form-control" id="oldPassword" required>
+                                        <i class="fas fa-eye toggle-password" onclick="togglePassword('oldPassword')"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-key me-2"></i>New Password
+                                    </label>
+                                    <div class="password-wrapper">
+                                        <input type="password" class="form-control" id="newPassword" required>
+                                        <i class="fas fa-eye toggle-password" onclick="togglePassword('newPassword')"></i>
+                                    </div>
+                                    <small class="text-muted">Minimum 6 characters</small>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-check-circle me-2"></i>Confirm New Password
+                                    </label>
+                                    <div class="password-wrapper">
+                                        <input type="password" class="form-control" id="confirmPassword" required>
+                                        <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmPassword')"></i>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn-save w-100" id="changePasswordBtn">
+                                    <i class="fas fa-sync-alt me-2"></i>Change Password
+                                </button>
+                            </form>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-subscript me-2"></i>Sub-Title
-                            </label>
-                            <input type="text" id="edit-subtitle" class="form-control" 
-                                   placeholder="Enter subtitle">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-align-left me-2"></i>About Text
-                            </label>
-                            <textarea id="edit-about" class="form-control" rows="4" 
-                                      placeholder="Enter about description"></textarea>
-                        </div>
-
-                        <!-- ============================================
-                             🆕 SLIDES MANAGEMENT SECTION
-                             ============================================ -->
-                        <div class="slides-container">
-                            <h6 class="mb-3">
-                                <i class="fas fa-images me-2"></i>Slider Images
-                                <small class="text-muted ms-2">(Add/Remove Images)</small>
-                            </h6>
-                            <div id="slidesList">
-                                <!-- Slides will be dynamically added here -->
-                            </div>
-                            <button type="button" class="btn-add-slide" onclick="addSlideField()">
-                                <i class="fas fa-plus-circle me-2"></i>Add New Slide
-                            </button>
-                        </div>
-
-                        <hr>
-                        <h5 class="mb-3">
-                            <i class="fas fa-share-alt me-2"></i>Social Media Links
-                        </h5>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label text-success">
-                                    <i class="fab fa-whatsapp me-2"></i>WhatsApp URL
-                                </label>
-                                <input type="url" id="edit-whatsapp" class="form-control" 
-                                       placeholder="https://wa.me/...">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label text-danger">
-                                    <i class="fab fa-instagram me-2"></i>Instagram URL
-                                </label>
-                                <input type="url" id="edit-insta" class="form-control" 
-                                       placeholder="https://instagram.com/...">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label text-primary">
-                                    <i class="fab fa-facebook me-2"></i>Facebook URL
-                                </label>
-                                <input type="url" id="edit-fb" class="form-control" 
-                                       placeholder="https://facebook.com/...">
-                            </div>
-                        </div>
-
-                        <!-- ============================================
-                             🆕 FORM ACTION BUTTONS
-                             ============================================ -->
-                        <div class="d-flex gap-2 justify-content-end mt-4">
-                            <button type="button" class="btn btn-outline-secondary" 
-                                    onclick="resetForm()">
-                                <i class="fas fa-undo me-2"></i>Reset
-                            </button>
-                            <button type="submit" class="btn-save" id="saveBtn">
-                                <i class="fas fa-save me-2"></i>Update Website Now
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -481,9 +536,8 @@
         </small>
     </footer>
 
-    <!-- ============================================
-         🆕 ENHANCED JAVASCRIPT
-         ============================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         // ============================================
         // GLOBAL VARIABLES
@@ -495,7 +549,25 @@
         const saveBtn = document.getElementById('saveBtn');
 
         // ============================================
-        // TOAST NOTIFICATION FUNCTION
+        // TOGGLE PASSWORD VISIBILITY
+        // ============================================
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.target;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // ============================================
+        // TOAST NOTIFICATION
         // ============================================
         function showToast(message, type = 'success', duration = 3000) {
             const toast = document.createElement('div');
@@ -510,7 +582,6 @@
             
             toastContainer.appendChild(toast);
             
-            // Auto remove after duration
             setTimeout(() => {
                 toast.classList.add('fade-out');
                 setTimeout(() => {
@@ -520,30 +591,112 @@
         }
 
         // ============================================
-        // VERIFY TOKEN ON LOAD
+        // COMPRESS IMAGE TO <5KB
+        // ============================================
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Resize gradually until size < 5KB
+                        let quality = 0.7;
+                        let compressedData = '';
+                        
+                        const compress = () => {
+                            canvas.width = width;
+                            canvas.height = height;
+                            
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            compressedData = canvas.toDataURL('image/jpeg', quality);
+                            
+                            // Check size (approximately)
+                            const sizeInKB = compressedData.length * 0.75 / 1024;
+                            
+                            if (sizeInKB > 5 && (width > 100 || quality > 0.1)) {
+                                // Reduce size
+                                if (quality > 0.2) {
+                                    quality -= 0.1;
+                                } else {
+                                    width = Math.floor(width * 0.8);
+                                    height = Math.floor(height * 0.8);
+                                }
+                                compress();
+                            } else {
+                                resolve(compressedData);
+                            }
+                        };
+                        
+                        compress();
+                    };
+                };
+                
+                reader.onerror = reject;
+            });
+        }
+
+        // ============================================
+        // LOGO UPLOAD HANDLER
+        // ============================================
+        document.getElementById('logoUpload').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            try {
+                showToast('Compressing image...', 'info');
+                
+                const compressedImage = await compressImage(file);
+                
+                // Update logo input
+                document.getElementById('edit-logo').value = compressedImage;
+                
+                // Update preview
+                const previewImage = document.getElementById('previewImage');
+                const previewIcon = document.getElementById('previewIcon');
+                
+                previewImage.src = compressedImage;
+                previewImage.style.display = 'block';
+                previewIcon.style.display = 'none';
+                
+                updateLivePreview();
+                showToast('Logo compressed to <5KB!', 'success');
+                
+            } catch (err) {
+                console.error('Compression error:', err);
+                showToast('Error compressing image', 'error');
+            }
+        });
+
+        // ============================================
+        // VERIFY TOKEN
         // ============================================
         async function verifyToken() {
             try {
                 const response = await fetch('/api/verify-token', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
                 const data = await response.json();
                 
                 if (!data.success) {
                     showToast('Session expired. Please login again.', 'warning');
-                    setTimeout(() => {
-                        logout();
-                    }, 2000);
+                    setTimeout(() => logout(), 2000);
                 } else {
                     document.getElementById('securityBadge').innerHTML = 
                         '<i class="fas fa-check-circle me-1"></i>Token Active';
                 }
             } catch (err) {
                 console.log('Token verification failed:', err);
-                // Don't logout immediately, might be network issue
             }
         }
 
@@ -551,16 +704,14 @@
         // UPDATE LIVE PREVIEW
         // ============================================
         function updateLivePreview() {
-            const preview = document.getElementById('livePreview');
-            preview.innerHTML = `
-                <div><strong>Logo:</strong> ${document.getElementById('edit-logo').value || 'Not set'}</div>
-                <div><strong>Title:</strong> ${document.getElementById('edit-title').value || 'Not set'}</div>
-                <div><strong>Subtitle:</strong> ${document.getElementById('edit-subtitle').value || 'Not set'}</div>
-            `;
+            document.getElementById('previewTitle').innerText = 
+                document.getElementById('edit-title').value || 'Not set';
+            document.getElementById('previewSubtitle').innerText = 
+                document.getElementById('edit-subtitle').value || 'Not set';
         }
 
         // ============================================
-        // ADD SLIDE FIELD
+        // SLIDE FUNCTIONS
         // ============================================
         function addSlideField(slideUrl = '') {
             const slidesList = document.getElementById('slidesList');
@@ -579,26 +730,16 @@
             
             slidesList.appendChild(slideDiv);
             slideCount++;
-            
-            // Add input event listener for live preview
-            slideDiv.querySelector('input').addEventListener('input', updateLivePreview);
         }
 
-        // ============================================
-        // REMOVE SLIDE FIELD
-        // ============================================
         function removeSlideField(slideId) {
             const slideDiv = document.getElementById(slideId);
             if (slideDiv) {
                 slideDiv.remove();
                 slideCount--;
-                updateLivePreview();
             }
         }
 
-        // ============================================
-        // GET ALL SLIDES AS ARRAY
-        // ============================================
         function getSlidesArray() {
             const slides = [];
             document.querySelectorAll('.slide-input').forEach(input => {
@@ -609,26 +750,19 @@
             return slides;
         }
 
-        // ============================================
-        // LOAD SLIDES FROM DATA
-        // ============================================
         function loadSlides(slides = []) {
-            // Clear existing slides
             document.getElementById('slidesList').innerHTML = '';
             slideCount = 0;
             
             if (slides && slides.length > 0) {
                 slides.forEach(slide => addSlideField(slide));
             } else {
-                // Add 3 default empty slides
-                for (let i = 0; i < 3; i++) {
-                    addSlideField('');
-                }
+                for (let i = 0; i < 3; i++) addSlideField('');
             }
         }
 
         // ============================================
-        // 1. Pehle current data load karo
+        // FETCH CURRENT DATA
         // ============================================
         async function fetchCurrentData() {
             try {
@@ -645,13 +779,18 @@
                 document.getElementById('edit-insta').value = data.insta || '';
                 document.getElementById('edit-fb').value = data.fb || '';
                 
-                // Load slides
-                loadSlides(data.slides || []);
+                // Update logo preview if exists
+                if (data.logoText && data.logoText.startsWith('data:image')) {
+                    const previewImage = document.getElementById('previewImage');
+                    const previewIcon = document.getElementById('previewIcon');
+                    previewImage.src = data.logoText;
+                    previewImage.style.display = 'block';
+                    previewIcon.style.display = 'none';
+                }
                 
-                // Update live preview
+                loadSlides(data.slides || []);
                 updateLivePreview();
                 
-                // Update last update time
                 if (data.updatedAt) {
                     const date = new Date(data.updatedAt);
                     document.getElementById('lastUpdate').innerHTML = 
@@ -661,14 +800,30 @@
             } catch (err) {
                 console.error('Fetch error:', err);
                 showToast('Failed to load current data', 'error');
-                
-                // Load default empty slides
                 loadSlides([]);
             }
         }
 
         // ============================================
-        // RESET FORM TO LAST SAVED DATA
+        // FETCH ADMIN DATA
+        // ============================================
+        async function fetchAdminData() {
+            try {
+                const response = await fetch('/api/verify-token', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('currentAdminId').value = data.user.adminID;
+                }
+            } catch (err) {
+                console.error('Fetch admin error:', err);
+            }
+        }
+
+        // ============================================
+        // RESET FORM
         // ============================================
         function resetForm() {
             document.getElementById('edit-logo').value = currentData.logoText || '';
@@ -679,6 +834,16 @@
             document.getElementById('edit-insta').value = currentData.insta || '';
             document.getElementById('edit-fb').value = currentData.fb || '';
             
+            // Reset logo preview
+            if (currentData.logoText && currentData.logoText.startsWith('data:image')) {
+                document.getElementById('previewImage').src = currentData.logoText;
+                document.getElementById('previewImage').style.display = 'block';
+                document.getElementById('previewIcon').style.display = 'none';
+            } else {
+                document.getElementById('previewImage').style.display = 'none';
+                document.getElementById('previewIcon').style.display = 'block';
+            }
+            
             loadSlides(currentData.slides || []);
             updateLivePreview();
             
@@ -686,12 +851,11 @@
         }
 
         // ============================================
-        // 2. Data Update karne ka function
+        // UPDATE WEBSITE FORM
         // ============================================
         document.getElementById('updateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Get form values
             const updatedConfig = {
                 logoText: document.getElementById('edit-logo').value.trim(),
                 title: document.getElementById('edit-title').value.trim(),
@@ -703,24 +867,12 @@
                 slides: getSlidesArray()
             };
 
-            // ============================================
-            // VALIDATION
-            // ============================================
-            if (!updatedConfig.logoText) {
-                showToast('Logo text is required', 'warning');
-                document.getElementById('edit-logo').focus();
-                return;
-            }
-            
             if (!updatedConfig.title) {
                 showToast('Title is required', 'warning');
                 document.getElementById('edit-title').focus();
                 return;
             }
 
-            // ============================================
-            // SHOW LOADING STATE
-            // ============================================
             saveBtn.classList.add('loading');
             saveBtn.disabled = true;
 
@@ -729,7 +881,7 @@
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // ✅ Token bhejo
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(updatedConfig)
                 });
@@ -737,20 +889,10 @@
                 const result = await response.json();
                 
                 if(result.success) {
-                    showToast('✅ Website update ho gayi hai!', 'success');
-                    
-                    // Update current data
+                    showToast('✅ Website updated successfully!', 'success');
                     currentData = updatedConfig;
-                    
-                    // Update last update time
                     document.getElementById('lastUpdate').innerHTML = 
                         `<i class="far fa-clock me-1"></i>Last updated: Just now`;
-                    
-                    // Optional: Refresh data after 2 seconds
-                    setTimeout(() => {
-                        fetchCurrentData();
-                    }, 2000);
-                    
                 } else {
                     showToast('❌ Error: ' + (result.message || 'Update failed'), 'error');
                 }
@@ -758,14 +900,77 @@
                 console.error('Update error:', err);
                 showToast('❌ Server error! Try again.', 'error');
             } finally {
-                // Remove loading state
                 saveBtn.classList.remove('loading');
                 saveBtn.disabled = false;
             }
         });
 
         // ============================================
-        // 3. Logout function
+        // CHANGE PASSWORD FORM
+        // ============================================
+        document.getElementById('adminSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                showToast('All fields are required', 'warning');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showToast('Password must be at least 6 characters', 'warning');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match', 'warning');
+                return;
+            }
+            
+            const changeBtn = document.getElementById('changePasswordBtn');
+            changeBtn.classList.add('loading');
+            changeBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('✅ Password changed successfully!', 'success');
+                    document.getElementById('oldPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    
+                    // Logout after password change
+                    setTimeout(() => {
+                        showToast('Please login with new password', 'info');
+                        setTimeout(() => logout(), 2000);
+                    }, 2000);
+                } else {
+                    showToast('❌ ' + data.message, 'error');
+                }
+            } catch (err) {
+                console.error('Password change error:', err);
+                showToast('❌ Server error', 'error');
+            } finally {
+                changeBtn.classList.remove('loading');
+                changeBtn.disabled = false;
+            }
+        });
+
+        // ============================================
+        // LOGOUT FUNCTION - REDIRECTS TO INDEX.HTML
         // ============================================
         function logout() {
             // Clear all auth data
@@ -774,16 +979,17 @@
             localStorage.removeItem('savedUserid');
             localStorage.removeItem('savedPassword');
             localStorage.removeItem('rememberMe');
+            localStorage.removeItem('adminDraft');
             
             showToast('Logging out...', 'info');
             
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = 'index.html'; // Redirect to index page
             }, 1000);
         }
 
         // ============================================
-        // AUTO-SAVE DRAFT FUNCTIONALITY
+        // AUTO-SAVE DRAFT
         // ============================================
         function autoSaveDraft() {
             const draft = {
@@ -798,49 +1004,16 @@
             };
             
             localStorage.setItem('adminDraft', JSON.stringify(draft));
-            console.log('Draft auto-saved');
-        }
-
-        // ============================================
-        // LOAD DRAFT FUNCTIONALITY
-        // ============================================
-        function loadDraft() {
-            const draft = localStorage.getItem('adminDraft');
-            if (draft) {
-                const draftData = JSON.parse(draft);
-                
-                // Ask user if they want to load draft
-                if (confirm('Auto-saved draft found. Would you like to load it?')) {
-                    document.getElementById('edit-logo').value = draftData.logoText || '';
-                    document.getElementById('edit-title').value = draftData.title || '';
-                    document.getElementById('edit-subtitle').value = draftData.subTitle || '';
-                    document.getElementById('edit-about').value = draftData.aboutText || '';
-                    document.getElementById('edit-whatsapp').value = draftData.whatsapp || '';
-                    document.getElementById('edit-insta').value = draftData.insta || '';
-                    document.getElementById('edit-fb').value = draftData.fb || '';
-                    
-                    loadSlides(draftData.slides || []);
-                    updateLivePreview();
-                    
-                    showToast('Draft loaded successfully', 'info');
-                }
-            }
         }
 
         // ============================================
         // INITIALIZE
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Verify token
             verifyToken();
-            
-            // Fetch current data
             fetchCurrentData();
+            fetchAdminData();
             
-            // Load draft if exists
-            loadDraft();
-            
-            // Add input listeners for live preview and auto-save
             const inputs = document.querySelectorAll('#updateForm input, #updateForm textarea');
             inputs.forEach(input => {
                 input.addEventListener('input', () => {
@@ -849,44 +1022,32 @@
                 });
             });
             
-            // Add event listeners for slide inputs (delegation)
             document.getElementById('slidesList').addEventListener('input', function(e) {
                 if (e.target.classList.contains('slide-input')) {
-                    updateLivePreview();
                     autoSaveDraft();
                 }
             });
         });
-
-        // ============================================
-        // PREVENT ACCIDENTAL NAVIGATION
-        // ============================================
-        window.addEventListener('beforeunload', function(e) {
-            // Check if form is dirty
-            const currentForm = {
-                logoText: document.getElementById('edit-logo').value,
-                title: document.getElementById('edit-title').value,
-                subTitle: document.getElementById('edit-subtitle').value,
-                aboutText: document.getElementById('edit-about').value,
-                whatsapp: document.getElementById('edit-whatsapp').value,
-                insta: document.getElementById('edit-insta').value,
-                fb: document.getElementById('edit-fb').value
-            };
-            
-            // Compare with currentData
-            if (JSON.stringify(currentForm) !== JSON.stringify({
-                logoText: currentData.logoText || '',
-                title: currentData.title || '',
-                subTitle: currentData.subTitle || '',
-                aboutText: currentData.aboutText || '',
-                whatsapp: currentData.whatsapp || '',
-                insta: currentData.insta || '',
-                fb: currentData.fb || ''
-            })) {
-                e.preventDefault();
-                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-            }
-        });
     </script>
+    
+    <style>
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            z-index: 10;
+        }
+        
+        .toggle-password:hover {
+            color: var(--accent);
+        }
+    </style>
 </body>
 </html>
