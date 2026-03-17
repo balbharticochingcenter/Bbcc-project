@@ -6,101 +6,552 @@
     <title>Admin Login | Coaching App</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- ============================================
+         🆕 ANIMATION CSS
+         ============================================ -->
     <style>
-        :root { --primary: #0f172a; --accent: #ffd700; }
-        body { background: #f1f5f9; display: flex; flex-direction: column; min-height: 100vh; }
+        :root { 
+            --primary: #0f172a; 
+            --accent: #ffd700; 
+        }
+        
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
         
         /* Header Same as Index */
-        .vip-nav { background: var(--primary); padding: 10px 5%; display: flex; align-items: center; justify-content: space-between; color: white; }
+        .vip-nav { 
+            background: var(--primary); 
+            padding: 10px 5%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
         
-        /* Login Container */
-        .login-section { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        /* ============================================
+             🆕 LOGIN CONTAINER WITH GLASS MORPHISM
+             ============================================ */
+        .login-section { 
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
+        }
+        
         .login-card { 
-            background: white; padding: 40px; border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 400px; 
             border-top: 5px solid var(--accent);
+            animation: slideUp 0.5s ease;
         }
-        .form-control { border-radius: 10px; padding: 12px; border: 1px solid #ddd; }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ============================================
+             🆕 INPUT FIELD STYLES
+             ============================================ */
+        .form-control { 
+            border-radius: 10px; 
+            padding: 12px; 
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+            outline: none;
+        }
+        
         .btn-login { 
-            background: var(--primary); color: white; width: 100%; 
-            padding: 12px; border-radius: 10px; font-weight: bold; border: none; transition: 0.3s;
+            background: var(--primary); 
+            color: white; 
+            width: 100%; 
+            padding: 12px; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            border: none; 
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-login:hover { background: #1e293b; transform: scale(1.02); }
-
-        footer { background: #1a1a1a; color: white; padding: 30px 0; margin-top: auto; }
+        
+        .btn-login:hover { 
+            background: #1e293b; 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        /* ============================================
+             🆕 LOADING BUTTON STATE
+             ============================================ */
+        .btn-login.loading {
+            background: #94a3b8;
+            pointer-events: none;
+        }
+        
+        .btn-login.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 2px solid white;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ============================================
+             🆕 ALERT ANIMATIONS
+             ============================================ */
+        .alert {
+            animation: slideIn 0.3s ease;
+            border-radius: 10px;
+            border: none;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        footer { 
+            background: #1a1a1a; 
+            color: white; 
+            padding: 30px 0; 
+            margin-top: auto; 
+        }
+        
+        /* ============================================
+             🆕 PASSWORD VISIBILITY TOGGLE
+             ============================================ */
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+        
+        .toggle-password:hover {
+            color: var(--accent);
+        }
+        
+        /* ============================================
+             🆕 CAPS LOCK INDICATOR
+             ============================================ */
+        .caps-lock-warning {
+            font-size: 0.8rem;
+            color: #dc3545;
+            margin-top: 5px;
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .caps-lock-warning.show {
+            display: flex;
+        }
     </style>
 </head>
 <body>
 
     <header class="vip-nav">
-        <div class="logo fw-bold" id="db-logo">LOGO</div>
+        <div class="logo fw-bold" id="db-logo">
+            <i class="fas fa-graduation-cap me-2"></i>LOGO
+        </div>
         <div class="text-center">
-            <h1 class="fs-5 m-0 text-warning">Admin Portal</h1>
+            <h1 class="fs-5 m-0 text-warning">
+                <i class="fas fa-lock me-2"></i>Admin Portal
+            </h1>
             <small>Secure Access Only</small>
         </div>
         <div class="nav-links d-none d-md-block">
-            <a href="/" class="text-white text-decoration-none">Back to Site</a>
+            <a href="/" class="text-white text-decoration-none">
+                <i class="fas fa-arrow-left me-1"></i>Back to Site
+            </a>
         </div>
     </header>
 
     <section class="login-section">
         <div class="login-card">
-            <h3 class="text-center fw-bold mb-4">Login</h3>
-            <div id="alert-box"></div> <form id="loginForm">
+            <!-- ============================================
+                 🆕 LOGIN HEADER WITH ICON
+                 ============================================ -->
+            <div class="text-center mb-4">
+                <div class="bg-warning rounded-circle d-inline-flex p-3 mb-3" style="background: var(--accent);">
+                    <i class="fas fa-user-shield fa-2x" style="color: var(--primary);"></i>
+                </div>
+                <h3 class="fw-bold">Admin Login</h3>
+                <p class="text-muted small">Please enter your credentials</p>
+            </div>
+            
+            <!-- Alert Box for Messages -->
+            <div id="alert-box"></div>
+            
+            <!-- Login Form -->
+            <form id="loginForm">
                 <div class="mb-3">
-                    <label class="form-label">Admin ID</label>
-                    <input type="text" id="userid" class="form-control" placeholder="Enter ID" required>
+                    <label class="form-label">
+                        <i class="fas fa-user me-2"></i>Admin ID
+                    </label>
+                    <input type="text" id="userid" class="form-control" 
+                           placeholder="Enter your admin ID" 
+                           required 
+                           autocomplete="username"
+                           autofocus>
                 </div>
+                
                 <div class="mb-4">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="pws" class="form-control" placeholder="Enter Password" required>
+                    <label class="form-label">
+                        <i class="fas fa-key me-2"></i>Password
+                    </label>
+                    <!-- ============================================
+                         🆕 PASSWORD FIELD WITH TOGGLE VISIBILITY
+                         ============================================ -->
+                    <div class="password-wrapper">
+                        <input type="password" id="pws" class="form-control" 
+                               placeholder="Enter your password" 
+                               required
+                               autocomplete="current-password">
+                        <i class="fas fa-eye toggle-password" id="togglePassword" 
+                           onclick="togglePasswordVisibility()"></i>
+                    </div>
+                    
+                    <!-- ============================================
+                         🆕 CAPS LOCK INDICATOR
+                         ============================================ -->
+                    <div class="caps-lock-warning" id="capsLockWarning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Caps Lock is ON</span>
+                    </div>
                 </div>
-                <button type="submit" class="btn-login">Login Now</button>
+                
+                <!-- ============================================
+                     🆕 REMEMBER ME CHECKBOX
+                     ============================================ -->
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Remember me for 30 days</label>
+                </div>
+                
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login Now
+                </button>
+                
+                <!-- ============================================
+                     🆕 FORGOT PASSWORD LINK
+                     ============================================ -->
+                <div class="text-center mt-3">
+                    <a href="#" class="text-decoration-none small" 
+                       onclick="showForgotPassword()">
+                        <i class="fas fa-question-circle me-1"></i>Forgot Password?
+                    </a>
+                </div>
             </form>
         </div>
     </section>
 
     <footer class="text-center">
-        <p class="m-0 small">&copy; 2024 Secure Admin Login | Coaching Center</p>
+        <p class="m-0 small">
+            <i class="far fa-copyright me-1"></i>2024 Secure Admin Login | 
+            <i class="fas fa-shield-alt me-1"></i>Coaching Center
+        </p>
     </footer>
 
+    <!-- ============================================
+         🆕 UPDATED JAVASCRIPT WITH IMPROVEMENTS
+         ============================================ -->
     <script>
+        // Get DOM elements
         const loginForm = document.getElementById('loginForm');
         const alertBox = document.getElementById('alert-box');
+        const loginBtn = document.getElementById('loginBtn');
+        const useridInput = document.getElementById('userid');
+        const passwordInput = document.getElementById('pws');
+        const capsLockWarning = document.getElementById('capsLockWarning');
+        const rememberMe = document.getElementById('rememberMe');
 
+        // ============================================
+        // TOGGLE PASSWORD VISIBILITY
+        // ============================================
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('pws');
+            const toggleIcon = document.getElementById('togglePassword');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // ============================================
+        // CAPS LOCK DETECTION
+        // ============================================
+        passwordInput.addEventListener('keyup', function(e) {
+            const capsLock = e.getModifierState && e.getModifierState('CapsLock');
+            if (capsLock) {
+                capsLockWarning.classList.add('show');
+            } else {
+                capsLockWarning.classList.remove('show');
+            }
+        });
+
+        // ============================================
+        // SHOW FORGOT PASSWORD MESSAGE
+        // ============================================
+        function showForgotPassword() {
+            alertBox.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Please contact the administrator to reset your password.
+                </div>
+            `;
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                alertBox.innerHTML = '';
+            }, 5000);
+        }
+
+        // ============================================
+        // SHOW TOAST MESSAGE FUNCTION
+        // ============================================
+        function showAlert(message, type = 'danger') {
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'warning' ? 'exclamation-triangle' : 
+                        'info-circle';
+            
+            alertBox.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+                </div>
+            `;
+            
+            // Auto scroll to alert
+            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // ============================================
+        // LOAD SAVED CREDENTIALS (IF REMEMBER ME CHECKED)
+        // ============================================
+        function loadSavedCredentials() {
+            const savedUserid = localStorage.getItem('savedUserid');
+            const savedPassword = localStorage.getItem('savedPassword');
+            const remember = localStorage.getItem('rememberMe');
+            
+            if (savedUserid && savedPassword && remember === 'true') {
+                useridInput.value = savedUserid;
+                passwordInput.value = savedPassword;
+                rememberMe.checked = true;
+            }
+        }
+
+        // ============================================
+        // LOGIN FORM SUBMIT HANDLER
+        // ============================================
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const userid = document.getElementById('userid').value;
-            const password = document.getElementById('pws').value;
+            // Get form values
+            const userid = useridInput.value.trim();
+            const password = passwordInput.value;
+            
+            // ============================================
+            // CLIENT-SIDE VALIDATION
+            // ============================================
+            if (!userid || !password) {
+                showAlert('Please enter both Admin ID and Password', 'warning');
+                useridInput.focus();
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters long', 'warning');
+                passwordInput.focus();
+                return;
+            }
+            
+            // ============================================
+            // SHOW LOADING STATE
+            // ============================================
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Logging in...';
 
             try {
+                // ============================================
+                // API CALL
+                // ============================================
                 const response = await fetch('/api/admin-login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify({ userid, password })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    // Success: Save a token in local storage and redirect
+                    // ============================================
+                    // SUCCESS: Save token and credentials
+                    // ============================================
+                    
+                    // ✅ Save JWT token
+                    localStorage.setItem('token', data.token);
                     localStorage.setItem('isAdmin', 'true');
-                    alertBox.innerHTML = `<div class="alert alert-success">Success! Redirecting...</div>`;
-                    setTimeout(() => { window.location.href = '/admin-dashboard.html'; }, 1500);
+                    
+                    // ✅ Save credentials if remember me checked
+                    if (rememberMe.checked) {
+                        localStorage.setItem('savedUserid', userid);
+                        localStorage.setItem('savedPassword', password);
+                        localStorage.setItem('rememberMe', 'true');
+                    } else {
+                        localStorage.removeItem('savedUserid');
+                        localStorage.removeItem('savedPassword');
+                        localStorage.removeItem('rememberMe');
+                    }
+                    
+                    // Show success message
+                    showAlert('Login Successful! Redirecting...', 'success');
+                    
+                    // ============================================
+                    // REDIRECT TO DASHBOARD
+                    // ============================================
+                    setTimeout(() => { 
+                        window.location.href = '/admin-dashboard.html'; 
+                    }, 1500);
+                    
                 } else {
-                    // Wrong ID/PWS
-                    alertBox.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                    // ============================================
+                    // LOGIN FAILED
+                    // ============================================
+                    loginBtn.classList.remove('loading');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Login Now';
+                    
+                    showAlert(data.message || 'Wrong ID or Password!', 'danger');
+                    
+                    // Clear password field
+                    passwordInput.value = '';
+                    passwordInput.focus();
                 }
+                
             } catch (err) {
-                alertBox.innerHTML = `<div class="alert alert-danger">Server error, try again later.</div>`;
+                // ============================================
+                // NETWORK/SERVER ERROR
+                // ============================================
+                console.error('Login error:', err);
+                
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>Login Now';
+                
+                showAlert('Server error. Please check your connection and try again.', 'danger');
             }
         });
 
-        // Logo text fetch (Index jaisa hi)
-        fetch('/api/config').then(res => res.json()).then(data => {
-            document.getElementById('db-logo').innerText = data.logoText;
+        // ============================================
+        // LOGO FETCH WITH ERROR HANDLING
+        // ============================================
+        fetch('/api/config')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
+            .then(data => {
+                document.getElementById('db-logo').innerHTML = data.logoText ? 
+                    `<i class="fas fa-graduation-cap me-2"></i>${data.logoText}` : 
+                    '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+            })
+            .catch(err => {
+                console.log('Logo fetch error:', err);
+                document.getElementById('db-logo').innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+            });
+
+        // ============================================
+        // LOAD SAVED CREDENTIALS ON PAGE LOAD
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedCredentials();
+            
+            // Add input event listeners for real-time validation
+            useridInput.addEventListener('input', function() {
+                if (alertBox.innerHTML) {
+                    alertBox.innerHTML = '';
+                }
+            });
+            
+            passwordInput.addEventListener('input', function() {
+                if (alertBox.innerHTML) {
+                    alertBox.innerHTML = '';
+                }
+            });
         });
+
+        // ============================================
+        // PREVENT FORM RESUBMISSION ON PAGE REFRESH
+        // ============================================
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
     </script>
 </body>
 </html>
