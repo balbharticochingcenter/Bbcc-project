@@ -1,5 +1,5 @@
 // ============================================
-// COMPLETE STUDENT MANAGEMENT SYSTEM - FIXED
+// COMPLETE STUDENT MANAGEMENT SYSTEM - WITH DATABASE SYNC
 // ============================================
 
 (function() {
@@ -27,6 +27,9 @@
     let feeChart = null;
     let boardFilter = '';
     let classFilter = '';
+    let promotionDate = '';
+    let promotionClass = '';
+    let currentStudentId = null;
     
     // ============================================
     // TOAST NOTIFICATION
@@ -91,30 +94,26 @@
     function createStudentTabContent() {
         console.log("Creating tab content...");
         
-        // Check if already exists
         if (document.getElementById('students')) {
             console.log("✅ Student content already exists");
             return true;
         }
         
-        // Get the tab content container
         const tabContent = document.querySelector('.tab-content');
         if (!tabContent) {
             console.log("❌ Tab content not found");
             return false;
         }
         
-        // Create student tab pane
         const studentPane = document.createElement('div');
         studentPane.className = 'tab-pane fade';
         studentPane.id = 'students';
         studentPane.setAttribute('role', 'tabpanel');
         
-        // Add all HTML content
         studentPane.innerHTML = `
             <!-- Dashboard Cards -->
             <div class="row mb-4">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="card bg-primary text-white">
                         <div class="card-body">
                             <h6>Total Students</h6>
@@ -122,7 +121,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="card bg-success text-white">
                         <div class="card-body">
                             <h6>Total Collected</h6>
@@ -130,11 +129,19 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <div class="card bg-danger text-white">
                         <div class="card-body">
                             <h6>Total Due</h6>
                             <h2 id="totalDue">₹0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h6>Monthly Fee</h6>
+                            <h2 id="monthFee">₹1000</h2>
                         </div>
                     </div>
                 </div>
@@ -149,7 +156,7 @@
                 </div>
             </div>
             
-            <!-- Filters -->
+            <!-- Filters and Promotion Button -->
             <div class="row mb-4">
                 <div class="col-md-3 mb-2">
                     <select class="form-select" id="filterBoard">
@@ -166,11 +173,14 @@
                 </div>
                 <div class="col-md-2 mb-2">
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary" id="refreshStudents">
+                        <button class="btn btn-primary" id="refreshStudents" title="Refresh">
                             <i class="fas fa-sync-alt"></i>
                         </button>
-                        <button class="btn btn-success" id="exportCSV">
+                        <button class="btn btn-success" id="exportCSV" title="Export to CSV">
                             <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn btn-warning" id="promoteBtn" title="Promote All Students">
+                            <i class="fas fa-arrow-up"></i>
                         </button>
                     </div>
                 </div>
@@ -181,13 +191,13 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Photo</th>
                             <th>Student</th>
+                            <th>Board/Class</th>
                             <th>Mobile</th>
-                            <th>Board</th>
-                            <th>Class</th>
-                            <th>Total Fee</th>
-                            <th>Paid</th>
-                            <th>Status</th>
+                            <th>Parent Mobile</th>
+                            <th>Joining Date</th>
+                            <th>Fee Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -206,6 +216,73 @@
         tabContent.appendChild(studentPane);
         console.log("✅ Student content created");
         return true;
+    }
+    
+    // ============================================
+    // CREATE PROMOTION MODAL
+    // ============================================
+    function createPromotionModal() {
+        if (document.getElementById('promotionModal')) return;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'promotionModal';
+        modal.setAttribute('tabindex', '-1');
+        
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title">
+                            <i class="fas fa-arrow-up me-2"></i>Promote All Students
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Select Promotion Date</label>
+                            <input type="date" class="form-control" id="promotionDate" required>
+                            <small class="text-muted">Students joining before this date will be promoted</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select New Class</label>
+                            <select class="form-select" id="promotionClass" required>
+                                <option value="">Select Class</option>
+                                <option value="Nursery">Nursery</option>
+                                <option value="LKG">LKG</option>
+                                <option value="UKG">UKG</option>
+                                <option value="Class 1">Class 1</option>
+                                <option value="Class 2">Class 2</option>
+                                <option value="Class 3">Class 3</option>
+                                <option value="Class 4">Class 4</option>
+                                <option value="Class 5">Class 5</option>
+                                <option value="Class 6">Class 6</option>
+                                <option value="Class 7">Class 7</option>
+                                <option value="Class 8">Class 8</option>
+                                <option value="Class 9">Class 9</option>
+                                <option value="Class 10">Class 10</option>
+                                <option value="Class 11">Class 11</option>
+                                <option value="Class 12">Class 12</option>
+                            </select>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="promotionCount">0 students</span> will be promoted
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" id="confirmPromotionBtn">
+                            <i class="fas fa-arrow-up me-2"></i>Promote Students
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
     }
     
     // ============================================
@@ -229,146 +306,98 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <ul class="nav nav-tabs mb-3" id="detailsTab" role="tablist">
-                            <li class="nav-item">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personal">Personal</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#feeTab">Fee Details</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#parentsTab">Parents</button>
-                            </li>
-                        </ul>
-                        
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="personal">
-                                <table class="table">
-                                    <tr><th>Name:</th><td id="modalStudentName"></td></tr>
-                                    <tr><th>Student ID:</th><td id="modalStudentId"></td></tr>
-                                    <tr><th>Mobile:</th><td id="modalStudentMobile"></td></tr>
-                                    <tr><th>Aadhar:</th><td id="modalStudentAadhar"></td></tr>
-                                    <tr><th>Joining Date:</th><td id="modalJoiningDate"></td></tr>
-                                    <tr><th>Total Months:</th><td id="modalTotalMonths"></td></tr>
-                                    <tr><th>Board:</th><td id="modalBoard"></td></tr>
-                                    <tr><th>Class:</th><td id="modalClass"></td></tr>
-                                    <tr><th>Current Address:</th><td id="modalCurrentAddress"></td></tr>
-                                    <tr><th>Permanent Address:</th><td id="modalPermanentAddress"></td></tr>
-                                </table>
-                            </div>
-                            
-                            <div class="tab-pane fade" id="feeTab">
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="card bg-info text-white">
-                                            <div class="card-body">
-                                                <h6>Monthly Fee</h6>
-                                                <h3 id="modalMonthlyFee"></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card bg-success text-white">
-                                            <div class="card-body">
-                                                <h6>Total Fee</h6>
-                                                <h3 id="modalTotalFee"></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="card bg-primary text-white">
-                                            <div class="card-body">
-                                                <h6>Paid Fee</h6>
-                                                <h3 id="modalPaidFee"></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card bg-danger text-white">
-                                            <div class="card-body">
-                                                <h6>Due Fee</h6>
-                                                <h3 id="modalDueFee"></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <h6 class="mt-3">Month-wise Fee Status</h6>
-                                <div class="table-responsive" style="max-height: 300px;">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Month</th>
-                                                <th>Fee</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="monthlyFeeTable"></tbody>
-                                    </table>
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="border p-2 rounded">
+                                    <img id="detailStudentPhoto" src="" class="img-fluid rounded" style="max-height: 150px;">
                                 </div>
                             </div>
-                            
-                            <div class="tab-pane fade" id="parentsTab">
-                                <table class="table">
-                                    <tr><th>Father's Name:</th><td id="modalFatherName"></td></tr>
-                                    <tr><th>Father's Mobile:</th><td id="modalFatherMobile"></td></tr>
-                                    <tr><th>Mother's Name:</th><td id="modalMotherName"></td></tr>
+                            <div class="col-md-8">
+                                <table class="table table-sm">
+                                    <tr><th>Name:</th><td id="detailStudentName"></td></tr>
+                                    <tr><th>Student ID:</th><td id="detailStudentId"></td></tr>
+                                    <tr><th>Board:</th><td id="detailBoard"></td></tr>
+                                    <tr><th>Class:</th><td id="detailClass"></td></tr>
+                                    <tr><th>Mobile:</th><td id="detailMobile"></td></tr>
+                                    <tr><th>Father's Mobile:</th><td id="detailFatherMobile"></td></tr>
+                                    <tr><th>Joining Date:</th><td id="detailJoiningDate"></td></tr>
                                 </table>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-    }
-    
-    // ============================================
-    // CREATE EDIT FEES MODAL
-    // ============================================
-    function createEditFeesModal() {
-        if (document.getElementById('editFeesModal')) return;
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.id = 'editFeesModal';
-        modal.setAttribute('tabindex', '-1');
-        
-        modal.innerHTML = `
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-warning">
-                        <h5 class="modal-title">
-                            <i class="fas fa-edit me-2"></i>Update Fees
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" id="editStudentId">
                         
-                        <div class="mb-3">
-                            <label class="form-label">Student Name</label>
-                            <input type="text" class="form-control" id="editStudentName" readonly>
+                        <hr>
+                        
+                        <h6 class="mb-3">Fee Details (From Joining till March 2026)</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white p-2">
+                                    <h6>Monthly</h6>
+                                    <h5 id="detailMonthlyFee">₹1000</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white p-2">
+                                    <h6>Total</h6>
+                                    <h5 id="detailTotalFee">₹0</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white p-2">
+                                    <h6>Paid</h6>
+                                    <h5 id="detailPaidFee">₹0</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white p-2">
+                                    <h6>Due</h6>
+                                    <h5 id="detailDueFee">₹0</h5>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Current Fees Paid</label>
-                            <input type="number" class="form-control" id="editCurrentFees" readonly>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card bg-warning p-2">
+                                    <h6>Total Months</h6>
+                                    <h5 id="detailTotalMonths">0</h5>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">New Fees Amount</label>
-                            <input type="number" class="form-control" id="editNewFees" placeholder="Enter new fee amount">
+                        <h6 class="mt-3">Month-wise Fee Status</h6>
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Fee</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthlyFeeTable"></tbody>
+                            </table>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="updateFeesBtn">
-                            <i class="fas fa-save me-2"></i>Update Fees
+                        
+                        <hr>
+                        
+                        <h6>Update Fees</h6>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <input type="number" class="form-control" id="updateFeeAmount" placeholder="Enter new paid amount">
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary w-100" id="saveFeeUpdateBtn">
+                                    <i class="fas fa-save me-2"></i>Save to Database
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>Edit Student Details</h6>
+                        <button class="btn btn-warning w-100" id="editStudentBtn">
+                            <i class="fas fa-edit me-2"></i>Edit Student Details
                         </button>
                     </div>
                 </div>
@@ -379,14 +408,116 @@
     }
     
     // ============================================
-    // FEE CALCULATION
+    // CREATE EDIT STUDENT MODAL
     // ============================================
-    function calculateMonths(joiningDate) {
+    function createEditStudentModal() {
+        if (document.getElementById('editStudentModal')) return;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'editStudentModal';
+        modal.setAttribute('tabindex', '-1');
+        
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title">
+                            <i class="fas fa-edit me-2"></i>Edit Student Details
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editStudentId">
+                        
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="border p-2 rounded">
+                                    <img id="editStudentPhoto" src="" class="img-fluid rounded" style="max-height: 100px;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label>First Name</label>
+                                <input type="text" class="form-control" id="editFirstName">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Middle Name</label>
+                                <input type="text" class="form-control" id="editMiddleName">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>Last Name</label>
+                                <input type="text" class="form-control" id="editLastName">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Mobile</label>
+                                <input type="text" class="form-control" id="editMobile" maxlength="10">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Father's Mobile</label>
+                                <input type="text" class="form-control" id="editFatherMobile" maxlength="10">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>Board</label>
+                                <select class="form-select" id="editBoard">
+                                    <option value="cbse">CBSE</option>
+                                    <option value="icse">ICSE</option>
+                                    <option value="state">State Board</option>
+                                    <option value="nios">NIOS</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Class</label>
+                                <input type="text" class="form-control" id="editClass">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label>Current Address</label>
+                            <textarea class="form-control" id="editCurrentAddress" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label>Permanent Address</label>
+                            <textarea class="form-control" id="editPermanentAddress" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" id="saveEditBtn">
+                            <i class="fas fa-save me-2"></i>Save Changes to Database
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+    }
+    
+    // ============================================
+    // FEE CALCULATION (Only till March 2026)
+    // ============================================
+    function calculateMonthsUntilMarch2026(joiningDate) {
         const join = new Date(joiningDate);
-        const current = new Date();
-        const years = current.getFullYear() - join.getFullYear();
-        const months = current.getMonth() - join.getMonth();
-        return Math.max(1, (years * 12) + months);
+        const endDate = new Date(2026, 2, 31); // March 2026
+        
+        // If joining after March 2026, no months
+        if (join > endDate) return 0;
+        
+        const years = endDate.getFullYear() - join.getFullYear();
+        const months = endDate.getMonth() - join.getMonth();
+        let totalMonths = (years * 12) + months + 1; // +1 to include current month
+        
+        return Math.max(0, totalMonths);
     }
     
     function calculateMonthlyFee(student) {
@@ -407,7 +538,7 @@
     function calculateFeeDetails(student) {
         if (!student) return { totalMonths: 0, monthlyFee: 0, totalFee: 0, paidFee: 0, dueFee: 0, months: [] };
         
-        const totalMonths = calculateMonths(student.joiningDate);
+        const totalMonths = calculateMonthsUntilMarch2026(student.joiningDate);
         const monthlyFee = calculateMonthlyFee(student);
         const totalFee = totalMonths * monthlyFee;
         const paidFee = student.fees || 0;
@@ -415,10 +546,15 @@
         
         const months = [];
         const joinDate = new Date(student.joiningDate);
+        const endDate = new Date(2026, 2, 31);
         
         for (let i = 0; i < totalMonths; i++) {
             const monthDate = new Date(joinDate);
             monthDate.setMonth(joinDate.getMonth() + i);
+            
+            // Stop if month is after March 2026
+            if (monthDate > endDate) break;
+            
             const monthName = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
             const isPaid = paidFee >= (i + 1) * monthlyFee;
             
@@ -433,25 +569,19 @@
     }
     
     // ============================================
-    // FETCH ALL STUDENTS
+    // FETCH ALL STUDENTS FROM DATABASE
     // ============================================
     async function fetchAllStudents() {
-        console.log("Fetching students...");
+        console.log("Fetching students from database...");
         
         try {
             const response = await fetch('/api/students', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
-            console.log("Response status:", response.status);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const result = await response.json();
-            console.log("Students received:", result.data?.length || 0);
-            
             allStudents = result.data || [];
             filteredStudents = [...allStudents];
             
@@ -459,6 +589,8 @@
             renderStudentTable();
             updateDashboard();
             renderFeeChart();
+            
+            showToast(`Loaded ${allStudents.length} students from database`, 'success');
             
         } catch (err) {
             console.error('Fetch error:', err);
@@ -557,30 +689,34 @@
         
         tbody.innerHTML = filteredStudents.map(student => {
             const feeDetails = calculateFeeDetails(student);
-            const status = feeDetails.dueFee > 0 ? 
-                `<span class="badge bg-danger">Due: ₹${feeDetails.dueFee}</span>` : 
-                `<span class="badge bg-success">Paid</span>`;
+            const photoHtml = student.photo ? 
+                `<img src="${student.photo}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">` : 
+                `<i class="fas fa-user-circle fa-2x text-muted"></i>`;
             
             return `
                 <tr>
+                    <td>${photoHtml}</td>
                     <td>
                         <strong>${student.studentName?.first || ''} ${student.studentName?.last || ''}</strong>
                         <br><small class="text-muted">ID: ${student.studentId || ''}</small>
                     </td>
-                    <td>${student.mobile || ''}</td>
-                    <td>${(student.education?.board || '').toUpperCase()}</td>
-                    <td>${student.education?.class || ''}</td>
-                    <td>₹${feeDetails.totalFee}</td>
-                    <td>₹${feeDetails.paidFee}</td>
-                    <td>${status}</td>
                     <td>
-                        <button class="btn btn-sm btn-info text-white" onclick="window.viewStudent('${student.studentId}')">
+                        ${(student.education?.board || '').toUpperCase()}<br>
+                        <small>${student.education?.class || ''}</small>
+                    </td>
+                    <td>${student.mobile || ''}</td>
+                    <td>${student.fatherMobile || ''}</td>
+                    <td>${student.joiningDate ? new Date(student.joiningDate).toLocaleDateString() : ''}</td>
+                    <td>
+                        <span class="badge bg-info">Total: ₹${feeDetails.totalFee}</span><br>
+                        <span class="badge bg-success">Paid: ₹${feeDetails.paidFee}</span><br>
+                        <span class="badge bg-danger">Due: ₹${feeDetails.dueFee}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info text-white mb-1" onclick="window.viewStudent('${student.studentId}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-warning" onclick="window.editStudentFees('${student.studentId}')">
-                            <i class="fas fa-rupee-sign"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="window.deleteStudent('${student.studentId}')">
+                        <button class="btn btn-sm btn-danger mb-1" onclick="window.deleteStudent('${student.studentId}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -599,13 +735,10 @@
             return sum + feeDetails.dueFee;
         }, 0);
         
-        const totalEl = document.getElementById('totalStudents');
-        const collectedEl = document.getElementById('totalCollected');
-        const dueEl = document.getElementById('totalDue');
-        
-        if (totalEl) totalEl.textContent = filteredStudents.length;
-        if (collectedEl) collectedEl.textContent = `₹${totalFees}`;
-        if (dueEl) dueEl.textContent = `₹${totalDue}`;
+        document.getElementById('totalStudents').textContent = filteredStudents.length;
+        document.getElementById('totalCollected').textContent = `₹${totalFees}`;
+        document.getElementById('totalDue').textContent = `₹${totalDue}`;
+        document.getElementById('monthFee').textContent = `₹1000`;
     }
     
     // ============================================
@@ -661,28 +794,36 @@
             const student = result.data;
             const feeDetails = calculateFeeDetails(student);
             
-            document.getElementById('modalStudentName').textContent = 
+            currentStudentId = studentId;
+            
+            // Set photo
+            const photoEl = document.getElementById('detailStudentPhoto');
+            if (student.photo) {
+                photoEl.src = student.photo;
+                photoEl.style.display = 'block';
+            } else {
+                photoEl.src = '';
+                photoEl.style.display = 'none';
+            }
+            
+            // Set basic details
+            document.getElementById('detailStudentName').textContent = 
                 `${student.studentName?.first || ''} ${student.studentName?.middle || ''} ${student.studentName?.last || ''}`;
-            document.getElementById('modalStudentId').textContent = student.studentId || '';
-            document.getElementById('modalStudentMobile').textContent = student.mobile || '';
-            document.getElementById('modalStudentAadhar').textContent = student.aadharNumber || '';
-            document.getElementById('modalJoiningDate').textContent = student.joiningDate ? new Date(student.joiningDate).toLocaleDateString() : '';
-            document.getElementById('modalTotalMonths').textContent = feeDetails.totalMonths;
-            document.getElementById('modalBoard').textContent = (student.education?.board || '').toUpperCase();
-            document.getElementById('modalClass').textContent = student.education?.class || '';
-            document.getElementById('modalFatherName').textContent = 
-                `${student.fatherName?.first || ''} ${student.fatherName?.middle || ''} ${student.fatherName?.last || ''}`;
-            document.getElementById('modalFatherMobile').textContent = student.fatherMobile || '';
-            document.getElementById('modalMotherName').textContent = 
-                student.motherName?.first ? `${student.motherName.first} ${student.motherName.last}` : 'N/A';
-            document.getElementById('modalCurrentAddress').textContent = student.address?.current || '';
-            document.getElementById('modalPermanentAddress').textContent = student.address?.permanent || '';
+            document.getElementById('detailStudentId').textContent = student.studentId || '';
+            document.getElementById('detailBoard').textContent = (student.education?.board || '').toUpperCase();
+            document.getElementById('detailClass').textContent = student.education?.class || '';
+            document.getElementById('detailMobile').textContent = student.mobile || '';
+            document.getElementById('detailFatherMobile').textContent = student.fatherMobile || '';
+            document.getElementById('detailJoiningDate').textContent = student.joiningDate ? new Date(student.joiningDate).toLocaleDateString() : '';
             
-            document.getElementById('modalMonthlyFee').textContent = `₹${feeDetails.monthlyFee}`;
-            document.getElementById('modalTotalFee').textContent = `₹${feeDetails.totalFee}`;
-            document.getElementById('modalPaidFee').textContent = `₹${feeDetails.paidFee}`;
-            document.getElementById('modalDueFee').textContent = `₹${feeDetails.dueFee}`;
+            // Set fee details
+            document.getElementById('detailMonthlyFee').textContent = `₹${feeDetails.monthlyFee}`;
+            document.getElementById('detailTotalFee').textContent = `₹${feeDetails.totalFee}`;
+            document.getElementById('detailPaidFee').textContent = `₹${feeDetails.paidFee}`;
+            document.getElementById('detailDueFee').textContent = `₹${feeDetails.dueFee}`;
+            document.getElementById('detailTotalMonths').textContent = feeDetails.totalMonths;
             
+            // Set month-wise table
             const monthTable = document.getElementById('monthlyFeeTable');
             monthTable.innerHTML = feeDetails.months.map(month => `
                 <tr>
@@ -691,6 +832,9 @@
                     <td><span class="badge ${month.paid ? 'bg-success' : 'bg-danger'}">${month.paid ? 'Paid' : 'Due'}</span></td>
                 </tr>
             `).join('');
+            
+            // Set fee update field
+            document.getElementById('updateFeeAmount').value = feeDetails.paidFee;
             
             const modal = new bootstrap.Modal(document.getElementById('studentDetailsModal'));
             modal.show();
@@ -702,76 +846,166 @@
     };
     
     // ============================================
-    // EDIT STUDENT FEES
+    // UPDATE FEE IN DATABASE
     // ============================================
-    window.editStudentFees = function(studentId) {
-        const student = allStudents.find(s => s.studentId === studentId);
-        if (!student) return;
+    window.updateStudentFee = async function() {
+        if (!currentStudentId) return;
         
-        document.getElementById('editStudentId').value = studentId;
-        document.getElementById('editStudentName').value = 
-            `${student.studentName?.first || ''} ${student.studentName?.last || ''}`;
-        document.getElementById('editCurrentFees').value = student.fees || 0;
-        document.getElementById('editNewFees').value = '';
+        const newFee = parseInt(document.getElementById('updateFeeAmount').value) || 0;
         
-        const modal = new bootstrap.Modal(document.getElementById('editFeesModal'));
-        modal.show();
-    };
-    
-    // ============================================
-    // UPDATE FEES
-    // ============================================
-    window.updateFees = async function() {
-        const studentId = document.getElementById('editStudentId').value;
-        const newFees = parseInt(document.getElementById('editNewFees').value) || 0;
-        
-        if (newFees < 0) {
+        if (newFee < 0) {
             showToast('Enter valid amount', 'warning');
             return;
         }
         
-        const btn = document.getElementById('updateFeesBtn');
+        const btn = document.getElementById('saveFeeUpdateBtn');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
         
         try {
-            const response = await fetch(`/api/students/${studentId}/fees`, {
+            const response = await fetch(`/api/students/${currentStudentId}/fees`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ fees: newFees })
+                body: JSON.stringify({ fees: newFee })
             });
             
             const result = await response.json();
             
             if (result.success) {
-                showToast('Fees updated successfully');
+                showToast('Fee updated in database successfully');
                 
-                const student = allStudents.find(s => s.studentId === studentId);
-                if (student) student.fees = newFees;
+                // Update local data
+                const student = allStudents.find(s => s.studentId === currentStudentId);
+                if (student) student.fees = newFee;
                 
+                // Refresh views
                 filterStudents();
                 
-                const modal = bootstrap.Modal.getInstance(document.getElementById('editFeesModal'));
-                if (modal) modal.hide();
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('studentDetailsModal')).hide();
             } else {
                 showToast(result.message || 'Update failed', 'error');
             }
         } catch (err) {
-            showToast('Failed to update fees', 'error');
+            showToast('Failed to update fee in database', 'error');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-save me-2"></i>Update Fees';
+            btn.innerHTML = '<i class="fas fa-save me-2"></i>Save to Database';
         }
     };
     
     // ============================================
-    // DELETE STUDENT
+    // EDIT STUDENT - LOAD DATA
+    // ============================================
+    window.editStudent = async function() {
+        if (!currentStudentId) return;
+        
+        try {
+            const response = await fetch(`/api/students/${currentStudentId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const result = await response.json();
+            if (!result.success) throw new Error(result.message);
+            
+            const student = result.data;
+            
+            // Fill edit form
+            document.getElementById('editStudentId').value = student.studentId;
+            
+            if (student.photo) {
+                document.getElementById('editStudentPhoto').src = student.photo;
+            }
+            
+            document.getElementById('editFirstName').value = student.studentName?.first || '';
+            document.getElementById('editMiddleName').value = student.studentName?.middle || '';
+            document.getElementById('editLastName').value = student.studentName?.last || '';
+            document.getElementById('editMobile').value = student.mobile || '';
+            document.getElementById('editFatherMobile').value = student.fatherMobile || '';
+            document.getElementById('editBoard').value = student.education?.board || 'cbse';
+            document.getElementById('editClass').value = student.education?.class || '';
+            document.getElementById('editCurrentAddress').value = student.address?.current || '';
+            document.getElementById('editPermanentAddress').value = student.address?.permanent || '';
+            
+            // Close details modal
+            bootstrap.Modal.getInstance(document.getElementById('studentDetailsModal')).hide();
+            
+            // Open edit modal
+            const editModal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+            editModal.show();
+            
+        } catch (err) {
+            showToast('Failed to load student data', 'error');
+        }
+    };
+    
+    // ============================================
+    // SAVE EDITED STUDENT TO DATABASE
+    // ============================================
+    window.saveEditedStudent = async function() {
+        const studentId = document.getElementById('editStudentId').value;
+        
+        const updatedData = {
+            studentName: {
+                first: document.getElementById('editFirstName').value,
+                middle: document.getElementById('editMiddleName').value,
+                last: document.getElementById('editLastName').value
+            },
+            mobile: document.getElementById('editMobile').value,
+            fatherMobile: document.getElementById('editFatherMobile').value,
+            education: {
+                board: document.getElementById('editBoard').value,
+                class: document.getElementById('editClass').value
+            },
+            address: {
+                current: document.getElementById('editCurrentAddress').value,
+                permanent: document.getElementById('editPermanentAddress').value
+            }
+        };
+        
+        const btn = document.getElementById('saveEditBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            const response = await fetch(`/api/students/${studentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updatedData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast('Student updated in database successfully');
+                
+                // Refresh data
+                await fetchAllStudents();
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('editStudentModal')).hide();
+            } else {
+                showToast(result.message || 'Update failed', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to update student in database', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save me-2"></i>Save Changes to Database';
+        }
+    };
+    
+    // ============================================
+    // DELETE STUDENT FROM DATABASE
     // ============================================
     window.deleteStudent = async function(studentId) {
-        if (!confirm('Delete this student? This cannot be undone!')) return;
+        if (!confirm('Delete this student from database? This cannot be undone!')) return;
         
         try {
             const response = await fetch(`/api/students/${studentId}`, {
@@ -782,7 +1016,7 @@
             const result = await response.json();
             
             if (result.success) {
-                showToast('Student deleted');
+                showToast('Student deleted from database');
                 allStudents = allStudents.filter(s => s.studentId !== studentId);
                 filterStudents();
                 updateDashboard();
@@ -791,7 +1025,7 @@
                 showToast(result.message || 'Delete failed', 'error');
             }
         } catch (err) {
-            showToast('Failed to delete student', 'error');
+            showToast('Failed to delete student from database', 'error');
         }
     };
     
@@ -830,78 +1064,144 @@
     };
     
     // ============================================
+    // PROMOTE ALL STUDENTS
+    // ============================================
+    function showPromotionModal() {
+        promotionDate = document.getElementById('promotionDate')?.value || '';
+        promotionClass = document.getElementById('promotionClass')?.value || '';
+        
+        const eligibleStudents = allStudents.filter(s => {
+            if (!s.joiningDate) return false;
+            const joinDate = new Date(s.joiningDate);
+            const selectedDate = new Date(promotionDate);
+            return joinDate < selectedDate;
+        });
+        
+        document.getElementById('promotionCount').textContent = `${eligibleStudents.length} students`;
+    }
+    
+    window.promoteStudents = async function() {
+        const date = document.getElementById('promotionDate').value;
+        const newClass = document.getElementById('promotionClass').value;
+        
+        if (!date || !newClass) {
+            showToast('Please select date and class', 'warning');
+            return;
+        }
+        
+        const eligibleStudents = allStudents.filter(s => {
+            if (!s.joiningDate) return false;
+            const joinDate = new Date(s.joiningDate);
+            const selectedDate = new Date(date);
+            return joinDate < selectedDate;
+        });
+        
+        if (eligibleStudents.length === 0) {
+            showToast('No students eligible for promotion', 'warning');
+            return;
+        }
+        
+        if (!confirm(`Promote ${eligibleStudents.length} students to ${newClass}?`)) return;
+        
+        const btn = document.getElementById('confirmPromotionBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        try {
+            let successCount = 0;
+            
+            for (const student of eligibleStudents) {
+                // Update to new class in database
+                const response = await fetch(`/api/students/${student.studentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        education: {
+                            board: student.education.board,
+                            class: newClass
+                        }
+                    })
+                });
+                
+                if (response.ok) successCount++;
+            }
+            
+            showToast(`${successCount} students promoted successfully in database`);
+            
+            // Refresh data
+            await fetchAllStudents();
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('promotionModal')).hide();
+            
+        } catch (err) {
+            showToast('Promotion failed in database', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-arrow-up me-2"></i>Promote Students';
+        }
+    };
+    
+    // ============================================
     // INITIALIZE EVENT LISTENERS
     // ============================================
     function initEventListeners() {
-        const filterBoard = document.getElementById('filterBoard');
-        if (filterBoard) {
-            filterBoard.addEventListener('change', function(e) {
-                boardFilter = e.target.value;
-                populateClassFilter(boardFilter);
-                filterStudents();
-            });
-        }
+        // Filter listeners
+        document.getElementById('filterBoard')?.addEventListener('change', function(e) {
+            boardFilter = e.target.value;
+            populateClassFilter(boardFilter);
+            filterStudents();
+        });
         
-        const filterClass = document.getElementById('filterClass');
-        if (filterClass) {
-            filterClass.addEventListener('change', function(e) {
-                classFilter = e.target.value;
-                filterStudents();
-            });
-        }
+        document.getElementById('filterClass')?.addEventListener('change', function(e) {
+            classFilter = e.target.value;
+            filterStudents();
+        });
         
-        const searchStudent = document.getElementById('searchStudent');
-        if (searchStudent) {
-            searchStudent.addEventListener('input', filterStudents);
-        }
+        document.getElementById('searchStudent')?.addEventListener('input', filterStudents);
         
-        const refreshBtn = document.getElementById('refreshStudents');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', function() {
-                fetchAllStudents();
-                showToast('Refreshing...', 'info');
-            });
-        }
+        // Button listeners
+        document.getElementById('refreshStudents')?.addEventListener('click', fetchAllStudents);
+        document.getElementById('exportCSV')?.addEventListener('click', window.exportToCSV);
         
-        const exportBtn = document.getElementById('exportCSV');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', window.exportToCSV);
-        }
+        // Promotion button
+        document.getElementById('promoteBtn')?.addEventListener('click', function() {
+            const modal = new bootstrap.Modal(document.getElementById('promotionModal'));
+            modal.show();
+        });
         
-        const updateBtn = document.getElementById('updateFeesBtn');
-        if (updateBtn) {
-            updateBtn.addEventListener('click', window.updateFees);
-        }
+        // Promotion modal listeners
+        document.getElementById('promotionDate')?.addEventListener('change', showPromotionModal);
+        document.getElementById('promotionClass')?.addEventListener('change', showPromotionModal);
+        document.getElementById('confirmPromotionBtn')?.addEventListener('click', window.promoteStudents);
         
-        const editModal = document.getElementById('editFeesModal');
-        if (editModal) {
-            editModal.addEventListener('hidden.bs.modal', function() {
-                document.getElementById('editNewFees').value = '';
-            });
-        }
+        // Fee update listener
+        document.getElementById('saveFeeUpdateBtn')?.addEventListener('click', window.updateStudentFee);
+        
+        // Edit student listener
+        document.getElementById('editStudentBtn')?.addEventListener('click', window.editStudent);
+        
+        // Save edit listener
+        document.getElementById('saveEditBtn')?.addEventListener('click', window.saveEditedStudent);
     }
     
     // ============================================
     // INITIALIZE EVERYTHING
     // ============================================
     function init() {
-        console.log("🚀 Initializing Student Management...");
+        console.log("🚀 Initializing Student Management with Database Sync...");
         
-        // Add student tab to navigation
-        const tabAdded = addStudentTab();
-        if (!tabAdded) return;
-        
-        // Create all HTML elements
+        addStudentTab();
         createStudentTabContent();
         createStudentDetailsModal();
-        createEditFeesModal();
+        createEditStudentModal();
+        createPromotionModal();
         
-        // Small delay for DOM to update
         setTimeout(() => {
-            // Initialize event listeners
             initEventListeners();
-            
-            // Load student data
             fetchAllStudents();
         }, 100);
     }
