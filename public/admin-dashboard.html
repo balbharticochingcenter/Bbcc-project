@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | VIP Control</title>
+    
+    <script>
+        if (localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #0f172a; --accent: #ffd700; }
+        body { background: #f8fafc; }
+        .admin-header { background: var(--primary); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); }
+        .btn-save { background: var(--primary); color: white; border-radius: 10px; padding: 10px 30px; border: none; font-weight: bold; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 5px 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <header class="admin-header">
+        <div class="fw-bold fs-4">ADMIN PANEL</div>
+        <div class="text-center">
+            <h5 class="m-0 text-warning">Dashboard</h5>
+            <small>Update Your Website in Real-time</small>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="sidebar-card">
+                    <h4>Settings</h4>
+                    <p class="text-muted small">Yahan se aap Logo, Title aur Social Links badal sakte hain. Save karne ke baad refresh karein.</p>
+                    <hr>
+                    <a href="index.html" class="btn btn-outline-primary w-100">View Live Site</a>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
+                    <h4 class="mb-4 fw-bold">Update Content</h4>
+                    <form id="updateForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Logo Text</label>
+                                <input type="text" id="edit-logo" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Main Title</label>
+                                <input type="text" id="edit-title" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Sub-Title</label>
+                            <input type="text" id="edit-subtitle" class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">About Text</label>
+                            <textarea id="edit-about" class="form-control" rows="4"></textarea>
+                        </div>
+
+                        <hr>
+                        <h5 class="mb-3">Social Media Links</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label text-success">WhatsApp URL</label>
+                                <input type="text" id="edit-whatsapp" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label text-danger">Instagram URL</label>
+                                <input type="text" id="edit-insta" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label text-primary">Facebook URL</label>
+                                <input type="text" id="edit-fb" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn-save">Update Website Now</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 text-muted border-top bg-white">
+        <small>&copy; 2026 VIP Coaching Admin Panel | High Security Enabled</small>
+    </footer>
+
+    <script>
+        // 1. Pehle current data load karo
+        async function fetchCurrentData() {
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            
+            document.getElementById('edit-logo').value = data.logoText;
+            document.getElementById('edit-title').value = data.title;
+            document.getElementById('edit-subtitle').value = data.subTitle;
+            document.getElementById('edit-about').value = data.aboutText;
+            document.getElementById('edit-whatsapp').value = data.whatsapp;
+            document.getElementById('edit-insta').value = data.insta;
+            document.getElementById('edit-fb').value = data.fb;
+        }
+        fetchCurrentData();
+
+        // 2. Data Update karne ka function
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const updatedConfig = {
+                logoText: document.getElementById('edit-logo').value,
+                title: document.getElementById('edit-title').value,
+                subTitle: document.getElementById('edit-subtitle').value,
+                aboutText: document.getElementById('edit-about').value,
+                whatsapp: document.getElementById('edit-whatsapp').value,
+                insta: document.getElementById('edit-insta').value,
+                fb: document.getElementById('edit-fb').value
+            };
+
+            const response = await fetch('/api/update-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedConfig)
+            });
+
+            const result = await response.json();
+            if(result.success) {
+                alert("Mubarak ho! Website update ho gayi hai.");
+                window.location.reload();
+            } else {
+                alert("Kuch error aaya!");
+            }
+        });
+
+        // 3. Logout function
+        function logout() {
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
