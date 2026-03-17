@@ -9,6 +9,7 @@ const app = express();
 
 // 2. Middlewares
 app.use(express.json()); // JSON data read karne ke liye
+app.use(express.static('public'));
 app.use(cors());         // Frontend se connect karne mein problem na ho isliye
 
 // 3. MongoDB Connection
