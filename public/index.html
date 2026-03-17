@@ -3,15 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BBCC</title>
+    <title>BBCC - Bal Bharti Coaching Center</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        :root { --primary: #0f172a; --accent: #ffd700; --glass: rgba(255, 255, 255, 0.1); }
-        body { background: #f1f5f9; overflow-x: hidden; }
+        :root { 
+            --primary: #0f172a; 
+            --accent: #ffd700; 
+            --glass: rgba(255, 255, 255, 0.1); 
+        }
+        
+        body { 
+            background: #f1f5f9; 
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
         /* Header Style */
         .vip-nav {
@@ -23,17 +32,54 @@
             color: white;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
-        .header-center { text-align: center; flex-grow: 1; }
-        .header-center h1 { font-size: 1.4rem; margin: 0; color: var(--accent); letter-spacing: 1px; }
-        .header-center small { font-size: 0.75rem; opacity: 0.8; }
         
-        .nav-links a { color: white; text-decoration: none; margin: 0 10px; font-weight: 500; transition: 0.3s; }
-        .nav-links a:hover { color: var(--accent); }
+        .header-center { 
+            text-align: center; 
+            flex-grow: 1; 
+        }
+        
+        .header-center h1 { 
+            font-size: 1.4rem; 
+            margin: 0; 
+            color: var(--accent); 
+            letter-spacing: 1px; 
+        }
+        
+        .header-center small { 
+            font-size: 0.75rem; 
+            opacity: 0.8; 
+        }
+        
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            margin: 0 10px; 
+            font-weight: 500; 
+            transition: 0.3s; 
+        }
+        
+        .nav-links a:hover { 
+            color: var(--accent); 
+        }
 
         /* 3D Slider Container */
-        .slider-section { padding: 40px 0; background: #e2e8f0; }
-        .swiper { width: 300px; height: 300px; padding: 50px; }
-        @media (min-width: 992px) { .swiper { width: 500px; height: 500px; } }
+        .slider-section { 
+            padding: 40px 0; 
+            background: #e2e8f0; 
+        }
+        
+        .swiper { 
+            width: 300px; 
+            height: 300px; 
+            padding: 50px; 
+        }
+        
+        @media (min-width: 992px) { 
+            .swiper { 
+                width: 500px; 
+                height: 500px; 
+            } 
+        }
         
         .swiper-slide {
             background-position: center;
@@ -41,21 +87,62 @@
             border-radius: 20px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        .swiper-slide img { width: 100%; height: 100%; border-radius: 20px; object-fit: cover; }
+        
+        .swiper-slide img { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 20px; 
+            object-fit: cover; 
+        }
 
         /* About Section */
         .about-card {
-            background: white; border-radius: 25px; padding: 40px;
-            margin-top: -30px; position: relative; z-index: 10;
+            background: white; 
+            border-radius: 25px; 
+            padding: 40px;
+            margin-top: -30px; 
+            position: relative; 
+            z-index: 10;
             box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+        }
+
+        /* ============================================
+           🆕 LOADING ANIMATION
+           ============================================ */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Mobile Bottom App Bar */
         .mobile-bar {
-            display: none; position: fixed; bottom: 0; width: 100%;
-            background: white; height: 70px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-            z-index: 1000; border-radius: 25px 25px 0 0;
-            justify-content: space-around; align-items: center;
+            display: none; 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%;
+            background: white; 
+            height: 70px; 
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            z-index: 1000; 
+            border-radius: 25px 25px 0 0;
+            justify-content: space-around; 
+            align-items: center;
         }
 
         @media (max-width: 768px) {
@@ -64,13 +151,113 @@
             .header-center h1 { font-size: 1.1rem; }
         }
 
-        .btn-vip { background: var(--accent); color: var(--primary); font-weight: bold; border-radius: 10px; border: none; padding: 8px 20px; }
+        .btn-vip { 
+            background: var(--accent); 
+            color: var(--primary); 
+            font-weight: bold; 
+            border-radius: 10px; 
+            border: none; 
+            padding: 8px 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-vip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        /* ============================================
+           🆕 TOAST NOTIFICATION STYLES
+           ============================================ */
+        .toast-notification {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .toast-notification.show {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        /* ============================================
+           🆕 BACK TO TOP BUTTON
+           ============================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--primary);
+            color: var(--accent);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            border: 2px solid var(--accent);
+            z-index: 999;
+        }
+        
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            background: var(--accent);
+            color: var(--primary);
+            transform: translateY(-5px);
+        }
     </style>
 </head>
 <body>
 
+    <!-- ============================================
+         🆕 TOAST NOTIFICATION
+         ============================================ -->
+    <div id="toast" class="toast-notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- ============================================
+         🆕 BACK TO TOP BUTTON
+         ============================================ -->
+    <div class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
     <header class="vip-nav sticky-top">
-        <div class="logo fw-bold fs-4" id="db-logo">LOGO</div>
+        <div class="logo fw-bold fs-4" id="db-logo">
+            <i class="fas fa-graduation-cap me-2"></i>LOGO
+        </div>
         
         <div class="header-center">
             <h1 id="db-title">Bal Bharti Coaching</h1>
@@ -78,28 +265,42 @@
         </div>
 
         <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="#about">About</a>
-            <a href="/contact">Contact</a>
-            <button onclick="location.href='login.html'" class="btn-vip ms-2">Login</button>
-<button onclick="location.href='register.html'" class="btn-vip ms-2" style="background: white;">Register</button>
+            <a href="/"><i class="fas fa-home me-1"></i>Home</a>
+            <a href="#about"><i class="fas fa-info-circle me-1"></i>About</a>
+            <a href="/contact"><i class="fas fa-envelope me-1"></i>Contact</a>
+            <button onclick="location.href='login.html'" class="btn-vip ms-2">
+                <i class="fas fa-sign-in-alt me-1"></i>Login
+            </button>
+            <button onclick="location.href='register.html'" class="btn-vip ms-2" style="background: white;">
+                <i class="fas fa-user-plus me-1"></i>Register
+            </button>
         </div>
     </header>
 
     <section class="slider-section">
         <div class="swiper mySwiper">
             <div class="swiper-wrapper" id="db-slides">
+                <!-- ============================================
+                     🆕 LOADING SPINNER (DEFAULT SLIDES)
+                     ============================================ -->
+                <div class="swiper-slide loading-spinner">
+                    <div class="spinner"></div>
                 </div>
+            </div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
 
     <section class="container" id="about">
         <div class="about-card">
-            <h2 class="text-center fw-bold mb-4" style="color: var(--primary);">About Our Coaching</h2>
-            <p id="db-about" class="text-muted leading-relaxed text-center">
-                Loading about information...
-            </p>
+            <h2 class="text-center fw-bold mb-4" style="color: var(--primary);">
+                <i class="fas fa-chalkboard-teacher me-2"></i>About Our Coaching
+            </h2>
+            <div id="db-about" class="text-muted leading-relaxed text-center">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -107,69 +308,268 @@
         <div class="container text-center">
             <div class="row">
                 <div class="col-md-4 mb-4">
-                    <h5 class="text-warning">Links</h5>
+                    <h5 class="text-warning"><i class="fas fa-link me-2"></i>Quick Links</h5>
                     <div class="d-flex flex-column">
-                        <a href="#" class="text-white text-decoration-none">Home</a>
-                        <a href="#" class="text-white text-decoration-none">About</a>
-                        <a href="#" class="text-white text-decoration-none">Help</a>
+                        <a href="/" class="text-white text-decoration-none mb-2"><i class="fas fa-angle-right me-2"></i>Home</a>
+                        <a href="#about" class="text-white text-decoration-none mb-2"><i class="fas fa-angle-right me-2"></i>About</a>
+                        <a href="#" class="text-white text-decoration-none mb-2"><i class="fas fa-angle-right me-2"></i>Help</a>
                     </div>
                 </div>
+                
                 <div class="col-md-4 mb-4">
-                    <h5 class="text-warning">Connect</h5>
+                    <h5 class="text-warning"><i class="fas fa-share-alt me-2"></i>Connect With Us</h5>
                     <div id="db-socials" class="fs-2 mt-2">
-                        </div>
+                        <!-- Social icons will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-warning"><i class="fas fa-clock me-2"></i>Hours</h5>
+                    <p class="mb-1">Mon-Fri: 9 AM - 8 PM</p>
+                    <p>Sat-Sun: 10 AM - 4 PM</p>
                 </div>
             </div>
             <hr>
-            <p class="small text-muted">&copy; 2024 Coaching Center | Built with Security</p>
+            <p class="small text-muted">
+                <i class="far fa-copyright me-1"></i>2024 Bal Bharti Coaching Center | 
+                <i class="fas fa-shield-alt me-1"></i>Built with Security
+            </p>
         </div>
     </footer>
 
     <div class="mobile-bar">
-        <a href="#" class="text-center text-dark text-decoration-none"><i class="fas fa-home d-block fs-4 text-primary"></i><small>Home</small></a>
-        <a href="#" class="text-center text-dark text-decoration-none" onclick="location.href='/login.html'"><i class="fas fa-sign-in-alt d-block fs-4 text-primary"></i><small>Login</small></a>
-        <a href="#" class="text-center text-dark text-decoration-none" onclick="location.href='/register.html'"><i class="fas fa-user-plus d-block fs-4 text-primary"></i><small>Join</small></a>
-        <a href="#about" class="text-center text-dark text-decoration-none"><i class="fas fa-info-circle d-block fs-4 text-primary"></i><small>About</small></a>
+        <a href="/" class="text-center text-dark text-decoration-none">
+            <i class="fas fa-home d-block fs-4 text-primary"></i>
+            <small>Home</small>
+        </a>
+        <a href="#" class="text-center text-dark text-decoration-none" onclick="location.href='/login.html'">
+            <i class="fas fa-sign-in-alt d-block fs-4 text-primary"></i>
+            <small>Login</small>
+        </a>
+        <a href="#" class="text-center text-dark text-decoration-none" onclick="location.href='/register.html'">
+            <i class="fas fa-user-plus d-block fs-4 text-primary"></i>
+            <small>Join</small>
+        </a>
+        <a href="#about" class="text-center text-dark text-decoration-none">
+            <i class="fas fa-info-circle d-block fs-4 text-primary"></i>
+            <small>About</small>
+        </a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- ============================================
+         🆕 UPDATED JAVASCRIPT WITH IMPROVEMENTS
+         ============================================ -->
     <script>
+        // ============================================
+        // SHOW TOAST FUNCTION
+        // ============================================
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.innerText = message;
+            
+            // Change color based on type
+            if (type === 'success') {
+                toast.style.borderLeftColor = '#28a745';
+            } else if (type === 'error') {
+                toast.style.borderLeftColor = '#dc3545';
+            } else {
+                toast.style.borderLeftColor = '#ffd700';
+            }
+            
+            toast.classList.add('show');
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================
+        // BACK TO TOP BUTTON VISIBILITY
+        // ============================================
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        });
+
+        // ============================================
+        // MAIN FUNCTION TO LOAD SITE DATA
+        // ============================================
         async function loadSiteData() {
             try {
+                // Show loading state
+                const slideWrapper = document.getElementById('db-slides');
+                const aboutElement = document.getElementById('db-about');
+                
+                // Fetch data from API
                 const res = await fetch('/api/config');
+                
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
                 const data = await res.json();
 
-                // Header & Content
-                document.getElementById('db-logo').innerText = data.logoText;
-                document.getElementById('db-title').innerText = data.title;
-                document.getElementById('db-subtitle').innerText = data.subTitle;
-                document.getElementById('db-about').innerText = data.aboutText;
+                // ============================================
+                // HEADER & CONTENT UPDATE
+                // ============================================
+                document.getElementById('db-logo').innerHTML = data.logoText ? 
+                    `<i class="fas fa-graduation-cap me-2"></i>${data.logoText}` : 
+                    '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+                    
+                document.getElementById('db-title').innerText = data.title || 'Bal Bharti Coaching';
+                document.getElementById('db-subtitle').innerText = data.subTitle || 'Excellence in Education';
+                
+                // Update about text
+                aboutElement.innerHTML = data.aboutText || 
+                    'Welcome to Bal Bharti Coaching Center. We provide quality education to students.';
 
-                // 3D Slider Images
-                const slideWrapper = document.getElementById('db-slides');
-                data.slides.forEach(imgUrl => {
-                    slideWrapper.innerHTML += `<div class="swiper-slide"><img src="${imgUrl}" /></div>`;
-                });
+                // ============================================
+                // 3D SLIDER IMAGES UPDATE
+                // ============================================
+                slideWrapper.innerHTML = ''; // Clear loading spinner
+                
+                if (data.slides && data.slides.length > 0) {
+                    data.slides.forEach(imgUrl => {
+                        if (imgUrl && imgUrl.trim() !== '') {
+                            slideWrapper.innerHTML += `<div class="swiper-slide"><img src="${imgUrl}" alt="Slide" loading="lazy" /></div>`;
+                        }
+                    });
+                } else {
+                    // Default slides if no images in database
+                    slideWrapper.innerHTML = `
+                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500" alt="Default 1" loading="lazy" /></div>
+                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500" alt="Default 2" loading="lazy" /></div>
+                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1503676260728-5177806628cb?w=500" alt="Default 3" loading="lazy" /></div>
+                    `;
+                }
 
-                // Socials
-                document.getElementById('db-socials').innerHTML = `
-                    <a href="${data.whatsapp}" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>
-                    <a href="${data.insta}" class="text-white me-3"><i class="fab fa-instagram"></i></a>
-                    <a href="${data.fb}" class="text-white me-3"><i class="fab fa-facebook"></i></a>
+                // ============================================
+                // SOCIAL MEDIA LINKS UPDATE
+                // ============================================
+                const socialsHtml = [];
+                
+                if (data.whatsapp) socialsHtml.push(`<a href="${data.whatsapp}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`);
+                if (data.insta) socialsHtml.push(`<a href="${data.insta}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="Instagram"><i class="fab fa-instagram"></i></a>`);
+                if (data.fb) socialsHtml.push(`<a href="${data.fb}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="Facebook"><i class="fab fa-facebook"></i></a>`);
+                if (data.twitter) socialsHtml.push(`<a href="${data.twitter}" target="_blank" rel="noopener noreferrer" class="text-white me-3" title="Twitter"><i class="fab fa-twitter"></i></a>`);
+                
+                // Default social icons if none in database
+                if (socialsHtml.length === 0) {
+                    document.getElementById('db-socials').innerHTML = `
+                        <a href="#" class="text-white me-3"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i></a>
+                    `;
+                } else {
+                    document.getElementById('db-socials').innerHTML = socialsHtml.join('');
+                }
+
+                // ============================================
+                // INITIALIZE 3D CUBE EFFECT
+                // ============================================
+                try {
+                    new Swiper(".mySwiper", {
+                        effect: "cube",
+                        grabCursor: true,
+                        cubeEffect: { 
+                            shadow: true, 
+                            slideShadows: true, 
+                            shadowOffset: 20, 
+                            shadowScale: 0.94 
+                        },
+                        pagination: { 
+                            el: ".swiper-pagination",
+                            clickable: true 
+                        },
+                        autoplay: { 
+                            delay: 2500,
+                            disableOnInteraction: false 
+                        },
+                        loop: true // Infinite loop
+                    });
+                    
+                    // Show success message
+                    showToast('Website loaded successfully!', 'success');
+                    
+                } catch (swiperError) {
+                    console.error("Swiper initialization error:", swiperError);
+                    showToast('Slider loaded with basic mode', 'info');
+                }
+
+            } catch (err) { 
+                console.error("Data fetch error:", err);
+                
+                // Show error message to user
+                showToast('Failed to load content. Please refresh.', 'error');
+                
+                // Load default content
+                document.getElementById('db-logo').innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+                document.getElementById('db-title').innerText = 'Bal Bharti Coaching';
+                document.getElementById('db-subtitle').innerText = 'Excellence in Education';
+                document.getElementById('db-about').innerHTML = 'Welcome to Bal Bharti Coaching Center. We provide quality education to students.';
+                
+                // Default slides
+                document.getElementById('db-slides').innerHTML = `
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500" alt="Default 1" /></div>
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500" alt="Default 2" /></div>
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1503676260728-5177806628cb?w=500" alt="Default 3" /></div>
                 `;
-
-                // Initialize 3D Cube Effect
+                
+                // Initialize Swiper with default images
                 new Swiper(".mySwiper", {
                     effect: "cube",
                     grabCursor: true,
                     cubeEffect: { shadow: true, slideShadows: true, shadowOffset: 20, shadowScale: 0.94 },
-                    pagination: { el: ".swiper-pagination" },
-                    autoplay: { delay: 2500 }
+                    pagination: { el: ".swiper-pagination", clickable: true },
+                    autoplay: { delay: 2500 },
+                    loop: true
                 });
-
-            } catch (err) { console.error("Data fetch error"); }
+            }
         }
-        loadSiteData();
+
+        // ============================================
+        // LOAD SITE DATA WHEN PAGE LOADS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSiteData();
+            
+            // ============================================
+            // SMOOTH SCROLLING FOR ANCHOR LINKS
+            // ============================================
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+        // ============================================
+        // NETWORK STATUS CHECK
+        // ============================================
+        window.addEventListener('online', function() {
+            showToast('You are back online!', 'success');
+            loadSiteData(); // Reload data when online
+        });
+        
+        window.addEventListener('offline', function() {
+            showToast('You are offline. Using cached data.', 'error');
+        });
     </script>
 </body>
 </html>
