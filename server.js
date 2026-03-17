@@ -28,7 +28,30 @@ app.get('/', (req, res) => {
 app.get('/status', (req, res) => {
     res.json({ message: "API active hai", database: "Connected" });
 });
+//-------------------------------------index page ----hedar to footer ----------------------------//
+// 1. Schema Design
+const WebConfigSchema = new mongoose.Schema({
+    logoText: String,
+    title: String,
+    subTitle: String,
+    whatsapp: String,
+    insta: String,
+    fb: String,
+    twitter: String
+});
 
+const WebConfig = mongoose.model('WebConfig', WebConfigSchema);
+
+// 2. API to get Data (Frontend ke liye)
+app.get('/api/config', async (req, res) => {
+    try {
+        const config = await WebConfig.findOne(); // Pehla document uthayega
+        res.json(config);
+    } catch (err) {
+        res.status(500).json({ message: "Data nahi mil raha" });
+    }
+});
+//-------------------------------------index page ----hedar to footer ----------------------------//
 // 5. Port Listening
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
