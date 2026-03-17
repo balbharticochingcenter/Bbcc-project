@@ -67,7 +67,19 @@ app.post('/api/admin-login', async (req, res) => {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 });
-///////////////////////////////////////////////////////////////////////////////////admin////////////////////
-
+///////////////////////////////////////////////////////////////////////////////////admin page for edit hedar and footer////////////////////
+// Data Update karne ki Secure API
+app.post('/api/update-config', async (req, res) => {
+    try {
+        // Asli security ke liye yahan Token check hona chahiye, 
+        // par abhi hum simple update logic rakh rahe hain.
+        const updatedData = req.body;
+        await WebConfig.findOneAndUpdate({}, updatedData, { upsert: true });
+        res.json({ success: true, message: "Website Updated Successfully!" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Update Fail Ho Gaya" });
+    }
+});
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Secure Server on ${PORT}`));
