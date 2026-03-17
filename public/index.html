@@ -62,6 +62,13 @@
             color: var(--accent); 
         }
 
+        /* Logo Style for Images */
+        .logo-img {
+            max-height: 50px;
+            max-width: 150px;
+            border-radius: 8px;
+        }
+
         /* 3D Slider Container */
         .slider-section { 
             padding: 40px 0; 
@@ -106,9 +113,7 @@
             box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
         }
 
-        /* ============================================
-           🆕 LOADING ANIMATION
-           ============================================ */
+        /* Loading Animation */
         .loading-spinner {
             display: flex;
             justify-content: center;
@@ -166,9 +171,7 @@
             box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
         }
 
-        /* ============================================
-           🆕 TOAST NOTIFICATION STYLES
-           ============================================ */
+        /* Toast Notification */
         .toast-notification {
             position: fixed;
             bottom: 80px;
@@ -202,9 +205,7 @@
             }
         }
 
-        /* ============================================
-           🆕 BACK TO TOP BUTTON
-           ============================================ */
+        /* Back to Top Button */
         .back-to-top {
             position: fixed;
             bottom: 80px;
@@ -239,17 +240,13 @@
 </head>
 <body>
 
-    <!-- ============================================
-         🆕 TOAST NOTIFICATION
-         ============================================ -->
+    <!-- Toast Notification -->
     <div id="toast" class="toast-notification">
         <i class="fas fa-info-circle"></i>
         <span id="toast-message"></span>
     </div>
 
-    <!-- ============================================
-         🆕 BACK TO TOP BUTTON
-         ============================================ -->
+    <!-- Back to Top Button -->
     <div class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
         <i class="fas fa-arrow-up"></i>
     </div>
@@ -268,10 +265,10 @@
             <a href="/"><i class="fas fa-home me-1"></i>Home</a>
             <a href="#about"><i class="fas fa-info-circle me-1"></i>About</a>
             <a href="/contact"><i class="fas fa-envelope me-1"></i>Contact</a>
-            <button onclick="location.href='login.html'" class="btn-vip ms-2">
+            <button onclick="redirectToLogin()" class="btn-vip ms-2">
                 <i class="fas fa-sign-in-alt me-1"></i>Login
             </button>
-            <button onclick="location.href='register.html'" class="btn-vip ms-2" style="background: white;">
+            <button onclick="redirectToRegister()" class="btn-vip ms-2" style="background: white;">
                 <i class="fas fa-user-plus me-1"></i>Register
             </button>
         </div>
@@ -280,9 +277,7 @@
     <section class="slider-section">
         <div class="swiper mySwiper">
             <div class="swiper-wrapper" id="db-slides">
-                <!-- ============================================
-                     🆕 LOADING SPINNER (DEFAULT SLIDES)
-                     ============================================ -->
+                <!-- Loading Spinner (Default Slides) -->
                 <div class="swiper-slide loading-spinner">
                     <div class="spinner"></div>
                 </div>
@@ -337,16 +332,17 @@
         </div>
     </footer>
 
+    <!-- Mobile Bottom Bar -->
     <div class="mobile-bar">
         <a href="/" class="text-center text-dark text-decoration-none">
             <i class="fas fa-home d-block fs-4 text-primary"></i>
             <small>Home</small>
         </a>
-        <a href="#" class="text-center text-dark text-decoration-none" onclick="location.href='/login.html'">
+        <a href="javascript:void(0)" class="text-center text-dark text-decoration-none" onclick="redirectToLogin()">
             <i class="fas fa-sign-in-alt d-block fs-4 text-primary"></i>
             <small>Login</small>
         </a>
-        <a href="#" class="text-center text-dark text-decoration-none" onclick="location.href='/register.html'">
+        <a href="javascript:void(0)" class="text-center text-dark text-decoration-none" onclick="redirectToRegister()">
             <i class="fas fa-user-plus d-block fs-4 text-primary"></i>
             <small>Join</small>
         </a>
@@ -358,10 +354,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
-    <!-- ============================================
-         🆕 UPDATED JAVASCRIPT WITH IMPROVEMENTS
-         ============================================ -->
     <script>
+        // ============================================
+        // REDIRECT FUNCTIONS - FIXED
+        // ============================================
+        
+        // Login redirect function
+        function redirectToLogin() {
+            console.log('Redirecting to login page...');
+            window.location.href = 'login.html';
+        }
+        
+        // Register redirect function
+        function redirectToRegister() {
+            console.log('Redirecting to register page...');
+            window.location.href = 'register.html';
+        }
+
         // ============================================
         // SHOW TOAST FUNCTION
         // ============================================
@@ -389,6 +398,35 @@
         }
 
         // ============================================
+        // CHECK IF LOGGED IN - FOR HEADER
+        // ============================================
+        function checkLoginStatus() {
+            const token = localStorage.getItem('token');
+            const isAdmin = localStorage.getItem('isAdmin');
+            
+            // Agar admin logged in hai toh button change karo
+            if (token && isAdmin === 'true') {
+                // Update login button to show Dashboard
+                const loginBtn = document.querySelector('.nav-links .btn-vip.ms-2');
+                if (loginBtn) {
+                    loginBtn.innerHTML = '<i class="fas fa-tachometer-alt me-1"></i>Dashboard';
+                    loginBtn.onclick = function() {
+                        window.location.href = 'admin-dashboard.html';
+                    };
+                }
+                
+                // Update mobile login button
+                const mobileLoginBtn = document.querySelector('.mobile-bar a[onclick="redirectToLogin()"]');
+                if (mobileLoginBtn) {
+                    mobileLoginBtn.innerHTML = '<i class="fas fa-tachometer-alt d-block fs-4 text-primary"></i><small>Dashboard</small>';
+                    mobileLoginBtn.onclick = function() {
+                        window.location.href = 'admin-dashboard.html';
+                    };
+                }
+            }
+        }
+
+        // ============================================
         // BACK TO TOP BUTTON VISIBILITY
         // ============================================
         window.addEventListener('scroll', function() {
@@ -399,6 +437,22 @@
                 backToTop.classList.remove('show');
             }
         });
+
+        // ============================================
+        // DETECT IF LOGO IS IMAGE OR TEXT
+        // ============================================
+        function displayLogo(logoData) {
+            const logoElement = document.getElementById('db-logo');
+            
+            // Check if logo is a base64 image (starts with data:image)
+            if (logoData && logoData.startsWith('data:image')) {
+                // It's an image logo
+                logoElement.innerHTML = `<img src="${logoData}" alt="Logo" class="logo-img">`;
+            } else {
+                // It's text logo
+                logoElement.innerHTML = `<i class="fas fa-graduation-cap me-2"></i>${logoData || 'BBCC'}`;
+            }
+        }
 
         // ============================================
         // MAIN FUNCTION TO LOAD SITE DATA
@@ -421,9 +475,8 @@
                 // ============================================
                 // HEADER & CONTENT UPDATE
                 // ============================================
-                document.getElementById('db-logo').innerHTML = data.logoText ? 
-                    `<i class="fas fa-graduation-cap me-2"></i>${data.logoText}` : 
-                    '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+                // Display logo (image or text)
+                displayLogo(data.logoText);
                     
                 document.getElementById('db-title').innerText = data.title || 'Bal Bharti Coaching';
                 document.getElementById('db-subtitle').innerText = data.subTitle || 'Excellence in Education';
@@ -512,7 +565,7 @@
                 showToast('Failed to load content. Please refresh.', 'error');
                 
                 // Load default content
-                document.getElementById('db-logo').innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+                displayLogo('BBCC');
                 document.getElementById('db-title').innerText = 'Bal Bharti Coaching';
                 document.getElementById('db-subtitle').innerText = 'Excellence in Education';
                 document.getElementById('db-about').innerHTML = 'Welcome to Bal Bharti Coaching Center. We provide quality education to students.';
@@ -541,6 +594,7 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             loadSiteData();
+            checkLoginStatus(); // Check if user is logged in
             
             // ============================================
             // SMOOTH SCROLLING FOR ANCHOR LINKS
