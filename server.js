@@ -892,6 +892,94 @@ app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// ============================================
+//END POINT PUT ADD 
+// ============================================
+// Update student by ID
+app.put('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const studentData = req.body;
+        
+        const student = await Student.findOneAndUpdate(
+            { studentId: req.params.id },
+            {
+                password: studentData.password,
+                classMonthlyFees: studentData.classMonthlyFees,
+                photo: studentData.photo,
+                studentName: studentData.student,
+                mobile: studentData.student.mobile,
+                aadharNumber: studentData.aadhar,
+                aadharDocument: studentData.aadharDocument,
+                registrationDate: studentData.dates.reg,
+                joiningDate: studentData.dates.join,
+                fatherName: studentData.father,
+                fatherMobile: studentData.father.mobile,
+                motherName: studentData.mother,
+                address: studentData.address,
+                education: studentData.education
+            },
+            { new: true }
+        );
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, message: "Student updated successfully", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+// ============================================
+// TECHAR SCEEM AND API 
+// ============================================
+const TeacherSchema = new mongoose.Schema({
+    teacherId: { type: String, required: true, unique: true }, // Aadhar Number
+    password: { type: String, required: true }, // Name(4) + YYYY
+    photo: { type: String, required: true }, 
+    teacherName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    fatherName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    mobile: { type: String, required: true },
+    altMobile: { type: String },
+    dob: { type: Date, required: true },
+    lastQualification: { type: String, required: true },
+    qualificationDoc: { type: String, required: true }, // Base64 String
+    aadharNumber: { type: String, required: true, unique: true },
+    aadharDoc: { type: String, required: true }, // Base64 String
+    joiningDate: { type: Date, default: null }, // Blank/Null initially
+    status: { type: String, default: 'pending' } // Initial Status
+}, { timestamps: true });
+
+const Teacher = mongoose.model('Teacher', TeacherSchema);
+app.post('/api/teacher-register', async (req, res) => {
+    try {
+        const data = req.body;
+        
+        // Check duplicate
+        const existing = await Teacher.findOne({ aadharNumber: data.aadharNumber });
+        if (existing) return res.status(400).json({ success: false, message: "Aadhar already registered!" });
+
+        const newTeacher = new Teacher(data);
+        await newTeacher.save();
+
+        res.json({ 
+            success: true, 
+            message: "Registration Successful!",
+            id: data.teacherId,
+            pws: data.password
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 
 // ============================================
 // SERVE HTML FILES
