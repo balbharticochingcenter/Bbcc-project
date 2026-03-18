@@ -5,17 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard - Bal Bharti Coaching</title>
     
-    <!-- Bootstrap 5 - First Load -->
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- jQuery - Load First -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- DataTables CSS -->
+    <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <!-- DataTables JS - Load After jQuery -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
@@ -36,7 +35,6 @@
             flex-direction: column;
         }
         
-        /* Navbar - Same as Index */
         .vip-nav {
             background: var(--primary);
             padding: 10px 5%;
@@ -57,14 +55,12 @@
             color: var(--accent);
         }
         
-        /* Main Content */
         .main-content {
             flex: 1;
             padding: 30px 5%;
             margin-top: 20px;
         }
         
-        /* Header Card */
         .header-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -80,14 +76,8 @@
         }
         
         @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .page-title {
@@ -120,7 +110,6 @@
             box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
         }
         
-        /* Stats Cards - Glass Morphism */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -145,14 +134,8 @@
         .stat-card:nth-child(4) { animation-delay: 0.4s; }
         
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .stat-card:hover {
@@ -184,7 +167,6 @@
             font-weight: 500;
         }
         
-        /* Main Card */
         .main-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -209,7 +191,6 @@
             padding: 25px;
         }
         
-        /* Teacher Photo */
         .teacher-photo {
             width: 40px;
             height: 40px;
@@ -226,7 +207,6 @@
             border: 3px solid var(--accent);
         }
         
-        /* Status Badges */
         .badge-pending {
             background: #fff3cd;
             color: #856404;
@@ -254,51 +234,24 @@
             font-weight: 600;
         }
         
-        /* Buttons */
-        .btn-approve {
-            background: var(--success-color);
+        .btn-approve, .btn-edit, .btn-reject {
             color: white;
             border: none;
             padding: 6px 12px;
             border-radius: 8px;
             font-size: 0.9rem;
             transition: all 0.3s;
+            margin: 2px;
         }
         
-        .btn-approve:hover {
-            background: #27ae60;
-            transform: translateY(-2px);
-        }
+        .btn-approve { background: var(--success-color); }
+        .btn-approve:hover { background: #27ae60; transform: translateY(-2px); }
         
-        .btn-edit {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
+        .btn-edit { background: var(--primary); }
+        .btn-edit:hover { background: #1e293b; transform: translateY(-2px); }
         
-        .btn-edit:hover {
-            background: #1e293b;
-            transform: translateY(-2px);
-        }
-        
-        .btn-reject {
-            background: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-        
-        .btn-reject:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
+        .btn-reject { background: var(--danger-color); }
+        .btn-reject:hover { background: #c0392b; transform: translateY(-2px); }
         
         .action-buttons {
             display: flex;
@@ -306,7 +259,6 @@
             flex-wrap: wrap;
         }
         
-        /* Modal Styles - Matching Index */
         .modal-content {
             border-radius: 20px;
             border: none;
@@ -320,28 +272,13 @@
             padding: 20px 25px;
         }
         
-        .modal-header.bg-success {
-            background: var(--success-color) !important;
-        }
+        .modal-header.bg-success { background: var(--success-color) !important; }
+        .modal-header.bg-primary { background: var(--primary) !important; }
+        .modal-header.bg-danger { background: var(--danger-color) !important; }
         
-        .modal-header.bg-primary {
-            background: var(--primary) !important;
-        }
+        .modal-body { padding: 25px; }
+        .modal-footer { padding: 15px 25px; border-top: 2px solid #eee; }
         
-        .modal-header.bg-danger {
-            background: var(--danger-color) !important;
-        }
-        
-        .modal-body {
-            padding: 25px;
-        }
-        
-        .modal-footer {
-            padding: 15px 25px;
-            border-top: 2px solid #eee;
-        }
-        
-        /* Form Controls */
         .form-label {
             font-weight: 600;
             color: var(--primary);
@@ -361,7 +298,6 @@
             outline: none;
         }
         
-        /* Search Box */
         .search-box {
             position: relative;
             max-width: 400px;
@@ -382,7 +318,6 @@
             z-index: 10;
         }
         
-        /* Filter Buttons */
         .filter-btn {
             background: white;
             border: 2px solid #e0e0e0;
@@ -407,11 +342,6 @@
             transform: translateY(-2px);
         }
         
-        /* Table Styles */
-        .table {
-            margin-bottom: 0;
-        }
-        
         .table thead th {
             background: #f8f9fa;
             color: var(--primary);
@@ -419,7 +349,6 @@
             border-bottom: 2px solid #dee2e6;
         }
         
-        /* Loading Spinner */
         .spinner-overlay {
             position: fixed;
             top: 0;
@@ -448,7 +377,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Chart Container */
         .chart-container {
             position: relative;
             height: 300px;
@@ -456,7 +384,6 @@
             padding: 10px;
         }
         
-        /* Login Required Message */
         .login-required {
             text-align: center;
             padding: 50px 20px;
@@ -489,7 +416,6 @@
             box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
         }
         
-        /* Footer */
         footer {
             background: var(--primary);
             color: white;
@@ -497,38 +423,15 @@
             margin-top: auto;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .header-card {
                 flex-direction: column;
                 gap: 15px;
                 text-align: center;
             }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .filter-btns {
-                text-align: center;
-                margin-top: 15px;
-            }
-            
-            .filter-btn {
-                margin: 5px;
-            }
-        }
-        
-        /* DataTables Custom */
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            border-radius: 30px !important;
-            margin: 0 3px;
-        }
-        
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: var(--primary) !important;
-            color: white !important;
-            border-color: var(--primary) !important;
+            .stats-grid { grid-template-columns: 1fr; }
+            .filter-btns { text-align: center; margin-top: 15px; }
+            .filter-btn { margin: 5px; }
         }
     </style>
 </head>
@@ -538,7 +441,7 @@
         <div class="spinner"></div>
     </div>
     
-    <!-- Navbar - Same as Index -->
+    <!-- Navbar -->
     <header class="vip-nav">
         <div class="logo fw-bold" id="db-logo">
             <i class="fas fa-graduation-cap me-2"></i>LOGO
@@ -582,7 +485,6 @@
                 <h3 class="stat-value" id="totalTeachers">0</h3>
                 <p class="stat-label">Total Teachers</p>
             </div>
-            
             <div class="stat-card">
                 <div class="stat-icon" style="background: #fff3cd; color: var(--warning-color);">
                     <i class="fas fa-clock"></i>
@@ -590,7 +492,6 @@
                 <h3 class="stat-value" id="pendingTeachers">0</h3>
                 <p class="stat-label">Pending Approvals</p>
             </div>
-            
             <div class="stat-card">
                 <div class="stat-icon" style="background: #d4edda; color: var(--success-color);">
                     <i class="fas fa-check-circle"></i>
@@ -598,7 +499,6 @@
                 <h3 class="stat-value" id="approvedTeachers">0</h3>
                 <p class="stat-label">Active Teachers</p>
             </div>
-            
             <div class="stat-card">
                 <div class="stat-icon" style="background: #f8d7da; color: var(--danger-color);">
                     <i class="fas fa-rupee-sign"></i>
@@ -627,7 +527,7 @@
                     <div class="col-md-6">
                         <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Search teachers by name, ID, mobile...">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search teachers...">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -692,9 +592,7 @@
         </p>
     </footer>
 
-    <!-- ========== MODALS ========== -->
-    
-    <!-- View Teacher Modal -->
+    <!-- Modals -->
     <div class="modal fade" id="viewTeacherModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -718,7 +616,6 @@
         </div>
     </div>
     
-    <!-- Approve Teacher Modal -->
     <div class="modal fade" id="approveTeacherModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -731,17 +628,14 @@
                 <div class="modal-body">
                     <form id="approveTeacherForm">
                         <input type="hidden" id="approveTeacherId">
-                        
                         <div class="mb-3">
                             <label class="form-label">Subject</label>
                             <input type="text" class="form-control" id="approveSubject" required>
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Monthly Salary (₹)</label>
                             <input type="number" class="form-control" id="approveSalary" required min="0">
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Joining Date</label>
                             <input type="date" class="form-control" id="approveJoiningDate">
@@ -756,7 +650,6 @@
         </div>
     </div>
     
-    <!-- Salary Payment Modal -->
     <div class="modal fade" id="salaryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -770,27 +663,22 @@
                     <form id="salaryForm">
                         <input type="hidden" id="salaryTeacherId">
                         <input type="hidden" id="salaryMonth">
-                        
                         <div class="text-center mb-3">
                             <h5 id="salaryTeacherName"></h5>
                             <p class="text-muted" id="salaryMonthDisplay"></p>
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Monthly Salary</label>
                             <input type="text" class="form-control" id="salaryAmount" readonly>
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Paid Amount (₹)</label>
                             <input type="number" class="form-control" id="paidAmount" required min="0">
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Due Amount</label>
                             <input type="text" class="form-control" id="dueAmount" readonly>
                         </div>
-                        
                         <div class="mb-3">
                             <label class="form-label">Payment Status</label>
                             <input type="text" class="form-control" id="paymentStatus" readonly>
@@ -806,580 +694,447 @@
     </div>
 
     <script>
-        // ========== WAIT FOR ALL SCRIPTS TO LOAD ==========
-        function waitForjQuery() {
-            if (typeof jQuery === 'undefined') {
-                console.warn('Waiting for jQuery...');
-                setTimeout(waitForjQuery, 50);
-                return;
-            }
-            console.log('✅ jQuery loaded');
-            
-            if (typeof jQuery.fn.DataTable === 'undefined') {
-                console.warn('Waiting for DataTables...');
-                setTimeout(waitForjQuery, 50);
-                return;
-            }
-            console.log('✅ DataTables loaded');
-            
-            // Now initialize everything
-            initializeApp();
-        }
+        // ========== GLOBAL VARIABLES ==========
+        let token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+        let currentFilter = 'all';
+        let teachersData = [];
+        let salaryChart = null;
+        let dataTable = null;
         
-        // Start waiting
-        waitForjQuery();
+        console.log('🔑 Token Status:', token ? '✅ LOGGED IN' : '❌ NOT LOGGED IN');
         
-        // ========== MAIN APP INITIALIZATION ==========
-        function initializeApp() {
-            // ========== CHECK TOKEN ==========
-            let token = localStorage.getItem('token') || localStorage.getItem('adminToken');
-            console.log('🔑 Token Status:', token ? '✅ LOGGED IN' : '❌ NOT LOGGED IN');
-            
-            // Agar token nahi hai to message dikhao, redirect mat karo
-            if (!token) {
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Hide stats and chart
-                    document.getElementById('statsContainer').style.display = 'none';
-                    document.getElementById('chartCard').style.display = 'none';
-                    
-                    // Show login message
-                    document.getElementById('teachersTableBody').innerHTML = `
-                        <tr>
-                            <td colspan="9">
-                                <div class="login-required">
-                                    <i class="fas fa-lock"></i>
-                                    <h3>Please Login First</h3>
-                                    <p class="text-muted mb-4">You need to login as admin to access teacher dashboard.</p>
-                                    <a href="/index.html" class="btn btn-primary">
-                                        <i class="fas fa-sign-in-alt me-2"></i>Go to Login Page
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    
-                    // Hide loading spinner
-                    document.getElementById('loadingSpinner').style.display = 'none';
-                });
-                return;
-            }
-            
-            // ========== GLOBAL VARIABLES ==========
-            let currentFilter = 'all';
-            let teachersData = [];
-            let salaryChart = null;
-            let dataTable = null;
-            
-            // ========== LOAD LOGO ==========
-            function loadLogo() {
-                fetch('/api/config')
-                    .then(res => res.json())
-                    .then(data => {
-                        document.getElementById('db-logo').innerHTML = data.logoText ? 
-                            `<i class="fas fa-graduation-cap me-2"></i>${data.logoText}` : 
-                            '<i class="fas fa-graduation-cap me-2"></i>BBCC';
-                    })
-                    .catch(() => {
-                        document.getElementById('db-logo').innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
-                    });
-            }
-            
-            // ========== SHOW/HIDE LOADING ==========
-            function showLoading() { 
-                document.getElementById('loadingSpinner').style.display = 'flex'; 
-            }
-            
-            function hideLoading() { 
-                document.getElementById('loadingSpinner').style.display = 'none'; 
-            }
-            
-            // ========== SHOW MESSAGES ==========
-            function showError(message) {
-                alert('❌ Error: ' + message);
-            }
-            
-            function showSuccess(message) {
-                alert('✅ Success: ' + message);
-            }
-            
-            // ========== LOAD DASHBOARD ==========
-            async function loadDashboard() {
-                showLoading();
-                try {
-                    await loadStats();
-                    await loadTeachers();
-                } catch (error) {
-                    console.error('Dashboard error:', error);
-                    if (error.message?.includes('401')) {
-                        showError('Session expired! Please login again.');
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('adminToken');
-                        window.location.href = '/index.html';
-                    }
-                }
-                hideLoading();
-            }
-            
-            // ========== LOAD STATISTICS ==========
-            async function loadStats() {
-                try {
-                    const response = await fetch('/api/teachers/stats/summary', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    
-                    if (!response.ok) throw new Error('Failed to load stats');
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        document.getElementById('totalTeachers').textContent = data.data.total || 0;
-                        document.getElementById('pendingTeachers').textContent = data.data.pending || 0;
-                        document.getElementById('approvedTeachers').textContent = data.data.approved || 0;
-                        document.getElementById('totalSalary').textContent = '₹' + (data.data.totalPaidSalary || 0).toLocaleString();
-                    }
-                } catch (err) {
-                    console.error('Stats error:', err);
-                }
-            }
-            
-            // ========== LOAD TEACHERS ==========
-            async function loadTeachers() {
-                try {
-                    const response = await fetch('/api/teachers?status=all', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    
-                    if (!response.ok) throw new Error('Failed to load teachers');
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        teachersData = data.data || [];
-                        displayTeachers(teachersData);
-                        updateSalaryChart();
-                    }
-                } catch (err) {
-                    console.error('Teachers error:', err);
-                    showError('Failed to load teachers');
-                }
-            }
-            
-            // ========== DISPLAY TEACHERS ==========
-            function displayTeachers(teachers) {
-                const tbody = document.getElementById('teachersTableBody');
-                tbody.innerHTML = '';
-                
-                if (!teachers || teachers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No teachers found</td></tr>';
+        // ========== CHECK TOKEN ==========
+        if (!token) {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('statsContainer').style.display = 'none';
+                document.getElementById('chartCard').style.display = 'none';
+                document.getElementById('teachersTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="9">
+                            <div class="login-required">
+                                <i class="fas fa-lock"></i>
+                                <h3>Please Login First</h3>
+                                <p class="text-muted mb-4">You need to login as admin to access teacher dashboard.</p>
+                                <a href="/index.html" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Go to Login Page
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('loadingSpinner').style.display = 'none';
+            });
+        } else {
+            // Wait for jQuery and DataTables
+            function waitForScripts() {
+                if (typeof jQuery === 'undefined' || typeof jQuery.fn.DataTable === 'undefined') {
+                    setTimeout(waitForScripts, 50);
                     return;
                 }
-                
-                teachers.forEach(teacher => {
-                    // Safely access nested properties
-                    const teacherName = teacher.teacherName || {};
-                    const firstName = teacherName.first || '';
-                    const lastName = teacherName.last || '';
-                    
-                    const statusClass = teacher.status === 'pending' ? 'badge-pending' :
-                                       teacher.status === 'approved' ? 'badge-approved' : 'badge-rejected';
-                    
-                    const statusText = teacher.status ? teacher.status.toUpperCase() : 'PENDING';
-                    const joiningDate = teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-';
-                    const currentMonth = new Date().toLocaleString('default', { month: 'long' }) + ' ' + new Date().getFullYear();
-                    
-                    // Escape special characters for onclick
-                    const safeTeacherId = teacher.teacherId ? teacher.teacherId.replace(/'/g, "\\'") : '';
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>
-                            <img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="teacher-photo" onerror="this.src='https://via.placeholder.com/40'">
-                        </td>
-                        <td>${teacher.teacherId || '-'}</td>
-                        <td>${firstName} ${lastName}</td>
-                        <td>${teacher.mobile || '-'}</td>
-                        <td>${teacher.subject || '-'}</td>
-                        <td>₹${teacher.salary?.toLocaleString() || 0}</td>
-                        <td>${joiningDate}</td>
-                        <td><span class="${statusClass}">${statusText}</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn-edit" onclick="window.viewTeacher('${safeTeacherId}')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                ${teacher.status === 'pending' ? `
-                                    <button class="btn-approve" onclick="window.showApproveModal('${safeTeacherId}')">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                ` : ''}
-                                ${teacher.status === 'approved' ? `
-                                    <button class="btn-approve" onclick="window.showSalaryModal('${safeTeacherId}', '${currentMonth}')">
-                                        <i class="fas fa-rupee-sign"></i>
-                                    </button>
-                                ` : ''}
-                                <button class="btn-reject" onclick="window.deleteTeacher('${safeTeacherId}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-                    
-                    tbody.appendChild(row);
+                initializeApp();
+            }
+            waitForScripts();
+        }
+        
+        // ========== INITIALIZE APP ==========
+        function initializeApp() {
+            loadLogo();
+            initEventListeners();
+            loadDashboard();
+        }
+        
+        // ========== LOAD LOGO ==========
+        function loadLogo() {
+            fetch('/api/config')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('db-logo').innerHTML = data.logoText ? 
+                        `<i class="fas fa-graduation-cap me-2"></i>${data.logoText}` : 
+                        '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+                })
+                .catch(() => {
+                    document.getElementById('db-logo').innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
                 });
+        }
+        
+        // ========== SHOW/HIDE LOADING ==========
+        function showLoading() { document.getElementById('loadingSpinner').style.display = 'flex'; }
+        function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
+        function showError(m) { alert('❌ Error: ' + m); }
+        function showSuccess(m) { alert('✅ Success: ' + m); }
+        
+        // ========== LOAD DASHBOARD ==========
+        async function loadDashboard() {
+            showLoading();
+            try {
+                await loadStats();
+                await loadTeachers();
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                if (error.message?.includes('401')) {
+                    showError('Session expired! Please login again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('adminToken');
+                    window.location.href = '/index.html';
+                }
+            }
+            hideLoading();
+        }
+        
+        // ========== LOAD STATISTICS ==========
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/teachers/stats/summary', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to load stats');
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('totalTeachers').textContent = data.data.total || 0;
+                    document.getElementById('pendingTeachers').textContent = data.data.pending || 0;
+                    document.getElementById('approvedTeachers').textContent = data.data.approved || 0;
+                    document.getElementById('totalSalary').textContent = '₹' + (data.data.totalPaidSalary || 0).toLocaleString();
+                }
+            } catch (err) {
+                console.error('Stats error:', err);
+            }
+        }
+        
+        // ========== LOAD TEACHERS ==========
+        async function loadTeachers() {
+            try {
+                const response = await fetch('/api/teachers?status=all', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Failed to load teachers');
+                const data = await response.json();
+                if (data.success) {
+                    teachersData = data.data || [];
+                    displayTeachers(teachersData);
+                    updateSalaryChart();
+                }
+            } catch (err) {
+                console.error('Teachers error:', err);
+                showError('Failed to load teachers');
+            }
+        }
+        
+        // ========== DISPLAY TEACHERS (NO ONCLICK) ==========
+        function displayTeachers(teachers) {
+            const tbody = document.getElementById('teachersTableBody');
+            tbody.innerHTML = '';
+            
+            if (!teachers || teachers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No teachers found</td></tr>';
+                return;
+            }
+            
+            teachers.forEach(teacher => {
+                const teacherName = teacher.teacherName || {};
+                const firstName = teacherName.first || '';
+                const lastName = teacherName.last || '';
                 
-                // Initialize or update DataTable
-                if (!dataTable) {
-                    if (jQuery && jQuery.fn.DataTable) {
-                        dataTable = jQuery('#teachersTable').DataTable({
-                            paging: true,
-                            searching: false,
-                            ordering: true,
-                            info: true,
-                            lengthChange: false,
-                            pageLength: 10,
-                            language: {
-                                emptyTable: "No teachers found",
-                                info: "Showing _START_ to _END_ of _TOTAL_ teachers",
-                                paginate: {
-                                    first: "First",
-                                    last: "Last",
-                                    next: "Next",
-                                    previous: "Previous"
-                                }
-                            }
-                        });
+                const statusClass = teacher.status === 'pending' ? 'badge-pending' :
+                                   teacher.status === 'approved' ? 'badge-approved' : 'badge-rejected';
+                const statusText = teacher.status ? teacher.status.toUpperCase() : 'PENDING';
+                const joiningDate = teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-';
+                
+                const row = document.createElement('tr');
+                row.setAttribute('data-teacher-id', teacher.teacherId || '');
+                row.setAttribute('data-teacher-status', teacher.status || 'pending');
+                row.innerHTML = `
+                    <td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="teacher-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
+                    <td>${teacher.teacherId || '-'}</td>
+                    <td>${firstName} ${lastName}</td>
+                    <td>${teacher.mobile || '-'}</td>
+                    <td>${teacher.subject || '-'}</td>
+                    <td>₹${teacher.salary?.toLocaleString() || 0}</td>
+                    <td>${joiningDate}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-edit view-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-eye"></i></button>
+                            ${teacher.status === 'pending' ? `<button class="btn-approve approve-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-check"></i></button>` : ''}
+                            ${teacher.status === 'approved' ? `<button class="btn-approve salary-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-rupee-sign"></i></button>` : ''}
+                            <button class="btn-reject delete-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Add event listeners to buttons
+            attachTableButtonListeners();
+            
+            // Initialize DataTable
+            if (!dataTable && jQuery && jQuery.fn.DataTable) {
+                dataTable = jQuery('#teachersTable').DataTable({
+                    paging: true,
+                    searching: false,
+                    ordering: true,
+                    info: true,
+                    lengthChange: false,
+                    pageLength: 10,
+                    language: {
+                        emptyTable: "No teachers found",
+                        info: "Showing _START_ to _END_ of _TOTAL_ teachers",
+                        paginate: { first: "First", last: "Last", next: "Next", previous: "Previous" }
                     }
-                } else {
-                    dataTable.clear().rows.add(jQuery(tbody).find('tr')).draw();
-                }
+                });
+            } else if (dataTable) {
+                dataTable.clear().rows.add(jQuery(tbody).find('tr')).draw();
             }
-            
-            // ========== FILTER TEACHERS ==========
-            function filterTeachers() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                
-                let filtered = teachersData;
-                
-                // Apply status filter
-                if (currentFilter !== 'all') {
-                    filtered = filtered.filter(t => t.status === currentFilter);
-                }
-                
-                // Apply search filter
-                if (searchTerm) {
-                    filtered = filtered.filter(t => 
-                        (t.teacherId && t.teacherId.toLowerCase().includes(searchTerm)) ||
-                        (t.teacherName?.first && t.teacherName.first.toLowerCase().includes(searchTerm)) ||
-                        (t.teacherName?.last && t.teacherName.last.toLowerCase().includes(searchTerm)) ||
-                        (t.mobile && t.mobile.includes(searchTerm))
-                    );
-                }
-                
-                displayTeachers(filtered);
-            }
-            
-            // ========== VIEW TEACHER ==========
-            window.viewTeacher = async function(teacherId) {
-                if (!teacherId) return;
-                
-                showLoading();
-                
-                try {
-                    const response = await fetch(`/api/teachers/${teacherId}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        const teacher = data.data;
-                        
-                        const content = `
-                            <div class="row">
-                                <div class="col-md-4 text-center">
-                                    <img src="${teacher.photo || 'https://via.placeholder.com/100'}" class="teacher-photo-lg mb-3" onerror="this.src='https://via.placeholder.com/100'">
-                                    <h5>${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}</h5>
-                                    <p class="text-muted">ID: ${teacher.teacherId}</p>
-                                    <span class="badge-${teacher.status || 'pending'}">${teacher.status || 'pending'}</span>
-                                </div>
-                                <div class="col-md-8">
-                                    <table class="table table-bordered">
-                                        <tr><th>Father's Name</th><td>${teacher.fatherName?.first || ''} ${teacher.fatherName?.last || ''}</td></tr>
-                                        <tr><th>Mobile</th><td>${teacher.mobile || '-'}</td></tr>
-                                        <tr><th>Date of Birth</th><td>${teacher.dob ? new Date(teacher.dob).toLocaleDateString() : '-'}</td></tr>
-                                        <tr><th>Qualification</th><td>${teacher.lastQualification || '-'}</td></tr>
-                                        <tr><th>Aadhar</th><td>${teacher.aadharNumber || '-'}</td></tr>
-                                        <tr><th>Subject</th><td>${teacher.subject || '-'}</td></tr>
-                                        <tr><th>Salary</th><td>₹${teacher.salary?.toLocaleString() || 0}/month</td></tr>
-                                        <tr><th>Joining Date</th><td>${teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-'}</td></tr>
-                                    </table>
-                                </div>
+        }
+        
+        // ========== ATTACH TABLE BUTTON LISTENERS ==========
+        function attachTableButtonListeners() {
+            document.querySelectorAll('.view-teacher-btn').forEach(btn => {
+                btn.removeEventListener('click', handleViewTeacher);
+                btn.addEventListener('click', handleViewTeacher);
+            });
+            document.querySelectorAll('.approve-teacher-btn').forEach(btn => {
+                btn.removeEventListener('click', handleApproveTeacher);
+                btn.addEventListener('click', handleApproveTeacher);
+            });
+            document.querySelectorAll('.salary-teacher-btn').forEach(btn => {
+                btn.removeEventListener('click', handleSalaryTeacher);
+                btn.addEventListener('click', handleSalaryTeacher);
+            });
+            document.querySelectorAll('.delete-teacher-btn').forEach(btn => {
+                btn.removeEventListener('click', handleDeleteTeacher);
+                btn.addEventListener('click', handleDeleteTeacher);
+            });
+        }
+        
+        // ========== HANDLER FUNCTIONS ==========
+        async function handleViewTeacher(e) {
+            const teacherId = e.currentTarget.dataset.id;
+            if (!teacherId) return;
+            showLoading();
+            try {
+                const response = await fetch(`/api/teachers/${teacherId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const teacher = data.data;
+                    document.getElementById('viewTeacherContent').innerHTML = `
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <img src="${teacher.photo || 'https://via.placeholder.com/100'}" class="teacher-photo-lg mb-3" onerror="this.src='https://via.placeholder.com/100'">
+                                <h5>${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}</h5>
+                                <p class="text-muted">ID: ${teacher.teacherId}</p>
+                                <span class="badge-${teacher.status || 'pending'}">${teacher.status || 'pending'}</span>
                             </div>
-                        `;
-                        
-                        document.getElementById('viewTeacherContent').innerHTML = content;
-                        new bootstrap.Modal(document.getElementById('viewTeacherModal')).show();
-                    }
-                } catch (err) {
-                    console.error('View error:', err);
-                    showError('Failed to load teacher details');
+                            <div class="col-md-8">
+                                <table class="table table-bordered">
+                                    <tr><th>Father's Name</th><td>${teacher.fatherName?.first || ''} ${teacher.fatherName?.last || ''}</td></tr>
+                                    <tr><th>Mobile</th><td>${teacher.mobile || '-'}</td></tr>
+                                    <tr><th>Date of Birth</th><td>${teacher.dob ? new Date(teacher.dob).toLocaleDateString() : '-'}</td></tr>
+                                    <tr><th>Qualification</th><td>${teacher.lastQualification || '-'}</td></tr>
+                                    <tr><th>Aadhar</th><td>${teacher.aadharNumber || '-'}</td></tr>
+                                    <tr><th>Subject</th><td>${teacher.subject || '-'}</td></tr>
+                                    <tr><th>Salary</th><td>₹${teacher.salary?.toLocaleString() || 0}/month</td></tr>
+                                    <tr><th>Joining Date</th><td>${teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-'}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                    new bootstrap.Modal(document.getElementById('viewTeacherModal')).show();
                 }
-                
-                hideLoading();
-            };
+            } catch (err) {
+                console.error('View error:', err);
+                showError('Failed to load teacher details');
+            }
+            hideLoading();
+        }
+        
+        function handleApproveTeacher(e) {
+            const teacherId = e.currentTarget.dataset.id;
+            document.getElementById('approveTeacherId').value = teacherId;
+            document.getElementById('approveJoiningDate').value = new Date().toISOString().split('T')[0];
+            new bootstrap.Modal(document.getElementById('approveTeacherModal')).show();
+        }
+        
+        function handleSalaryTeacher(e) {
+            const teacherId = e.currentTarget.dataset.id;
+            const teacher = teachersData.find(t => t.teacherId === teacherId);
+            if (!teacher) return;
+            const currentMonth = new Date().toLocaleString('default', { month: 'long' }) + ' ' + new Date().getFullYear();
+            document.getElementById('salaryTeacherId').value = teacherId;
+            document.getElementById('salaryMonth').value = currentMonth;
+            document.getElementById('salaryTeacherName').textContent = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+            document.getElementById('salaryMonthDisplay').textContent = currentMonth;
+            document.getElementById('salaryAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
+            document.getElementById('paidAmount').value = 0;
+            document.getElementById('dueAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
+            document.getElementById('paymentStatus').value = 'Unpaid';
+            new bootstrap.Modal(document.getElementById('salaryModal')).show();
+        }
+        
+        async function handleDeleteTeacher(e) {
+            const teacherId = e.currentTarget.dataset.id;
+            if (!confirm('Are you sure you want to delete this teacher?')) return;
+            showLoading();
+            try {
+                const response = await fetch(`/api/teachers/${teacherId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Teacher deleted successfully!');
+                    loadTeachers();
+                    loadStats();
+                } else {
+                    showError(data.message || 'Failed to delete');
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                showError('Failed to delete teacher');
+            }
+            hideLoading();
+        }
+        
+        // ========== FILTER TEACHERS ==========
+        function filterTeachers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = teachersData;
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(t => t.status === currentFilter);
+            }
+            if (searchTerm) {
+                filtered = filtered.filter(t => 
+                    (t.teacherId && t.teacherId.toLowerCase().includes(searchTerm)) ||
+                    (t.teacherName?.first && t.teacherName.first.toLowerCase().includes(searchTerm)) ||
+                    (t.teacherName?.last && t.teacherName.last.toLowerCase().includes(searchTerm)) ||
+                    (t.mobile && t.mobile.includes(searchTerm))
+                );
+            }
+            displayTeachers(filtered);
+        }
+        
+        // ========== UPDATE SALARY CHART ==========
+        function updateSalaryChart() {
+            const ctx = document.getElementById('salaryChart')?.getContext('2d');
+            if (!ctx) return;
+            const months = [];
+            const paidData = [];
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                months.push(date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear());
+                paidData.push(0);
+            }
+            if (salaryChart) salaryChart.destroy();
+            salaryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Monthly Salary',
+                        data: paidData,
+                        borderColor: '#0f172a',
+                        backgroundColor: 'rgba(15, 23, 42, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'top' } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => '₹' + v } } }
+                }
+            });
+        }
+        
+        // ========== INITIALIZE EVENT LISTENERS ==========
+        function initEventListeners() {
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('isAdmin');
+                window.location.href = '/index.html';
+            });
             
-            // ========== SHOW APPROVE MODAL ==========
-            window.showApproveModal = function(teacherId) {
-                document.getElementById('approveTeacherId').value = teacherId;
-                document.getElementById('approveJoiningDate').value = new Date().toISOString().split('T')[0];
-                new bootstrap.Modal(document.getElementById('approveTeacherModal')).show();
-            };
+            document.getElementById('searchInput').addEventListener('input', debounce(filterTeachers, 500));
             
-            // ========== APPROVE TEACHER ==========
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    filterTeachers();
+                });
+            });
+            
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                loadTeachers();
+                loadStats();
+            });
+            
             document.getElementById('confirmApproveBtn').addEventListener('click', async function() {
                 const teacherId = document.getElementById('approveTeacherId').value;
                 const subject = document.getElementById('approveSubject').value;
                 const salary = document.getElementById('approveSalary').value;
                 const joiningDate = document.getElementById('approveJoiningDate').value;
-                
-                if (!subject || !salary) {
-                    showError('Please fill subject and salary');
-                    return;
-                }
-                
+                if (!subject || !salary) { showError('Please fill subject and salary'); return; }
                 showLoading();
-                
                 try {
                     const response = await fetch(`/api/teachers/${teacherId}/status`, {
                         method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({
-                            status: 'approved',
-                            subject: subject,
-                            salary: parseInt(salary),
-                            joiningDate: joiningDate
-                        })
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ status: 'approved', subject, salary: parseInt(salary), joiningDate })
                     });
-                    
                     const data = await response.json();
-                    
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('approveTeacherModal')).hide();
                         showSuccess('Teacher approved successfully!');
-                        loadTeachers();
-                        loadStats();
+                        loadTeachers(); loadStats();
                         document.getElementById('approveSubject').value = '';
                         document.getElementById('approveSalary').value = '';
-                    } else {
-                        showError(data.message || 'Failed to approve');
-                    }
-                } catch (err) {
-                    console.error('Approve error:', err);
-                    showError('Failed to approve teacher');
-                }
-                
+                    } else { showError(data.message || 'Failed to approve'); }
+                } catch (err) { console.error('Approve error:', err); showError('Failed to approve teacher'); }
                 hideLoading();
             });
             
-            // ========== SHOW SALARY MODAL ==========
-            window.showSalaryModal = function(teacherId, month) {
-                const teacher = teachersData.find(t => t.teacherId === teacherId);
-                if (!teacher) return;
-                
-                document.getElementById('salaryTeacherId').value = teacherId;
-                document.getElementById('salaryMonth').value = month;
-                document.getElementById('salaryTeacherName').textContent = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-                document.getElementById('salaryMonthDisplay').textContent = month;
-                document.getElementById('salaryAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
-                document.getElementById('paidAmount').value = 0;
-                document.getElementById('dueAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
-                document.getElementById('paymentStatus').value = 'Unpaid';
-                
-                new bootstrap.Modal(document.getElementById('salaryModal')).show();
-            };
-            
-            // ========== CALCULATE DUE AMOUNT ==========
             document.getElementById('paidAmount').addEventListener('input', function() {
                 const salaryText = document.getElementById('salaryAmount').value;
                 const salary = parseInt(salaryText.replace('₹', '').replace(',', '')) || 0;
                 const paid = parseInt(this.value) || 0;
-                const due = salary - paid;
-                
-                document.getElementById('dueAmount').value = '₹' + due.toLocaleString();
+                document.getElementById('dueAmount').value = '₹' + (salary - paid).toLocaleString();
                 document.getElementById('paymentStatus').value = paid >= salary ? 'Paid' : paid > 0 ? 'Partial' : 'Unpaid';
             });
             
-            // ========== SAVE SALARY ==========
             document.getElementById('saveSalaryBtn').addEventListener('click', async function() {
                 const teacherId = document.getElementById('salaryTeacherId').value;
                 const month = document.getElementById('salaryMonth').value;
                 const paidAmount = parseInt(document.getElementById('paidAmount').value) || 0;
-                
                 showLoading();
-                
                 try {
                     const response = await fetch(`/api/teachers/${teacherId}/salary`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                         body: JSON.stringify({ month, paidAmount })
                     });
-                    
                     const data = await response.json();
-                    
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('salaryModal')).hide();
                         showSuccess('Salary saved successfully!');
-                        loadTeachers();
-                        loadStats();
-                    } else {
-                        showError(data.message || 'Failed to save salary');
-                    }
-                } catch (err) {
-                    console.error('Salary error:', err);
-                    showError('Failed to save salary');
-                }
-                
+                        loadTeachers(); loadStats();
+                    } else { showError(data.message || 'Failed to save salary'); }
+                } catch (err) { console.error('Salary error:', err); showError('Failed to save salary'); }
                 hideLoading();
             });
-            
-            // ========== DELETE TEACHER ==========
-            window.deleteTeacher = async function(teacherId) {
-                if (!confirm('Are you sure you want to delete this teacher?')) return;
-                
-                showLoading();
-                
-                try {
-                    const response = await fetch(`/api/teachers/${teacherId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        showSuccess('Teacher deleted successfully!');
-                        loadTeachers();
-                        loadStats();
-                    } else {
-                        showError(data.message || 'Failed to delete');
-                    }
-                } catch (err) {
-                    console.error('Delete error:', err);
-                    showError('Failed to delete teacher');
-                }
-                
-                hideLoading();
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
             };
-            
-            // ========== UPDATE SALARY CHART ==========
-            function updateSalaryChart() {
-                const ctx = document.getElementById('salaryChart')?.getContext('2d');
-                if (!ctx) return;
-                
-                // Get last 6 months
-                const months = [];
-                const paidData = [];
-                
-                for (let i = 5; i >= 0; i--) {
-                    const date = new Date();
-                    date.setMonth(date.getMonth() - i);
-                    months.push(date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear());
-                    paidData.push(0);
-                }
-                
-                if (salaryChart) salaryChart.destroy();
-                
-                salaryChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: months,
-                        datasets: [{
-                            label: 'Monthly Salary',
-                            data: paidData,
-                            borderColor: '#0f172a',
-                            backgroundColor: 'rgba(15, 23, 42, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return '₹' + value;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // ========== INITIALIZE EVENT LISTENERS ==========
-            function initEventListeners() {
-                // Logout
-                document.getElementById('logoutBtn').addEventListener('click', function() {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('adminToken');
-                    localStorage.removeItem('isAdmin');
-                    window.location.href = '/index.html';
-                });
-                
-                // Search
-                document.getElementById('searchInput').addEventListener('input', debounce(function() {
-                    filterTeachers();
-                }, 500));
-                
-                // Filter buttons
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                        this.classList.add('active');
-                        currentFilter = this.dataset.filter;
-                        filterTeachers();
-                    });
-                });
-                
-                // Refresh
-                document.getElementById('refreshBtn').addEventListener('click', function() {
-                    loadTeachers();
-                    loadStats();
-                });
-            }
-            
-            // ========== DEBOUNCE UTILITY ==========
-            function debounce(func, wait) {
-                let timeout;
-                return function(...args) {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(this, args), wait);
-                };
-            }
-            
-            // ========== LOAD EVERYTHING ==========
-            loadLogo();
-            initEventListeners();
-            
-            // Token hai to dashboard load karo
-            jQuery(document).ready(function() {
-                loadDashboard();
-            });
         }
     </script>
 </body>
