@@ -32,6 +32,7 @@ app.use(
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
                     "https://code.jquery.com"
+                    "https://cdn.datatables.net"
                 ],
                 styleSrc: [
                     "'self'",
@@ -39,6 +40,7 @@ app.use(
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
                     "https://fonts.googleapis.com"
+                     "https://cdn.datatables.net"
                 ],
                 imgSrc: [
                     "'self'",
