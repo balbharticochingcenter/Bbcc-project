@@ -1,3 +1,30 @@
+// ========== CHECK BOOTSTRAP FIRST ==========
+if (typeof bootstrap === 'undefined') {
+    console.error('❌ Bootstrap not loaded! Please check your HTML script tags.');
+    // Create fallback
+    window.bootstrap = {
+        Modal: class {
+            constructor(element) {
+                this.element = element;
+                console.warn('Bootstrap Modal fallback used');
+            }
+            show() { 
+                if (this.element) this.element.style.display = 'block';
+                this.element.classList.add('show');
+            }
+            hide() { 
+                if (this.element) this.element.style.display = 'none';
+                this.element.classList.remove('show');
+            }
+            static getInstance(element) {
+                return element ? { hide: () => element.style.display = 'none' } : null;
+            }
+        }
+    };
+} else {
+    console.log('✅ Bootstrap loaded successfully');
+}
+
 // ========== GLOBAL VARIABLES ==========
 let token = localStorage.getItem('token') || localStorage.getItem('adminToken');
 let currentFilter = 'all';
@@ -8,38 +35,97 @@ let dataTable = null;
 let selectedTeacherId = null;
 let attendanceData = {};
 
+// Image fallback URLs
+const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'12\'%3EPhoto%3C/text%3E%3C/svg%3E';
+const PLACEHOLDER_LARGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E';
+
 console.log('🔑 Token Status:', token ? '✅ LOGGED IN' : '❌ NOT LOGGED IN');
+
+// ========== SAFE MODAL FUNCTIONS ==========
+function safeShowModal(modalId) {
+    if (typeof bootstrap === 'undefined') {
+        console.error('❌ Bootstrap not loaded!');
+        alert('System error: Bootstrap not loaded. Please refresh.');
+        return false;
+    }
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement) {
+        console.error('❌ Modal element not found:', modalId);
+        return false;
+    }
+    try {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        return true;
+    } catch (error) {
+        console.error('Error showing modal:', error);
+        alert('Error opening form. Please try again.');
+        return false;
+    }
+}
+
+function safeHideModal(modalId) {
+    if (typeof bootstrap === 'undefined') return false;
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement) return false;
+    try {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
+        return true;
+    } catch (error) {
+        console.error('Error hiding modal:', error);
+        return false;
+    }
+}
 
 // ========== CHECK TOKEN ==========
 if (!token) {
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('statsContainer').style.display = 'none';
-        document.getElementById('chartCard').style.display = 'none';
-        document.getElementById('teacherDetailsCard').style.display = 'none';
-        document.getElementById('salaryAttendanceCard').style.display = 'none';
-        document.getElementById('teachersTableBody').innerHTML = `
-            <tr>
-                <td colspan="8">
-                    <div class="login-required">
-                        <i class="fas fa-lock"></i>
-                        <h3>Please Login First</h3>
-                        <p class="text-muted mb-4">You need to login as admin to access teacher dashboard.</p>
-                        <a href="/index.html" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt me-2"></i>Go to Login Page
-                        </a>
-                    </div>
-                </td>
-            </tr>
-        `;
-        document.getElementById('loadingSpinner').style.display = 'none';
+        const statsContainer = document.getElementById('statsContainer');
+        const chartCard = document.getElementById('chartCard');
+        const teacherDetailsCard = document.getElementById('teacherDetailsCard');
+        const salaryAttendanceCard = document.getElementById('salaryAttendanceCard');
+        const teachersTableBody = document.getElementById('teachersTableBody');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        if (statsContainer) statsContainer.style.display = 'none';
+        if (chartCard) chartCard.style.display = 'none';
+        if (teacherDetailsCard) teacherDetailsCard.style.display = 'none';
+        if (salaryAttendanceCard) salaryAttendanceCard.style.display = 'none';
+        
+        if (teachersTableBody) {
+            teachersTableBody.innerHTML = `
+                <tr>
+                    <td colspan="8">
+                        <div class="login-required">
+                            <i class="fas fa-lock"></i>
+                            <h3>Please Login First</h3>
+                            <p class="text-muted mb-4">You need to login as admin to access teacher dashboard.</p>
+                            <a href="/index.html" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Go to Login Page
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
     });
 } else {
     // Wait for jQuery and DataTables
     function waitForScripts() {
-        if (typeof jQuery === 'undefined' || typeof jQuery.fn.DataTable === 'undefined') {
+        if (typeof jQuery === 'undefined') {
+            console.warn('Waiting for jQuery...');
             setTimeout(waitForScripts, 50);
             return;
         }
+        if (typeof jQuery.fn.DataTable === 'undefined') {
+            console.warn('Waiting for DataTables...');
+            setTimeout(waitForScripts, 50);
+            return;
+        }
+        console.log('✅ All scripts loaded');
         initializeApp();
     }
     waitForScripts();
@@ -54,23 +140,44 @@ function initializeApp() {
 
 // ========== LOAD LOGO ==========
 function loadLogo() {
+    const logoElement = document.getElementById('db-logo');
+    if (!logoElement) return;
+    
     fetch('/api/config')
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
         .then(data => {
-            document.getElementById('db-logo').innerHTML = data.logoText ? 
+            logoElement.innerHTML = data.logoText ? 
                 `<i class="fas fa-graduation-cap me-2"></i>${data.logoText}` : 
                 '<i class="fas fa-graduation-cap me-2"></i>BBCC';
         })
-        .catch(() => {
-            document.getElementById('db-logo').innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+        .catch(err => {
+            console.log('Logo fetch error:', err);
+            logoElement.innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
         });
 }
 
 // ========== SHOW/HIDE LOADING ==========
-function showLoading() { document.getElementById('loadingSpinner').style.display = 'flex'; }
-function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
-function showError(m) { alert('❌ Error: ' + m); }
-function showSuccess(m) { alert('✅ Success: ' + m); }
+function showLoading() { 
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) spinner.style.display = 'flex'; 
+}
+
+function hideLoading() { 
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) spinner.style.display = 'none'; 
+}
+
+function showError(message) { 
+    console.error('Error:', message);
+    alert('❌ Error: ' + message); 
+}
+
+function showSuccess(message) { 
+    alert('✅ Success: ' + message); 
+}
 
 // ========== LOAD DASHBOARD ==========
 async function loadDashboard() {
@@ -85,6 +192,8 @@ async function loadDashboard() {
             localStorage.removeItem('token');
             localStorage.removeItem('adminToken');
             window.location.href = '/index.html';
+        } else {
+            showError('Failed to load dashboard data');
         }
     }
     hideLoading();
@@ -99,10 +208,15 @@ async function loadStats() {
         if (!response.ok) throw new Error('Failed to load stats');
         const data = await response.json();
         if (data.success) {
-            document.getElementById('totalTeachers').textContent = data.data.total || 0;
-            document.getElementById('pendingTeachers').textContent = data.data.pending || 0;
-            document.getElementById('approvedTeachers').textContent = data.data.approved || 0;
-            document.getElementById('totalSalary').textContent = '₹' + (data.data.totalPaidSalary || 0).toLocaleString();
+            const totalTeachers = document.getElementById('totalTeachers');
+            const pendingTeachers = document.getElementById('pendingTeachers');
+            const approvedTeachers = document.getElementById('approvedTeachers');
+            const totalSalary = document.getElementById('totalSalary');
+            
+            if (totalTeachers) totalTeachers.textContent = data.data.total || 0;
+            if (pendingTeachers) pendingTeachers.textContent = data.data.pending || 0;
+            if (approvedTeachers) approvedTeachers.textContent = data.data.approved || 0;
+            if (totalSalary) totalSalary.textContent = '₹' + (data.data.totalPaidSalary || 0).toLocaleString();
         }
     } catch (err) {
         console.error('Stats error:', err);
@@ -137,21 +251,38 @@ async function loadTeachers() {
 // ========== POPULATE TEACHER SELECT DROPDOWN ==========
 function populateTeacherSelect(teachers) {
     const select = document.getElementById('teacherSelect');
+    if (!select) return;
+    
     select.innerHTML = '<option value="">-- Select a Teacher --</option>';
     
     teachers.forEach(teacher => {
         if (teacher.status === 'approved') {
             const option = document.createElement('option');
-            option.value = teacher.teacherId;
-            option.textContent = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''} (${teacher.teacherId})`;
+            option.value = teacher.teacherId || '';
+            option.textContent = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''} (${teacher.teacherId || 'N/A'})`;
             select.appendChild(option);
         }
     });
 }
 
+// ========== SAFE IMAGE URL ==========
+function getSafeImageUrl(url, isLarge = false) {
+    if (!url || url === '') return isLarge ? PLACEHOLDER_LARGE : PLACEHOLDER_IMAGE;
+    
+    // Check if it's a valid URL
+    try {
+        new URL(url);
+        return url;
+    } catch {
+        return isLarge ? PLACEHOLDER_LARGE : PLACEHOLDER_IMAGE;
+    }
+}
+
 // ========== DISPLAY TEACHERS IN TABLE ==========
 function displayTeachers(teachers) {
     const tbody = document.getElementById('teachersTableBody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     if (!teachers || teachers.length === 0) {
@@ -168,11 +299,13 @@ function displayTeachers(teachers) {
                            teacher.status === 'approved' ? 'badge-approved' : 'badge-rejected';
         const statusText = teacher.status ? teacher.status.toUpperCase() : 'PENDING';
         
+        const photoUrl = getSafeImageUrl(teacher.photo, false);
+        
         const row = document.createElement('tr');
         row.setAttribute('data-teacher-id', teacher.teacherId || '');
         row.setAttribute('data-teacher-status', teacher.status || 'pending');
         row.innerHTML = `
-            <td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="teacher-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
+            <td><img src="${photoUrl}" class="teacher-photo" alt="Teacher Photo" onerror="this.onerror=null; this.src='${PLACEHOLDER_IMAGE}';"></td>
             <td>${teacher.teacherId || '-'}</td>
             <td>${firstName} ${lastName}</td>
             <td>${teacher.mobile || '-'}</td>
@@ -181,10 +314,10 @@ function displayTeachers(teachers) {
             <td><span class="${statusClass}">${statusText}</span></td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-edit view-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-eye"></i></button>
-                    ${teacher.status === 'pending' ? `<button class="btn-approve approve-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-check"></i></button>` : ''}
-                    ${teacher.status === 'approved' ? `<button class="btn-approve salary-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-rupee-sign"></i></button>` : ''}
-                    <button class="btn-reject delete-teacher-btn" data-id="${teacher.teacherId}"><i class="fas fa-trash"></i></button>
+                    <button class="btn-edit view-teacher-btn" data-id="${teacher.teacherId || ''}"><i class="fas fa-eye"></i></button>
+                    ${teacher.status === 'pending' ? `<button class="btn-approve approve-teacher-btn" data-id="${teacher.teacherId || ''}"><i class="fas fa-check"></i></button>` : ''}
+                    ${teacher.status === 'approved' ? `<button class="btn-approve salary-teacher-btn" data-id="${teacher.teacherId || ''}"><i class="fas fa-rupee-sign"></i></button>` : ''}
+                    <button class="btn-reject delete-teacher-btn" data-id="${teacher.teacherId || ''}"><i class="fas fa-trash"></i></button>
                 </div>
             </td>
         `;
@@ -238,7 +371,8 @@ async function handleViewTeacher(e) {
     if (!teacherId) return;
     
     // Also select in dropdown
-    document.getElementById('teacherSelect').value = teacherId;
+    const teacherSelect = document.getElementById('teacherSelect');
+    if (teacherSelect) teacherSelect.value = teacherId;
     selectedTeacherId = teacherId;
     
     await loadTeacherDetails(teacherId);
@@ -250,67 +384,89 @@ async function loadTeacherDetails(teacherId) {
         const response = await fetch(`/api/teachers/${teacherId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (!response.ok) throw new Error('Failed to load teacher details');
+        
         const data = await response.json();
         if (data.success) {
             const teacher = data.data;
             
             // Update teacher name in header
-            document.getElementById('selectedTeacherName').textContent = 
+            const selectedTeacherName = document.getElementById('selectedTeacherName');
+            const detailsTeacherName = document.getElementById('detailsTeacherName');
+            const salaryTeacherName = document.getElementById('salaryTeacherName');
+            
+            if (selectedTeacherName) selectedTeacherName.textContent = 
                 `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-            document.getElementById('detailsTeacherName').textContent = 
+            if (detailsTeacherName) detailsTeacherName.textContent = 
                 `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-            document.getElementById('salaryTeacherName').textContent = 
+            if (salaryTeacherName) salaryTeacherName.textContent = 
                 `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
             
             // Show details card
-            document.getElementById('teacherDetailsCard').style.display = 'block';
-            document.getElementById('salaryAttendanceCard').style.display = 'block';
+            const teacherDetailsCard = document.getElementById('teacherDetailsCard');
+            const salaryAttendanceCard = document.getElementById('salaryAttendanceCard');
+            
+            if (teacherDetailsCard) teacherDetailsCard.style.display = 'block';
+            if (salaryAttendanceCard) salaryAttendanceCard.style.display = 'block';
             
             // Fill personal details
-            document.getElementById('detailsPhoto').src = teacher.photo || 'https://via.placeholder.com/150';
-            document.getElementById('detailsFullName').textContent = 
+            const detailsPhoto = document.getElementById('detailsPhoto');
+            if (detailsPhoto) detailsPhoto.src = getSafeImageUrl(teacher.photo, true);
+            
+            const detailsFullName = document.getElementById('detailsFullName');
+            if (detailsFullName) detailsFullName.textContent = 
                 `${teacher.teacherName?.first || ''} ${teacher.teacherName?.middle || ''} ${teacher.teacherName?.last || ''}`;
-            document.getElementById('detailsTeacherId').textContent = `ID: ${teacher.teacherId}`;
+            
+            const detailsTeacherId = document.getElementById('detailsTeacherId');
+            if (detailsTeacherId) detailsTeacherId.textContent = `ID: ${teacher.teacherId || 'N/A'}`;
             
             const statusSpan = document.getElementById('detailsStatus');
-            statusSpan.textContent = teacher.status ? teacher.status.toUpperCase() : 'PENDING';
-            statusSpan.className = `status-badge ${teacher.status || 'pending'}`;
+            if (statusSpan) {
+                statusSpan.textContent = teacher.status ? teacher.status.toUpperCase() : 'PENDING';
+                statusSpan.className = `status-badge ${teacher.status || 'pending'}`;
+            }
             
-            // Fill all fields
-            document.getElementById('detailFirstName').textContent = teacher.teacherName?.first || '-';
-            document.getElementById('detailMiddleName').textContent = teacher.teacherName?.middle || '-';
-            document.getElementById('detailLastName').textContent = teacher.teacherName?.last || '-';
+            // Fill all fields with safe checks
+            safeSetText('detailFirstName', teacher.teacherName?.first || '-');
+            safeSetText('detailMiddleName', teacher.teacherName?.middle || '-');
+            safeSetText('detailLastName', teacher.teacherName?.last || '-');
             
-            document.getElementById('detailFatherFirst').textContent = teacher.fatherName?.first || '-';
-            document.getElementById('detailFatherMiddle').textContent = teacher.fatherName?.middle || '-';
-            document.getElementById('detailFatherLast').textContent = teacher.fatherName?.last || '-';
+            safeSetText('detailFatherFirst', teacher.fatherName?.first || '-');
+            safeSetText('detailFatherMiddle', teacher.fatherName?.middle || '-');
+            safeSetText('detailFatherLast', teacher.fatherName?.last || '-');
             
-            document.getElementById('detailMobile').textContent = teacher.mobile || '-';
-            document.getElementById('detailAltMobile').textContent = teacher.altMobile || '-';
+            safeSetText('detailMobile', teacher.mobile || '-');
+            safeSetText('detailAltMobile', teacher.altMobile || '-');
             
-            document.getElementById('detailDob').textContent = teacher.dob ? new Date(teacher.dob).toLocaleDateString() : '-';
-            document.getElementById('detailAadhar').textContent = teacher.aadharNumber || '-';
-            document.getElementById('detailQualification').textContent = teacher.lastQualification || '-';
+            safeSetText('detailDob', teacher.dob ? new Date(teacher.dob).toLocaleDateString() : '-');
+            safeSetText('detailAadhar', teacher.aadharNumber || '-');
+            safeSetText('detailQualification', teacher.lastQualification || '-');
             
-            document.getElementById('detailSubject').textContent = teacher.subject || '-';
-            document.getElementById('detailSalary').textContent = teacher.salary?.toLocaleString() || '0';
-            document.getElementById('detailJoining').textContent = teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-';
+            safeSetText('detailSubject', teacher.subject || '-');
+            safeSetText('detailSalary', teacher.salary?.toLocaleString() || '0');
+            safeSetText('detailJoining', teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-');
             
             // Document links
             const aadharLink = document.getElementById('aadharDocLink');
-            if (teacher.aadharDoc) {
-                aadharLink.href = teacher.aadharDoc;
-                aadharLink.style.display = 'inline';
-            } else {
-                aadharLink.style.display = 'none';
+            if (aadharLink) {
+                if (teacher.aadharDoc) {
+                    aadharLink.href = teacher.aadharDoc;
+                    aadharLink.style.display = 'inline';
+                    aadharLink.textContent = 'View Aadhar';
+                } else {
+                    aadharLink.style.display = 'none';
+                }
             }
             
             const qualLink = document.getElementById('qualificationDocLink');
-            if (teacher.qualificationDoc) {
-                qualLink.href = teacher.qualificationDoc;
-                qualLink.style.display = 'inline';
-            } else {
-                qualLink.style.display = 'none';
+            if (qualLink) {
+                if (teacher.qualificationDoc) {
+                    qualLink.href = teacher.qualificationDoc;
+                    qualLink.style.display = 'inline';
+                    qualLink.textContent = 'View Qualification';
+                } else {
+                    qualLink.style.display = 'none';
+                }
             }
             
             // Load salary and attendance data
@@ -324,11 +480,21 @@ async function loadTeacherDetails(teacherId) {
     hideLoading();
 }
 
+// Helper function to safely set text content
+function safeSetText(elementId, text) {
+    const element = document.getElementById(elementId);
+    if (element) element.textContent = text;
+}
+
 function handleApproveTeacher(e) {
     const teacherId = e.currentTarget.dataset.id;
-    document.getElementById('approveTeacherId').value = teacherId;
-    document.getElementById('approveJoiningDate').value = new Date().toISOString().split('T')[0];
-    new bootstrap.Modal(document.getElementById('approveTeacherModal')).show();
+    const approveTeacherId = document.getElementById('approveTeacherId');
+    const approveJoiningDate = document.getElementById('approveJoiningDate');
+    
+    if (approveTeacherId) approveTeacherId.value = teacherId;
+    if (approveJoiningDate) approveJoiningDate.value = new Date().toISOString().split('T')[0];
+    
+    safeShowModal('approveTeacherModal');
 }
 
 function handleSalaryTeacher(e) {
@@ -340,18 +506,28 @@ function handleSalaryTeacher(e) {
     const currentYear = new Date().getFullYear();
     const monthKey = `${currentMonth} ${currentYear}`;
     
-    document.getElementById('salaryTeacherId').value = teacherId;
-    document.getElementById('salaryMonth').value = monthKey;
-    document.getElementById('salaryYear').value = currentYear;
-    document.getElementById('salaryTeacherName').textContent = 
-        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    document.getElementById('salaryMonthDisplay').textContent = monthKey;
-    document.getElementById('salaryAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
-    document.getElementById('paidAmount').value = 0;
-    document.getElementById('dueAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
-    document.getElementById('paymentStatus').value = 'Unpaid';
+    const salaryTeacherId = document.getElementById('salaryTeacherId');
+    const salaryMonth = document.getElementById('salaryMonth');
+    const salaryYear = document.getElementById('salaryYear');
+    const salaryTeacherName = document.getElementById('salaryTeacherName');
+    const salaryMonthDisplay = document.getElementById('salaryMonthDisplay');
+    const salaryAmount = document.getElementById('salaryAmount');
+    const paidAmount = document.getElementById('paidAmount');
+    const dueAmount = document.getElementById('dueAmount');
+    const paymentStatus = document.getElementById('paymentStatus');
     
-    new bootstrap.Modal(document.getElementById('salaryModal')).show();
+    if (salaryTeacherId) salaryTeacherId.value = teacherId;
+    if (salaryMonth) salaryMonth.value = monthKey;
+    if (salaryYear) salaryYear.value = currentYear;
+    if (salaryTeacherName) salaryTeacherName.textContent = 
+        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+    if (salaryMonthDisplay) salaryMonthDisplay.textContent = monthKey;
+    if (salaryAmount) salaryAmount.value = '₹' + (teacher.salary || 0).toLocaleString();
+    if (paidAmount) paidAmount.value = 0;
+    if (dueAmount) dueAmount.value = '₹' + (teacher.salary || 0).toLocaleString();
+    if (paymentStatus) paymentStatus.value = 'Unpaid';
+    
+    safeShowModal('salaryModal');
 }
 
 async function handleDeleteTeacher(e) {
@@ -371,10 +547,15 @@ async function handleDeleteTeacher(e) {
             // Clear selection if deleted teacher was selected
             if (selectedTeacherId === teacherId) {
                 selectedTeacherId = null;
-                document.getElementById('teacherDetailsCard').style.display = 'none';
-                document.getElementById('salaryAttendanceCard').style.display = 'none';
-                document.getElementById('selectedTeacherName').textContent = 'None';
-                document.getElementById('teacherSelect').value = '';
+                const teacherDetailsCard = document.getElementById('teacherDetailsCard');
+                const salaryAttendanceCard = document.getElementById('salaryAttendanceCard');
+                const selectedTeacherName = document.getElementById('selectedTeacherName');
+                const teacherSelect = document.getElementById('teacherSelect');
+                
+                if (teacherDetailsCard) teacherDetailsCard.style.display = 'none';
+                if (salaryAttendanceCard) salaryAttendanceCard.style.display = 'none';
+                if (selectedTeacherName) selectedTeacherName.textContent = 'None';
+                if (teacherSelect) teacherSelect.value = '';
             }
             
             loadTeachers();
@@ -392,6 +573,8 @@ async function handleDeleteTeacher(e) {
 // ========== LOAD SALARY DATA ==========
 function loadSalaryData(teacher) {
     const tbody = document.getElementById('salaryTableBody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     if (!teacher.salaryMonths || teacher.salaryMonths.length === 0) {
@@ -415,13 +598,13 @@ function loadSalaryData(teacher) {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${record.month}</td>
+            <td>${record.month || '-'}</td>
             <td>₹${record.salary?.toLocaleString() || 0}</td>
             <td>₹${record.paidAmount?.toLocaleString() || 0}</td>
             <td>₹${record.dueAmount?.toLocaleString() || 0}</td>
             <td><span class="${statusClass}">${statusText}</span></td>
             <td>
-                <button class="btn-edit pay-salary-btn" data-id="${teacher.teacherId}" data-month="${record.month}">
+                <button class="btn-edit pay-salary-btn" data-id="${teacher.teacherId || ''}" data-month="${record.month || ''}">
                     <i class="fas fa-rupee-sign"></i> Pay
                 </button>
             </td>
@@ -445,22 +628,32 @@ function handlePaySalary(e) {
     const teacher = teachersData.find(t => t.teacherId === teacherId);
     if (!teacher) return;
     
-    document.getElementById('salaryTeacherId').value = teacherId;
-    document.getElementById('salaryMonth').value = month;
-    document.getElementById('salaryTeacherName').textContent = 
-        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    document.getElementById('salaryMonthDisplay').textContent = month;
-    document.getElementById('salaryAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
-    document.getElementById('paidAmount').value = 0;
-    document.getElementById('dueAmount').value = '₹' + (teacher.salary || 0).toLocaleString();
-    document.getElementById('paymentStatus').value = 'Unpaid';
+    const salaryTeacherId = document.getElementById('salaryTeacherId');
+    const salaryMonth = document.getElementById('salaryMonth');
+    const salaryTeacherName = document.getElementById('salaryTeacherName');
+    const salaryMonthDisplay = document.getElementById('salaryMonthDisplay');
+    const salaryAmount = document.getElementById('salaryAmount');
+    const paidAmount = document.getElementById('paidAmount');
+    const dueAmount = document.getElementById('dueAmount');
+    const paymentStatus = document.getElementById('paymentStatus');
     
-    new bootstrap.Modal(document.getElementById('salaryModal')).show();
+    if (salaryTeacherId) salaryTeacherId.value = teacherId;
+    if (salaryMonth) salaryMonth.value = month;
+    if (salaryTeacherName) salaryTeacherName.textContent = 
+        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+    if (salaryMonthDisplay) salaryMonthDisplay.textContent = month;
+    if (salaryAmount) salaryAmount.value = '₹' + (teacher.salary || 0).toLocaleString();
+    if (paidAmount) paidAmount.value = 0;
+    if (dueAmount) dueAmount.value = '₹' + (teacher.salary || 0).toLocaleString();
+    if (paymentStatus) paymentStatus.value = 'Unpaid';
+    
+    safeShowModal('salaryModal');
 }
 
 // ========== LOAD ATTENDANCE DATA ==========
 function loadAttendanceData(teacher) {
     const tbody = document.getElementById('attendanceTableBody');
+    if (!tbody) return;
     
     // Generate sample attendance data for last 30 days
     const attendance = generateAttendanceData(teacher.teacherId);
@@ -479,10 +672,10 @@ function loadAttendanceData(teacher) {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${record.date}</td>
+            <td>${record.date || '-'}</td>
             <td><span class="${statusClass}">${statusText}</span></td>
             <td>
-                <button class="btn-edit edit-attendance-btn" data-date="${record.date}" data-status="${record.status}">
+                <button class="btn-edit edit-attendance-btn" data-date="${record.date || ''}" data-status="${record.status || ''}">
                     <i class="fas fa-edit"></i>
                 </button>
             </td>
@@ -519,7 +712,10 @@ function generateAttendanceData(teacherId) {
 
 // ========== FILTER TEACHERS ==========
 function filterTeachers() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
     let filtered = teachersData;
     
     if (currentFilter !== 'all') {
@@ -540,7 +736,10 @@ function filterTeachers() {
 
 // ========== UPDATE OVERALL SALARY CHART ==========
 function updateSalaryChart() {
-    const ctx = document.getElementById('salaryChart')?.getContext('2d');
+    const canvas = document.getElementById('salaryChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
     const months = [];
@@ -579,7 +778,10 @@ function updateSalaryChart() {
 
 // ========== UPDATE TEACHER-SPECIFIC SALARY CHART ==========
 function updateTeacherSalaryChart(months, paidData, dueData) {
-    const ctx = document.getElementById('teacherSalaryChart')?.getContext('2d');
+    const canvas = document.getElementById('teacherSalaryChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
     if (teacherSalaryChart) teacherSalaryChart.destroy();
@@ -625,81 +827,109 @@ function handleEditTeacher() {
     if (!teacher) return;
     
     // Populate edit form
-    document.getElementById('editTeacherId').value = teacher.teacherId;
-    document.getElementById('editFirstName').value = teacher.teacherName?.first || '';
-    document.getElementById('editMiddleName').value = teacher.teacherName?.middle || '';
-    document.getElementById('editLastName').value = teacher.teacherName?.last || '';
+    const editTeacherId = document.getElementById('editTeacherId');
+    const editFirstName = document.getElementById('editFirstName');
+    const editMiddleName = document.getElementById('editMiddleName');
+    const editLastName = document.getElementById('editLastName');
+    const editFatherFirst = document.getElementById('editFatherFirst');
+    const editFatherMiddle = document.getElementById('editFatherMiddle');
+    const editFatherLast = document.getElementById('editFatherLast');
+    const editMobile = document.getElementById('editMobile');
+    const editAltMobile = document.getElementById('editAltMobile');
+    const editDob = document.getElementById('editDob');
+    const editAadhar = document.getElementById('editAadhar');
+    const editQualification = document.getElementById('editQualification');
+    const editSubject = document.getElementById('editSubject');
+    const editSalary = document.getElementById('editSalary');
+    const editStatus = document.getElementById('editStatus');
+    const editJoiningDate = document.getElementById('editJoiningDate');
+    const editPhotoPreview = document.getElementById('editPhotoPreview');
+    const editAadharLink = document.getElementById('editAadharLink');
     
-    document.getElementById('editFatherFirst').value = teacher.fatherName?.first || '';
-    document.getElementById('editFatherMiddle').value = teacher.fatherName?.middle || '';
-    document.getElementById('editFatherLast').value = teacher.fatherName?.last || '';
+    if (editTeacherId) editTeacherId.value = teacher.teacherId || '';
+    if (editFirstName) editFirstName.value = teacher.teacherName?.first || '';
+    if (editMiddleName) editMiddleName.value = teacher.teacherName?.middle || '';
+    if (editLastName) editLastName.value = teacher.teacherName?.last || '';
     
-    document.getElementById('editMobile').value = teacher.mobile || '';
-    document.getElementById('editAltMobile').value = teacher.altMobile || '';
+    if (editFatherFirst) editFatherFirst.value = teacher.fatherName?.first || '';
+    if (editFatherMiddle) editFatherMiddle.value = teacher.fatherName?.middle || '';
+    if (editFatherLast) editFatherLast.value = teacher.fatherName?.last || '';
     
-    if (teacher.dob) {
+    if (editMobile) editMobile.value = teacher.mobile || '';
+    if (editAltMobile) editAltMobile.value = teacher.altMobile || '';
+    
+    if (editDob && teacher.dob) {
         const dob = new Date(teacher.dob);
-        document.getElementById('editDob').value = dob.toISOString().split('T')[0];
+        editDob.value = dob.toISOString().split('T')[0];
     }
     
-    document.getElementById('editAadhar').value = teacher.aadharNumber || '';
-    document.getElementById('editQualification').value = teacher.lastQualification || '';
-    document.getElementById('editSubject').value = teacher.subject || '';
-    document.getElementById('editSalary').value = teacher.salary || 0;
-    document.getElementById('editStatus').value = teacher.status || 'pending';
+    if (editAadhar) editAadhar.value = teacher.aadharNumber || '';
+    if (editQualification) editQualification.value = teacher.lastQualification || '';
+    if (editSubject) editSubject.value = teacher.subject || '';
+    if (editSalary) editSalary.value = teacher.salary || 0;
+    if (editStatus) editStatus.value = teacher.status || 'pending';
     
-    if (teacher.joiningDate) {
+    if (editJoiningDate && teacher.joiningDate) {
         const joinDate = new Date(teacher.joiningDate);
-        document.getElementById('editJoiningDate').value = joinDate.toISOString().split('T')[0];
+        editJoiningDate.value = joinDate.toISOString().split('T')[0];
     }
     
     // Show/hide joining date row based on status
-    document.getElementById('joiningDateRow').style.display = 
-        teacher.status === 'approved' ? 'block' : 'none';
-    
-    // Photo preview
-    document.getElementById('editPhotoPreview').src = teacher.photo || 'https://via.placeholder.com/100';
-    
-    // Document links
-    const aadharLink = document.getElementById('editAadharLink');
-    if (teacher.aadharDoc) {
-        aadharLink.href = teacher.aadharDoc;
-        aadharLink.style.display = 'inline';
-    } else {
-        aadharLink.style.display = 'none';
+    const joiningDateRow = document.getElementById('joiningDateRow');
+    if (joiningDateRow) {
+        joiningDateRow.style.display = teacher.status === 'approved' ? 'block' : 'none';
     }
     
-    new bootstrap.Modal(document.getElementById('editTeacherModal')).show();
+    // Photo preview
+    if (editPhotoPreview) {
+        editPhotoPreview.src = getSafeImageUrl(teacher.photo, true);
+    }
+    
+    // Document links
+    if (editAadharLink) {
+        if (teacher.aadharDoc) {
+            editAadharLink.href = teacher.aadharDoc;
+            editAadharLink.style.display = 'inline';
+            editAadharLink.textContent = 'View Aadhar';
+        } else {
+            editAadharLink.style.display = 'none';
+        }
+    }
+    
+    safeShowModal('editTeacherModal');
 }
 
 async function saveTeacherEdit() {
-    const teacherId = document.getElementById('editTeacherId').value;
+    const editTeacherId = document.getElementById('editTeacherId');
+    if (!editTeacherId) return;
+    
+    const teacherId = editTeacherId.value;
     
     const teacherData = {
         teacherId: teacherId,
         teacherName: {
-            first: document.getElementById('editFirstName').value,
-            middle: document.getElementById('editMiddleName').value,
-            last: document.getElementById('editLastName').value
+            first: document.getElementById('editFirstName')?.value || '',
+            middle: document.getElementById('editMiddleName')?.value || '',
+            last: document.getElementById('editLastName')?.value || ''
         },
         fatherName: {
-            first: document.getElementById('editFatherFirst').value,
-            middle: document.getElementById('editFatherMiddle').value,
-            last: document.getElementById('editFatherLast').value
+            first: document.getElementById('editFatherFirst')?.value || '',
+            middle: document.getElementById('editFatherMiddle')?.value || '',
+            last: document.getElementById('editFatherLast')?.value || ''
         },
-        mobile: document.getElementById('editMobile').value,
-        altMobile: document.getElementById('editAltMobile').value,
-        dob: document.getElementById('editDob').value,
-        lastQualification: document.getElementById('editQualification').value,
-        aadharNumber: document.getElementById('editAadhar').value,
-        subject: document.getElementById('editSubject').value,
-        salary: parseInt(document.getElementById('editSalary').value) || 0,
-        status: document.getElementById('editStatus').value
+        mobile: document.getElementById('editMobile')?.value || '',
+        altMobile: document.getElementById('editAltMobile')?.value || '',
+        dob: document.getElementById('editDob')?.value || '',
+        lastQualification: document.getElementById('editQualification')?.value || '',
+        aadharNumber: document.getElementById('editAadhar')?.value || '',
+        subject: document.getElementById('editSubject')?.value || '',
+        salary: parseInt(document.getElementById('editSalary')?.value) || 0,
+        status: document.getElementById('editStatus')?.value || 'pending'
     };
     
     // Add joining date if status is approved
     if (teacherData.status === 'approved') {
-        teacherData.joiningDate = document.getElementById('editJoiningDate').value;
+        teacherData.joiningDate = document.getElementById('editJoiningDate')?.value || '';
     }
     
     showLoading();
@@ -717,7 +947,7 @@ async function saveTeacherEdit() {
         const data = await response.json();
         
         if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('editTeacherModal')).hide();
+            safeHideModal('editTeacherModal');
             showSuccess('Teacher updated successfully!');
             
             // Reload data
@@ -747,27 +977,39 @@ function handleMarkAttendance() {
     const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
     if (!teacher) return;
     
-    document.getElementById('attendanceTeacherId').value = teacher.teacherId;
-    document.getElementById('attendanceTeacherName').textContent = 
-        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    document.getElementById('attendanceDate').textContent = new Date().toLocaleDateString();
-    document.getElementById('attendanceStatus').value = 'present';
-    document.getElementById('attendanceRemarks').value = '';
+    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
+    const attendanceTeacherName = document.getElementById('attendanceTeacherName');
+    const attendanceDate = document.getElementById('attendanceDate');
+    const attendanceStatus = document.getElementById('attendanceStatus');
+    const attendanceRemarks = document.getElementById('attendanceRemarks');
     
-    new bootstrap.Modal(document.getElementById('attendanceModal')).show();
+    if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
+    if (attendanceTeacherName) attendanceTeacherName.textContent = 
+        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+    if (attendanceDate) attendanceDate.textContent = new Date().toLocaleDateString();
+    if (attendanceStatus) attendanceStatus.value = 'present';
+    if (attendanceRemarks) attendanceRemarks.value = '';
+    
+    safeShowModal('attendanceModal');
 }
 
 async function saveAttendance() {
-    const teacherId = document.getElementById('attendanceTeacherId').value;
-    const status = document.getElementById('attendanceStatus').value;
-    const remarks = document.getElementById('attendanceRemarks').value;
+    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
+    const attendanceStatus = document.getElementById('attendanceStatus');
+    const attendanceRemarks = document.getElementById('attendanceRemarks');
+    
+    if (!attendanceTeacherId || !attendanceStatus) return;
+    
+    const teacherId = attendanceTeacherId.value;
+    const status = attendanceStatus.value;
+    const remarks = attendanceRemarks?.value || '';
     const date = new Date().toISOString().split('T')[0];
     
     // This would be an API call in production
     console.log('Saving attendance:', { teacherId, date, status, remarks });
     
     showSuccess('Attendance marked successfully!');
-    bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();
+    safeHideModal('attendanceModal');
     
     // Reload attendance data
     const teacher = teachersData.find(t => t.teacherId === teacherId);
@@ -779,15 +1021,21 @@ async function saveAttendance() {
 // ========== INITIALIZE EVENT LISTENERS ==========
 function initEventListeners() {
     // Logout
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('isAdmin');
-        window.location.href = '/index.html';
-    });
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('isAdmin');
+            window.location.href = '/index.html';
+        });
+    }
     
     // Search
-    document.getElementById('searchInput').addEventListener('input', debounce(filterTeachers, 500));
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterTeachers, 500));
+    }
     
     // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -800,110 +1048,181 @@ function initEventListeners() {
     });
     
     // Refresh
-    document.getElementById('refreshBtn').addEventListener('click', () => {
-        loadTeachers();
-        loadStats();
-    });
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            loadTeachers();
+            loadStats();
+        });
+    }
     
     // Teacher select dropdown
-    document.getElementById('teacherSelect').addEventListener('change', function() {
-        const teacherId = this.value;
-        if (teacherId) {
-            selectedTeacherId = teacherId;
-            loadTeacherDetails(teacherId);
-        } else {
-            selectedTeacherId = null;
-            document.getElementById('teacherDetailsCard').style.display = 'none';
-            document.getElementById('salaryAttendanceCard').style.display = 'none';
-            document.getElementById('selectedTeacherName').textContent = 'None';
-        }
-    });
+    const teacherSelect = document.getElementById('teacherSelect');
+    if (teacherSelect) {
+        teacherSelect.addEventListener('change', function() {
+            const teacherId = this.value;
+            if (teacherId) {
+                selectedTeacherId = teacherId;
+                loadTeacherDetails(teacherId);
+            } else {
+                selectedTeacherId = null;
+                const teacherDetailsCard = document.getElementById('teacherDetailsCard');
+                const salaryAttendanceCard = document.getElementById('salaryAttendanceCard');
+                const selectedTeacherName = document.getElementById('selectedTeacherName');
+                
+                if (teacherDetailsCard) teacherDetailsCard.style.display = 'none';
+                if (salaryAttendanceCard) salaryAttendanceCard.style.display = 'none';
+                if (selectedTeacherName) selectedTeacherName.textContent = 'None';
+            }
+        });
+    }
     
     // Edit teacher button
-    document.getElementById('editTeacherBtn').addEventListener('click', handleEditTeacher);
+    const editTeacherBtn = document.getElementById('editTeacherBtn');
+    if (editTeacherBtn) {
+        editTeacherBtn.addEventListener('click', handleEditTeacher);
+    }
     
     // Save edit button
-    document.getElementById('saveEditBtn').addEventListener('click', saveTeacherEdit);
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    if (saveEditBtn) {
+        saveEditBtn.addEventListener('click', saveTeacherEdit);
+    }
     
     // Mark attendance button
-    document.getElementById('markAttendanceBtn').addEventListener('click', handleMarkAttendance);
+    const markAttendanceBtn = document.getElementById('markAttendanceBtn');
+    if (markAttendanceBtn) {
+        markAttendanceBtn.addEventListener('click', handleMarkAttendance);
+    }
     
     // Save attendance button
-    document.getElementById('saveAttendanceBtn').addEventListener('click', saveAttendance);
+    const saveAttendanceBtn = document.getElementById('saveAttendanceBtn');
+    if (saveAttendanceBtn) {
+        saveAttendanceBtn.addEventListener('click', saveAttendance);
+    }
     
     // Status change in edit form
-    document.getElementById('editStatus').addEventListener('change', function() {
-        document.getElementById('joiningDateRow').style.display = 
-            this.value === 'approved' ? 'block' : 'none';
-    });
+    const editStatus = document.getElementById('editStatus');
+    if (editStatus) {
+        editStatus.addEventListener('change', function() {
+            const joiningDateRow = document.getElementById('joiningDateRow');
+            if (joiningDateRow) {
+                joiningDateRow.style.display = this.value === 'approved' ? 'block' : 'none';
+            }
+        });
+    }
     
     // Approve teacher
-    document.getElementById('confirmApproveBtn').addEventListener('click', async function() {
-        const teacherId = document.getElementById('approveTeacherId').value;
-        const subject = document.getElementById('approveSubject').value;
-        const salary = document.getElementById('approveSalary').value;
-        const joiningDate = document.getElementById('approveJoiningDate').value;
-        
-        if (!subject || !salary) { showError('Please fill subject and salary'); return; }
-        
-        showLoading();
-        try {
-            const response = await fetch(`/api/teachers/${teacherId}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ status: 'approved', subject, salary: parseInt(salary), joiningDate })
-            });
-            const data = await response.json();
-            if (data.success) {
-                bootstrap.Modal.getInstance(document.getElementById('approveTeacherModal')).hide();
-                showSuccess('Teacher approved successfully!');
-                await loadTeachers();
-                await loadStats();
-                if (selectedTeacherId === teacherId) {
-                    await loadTeacherDetails(teacherId);
+    const confirmApproveBtn = document.getElementById('confirmApproveBtn');
+    if (confirmApproveBtn) {
+        confirmApproveBtn.addEventListener('click', async function() {
+            const teacherId = document.getElementById('approveTeacherId')?.value;
+            const subject = document.getElementById('approveSubject')?.value;
+            const salary = document.getElementById('approveSalary')?.value;
+            const joiningDate = document.getElementById('approveJoiningDate')?.value;
+            
+            if (!subject || !salary) { 
+                showError('Please fill subject and salary'); 
+                return; 
+            }
+            
+            showLoading();
+            try {
+                const response = await fetch(`/api/teachers/${teacherId}/status`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ 
+                        status: 'approved', 
+                        subject, 
+                        salary: parseInt(salary), 
+                        joiningDate 
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    safeHideModal('approveTeacherModal');
+                    showSuccess('Teacher approved successfully!');
+                    await loadTeachers();
+                    await loadStats();
+                    if (selectedTeacherId === teacherId) {
+                        await loadTeacherDetails(teacherId);
+                    }
+                    const approveSubject = document.getElementById('approveSubject');
+                    const approveSalary = document.getElementById('approveSalary');
+                    if (approveSubject) approveSubject.value = '';
+                    if (approveSalary) approveSalary.value = '';
+                } else { 
+                    showError(data.message || 'Failed to approve'); 
                 }
-                document.getElementById('approveSubject').value = '';
-                document.getElementById('approveSalary').value = '';
-            } else { showError(data.message || 'Failed to approve'); }
-        } catch (err) { console.error('Approve error:', err); showError('Failed to approve teacher'); }
-        hideLoading();
-    });
+            } catch (err) { 
+                console.error('Approve error:', err); 
+                showError('Failed to approve teacher'); 
+            }
+            hideLoading();
+        });
+    }
     
     // Salary calculation
-    document.getElementById('paidAmount').addEventListener('input', function() {
-        const salaryText = document.getElementById('salaryAmount').value;
-        const salary = parseInt(salaryText.replace('₹', '').replace(',', '')) || 0;
-        const paid = parseInt(this.value) || 0;
-        document.getElementById('dueAmount').value = '₹' + (salary - paid).toLocaleString();
-        document.getElementById('paymentStatus').value = paid >= salary ? 'Paid' : paid > 0 ? 'Partial' : 'Unpaid';
-    });
+    const paidAmount = document.getElementById('paidAmount');
+    if (paidAmount) {
+        paidAmount.addEventListener('input', function() {
+            const salaryAmount = document.getElementById('salaryAmount');
+            const dueAmount = document.getElementById('dueAmount');
+            const paymentStatus = document.getElementById('paymentStatus');
+            
+            if (!salaryAmount || !dueAmount || !paymentStatus) return;
+            
+            const salaryText = salaryAmount.value;
+            const salary = parseInt(salaryText.replace('₹', '').replace(',', '')) || 0;
+            const paid = parseInt(this.value) || 0;
+            
+            dueAmount.value = '₹' + (salary - paid).toLocaleString();
+            paymentStatus.value = paid >= salary ? 'Paid' : paid > 0 ? 'Partial' : 'Unpaid';
+        });
+    }
     
     // Save salary
-    document.getElementById('saveSalaryBtn').addEventListener('click', async function() {
-        const teacherId = document.getElementById('salaryTeacherId').value;
-        const month = document.getElementById('salaryMonth').value;
-        const paidAmount = parseInt(document.getElementById('paidAmount').value) || 0;
-        
-        showLoading();
-        try {
-            const response = await fetch(`/api/teachers/${teacherId}/salary`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ month, paidAmount })
-            });
-            const data = await response.json();
-            if (data.success) {
-                bootstrap.Modal.getInstance(document.getElementById('salaryModal')).hide();
-                showSuccess('Salary saved successfully!');
-                await loadTeachers();
-                if (selectedTeacherId === teacherId) {
-                    await loadTeacherDetails(teacherId);
+    const saveSalaryBtn = document.getElementById('saveSalaryBtn');
+    if (saveSalaryBtn) {
+        saveSalaryBtn.addEventListener('click', async function() {
+            const teacherId = document.getElementById('salaryTeacherId')?.value;
+            const month = document.getElementById('salaryMonth')?.value;
+            const paidAmount = parseInt(document.getElementById('paidAmount')?.value) || 0;
+            
+            if (!teacherId || !month) return;
+            
+            showLoading();
+            try {
+                const response = await fetch(`/api/teachers/${teacherId}/salary`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ month, paidAmount })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    safeHideModal('salaryModal');
+                    showSuccess('Salary saved successfully!');
+                    await loadTeachers();
+                    if (selectedTeacherId === teacherId) {
+                        await loadTeacherDetails(teacherId);
+                    }
+                    await loadStats();
+                } else { 
+                    showError(data.message || 'Failed to save salary'); 
                 }
-                await loadStats();
-            } else { showError(data.message || 'Failed to save salary'); }
-        } catch (err) { console.error('Salary error:', err); showError('Failed to save salary'); }
-        hideLoading();
-    });
+            } catch (err) { 
+                console.error('Salary error:', err); 
+                showError('Failed to save salary'); 
+            }
+            hideLoading();
+        });
+    }
 }
 
 // ========== DEBOUNCE UTILITY ==========
