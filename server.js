@@ -19,7 +19,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Helmet configuration
+// Helmet configuration - FIXED VERSION
 app.use(
     helmet({
         contentSecurityPolicy: {
@@ -31,7 +31,7 @@ app.use(
                     "'unsafe-eval'",
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
-                    "https://code.jquery.com"
+                    "https://code.jquery.com",
                     "https://cdn.datatables.net"
                 ],
                 styleSrc: [
@@ -39,8 +39,8 @@ app.use(
                     "'unsafe-inline'",
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
-                    "https://fonts.googleapis.com"
-                     "https://cdn.datatables.net"
+                    "https://fonts.googleapis.com",
+                    "https://cdn.datatables.net"
                 ],
                 imgSrc: [
                     "'self'",
@@ -161,7 +161,7 @@ const AdminSchema = new mongoose.Schema({
 const Admin = mongoose.model('Admin', AdminSchema);
 
 // ============================================
-// ✅ CORRECTED STUDENT SCHEMA WITH FEES HISTORY
+// STUDENT SCHEMA WITH COMPLETE FEATURES
 // ============================================
 const StudentSchema = new mongoose.Schema({
     studentId: { 
@@ -217,12 +217,11 @@ const StudentSchema = new mongoose.Schema({
         type: Date, 
         required: true 
     },
-    // ✅ CHANGED: fees → classMonthlyFees
     classMonthlyFees: { 
         type: Number, 
         default: 0 
     },
-    // ✅ NEW: feesHistory array for tracking monthly payments
+    // Fees History Array
     feesHistory: [{
         month: { type: String, required: true },
         year: { type: Number, required: true },
@@ -266,6 +265,248 @@ const StudentSchema = new mongoose.Schema({
 });
 
 const Student = mongoose.model('Student', StudentSchema);
+
+// ============================================
+// TEACHER SCHEMA WITH COMPLETE FIELDS
+// ============================================
+const TeacherSchema = new mongoose.Schema({
+    // Basic Information
+    teacherId: { 
+        type: String, 
+        required: true, 
+        unique: true,
+        trim: true 
+    }, // Aadhar Number as ID
+    
+    password: { 
+        type: String, 
+        required: true 
+    }, // Name(4) + YYYY format
+    
+    photo: { 
+        type: String, 
+        required: true 
+    }, // Base64 photo
+    
+    // Teacher Name
+    teacherName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    
+    // Father's Name
+    fatherName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    
+    // Contact Information
+    mobile: { 
+        type: String, 
+        required: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{10}$/.test(v);
+            },
+            message: 'Mobile number must be 10 digits'
+        }
+    },
+    
+    altMobile: { 
+        type: String,
+        validate: {
+            validator: function(v) {
+                return !v || /^\d{10}$/.test(v);
+            },
+            message: 'Alternative mobile must be 10 digits'
+        }
+    },
+    
+    // Personal Details
+    dob: { 
+        type: Date, 
+        required: true 
+    },
+    
+    // Qualification
+    lastQualification: { 
+        type: String, 
+        required: true 
+    },
+    
+    qualificationDoc: { 
+        type: String, 
+        required: true 
+    }, // Base64 String
+    
+    // Aadhar Details
+    aadharNumber: { 
+        type: String, 
+        required: true, 
+        unique: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{12}$/.test(v);
+            },
+            message: 'Aadhar number must be 12 digits'
+        }
+    },
+    
+    aadharDoc: { 
+        type: String, 
+        required: true 
+    }, // Base64 String
+    
+    // Teacher Dashboard Fields
+    subject: { 
+        type: String,
+        default: '',
+        trim: true
+    }, // Subject teacher teaches
+    
+    salary: { 
+        type: Number, 
+        default: 0,
+        min: 0
+    }, // Monthly salary
+    
+    salaryHistory: [{
+        month: { 
+            type: String, 
+            required: true 
+        }, // "January 2024"
+        year: { 
+            type: Number, 
+            required: true 
+        },
+        monthIndex: { 
+            type: Number, 
+            required: true 
+        }, // 0-11
+        salary: { 
+            type: Number, 
+            default: 0 
+        },
+        paidAmount: { 
+            type: Number, 
+            default: 0 
+        },
+        dueAmount: { 
+            type: Number, 
+            default: 0 
+        },
+        status: { 
+            type: String, 
+            enum: ['paid', 'partial', 'unpaid'], 
+            default: 'unpaid' 
+        },
+        paymentDate: { 
+            type: Date 
+        },
+        updatedBy: { 
+            type: String 
+        }, // Admin ID who updated
+        remarks: { 
+            type: String,
+            default: ''
+        }
+    }],
+    
+    // Status Management
+    joiningDate: { 
+        type: Date, 
+        default: null 
+    }, // Set when approved
+    
+    status: { 
+        type: String, 
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending' 
+    },
+    
+    // Address (Optional but recommended)
+    address: {
+        current: { type: String, default: '' },
+        permanent: { type: String, default: '' },
+        city: { type: String, default: '' },
+        state: { type: String, default: '' },
+        pincode: { type: String, default: '' }
+    },
+    
+    // Bank Details (For salary transfer)
+    bankDetails: {
+        accountHolder: { type: String, default: '' },
+        accountNumber: { type: String, default: '' },
+        ifscCode: { type: String, default: '' },
+        bankName: { type: String, default: '' }
+    },
+    
+    // Emergency Contact
+    emergencyContact: {
+        name: { type: String, default: '' },
+        relation: { type: String, default: '' },
+        phone: { type: String, default: '' }
+    },
+    
+    // Experience
+    experience: { 
+        type: Number, 
+        default: 0 
+    }, // Years of experience
+    
+    previousSchool: { 
+        type: String, 
+        default: '' 
+    },
+    
+    // Documents (Additional)
+    resume: { 
+        type: String, 
+        default: '' 
+    }, // Base64 resume
+    
+    experienceCertificate: { 
+        type: String, 
+        default: '' 
+    }, // Base64 certificate
+    
+    // Remarks/Notes
+    remarks: { 
+        type: String, 
+        default: '' 
+    },
+    
+    // Rejection Reason (if rejected)
+    rejectionReason: { 
+        type: String, 
+        default: '' 
+    },
+    
+    // Created by (Admin who registered)
+    createdBy: { 
+        type: String, 
+        default: 'self' 
+    } // 'self' for self-registration, 'admin' for admin added
+
+}, { 
+    timestamps: true // Adds createdAt and updatedAt automatically
+});
+
+// Create index for better search performance
+TeacherSchema.index({ 
+    'teacherName.first': 'text', 
+    'teacherName.last': 'text',
+    teacherId: 'text',
+    mobile: 'text',
+    aadharNumber: 'text',
+    subject: 'text'
+});
+
+const Teacher = mongoose.model('Teacher', TeacherSchema);
+
+console.log("✅ All Schemas loaded successfully");
 
 // ============================================
 // INITIALIZATION FUNCTIONS
@@ -468,7 +709,7 @@ app.get('/api/verify-token', verifyToken, (req, res) => {
 });
 
 // ============================================
-// ✅ CORRECTED STUDENT REGISTRATION API
+// STUDENT REGISTRATION API
 // ============================================
 app.post('/api/student-register', async (req, res) => {
     console.log("📝 Registration request received");
@@ -513,11 +754,11 @@ app.post('/api/student-register', async (req, res) => {
             });
         }
         
-        // Create new student with classMonthlyFees
+        // Create new student
         const student = new Student({
             studentId: studentData.studentId,
             password: studentData.password,
-            classMonthlyFees: studentData.classMonthlyFees || 0,  // ✅ CORRECTED
+            classMonthlyFees: studentData.classMonthlyFees || 0,
             photo: studentData.photo,
             studentName: {
                 first: studentData.student.firstName,
@@ -564,7 +805,6 @@ app.post('/api/student-register', async (req, res) => {
     } catch (err) {
         console.error("❌ Registration Error:", err);
         
-        // Handle duplicate key error
         if (err.code === 11000) {
             return res.status(400).json({ 
                 success: false, 
@@ -606,13 +846,13 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ✅ CORRECTED: Update student fees (now using classMonthlyFees)
+// Update student fees
 app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
     try {
-        const { classMonthlyFees } = req.body;  // ✅ CORRECTED
+        const { classMonthlyFees } = req.body;
         const student = await Student.findOneAndUpdate(
             { studentId: req.params.id },
-            { classMonthlyFees: classMonthlyFees },  // ✅ CORRECTED
+            { classMonthlyFees: classMonthlyFees },
             { new: true }
         );
         
@@ -622,7 +862,7 @@ app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
         
         res.json({ 
             success: true, 
-            message: "Class monthly fees updated successfully",  // ✅ CORRECTED
+            message: "Class monthly fees updated successfully",
             data: student 
         });
     } catch (err) {
@@ -645,120 +885,47 @@ app.delete('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Update config
-const configUpdateSchema = Joi.object({
-    logoText: Joi.string().required(),
-    title: Joi.string().required(),
-    subTitle: Joi.string().allow('').optional(),
-    aboutText: Joi.string().allow('').optional(),
-    whatsapp: Joi.string().uri().allow('').optional(),
-    insta: Joi.string().uri().allow('').optional(),
-    fb: Joi.string().uri().allow('').optional(),
-    twitter: Joi.string().uri().allow('').optional(),
-    slides: Joi.array().items(Joi.string().uri()).optional()
-});
-
-app.post('/api/update-config', verifyToken, async (req, res) => {
+// Update student by ID
+app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        const { error, value } = configUpdateSchema.validate(req.body);
+        const studentData = req.body;
         
-        if (error) {
-            return res.status(400).json({
-                success: false,
-                message: "Validation Error: " + error.details[0].message
-            });
-        }
-        
-        const config = await WebConfig.findOneAndUpdate(
-            {},
-            value,
+        const student = await Student.findOneAndUpdate(
+            { studentId: req.params.id },
             {
-                upsert: true,
-                new: true,
-                runValidators: true
-            }
+                password: studentData.password,
+                classMonthlyFees: studentData.classMonthlyFees,
+                photo: studentData.photo,
+                studentName: studentData.student,
+                mobile: studentData.student.mobile,
+                aadharNumber: studentData.aadhar,
+                aadharDocument: studentData.aadharDocument,
+                registrationDate: studentData.dates.reg,
+                joiningDate: studentData.dates.join,
+                fatherName: studentData.father,
+                fatherMobile: studentData.father.mobile,
+                motherName: studentData.mother,
+                address: studentData.address,
+                education: studentData.education
+            },
+            { new: true }
         );
         
-        console.log(`✅ Website updated by admin: ${req.user.adminID}`);
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
         
-        res.json({
-            success: true,
-            message: "Website Updated Successfully!",
-            data: config
-        });
-        
+        res.json({ success: true, message: "Student updated successfully", data: student });
     } catch (err) {
-        console.error("Update Config Error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Update Fail Ho Gaya. Please try again."
-        });
-    }
-});
-
-// Change password
-app.post('/api/change-password', verifyToken, async (req, res) => {
-    try {
-        const { oldPassword, newPassword } = req.body;
-        
-        if (!oldPassword || !newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: "Old password and new password are required"
-            });
-        }
-        
-        if (newPassword.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: "New password must be at least 6 characters long"
-            });
-        }
-        
-        const admin = await Admin.findById(req.user.id);
-        
-        if (!admin) {
-            return res.status(404).json({
-                success: false,
-                message: "Admin not found"
-            });
-        }
-        
-        const isPasswordValid = await bcrypt.compare(oldPassword, admin.pws);
-        
-        if (!isPasswordValid) {
-            return res.status(401).json({
-                success: false,
-                message: "Old password is incorrect"
-            });
-        }
-        
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-        
-        admin.pws = hashedNewPassword;
-        await admin.save();
-        
-        console.log(`✅ Password changed for admin: ${req.user.adminID}`);
-        
-        res.json({
-            success: true,
-            message: "Password changed successfully!"
-        });
-        
-    } catch (err) {
-        console.error("Change Password Error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Server error. Please try again."
-        });
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
 // ============================================
-// 🌟 NEW API ENDPOINTS FOR STUDENT DASHBOARD
+// STUDENT DASHBOARD APIs
 // ============================================
 
-// GET: Get all boards
+// Get all boards
 app.get('/api/boards', verifyToken, async (req, res) => {
     try {
         const boards = await Student.distinct('education.board');
@@ -768,7 +935,7 @@ app.get('/api/boards', verifyToken, async (req, res) => {
     }
 });
 
-// GET: Get classes by board
+// Get classes by board
 app.get('/api/classes/:board', verifyToken, async (req, res) => {
     try {
         const classes = await Student.distinct('education.class', { 
@@ -780,7 +947,7 @@ app.get('/api/classes/:board', verifyToken, async (req, res) => {
     }
 });
 
-// GET: Get students by board and class
+// Get students by board and class
 app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
     try {
         const students = await Student.find({
@@ -794,7 +961,7 @@ app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
     }
 });
 
-// GET: Get complete student data for dashboard
+// Get complete student data for dashboard
 app.get('/api/student-dashboard/:studentId', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ 
@@ -842,7 +1009,7 @@ app.get('/api/student-dashboard/:studentId', verifyToken, async (req, res) => {
     }
 });
 
-// POST: Update fees payment - FIXED VERSION
+// Update fees payment
 app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
     try {
         const { month, paidAmount } = req.body;
@@ -855,7 +1022,6 @@ app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
             });
         }
 
-        // Find and update the specific month
         const feeEntry = student.feesHistory.find(f => f.month === month);
         
         if (feeEntry) {
@@ -867,10 +1033,8 @@ app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
             feeEntry.updatedBy = req.user.adminID;
         }
 
-        // 🔴 IMPORTANT: Sirf feesHistory save karo, validation skip karo
-        await student.save({ validateBeforeSave: false });  // YEH LINE BADLO
+        await student.save({ validateBeforeSave: false });
 
-        // Calculate chart data
         const months = student.feesHistory.map(f => f.month);
         const paidAmounts = student.feesHistory.map(f => f.paidAmount);
         const dueAmounts = student.feesHistory.map(f => f.dueAmount);
@@ -896,286 +1060,9 @@ app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-// ============================================
-//END POINT PUT ADD 
-// ============================================
-// Update student by ID
-app.put('/api/students/:id', verifyToken, async (req, res) => {
-    try {
-        const studentData = req.body;
-        
-        const student = await Student.findOneAndUpdate(
-            { studentId: req.params.id },
-            {
-                password: studentData.password,
-                classMonthlyFees: studentData.classMonthlyFees,
-                photo: studentData.photo,
-                studentName: studentData.student,
-                mobile: studentData.student.mobile,
-                aadharNumber: studentData.aadhar,
-                aadharDocument: studentData.aadharDocument,
-                registrationDate: studentData.dates.reg,
-                joiningDate: studentData.dates.join,
-                fatherName: studentData.father,
-                fatherMobile: studentData.father.mobile,
-                motherName: studentData.mother,
-                address: studentData.address,
-                education: studentData.education
-            },
-            { new: true }
-        );
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        res.json({ success: true, message: "Student updated successfully", data: student });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-// ============================================
-// TEACHER SCHEMA WITH COMPLETE FIELDS
-// ============================================
-const TeacherSchema = new mongoose.Schema({
-    // Basic Information
-    teacherId: { 
-        type: String, 
-        required: true, 
-        unique: true,
-        trim: true 
-    }, // Aadhar Number as ID
-    
-    password: { 
-        type: String, 
-        required: true 
-    }, // Name(4) + YYYY format
-    
-    photo: { 
-        type: String, 
-        required: true 
-    }, // Base64 photo
-    
-    // Teacher Name
-    teacherName: {
-        first: { type: String, required: true },
-        middle: { type: String, default: '' },
-        last: { type: String, required: true }
-    },
-    
-    // Father's Name
-    fatherName: {
-        first: { type: String, required: true },
-        middle: { type: String, default: '' },
-        last: { type: String, required: true }
-    },
-    
-    // Contact Information
-    mobile: { 
-        type: String, 
-        required: true,
-        validate: {
-            validator: function(v) {
-                return /^\d{10}$/.test(v);
-            },
-            message: 'Mobile number must be 10 digits'
-        }
-    },
-    
-    altMobile: { 
-        type: String,
-        validate: {
-            validator: function(v) {
-                return !v || /^\d{10}$/.test(v);
-            },
-            message: 'Alternative mobile must be 10 digits'
-        }
-    },
-    
-    // Personal Details
-    dob: { 
-        type: Date, 
-        required: true 
-    },
-    
-    // Qualification
-    lastQualification: { 
-        type: String, 
-        required: true 
-    },
-    
-    qualificationDoc: { 
-        type: String, 
-        required: true 
-    }, // Base64 String
-    
-    // Aadhar Details
-    aadharNumber: { 
-        type: String, 
-        required: true, 
-        unique: true,
-        validate: {
-            validator: function(v) {
-                return /^\d{12}$/.test(v);
-            },
-            message: 'Aadhar number must be 12 digits'
-        }
-    },
-    
-    aadharDoc: { 
-        type: String, 
-        required: true 
-    }, // Base64 String
-    
-    // ✅ NEW FIELDS FOR TEACHER DASHBOARD
-    subject: { 
-        type: String,
-        default: '',
-        trim: true
-    }, // Subject teacher teaches
-    
-    salary: { 
-        type: Number, 
-        default: 0,
-        min: 0
-    }, // Monthly salary
-    
-    salaryHistory: [{
-        month: { 
-            type: String, 
-            required: true 
-        }, // "January 2024"
-        year: { 
-            type: Number, 
-            required: true 
-        },
-        monthIndex: { 
-            type: Number, 
-            required: true 
-        }, // 0-11
-        salary: { 
-            type: Number, 
-            default: 0 
-        },
-        paidAmount: { 
-            type: Number, 
-            default: 0 
-        },
-        dueAmount: { 
-            type: Number, 
-            default: 0 
-        },
-        status: { 
-            type: String, 
-            enum: ['paid', 'partial', 'unpaid'], 
-            default: 'unpaid' 
-        },
-        paymentDate: { 
-            type: Date 
-        },
-        updatedBy: { 
-            type: String 
-        }, // Admin ID who updated
-        remarks: { 
-            type: String,
-            default: ''
-        }
-    }],
-    
-    // Status Management
-    joiningDate: { 
-        type: Date, 
-        default: null 
-    }, // Set when approved
-    
-    status: { 
-        type: String, 
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending' 
-    },
-    
-    // Address (Optional but recommended)
-    address: {
-        current: { type: String, default: '' },
-        permanent: { type: String, default: '' },
-        city: { type: String, default: '' },
-        state: { type: String, default: '' },
-        pincode: { type: String, default: '' }
-    },
-    
-    // Bank Details (For salary transfer)
-    bankDetails: {
-        accountHolder: { type: String, default: '' },
-        accountNumber: { type: String, default: '' },
-        ifscCode: { type: String, default: '' },
-        bankName: { type: String, default: '' }
-    },
-    
-    // Emergency Contact
-    emergencyContact: {
-        name: { type: String, default: '' },
-        relation: { type: String, default: '' },
-        phone: { type: String, default: '' }
-    },
-    
-    // Experience
-    experience: { 
-        type: Number, 
-        default: 0 
-    }, // Years of experience
-    
-    previousSchool: { 
-        type: String, 
-        default: '' 
-    },
-    
-    // Documents (Additional)
-    resume: { 
-        type: String, 
-        default: '' 
-    }, // Base64 resume
-    
-    experienceCertificate: { 
-        type: String, 
-        default: '' 
-    }, // Base64 certificate
-    
-    // Remarks/Notes
-    remarks: { 
-        type: String, 
-        default: '' 
-    },
-    
-    // Rejection Reason (if rejected)
-    rejectionReason: { 
-        type: String, 
-        default: '' 
-    },
-    
-    // Created by (Admin who registered)
-    createdBy: { 
-        type: String, 
-        default: 'self' 
-    } // 'self' for self-registration, 'admin' for admin added
-
-}, { 
-    timestamps: true // Adds createdAt and updatedAt automatically
-});
-
-// Create index for better search performance
-TeacherSchema.index({ 
-    'teacherName.first': 'text', 
-    'teacherName.last': 'text',
-    teacherId: 'text',
-    mobile: 'text',
-    aadharNumber: 'text',
-    subject: 'text'
-});
-
-const Teacher = mongoose.model('Teacher', TeacherSchema);
 
 // ============================================
-// TEACHER REGISTRATION API (POST)
+// TEACHER REGISTRATION API
 // ============================================
 app.post('/api/teacher-register', async (req, res) => {
     try {
@@ -1247,10 +1134,10 @@ app.post('/api/teacher-register', async (req, res) => {
             });
         }
         
-        // Create new teacher with all data
+        // Create new teacher
         const newTeacher = new Teacher({
             teacherId: data.teacherId,
-            password: data.password, // Note: Password should be hashed in production
+            password: data.password,
             photo: data.photo,
             teacherName: {
                 first: data.teacherName.first,
@@ -1303,7 +1190,6 @@ app.post('/api/teacher-register', async (req, res) => {
             createdBy: 'self'
         });
 
-        // Save to database
         await newTeacher.save();
 
         console.log(`✅ New teacher registered: ${data.teacherName.first} ${data.teacherName.last} (ID: ${data.teacherId})`);
@@ -1319,7 +1205,6 @@ app.post('/api/teacher-register', async (req, res) => {
     } catch (err) {
         console.error("❌ Teacher Registration Error:", err);
         
-        // Handle duplicate key error
         if (err.code === 11000) {
             const field = Object.keys(err.keyPattern)[0];
             return res.status(400).json({ 
@@ -1357,7 +1242,6 @@ app.post('/api/teachers/bulk-register', verifyToken, async (req, res) => {
         
         for (const teacherData of teachers) {
             try {
-                // Check duplicates
                 const existing = await Teacher.findOne({ 
                     $or: [
                         { aadharNumber: teacherData.aadharNumber },
@@ -1435,7 +1319,7 @@ app.post('/api/teacher-check', async (req, res) => {
 });
 
 // ============================================
-// TEACHER MANAGEMENT APIs (Complete CRUD)
+// TEACHER MANAGEMENT APIs
 // ============================================
 
 // GET: All teachers with filters
@@ -1476,21 +1360,19 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
         const teachersWithSalary = teachers.map(teacher => {
             const teacherObj = teacher.toObject();
             
-            // Calculate salary months based on joining date
             if (teacher.joiningDate) {
                 const joiningDate = new Date(teacher.joiningDate);
                 const currentDate = new Date();
                 const months = [];
                 
                 let currentMonth = new Date(joiningDate);
-                currentMonth.setDate(1); // Set to first of month
+                currentMonth.setDate(1);
                 
                 while (currentMonth <= currentDate) {
                     const monthName = currentMonth.toLocaleString('default', { month: 'long' });
                     const year = currentMonth.getFullYear();
                     const monthKey = `${monthName} ${year}`;
                     
-                    // Check if salary already exists in teacher's salaryHistory
                     const existingSalary = teacher.salaryHistory?.find(
                         s => s.month === monthKey
                     ) || {
@@ -1540,7 +1422,6 @@ app.get('/api/teachers/:id', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Teacher not found" });
         }
         
-        // Generate salary months if approved
         if (teacher.status === 'approved' && teacher.joiningDate) {
             const teacherObj = teacher.toObject();
             const joiningDate = new Date(teacher.joiningDate);
@@ -1600,7 +1481,6 @@ app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
             if (subject) updateData.subject = subject;
             if (salary) updateData.salary = parseInt(salary);
             
-            // Initialize salary history from joining date
             const teacher = await Teacher.findOne({ teacherId: req.params.id });
             if (teacher && !teacher.salaryHistory) {
                 updateData.salaryHistory = [];
@@ -1620,7 +1500,6 @@ app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Teacher not found" });
         }
         
-        // Log the action
         console.log(`✅ Teacher ${req.params.id} status updated to ${status} by ${req.user.adminID}`);
         
         res.json({ 
@@ -1638,13 +1517,10 @@ app.put('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
         const teacherData = req.body;
         
-        // Remove _id and sensitive fields if present
         delete teacherData._id;
         delete teacherData.__v;
         delete teacherData.createdAt;
         delete teacherData.updatedAt;
-        
-        // Don't allow password update through this route
         delete teacherData.password;
         
         const teacher = await Teacher.findOneAndUpdate(
@@ -1686,12 +1562,10 @@ app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
             });
         }
 
-        // Initialize salaryHistory if not exists
         if (!teacher.salaryHistory) {
             teacher.salaryHistory = [];
         }
 
-        // Find and update the specific month
         const salaryEntry = teacher.salaryHistory.find(s => s.month === month);
         const monthlySalary = teacher.salary || 0;
         
@@ -1704,7 +1578,6 @@ app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
             salaryEntry.updatedBy = req.user.adminID;
             if (remarks) salaryEntry.remarks = remarks;
         } else {
-            // Add new salary entry
             teacher.salaryHistory.push({
                 month: month,
                 year: new Date().getFullYear(),
@@ -1720,14 +1593,11 @@ app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
             });
         }
 
-        // Save with validation disabled for array
         await teacher.save({ validateBeforeSave: false });
 
-        // Calculate statistics
         const totalPaid = teacher.salaryHistory.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
         const totalDue = teacher.salaryHistory.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
         
-        // Calculate chart data
         const months = teacher.salaryHistory.map(s => s.month);
         const paidAmounts = teacher.salaryHistory.map(s => s.paidAmount);
         const dueAmounts = teacher.salaryHistory.map(s => s.dueAmount);
@@ -1786,14 +1656,12 @@ app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
         const approvedTeachers = await Teacher.countDocuments({ status: 'approved' });
         const rejectedTeachers = await Teacher.countDocuments({ status: 'rejected' });
         
-        // Subject-wise distribution
         const subjectStats = await Teacher.aggregate([
             { $match: { status: 'approved', subject: { $ne: '' } } },
             { $group: { _id: '$subject', count: { $sum: 1 } } },
             { $sort: { count: -1 } }
         ]);
         
-        // Calculate total salary paid and due
         const teachers = await Teacher.find({ status: 'approved' });
         let totalPaidSalary = 0;
         let totalDueSalary = 0;
@@ -1809,7 +1677,6 @@ app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
             }
         });
         
-        // Monthly salary trend (last 6 months)
         const months = [];
         const paidTrend = [];
         const dueTrend = [];
@@ -1879,7 +1746,6 @@ app.get('/api/teachers/export/:format', verifyToken, async (req, res) => {
             return res.json({ success: true, data: teachers });
         } 
         else if (format === 'csv') {
-            // Convert to CSV
             const fields = [
                 'teacherId', 'teacherName.first', 'teacherName.last',
                 'mobile', 'subject', 'salary', 'status', 'joiningDate'
@@ -1908,51 +1774,117 @@ app.get('/api/teachers/export/:format', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// TEACHER DASHBOARD API (For teacher login - future use)
+// UPDATE CONFIG API
 // ============================================
-app.get('/api/teacher-dashboard/:id', verifyToken, async (req, res) => {
+const configUpdateSchema = Joi.object({
+    logoText: Joi.string().required(),
+    title: Joi.string().required(),
+    subTitle: Joi.string().allow('').optional(),
+    aboutText: Joi.string().allow('').optional(),
+    whatsapp: Joi.string().uri().allow('').optional(),
+    insta: Joi.string().uri().allow('').optional(),
+    fb: Joi.string().uri().allow('').optional(),
+    twitter: Joi.string().uri().allow('').optional(),
+    slides: Joi.array().items(Joi.string().uri()).optional()
+});
+
+app.post('/api/update-config', verifyToken, async (req, res) => {
     try {
-        const teacher = await Teacher.findOne({ teacherId: req.params.id });
+        const { error, value } = configUpdateSchema.validate(req.body);
         
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        // Only show approved teachers their data
-        if (teacher.status !== 'approved') {
-            return res.status(403).json({ 
-                success: false, 
-                message: "Your account is not yet approved" 
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: "Validation Error: " + error.details[0].message
             });
         }
         
-        // Prepare dashboard data
-        const dashboardData = {
-            personal: {
-                name: `${teacher.teacherName.first} ${teacher.teacherName.last}`,
-                teacherId: teacher.teacherId,
-                photo: teacher.photo,
-                mobile: teacher.mobile,
-                subject: teacher.subject,
-                joiningDate: teacher.joiningDate
-            },
-            salary: {
-                monthly: teacher.salary,
-                history: teacher.salaryHistory || [],
-                totalPaid: teacher.salaryHistory?.reduce((sum, s) => sum + s.paidAmount, 0) || 0,
-                totalDue: teacher.salaryHistory?.reduce((sum, s) => sum + s.dueAmount, 0) || 0
-            },
-            status: teacher.status
-        };
+        const config = await WebConfig.findOneAndUpdate(
+            {},
+            value,
+            {
+                upsert: true,
+                new: true,
+                runValidators: true
+            }
+        );
         
-        res.json({ success: true, data: dashboardData });
+        console.log(`✅ Website updated by admin: ${req.user.adminID}`);
+        
+        res.json({
+            success: true,
+            message: "Website Updated Successfully!",
+            data: config
+        });
         
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error("Update Config Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Update Fail Ho Gaya. Please try again."
+        });
     }
 });
 
-console.log("✅ Teacher APIs loaded successfully");
+// ============================================
+// CHANGE PASSWORD API
+// ============================================
+app.post('/api/change-password', verifyToken, async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Old password and new password are required"
+            });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "New password must be at least 6 characters long"
+            });
+        }
+        
+        const admin = await Admin.findById(req.user.id);
+        
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found"
+            });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(oldPassword, admin.pws);
+        
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: "Old password is incorrect"
+            });
+        }
+        
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        
+        admin.pws = hashedNewPassword;
+        await admin.save();
+        
+        console.log(`✅ Password changed for admin: ${req.user.adminID}`);
+        
+        res.json({
+            success: true,
+            message: "Password changed successfully!"
+        });
+        
+    } catch (err) {
+        console.error("Change Password Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Server error. Please try again."
+        });
+    }
+});
 
 // ============================================
 // SERVE HTML FILES
@@ -1967,6 +1899,10 @@ app.get('/index.html', (req, res) => {
 
 app.get('/student-dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'student-dashboard.html'));
+});
+
+app.get('/teacher-dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'teacher-dashboard.html'));
 });
 
 // ============================================
@@ -2008,8 +1944,13 @@ app.listen(PORT, () => {
     console.log(`🌐 http://localhost:${PORT}`);
     console.log(`📌 API Endpoints:`);
     console.log(`   - POST /api/student-register - Student Registration`);
+    console.log(`   - POST /api/teacher-register - Teacher Registration`);
     console.log(`   - POST /api/admin-login - Admin Login`);
     console.log(`   - GET /api/config - Website Config`);
+    console.log(`   - GET /api/students - Get All Students`);
+    console.log(`   - GET /api/teachers - Get All Teachers`);
+    console.log(`   - GET /api/teachers/stats/summary - Teacher Statistics`);
     console.log(`   - GET /api/health - Health Check`);
     console.log(`   - GET /student-dashboard.html - Student Dashboard`);
+    console.log(`   - GET /teacher-dashboard.html - Teacher Dashboard`);
 });
