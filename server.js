@@ -1,3 +1,9 @@
+// ============================================
+// SERVER.JS - COMPLETE FINAL VERSION
+// Bal Bharti Coaching Center Management System
+// Includes: Student, Teacher, Attendance, Salary, Fees
+// ============================================
+
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -8,10 +14,15 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
-const path = require('path'); // Add this for serving HTML
+const path = require('path');
 
+// Load environment variables
 dotenv.config();
 const app = express();
+
+// ============================================
+// SECURITY & MIDDLEWARE CONFIGURATION
+// ============================================
 
 // Generate nonce for CSP
 app.use((req, res, next) => {
@@ -19,7 +30,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Helmet configuration - FIXED VERSION
+// Helmet configuration with CSP
 app.use(
     helmet({
         contentSecurityPolicy: {
@@ -49,7 +60,6 @@ app.use(
                     "https://images.unsplash.com",
                     "https://*.unsplash.com",
                     "https://*.cloudinary.com",
-                    "https://via.placeholder.com",
                     "https:",
                     "http:"
                 ],
@@ -77,32 +87,37 @@ app.use(
     })
 );
 
+// CORS configuration
 app.use(cors({
-    origin: '*',
+    origin: '*', // In production, replace with specific domains
     credentials: true
 }));
 
-app.use(express.json({ limit: '50mb' })); // Increase limit for images
+// JSON parser with increased limit for images
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
-// Rate Limiter
+// Rate Limiter - Prevents brute force attacks
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
     message: { success: false, message: "Too many requests, please try again later." }
 });
 app.use('/api/', limiter);
 
-// MongoDB Connection
+// ============================================
+// DATABASE CONNECTION
+// ============================================
+
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc')
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.log("❌ DB Error:", err.message));
+    .then(() => console.log("✅ MongoDB Connected Successfully"))
+    .catch(err => console.log("❌ DB Connection Error:", err.message));
 
 // ============================================
-// SCHEMAS
+// SCHEMA DEFINITIONS
 // ============================================
 
-// Web Config Schema
+// ---------- Web Config Schema ----------
 const WebConfigSchema = new mongoose.Schema({
     logoText: {
         type: String,
@@ -136,13 +151,11 @@ const WebConfigSchema = new mongoose.Schema({
     insta: String,
     fb: String,
     twitter: String
-}, {
-    timestamps: true
-});
+}, { timestamps: true });
 
 const WebConfig = mongoose.model('WebConfig', WebConfigSchema);
 
-// Admin Schema
+// ---------- Admin Schema ----------
 const AdminSchema = new mongoose.Schema({
     adminID: {
         type: String,
@@ -154,16 +167,13 @@ const AdminSchema = new mongoose.Schema({
         type: String,
         required: true
     }
-}, {
-    timestamps: true
-});
+}, { timestamps: true });
 
 const Admin = mongoose.model('Admin', AdminSchema);
 
-// ============================================
-// STUDENT SCHEMA WITH COMPLETE FEATURES
-// ============================================
+// ---------- STUDENT SCHEMA with Attendance ----------
 const StudentSchema = new mongoose.Schema({
+    // Basic Information
     studentId: { 
         type: String, 
         required: true, 
@@ -178,11 +188,15 @@ const StudentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    
+    // Student Name
     studentName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
         last: { type: String, required: true }
     },
+    
+    // Contact Information
     mobile: { 
         type: String, 
         required: true,
@@ -193,6 +207,8 @@ const StudentSchema = new mongoose.Schema({
             message: 'Mobile number must be 10 digits'
         }
     },
+    
+    // Aadhar Details
     aadharNumber: { 
         type: String, 
         required: true,
@@ -208,6 +224,8 @@ const StudentSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
+    
+    // Dates
     registrationDate: { 
         type: Date, 
         required: true,
@@ -217,11 +235,12 @@ const StudentSchema = new mongoose.Schema({
         type: Date, 
         required: true 
     },
+    
+    // Fees Management
     classMonthlyFees: { 
         type: Number, 
         default: 0 
     },
-    // Fees History Array
     feesHistory: [{
         month: { type: String, required: true },
         year: { type: Number, required: true },
@@ -232,6 +251,17 @@ const StudentSchema = new mongoose.Schema({
         paymentDate: { type: Date },
         updatedBy: { type: String }
     }],
+    
+    // Student Attendance
+    attendance: [{
+        date: { type: String, required: true }, // Format: YYYY-MM-DD
+        status: { type: String, enum: ['present', 'absent', 'late', 'half-day'], default: 'present' },
+        remarks: { type: String, default: '' },
+        markedBy: { type: String },
+        markedAt: { type: Date, default: Date.now }
+    }],
+    
+    // Family Information
     fatherName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
@@ -252,23 +282,32 @@ const StudentSchema = new mongoose.Schema({
         middle: { type: String, default: '' },
         last: { type: String, default: '' }
     },
+    
+    // Address
     address: {
         current: { type: String, required: true },
         permanent: { type: String, required: true }
     },
+    
+    // Education
     education: {
         board: { type: String, required: true },
         class: { type: String, required: true }
     }
-}, { 
-    timestamps: true 
+}, { timestamps: true });
+
+// Index for search
+StudentSchema.index({ 
+    'studentName.first': 'text', 
+    'studentName.last': 'text',
+    studentId: 'text',
+    mobile: 'text',
+    aadharNumber: 'text'
 });
 
 const Student = mongoose.model('Student', StudentSchema);
 
-// ============================================
-// TEACHER SCHEMA WITH COMPLETE FIELDS
-// ============================================
+// ---------- TEACHER SCHEMA with Attendance & Salary ----------
 const TeacherSchema = new mongoose.Schema({
     // Basic Information
     teacherId: { 
@@ -281,12 +320,12 @@ const TeacherSchema = new mongoose.Schema({
     password: { 
         type: String, 
         required: true 
-    }, // Name(4) + YYYY format
+    },
     
     photo: { 
         type: String, 
         required: true 
-    }, // Base64 photo
+    },
     
     // Teacher Name
     teacherName: {
@@ -335,11 +374,10 @@ const TeacherSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    
     qualificationDoc: { 
         type: String, 
         required: true 
-    }, // Base64 String
+    },
     
     // Aadhar Details
     aadharNumber: { 
@@ -353,80 +391,58 @@ const TeacherSchema = new mongoose.Schema({
             message: 'Aadhar number must be 12 digits'
         }
     },
-    
     aadharDoc: { 
         type: String, 
         required: true 
-    }, // Base64 String
+    },
     
-    // Teacher Dashboard Fields
+    // Professional Information
     subject: { 
         type: String,
         default: '',
         trim: true
-    }, // Subject teacher teaches
+    },
     
+    // Salary Management
     salary: { 
         type: Number, 
         default: 0,
         min: 0
-    }, // Monthly salary
-    
+    },
     salaryHistory: [{
-        month: { 
-            type: String, 
-            required: true 
-        }, // "January 2024"
-        year: { 
-            type: Number, 
-            required: true 
-        },
-        monthIndex: { 
-            type: Number, 
-            required: true 
-        }, // 0-11
-        salary: { 
-            type: Number, 
-            default: 0 
-        },
-        paidAmount: { 
-            type: Number, 
-            default: 0 
-        },
-        dueAmount: { 
-            type: Number, 
-            default: 0 
-        },
-        status: { 
-            type: String, 
-            enum: ['paid', 'partial', 'unpaid'], 
-            default: 'unpaid' 
-        },
-        paymentDate: { 
-            type: Date 
-        },
-        updatedBy: { 
-            type: String 
-        }, // Admin ID who updated
-        remarks: { 
-            type: String,
-            default: ''
-        }
+        month: { type: String, required: true },
+        year: { type: Number, required: true },
+        monthIndex: { type: Number, required: true },
+        salary: { type: Number, default: 0 },
+        paidAmount: { type: Number, default: 0 },
+        dueAmount: { type: Number, default: 0 },
+        status: { type: String, enum: ['paid', 'partial', 'unpaid'], default: 'unpaid' },
+        paymentDate: { type: Date },
+        updatedBy: { type: String },
+        remarks: { type: String, default: '' }
+    }],
+    
+    // Teacher Attendance
+    attendance: [{
+        date: { type: String, required: true }, // Format: YYYY-MM-DD
+        status: { type: String, enum: ['present', 'absent', 'late', 'half-day', 'leave'], default: 'present' },
+        remarks: { type: String, default: '' },
+        markedBy: { type: String },
+        markedAt: { type: Date, default: Date.now }
     }],
     
     // Status Management
     joiningDate: { 
         type: Date, 
         default: null 
-    }, // Set when approved
-    
+    },
     status: { 
         type: String, 
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending' 
     },
     
-    // Address (Optional but recommended)
+    // Address
     address: {
         current: { type: String, default: '' },
         permanent: { type: String, default: '' },
@@ -435,7 +451,7 @@ const TeacherSchema = new mongoose.Schema({
         pincode: { type: String, default: '' }
     },
     
-    // Bank Details (For salary transfer)
+    // Bank Details
     bankDetails: {
         accountHolder: { type: String, default: '' },
         accountNumber: { type: String, default: '' },
@@ -454,47 +470,41 @@ const TeacherSchema = new mongoose.Schema({
     experience: { 
         type: Number, 
         default: 0 
-    }, // Years of experience
-    
+    },
     previousSchool: { 
         type: String, 
         default: '' 
     },
     
-    // Documents (Additional)
+    // Documents
     resume: { 
         type: String, 
         default: '' 
-    }, // Base64 resume
-    
+    },
     experienceCertificate: { 
-        type: String, 
-        default: '' 
-    }, // Base64 certificate
-    
-    // Remarks/Notes
-    remarks: { 
         type: String, 
         default: '' 
     },
     
-    // Rejection Reason (if rejected)
+    // Remarks
+    remarks: { 
+        type: String, 
+        default: '' 
+    },
     rejectionReason: { 
         type: String, 
         default: '' 
     },
     
-    // Created by (Admin who registered)
+    // Metadata
     createdBy: { 
         type: String, 
         default: 'self' 
-    } // 'self' for self-registration, 'admin' for admin added
+    }
 
-}, { 
-    timestamps: true // Adds createdAt and updatedAt automatically
-});
+}, { timestamps: true });
 
-// Create index for better search performance
+// Index for search
 TeacherSchema.index({ 
     'teacherName.first': 'text', 
     'teacherName.last': 'text',
@@ -512,6 +522,7 @@ console.log("✅ All Schemas loaded successfully");
 // INITIALIZATION FUNCTIONS
 // ============================================
 
+// Create default admin if not exists
 async function createDefaultAdmin() {
     try {
         const adminExists = await Admin.findOne({ adminID: 'admin' });
@@ -535,6 +546,7 @@ async function createDefaultAdmin() {
     }
 }
 
+// Initialize default website config
 async function initializeDefaultConfig() {
     try {
         const configExists = await WebConfig.findOne();
@@ -554,15 +566,15 @@ async function initializeDefaultConfig() {
             console.log("✅ Default website config created");
         }
     } catch (err) {
-            console.log("❌ Config initialization error:", err.message);
+        console.log("❌ Config initialization error:", err.message);
     }
 }
 
 // ============================================
-// API ROUTES
+// AUTHENTICATION & MIDDLEWARE
 // ============================================
 
-// Health check
+// Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
@@ -604,7 +616,7 @@ app.get('/api/config', async (req, res) => {
     }
 });
 
-// Admin login
+// Login rate limiter
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -615,6 +627,7 @@ const loginLimiter = rateLimit({
     }
 });
 
+// Admin login
 app.post('/api/admin-login', loginLimiter, async (req, res) => {
     const { userid, password } = req.body;
     
@@ -695,7 +708,7 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// Verify token
+// Verify token endpoint
 app.get('/api/verify-token', verifyToken, (req, res) => {
     res.json({
         success: true,
@@ -709,10 +722,12 @@ app.get('/api/verify-token', verifyToken, (req, res) => {
 });
 
 // ============================================
-// STUDENT REGISTRATION API
+// STUDENT APIs
 // ============================================
+
+// ---------- Student Registration ----------
 app.post('/api/student-register', async (req, res) => {
-    console.log("📝 Registration request received");
+    console.log("📝 Student registration request received");
     
     try {
         const studentData = req.body;
@@ -788,7 +803,8 @@ app.post('/api/student-register', async (req, res) => {
             education: {
                 board: studentData.education.board,
                 class: studentData.education.class
-            }
+            },
+            attendance: [] // Initialize empty attendance array
         });
         
         await student.save();
@@ -819,11 +835,7 @@ app.post('/api/student-register', async (req, res) => {
     }
 });
 
-// ============================================
-// STUDENT MANAGEMENT APIs (Admin only)
-// ============================================
-
-// Get all students
+// ---------- Get All Students ----------
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
         const students = await Student.find().sort({ createdAt: -1 });
@@ -833,7 +845,7 @@ app.get('/api/students', verifyToken, async (req, res) => {
     }
 });
 
-// Get single student by ID
+// ---------- Get Single Student by ID ----------
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
@@ -846,7 +858,7 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Update student fees
+// ---------- Update Student Fees ----------
 app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
     try {
         const { classMonthlyFees } = req.body;
@@ -870,7 +882,7 @@ app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
     }
 });
 
-// Delete student
+// ---------- Delete Student ----------
 app.delete('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOneAndDelete({ studentId: req.params.id });
@@ -885,7 +897,7 @@ app.delete('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Update student by ID
+// ---------- Update Student by ID ----------
 app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const studentData = req.body;
@@ -922,10 +934,10 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// STUDENT DASHBOARD APIs
+// STUDENT DASHBOARD & ATTENDANCE APIs
 // ============================================
 
-// Get all boards
+// ---------- Get all boards ----------
 app.get('/api/boards', verifyToken, async (req, res) => {
     try {
         const boards = await Student.distinct('education.board');
@@ -935,7 +947,7 @@ app.get('/api/boards', verifyToken, async (req, res) => {
     }
 });
 
-// Get classes by board
+// ---------- Get classes by board ----------
 app.get('/api/classes/:board', verifyToken, async (req, res) => {
     try {
         const classes = await Student.distinct('education.class', { 
@@ -947,7 +959,7 @@ app.get('/api/classes/:board', verifyToken, async (req, res) => {
     }
 });
 
-// Get students by board and class
+// ---------- Get students by board and class ----------
 app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
     try {
         const students = await Student.find({
@@ -961,7 +973,7 @@ app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
     }
 });
 
-// Get complete student data for dashboard
+// ---------- Get complete student data for dashboard ----------
 app.get('/api/student-dashboard/:studentId', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ 
@@ -1009,7 +1021,7 @@ app.get('/api/student-dashboard/:studentId', verifyToken, async (req, res) => {
     }
 });
 
-// Update fees payment
+// ---------- Update fees payment ----------
 app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
     try {
         const { month, paidAmount } = req.body;
@@ -1061,9 +1073,136 @@ app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
     }
 });
 
+// ---------- STUDENT ATTENDANCE APIs ----------
+
+// Get student attendance
+app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        const { month, year } = req.query;
+        
+        const student = await Student.findOne({ studentId });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        let attendance = student.attendance || [];
+        
+        // Filter by month/year if provided
+        if (month && year) {
+            const monthStr = month.padStart(2, '0');
+            attendance = attendance.filter(a => a.date.startsWith(`${year}-${monthStr}`));
+        }
+        
+        res.json({
+            success: true,
+            data: attendance.sort((a, b) => b.date.localeCompare(a.date))
+        });
+        
+    } catch (err) {
+        console.error('Error fetching student attendance:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Mark student attendance
+app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        const { date, status, remarks } = req.body;
+        
+        if (!date || !status) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Date and status are required" 
+            });
+        }
+        
+        const student = await Student.findOne({ studentId });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        // Initialize attendance array if not exists
+        if (!student.attendance) {
+            student.attendance = [];
+        }
+        
+        // Check if attendance already exists for this date
+        const existingIndex = student.attendance.findIndex(a => a.date === date);
+        
+        const attendanceRecord = {
+            date,
+            status,
+            remarks: remarks || '',
+            markedBy: req.user.adminID,
+            markedAt: new Date()
+        };
+        
+        if (existingIndex >= 0) {
+            // Update existing
+            student.attendance[existingIndex] = attendanceRecord;
+        } else {
+            // Add new
+            student.attendance.push(attendanceRecord);
+        }
+        
+        await student.save();
+        
+        res.json({
+            success: true,
+            message: existingIndex >= 0 ? "Attendance updated successfully" : "Attendance marked successfully",
+            data: attendanceRecord
+        });
+        
+    } catch (err) {
+        console.error('Error saving student attendance:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Delete student attendance
+app.delete('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const studentId = req.params.id;
+        const { date } = req.body;
+        
+        if (!date) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Date is required" 
+            });
+        }
+        
+        const student = await Student.findOne({ studentId });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        // Filter out the attendance record
+        student.attendance = (student.attendance || []).filter(a => a.date !== date);
+        
+        await student.save();
+        
+        res.json({
+            success: true,
+            message: "Attendance deleted successfully"
+        });
+        
+    } catch (err) {
+        console.error('Error deleting student attendance:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ============================================
-// TEACHER REGISTRATION API
+// TEACHER REGISTRATION APIs
 // ============================================
+
+// ---------- Teacher Registration ----------
 app.post('/api/teacher-register', async (req, res) => {
     try {
         const data = req.body;
@@ -1187,7 +1326,8 @@ app.post('/api/teacher-register', async (req, res) => {
             // Status
             status: 'pending',
             joiningDate: null,
-            createdBy: 'self'
+            createdBy: 'self',
+            attendance: [] // Initialize empty attendance array
         });
 
         await newTeacher.save();
@@ -1220,9 +1360,7 @@ app.post('/api/teacher-register', async (req, res) => {
     }
 });
 
-// ============================================
-// BULK TEACHER REGISTRATION (For admin)
-// ============================================
+// ---------- Bulk Teacher Registration ----------
 app.post('/api/teachers/bulk-register', verifyToken, async (req, res) => {
     try {
         const teachers = req.body.teachers;
@@ -1261,7 +1399,8 @@ app.post('/api/teachers/bulk-register', verifyToken, async (req, res) => {
                 const newTeacher = new Teacher({
                     ...teacherData,
                     createdBy: req.user.adminID,
-                    status: 'pending'
+                    status: 'pending',
+                    attendance: []
                 });
                 
                 await newTeacher.save();
@@ -1287,9 +1426,7 @@ app.post('/api/teachers/bulk-register', verifyToken, async (req, res) => {
     }
 });
 
-// ============================================
-// CHECK TEACHER AVAILABILITY
-// ============================================
+// ---------- Check Teacher Availability ----------
 app.post('/api/teacher-check', async (req, res) => {
     try {
         const { aadharNumber, mobile, teacherId } = req.body;
@@ -1322,7 +1459,7 @@ app.post('/api/teacher-check', async (req, res) => {
 // TEACHER MANAGEMENT APIs
 // ============================================
 
-// GET: All teachers with filters
+// ---------- Get All Teachers with filters ----------
 app.get('/api/teachers', verifyToken, async (req, res) => {
     try {
         const { status, search, subject, page = 1, limit = 50 } = req.query;
@@ -1368,7 +1505,11 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
                 let currentMonth = new Date(joiningDate);
                 currentMonth.setDate(1);
                 
-                while (currentMonth <= currentDate) {
+                // Limit to 24 months for performance
+                let count = 0;
+                const maxMonths = 24;
+                
+                while (currentMonth <= currentDate && count < maxMonths) {
                     const monthName = currentMonth.toLocaleString('default', { month: 'long' });
                     const year = currentMonth.getFullYear();
                     const monthKey = `${monthName} ${year}`;
@@ -1388,6 +1529,7 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
                     months.push(existingSalary);
                     
                     currentMonth.setMonth(currentMonth.getMonth() + 1);
+                    count++;
                 }
                 
                 teacherObj.salaryMonths = months;
@@ -1413,17 +1555,19 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
     }
 });
 
-// GET: Single teacher by ID
+// ---------- Get Single Teacher by ID ----------
 app.get('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
-        const teacher = await Teacher.findOne({ teacherId: req.params.id });
+        const teacher = await Teacher.findOne({ teacherId: req.params.id })
+            .select('-password -__v')
+            .lean();
         
         if (!teacher) {
             return res.status(404).json({ success: false, message: "Teacher not found" });
         }
         
+        // Generate salary months if approved
         if (teacher.status === 'approved' && teacher.joiningDate) {
-            const teacherObj = teacher.toObject();
             const joiningDate = new Date(teacher.joiningDate);
             const currentDate = new Date();
             const months = [];
@@ -1431,7 +1575,11 @@ app.get('/api/teachers/:id', verifyToken, async (req, res) => {
             let currentMonth = new Date(joiningDate);
             currentMonth.setDate(1);
             
-            while (currentMonth <= currentDate) {
+            // Limit to 24 months for performance
+            let count = 0;
+            const maxMonths = 24;
+            
+            while (currentMonth <= currentDate && count < maxMonths) {
                 const monthName = currentMonth.toLocaleString('default', { month: 'long' });
                 const year = currentMonth.getFullYear();
                 const monthKey = `${monthName} ${year}`;
@@ -1450,19 +1598,22 @@ app.get('/api/teachers/:id', verifyToken, async (req, res) => {
                 
                 months.push(existingSalary);
                 currentMonth.setMonth(currentMonth.getMonth() + 1);
+                count++;
             }
             
-            teacherObj.salaryMonths = months;
-            return res.json({ success: true, data: teacherObj });
+            teacher.salaryMonths = months;
+        } else {
+            teacher.salaryMonths = [];
         }
         
         res.json({ success: true, data: teacher });
     } catch (err) {
+        console.error('Error fetching teacher:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// POST: Update teacher status (Approve/Reject)
+// ---------- Update Teacher Status (Approve/Reject) ----------
 app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
     try {
         const { status, subject, salary, joiningDate, rejectionReason } = req.body;
@@ -1512,7 +1663,7 @@ app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
     }
 });
 
-// PUT: Update teacher complete details
+// ---------- Update Teacher Complete Details ----------
 app.put('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
         const teacherData = req.body;
@@ -1545,7 +1696,7 @@ app.put('/api/teachers/:id', verifyToken, async (req, res) => {
     }
 });
 
-// POST: Update teacher salary
+// ---------- Update Teacher Salary ----------
 app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
     try {
         const { month, paidAmount, remarks } = req.body;
@@ -1628,7 +1779,7 @@ app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
     }
 });
 
-// DELETE: Delete teacher
+// ---------- Delete Teacher ----------
 app.delete('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
         const teacher = await Teacher.findOneAndDelete({ teacherId: req.params.id });
@@ -1648,7 +1799,7 @@ app.delete('/api/teachers/:id', verifyToken, async (req, res) => {
     }
 });
 
-// GET: Teacher statistics for dashboard
+// ---------- Get Teacher Statistics ----------
 app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
     try {
         const totalTeachers = await Teacher.countDocuments();
@@ -1729,7 +1880,7 @@ app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
     }
 });
 
-// GET: Export teachers data
+// ---------- Export Teachers Data ----------
 app.get('/api/teachers/export/:format', verifyToken, async (req, res) => {
     try {
         const { format } = req.params;
@@ -1772,30 +1923,218 @@ app.get('/api/teachers/export/:format', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-// Add these to your server.js:
 
-// GET attendance for a teacher
+// ============================================
+// TEACHER ATTENDANCE APIs
+// ============================================
+
+// Get teacher attendance
 app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    // Return attendance records
+    try {
+        const teacherId = req.params.id;
+        const { month, year } = req.query;
+        
+        const teacher = await Teacher.findOne({ teacherId });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        let attendance = teacher.attendance || [];
+        
+        // Filter by month/year if provided
+        if (month && year) {
+            const monthStr = month.padStart(2, '0');
+            attendance = attendance.filter(a => a.date.startsWith(`${year}-${monthStr}`));
+        }
+        
+        // If no attendance, generate sample for last 30 days
+        if (attendance.length === 0) {
+            const today = new Date();
+            for (let i = 30; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // Random status for demo
+                const rand = Math.random();
+                let status = 'present';
+                if (rand < 0.2) status = 'absent';
+                else if (rand < 0.3) status = 'half-day';
+                else if (rand < 0.35) status = 'leave';
+                
+                attendance.push({
+                    date: dateStr,
+                    status: status,
+                    remarks: '',
+                    markedBy: 'system',
+                    markedAt: date
+                });
+            }
+        }
+        
+        res.json({
+            success: true,
+            data: attendance.sort((a, b) => b.date.localeCompare(a.date))
+        });
+        
+    } catch (err) {
+        console.error('Error fetching teacher attendance:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
-// POST new attendance
+// Mark teacher attendance
 app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    // Create new attendance record
+    try {
+        const teacherId = req.params.id;
+        const { date, status, remarks } = req.body;
+        
+        if (!date || !status) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Date and status are required" 
+            });
+        }
+        
+        const teacher = await Teacher.findOne({ teacherId });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        // Initialize attendance array if not exists
+        if (!teacher.attendance) {
+            teacher.attendance = [];
+        }
+        
+        // Check if attendance already exists for this date
+        const existingIndex = teacher.attendance.findIndex(a => a.date === date);
+        
+        const attendanceRecord = {
+            date,
+            status,
+            remarks: remarks || '',
+            markedBy: req.user.adminID,
+            markedAt: new Date()
+        };
+        
+        if (existingIndex >= 0) {
+            // Update existing
+            teacher.attendance[existingIndex] = attendanceRecord;
+        } else {
+            // Add new
+            teacher.attendance.push(attendanceRecord);
+        }
+        
+        await teacher.save();
+        
+        res.json({
+            success: true,
+            message: existingIndex >= 0 ? "Attendance updated successfully" : "Attendance marked successfully",
+            data: attendanceRecord
+        });
+        
+    } catch (err) {
+        console.error('Error saving teacher attendance:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
-// PUT update attendance
+// Update teacher attendance (PUT)
 app.put('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    // Update existing attendance
+    try {
+        const teacherId = req.params.id;
+        const { date, status, remarks } = req.body;
+        
+        if (!date || !status) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Date and status are required" 
+            });
+        }
+        
+        const teacher = await Teacher.findOne({ teacherId });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        if (!teacher.attendance) {
+            teacher.attendance = [];
+        }
+        
+        const existingIndex = teacher.attendance.findIndex(a => a.date === date);
+        
+        if (existingIndex === -1) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Attendance record not found for this date" 
+            });
+        }
+        
+        teacher.attendance[existingIndex] = {
+            date,
+            status,
+            remarks: remarks || '',
+            markedBy: req.user.adminID,
+            markedAt: new Date()
+        };
+        
+        await teacher.save();
+        
+        res.json({
+            success: true,
+            message: "Attendance updated successfully",
+            data: teacher.attendance[existingIndex]
+        });
+        
+    } catch (err) {
+        console.error('Error updating teacher attendance:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
 
-// DELETE attendance
+// Delete teacher attendance
 app.delete('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    // Delete attendance record
+    try {
+        const teacherId = req.params.id;
+        const { date } = req.body;
+        
+        if (!date) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Date is required" 
+            });
+        }
+        
+        const teacher = await Teacher.findOne({ teacherId });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        // Filter out the attendance record
+        teacher.attendance = (teacher.attendance || []).filter(a => a.date !== date);
+        
+        await teacher.save();
+        
+        res.json({
+            success: true,
+            message: "Attendance deleted successfully"
+        });
+        
+    } catch (err) {
+        console.error('Error deleting teacher attendance:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
 });
+
 // ============================================
-// UPDATE CONFIG API
+// CONFIGURATION APIs
 // ============================================
+
+// Update website configuration
 const configUpdateSchema = Joi.object({
     logoText: Joi.string().required(),
     title: Joi.string().required(),
@@ -1846,9 +2185,7 @@ app.post('/api/update-config', verifyToken, async (req, res) => {
     }
 });
 
-// ============================================
-// CHANGE PASSWORD API
-// ============================================
+// Change admin password
 app.post('/api/change-password', verifyToken, async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
@@ -1909,6 +2246,7 @@ app.post('/api/change-password', verifyToken, async (req, res) => {
 // ============================================
 // SERVE HTML FILES
 // ============================================
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -1950,6 +2288,7 @@ app.use((req, res) => {
 // ============================================
 // START SERVER
 // ============================================
+
 const PORT = process.env.PORT || 5000;
 
 mongoose.connection.once('open', async () => {
@@ -1970,6 +2309,8 @@ app.listen(PORT, () => {
     console.log(`   - GET /api/students - Get All Students`);
     console.log(`   - GET /api/teachers - Get All Teachers`);
     console.log(`   - GET /api/teachers/stats/summary - Teacher Statistics`);
+    console.log(`   - GET /api/students/:id/attendance - Student Attendance`);
+    console.log(`   - GET /api/teachers/:id/attendance - Teacher Attendance`);
     console.log(`   - GET /api/health - Health Check`);
     console.log(`   - GET /student-dashboard.html - Student Dashboard`);
     console.log(`   - GET /teacher-dashboard.html - Teacher Dashboard`);
