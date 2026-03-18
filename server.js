@@ -159,7 +159,7 @@ const AdminSchema = new mongoose.Schema({
 const Admin = mongoose.model('Admin', AdminSchema);
 
 // ============================================
-// 🆕 STUDENT SCHEMA - ADD THIS
+// ✅ CORRECTED STUDENT SCHEMA WITH FEES HISTORY
 // ============================================
 const StudentSchema = new mongoose.Schema({
     studentId: { 
@@ -215,10 +215,22 @@ const StudentSchema = new mongoose.Schema({
         type: Date, 
         required: true 
     },
-    fees: { 
+    // ✅ CHANGED: fees → classMonthlyFees
+    classMonthlyFees: { 
         type: Number, 
         default: 0 
     },
+    // ✅ NEW: feesHistory array for tracking monthly payments
+    feesHistory: [{
+        month: { type: String, required: true },
+        year: { type: Number, required: true },
+        monthIndex: { type: Number, required: true },
+        paidAmount: { type: Number, default: 0 },
+        dueAmount: { type: Number, required: true },
+        status: { type: String, enum: ['paid', 'partial', 'unpaid'], default: 'unpaid' },
+        paymentDate: { type: Date },
+        updatedBy: { type: String }
+    }],
     fatherName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
@@ -454,7 +466,7 @@ app.get('/api/verify-token', verifyToken, (req, res) => {
 });
 
 // ============================================
-// ✅ FIXED: STUDENT REGISTRATION API
+// ✅ CORRECTED STUDENT REGISTRATION API
 // ============================================
 app.post('/api/student-register', async (req, res) => {
     console.log("📝 Registration request received");
@@ -499,11 +511,11 @@ app.post('/api/student-register', async (req, res) => {
             });
         }
         
-        // Create new student
+        // Create new student with classMonthlyFees
         const student = new Student({
             studentId: studentData.studentId,
             password: studentData.password,
-            fees: studentData.fees || 0,
+            classMonthlyFees: studentData.classMonthlyFees || 0,  // ✅ CORRECTED
             photo: studentData.photo,
             studentName: {
                 first: studentData.student.firstName,
@@ -592,13 +604,13 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Update student fees
+// ✅ CORRECTED: Update student fees (now using classMonthlyFees)
 app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
     try {
-        const { fees } = req.body;
+        const { classMonthlyFees } = req.body;  // ✅ CORRECTED
         const student = await Student.findOneAndUpdate(
             { studentId: req.params.id },
-            { fees: fees },
+            { classMonthlyFees: classMonthlyFees },  // ✅ CORRECTED
             { new: true }
         );
         
@@ -606,7 +618,11 @@ app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Student not found" });
         }
         
-        res.json({ success: true, message: "Fees updated successfully", data: student });
+        res.json({ 
+            success: true, 
+            message: "Class monthly fees updated successfully",  // ✅ CORRECTED
+            data: student 
+        });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -737,6 +753,147 @@ app.post('/api/change-password', verifyToken, async (req, res) => {
 });
 
 // ============================================
+// 🌟 NEW API ENDPOINTS FOR STUDENT DASHBOARD
+// ============================================
+
+// GET: Get all boards
+app.get('/api/boards', verifyToken, async (req, res) => {
+    try {
+        const boards = await Student.distinct('education.board');
+        res.json({ success: true, data: boards });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// GET: Get classes by board
+app.get('/api/classes/:board', verifyToken, async (req, res) => {
+    try {
+        const classes = await Student.distinct('education.class', { 
+            'education.board': req.params.board 
+        });
+        res.json({ success: true, data: classes });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// GET: Get students by board and class
+app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
+    try {
+        const students = await Student.find({
+            'education.board': req.params.board,
+            'education.class': req.params.class
+        }).select('studentId studentName photo classMonthlyFees');
+        
+        res.json({ success: true, data: students });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// GET: Get complete student data for dashboard
+app.get('/api/student-dashboard/:studentId', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ 
+            studentId: req.params.studentId 
+        });
+        
+        if (!student) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Student not found" 
+            });
+        }
+
+        // Generate fees history if not exists
+        if (!student.feesHistory || student.feesHistory.length === 0) {
+            const joiningDate = new Date(student.joiningDate);
+            const currentDate = new Date();
+            const feesHistory = [];
+
+            let currentMonth = new Date(joiningDate);
+            
+            while (currentMonth <= currentDate) {
+                const monthName = currentMonth.toLocaleString('default', { month: 'long' });
+                const year = currentMonth.getFullYear();
+                
+                feesHistory.push({
+                    month: `${monthName} ${year}`,
+                    year: year,
+                    monthIndex: currentMonth.getMonth(),
+                    paidAmount: 0,
+                    dueAmount: student.classMonthlyFees,
+                    status: 'unpaid'
+                });
+
+                currentMonth.setMonth(currentMonth.getMonth() + 1);
+            }
+
+            student.feesHistory = feesHistory;
+            await student.save();
+        }
+
+        res.json({ success: true, data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// POST: Update fees payment
+app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
+    try {
+        const { month, paidAmount } = req.body;
+        const student = await Student.findOne({ studentId: req.params.studentId });
+        
+        if (!student) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Student not found" 
+            });
+        }
+
+        // Find and update the specific month
+        const feeEntry = student.feesHistory.find(f => f.month === month);
+        
+        if (feeEntry) {
+            feeEntry.paidAmount = paidAmount;
+            feeEntry.dueAmount = student.classMonthlyFees - paidAmount;
+            feeEntry.status = paidAmount >= student.classMonthlyFees ? 'paid' : 
+                             paidAmount > 0 ? 'partial' : 'unpaid';
+            feeEntry.paymentDate = new Date();
+            feeEntry.updatedBy = req.user.adminID;
+        }
+
+        await student.save();
+
+        // Calculate chart data
+        const months = student.feesHistory.map(f => f.month);
+        const paidAmounts = student.feesHistory.map(f => f.paidAmount);
+        const dueAmounts = student.feesHistory.map(f => f.dueAmount);
+        
+        const chartData = {
+            months: months,
+            paid: paidAmounts,
+            due: dueAmounts,
+            totalPaid: paidAmounts.reduce((a, b) => a + b, 0),
+            totalDue: dueAmounts.reduce((a, b) => a + b, 0)
+        };
+
+        res.json({ 
+            success: true, 
+            message: "Fees updated successfully",
+            data: {
+                feesHistory: student.feesHistory,
+                chartData: chartData
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
 // SERVE HTML FILES
 // ============================================
 app.get('/', (req, res) => {
@@ -745,6 +902,10 @@ app.get('/', (req, res) => {
 
 app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/student-dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'student-dashboard.html'));
 });
 
 // ============================================
@@ -789,4 +950,5 @@ app.listen(PORT, () => {
     console.log(`   - POST /api/admin-login - Admin Login`);
     console.log(`   - GET /api/config - Website Config`);
     console.log(`   - GET /api/health - Health Check`);
+    console.log(`   - GET /student-dashboard.html - Student Dashboard`);
 });
