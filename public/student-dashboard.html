@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* SAME CSS - KOI CHANGE NAHI */
         * {
             margin: 0;
             padding: 0;
@@ -734,7 +735,7 @@
             <div class="login-form">
                 <input type="text" id="username" placeholder="Username" value="admin">
                 <input type="password" id="password" placeholder="Password" value="admin123">
-                <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Login</button>
+                <button id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
             </div>
         </div>
 
@@ -742,24 +743,20 @@
         <div class="dashboard-section" id="dashboardSection">
             <div class="header">
                 <h1><i class="fas fa-chart-line"></i> Student Dashboard - Fees Tracker</h1>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
 
-            <!-- Search Area with All Boards and All Classes -->
+            <!-- Search Area -->
             <div class="search-area">
                 <h3><i class="fas fa-search"></i> Search Students</h3>
                 <div class="search-row">
-                    <select id="boardSelect">
-                        <option value="all">All Boards</option>
-                    </select>
-                    <select id="classSelect">
-                        <option value="all">All Classes</option>
-                    </select>
+                    <select id="boardSelect"></select>
+                    <select id="classSelect"></select>
                     <input type="text" id="searchInput" placeholder="Search by Name or ID...">
-                    <button class="search-btn" onclick="searchStudents()">
+                    <button class="search-btn" id="searchBtn">
                         <i class="fas fa-search"></i> Search
                     </button>
-                    <button class="reset-btn" onclick="resetFilters()">
+                    <button class="reset-btn" id="resetBtn">
                         <i class="fas fa-redo"></i> Reset
                     </button>
                 </div>
@@ -797,7 +794,7 @@
                 <div class="student-details" id="studentInfo"></div>
                 
                 <!-- Fees Tracker Button -->
-                <button class="fees-tracker-btn" onclick="openFeesModal()">
+                <button class="fees-tracker-btn" id="feesTrackerBtn">
                     <i class="fas fa-rupee-sign"></i> Open Fees Tracker
                 </button>
 
@@ -813,7 +810,7 @@
     <!-- Fees Tracker Modal -->
     <div id="feesModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeFeesModal()">&times;</span>
+            <span class="close" id="closeModal">&times;</span>
             <div class="modal-header" id="modalHeader"></div>
             <div class="fees-table-container">
                 <table class="fees-table" id="feesTable">
@@ -841,6 +838,42 @@
         let chart = null;
         let allStudents = [];
         let filteredStudents = [];
+
+        // DOM Elements ke liye variables
+        const loginSection = document.getElementById('loginSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const searchBtn = document.getElementById('searchBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const feesTrackerBtn = document.getElementById('feesTrackerBtn');
+        const closeModal = document.getElementById('closeModal');
+        const boardSelect = document.getElementById('boardSelect');
+        const classSelect = document.getElementById('classSelect');
+        const searchInput = document.getElementById('searchInput');
+
+        // Event Listeners
+        loginBtn.addEventListener('click', login);
+        logoutBtn.addEventListener('click', logout);
+        searchBtn.addEventListener('click', searchStudents);
+        resetBtn.addEventListener('click', resetFilters);
+        feesTrackerBtn.addEventListener('click', openFeesModal);
+        closeModal.addEventListener('click', closeFeesModal);
+        boardSelect.addEventListener('change', loadClasses);
+        classSelect.addEventListener('change', searchStudents);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                searchStudents();
+            }
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('feesModal');
+            if (event.target === modal) {
+                closeFeesModal();
+            }
+        });
 
         // Check if already logged in
         if (token) {
@@ -871,8 +904,8 @@
                 if (data.success) {
                     token = data.token;
                     localStorage.setItem('token', token);
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('dashboardSection').style.display = 'block';
+                    loginSection.style.display = 'none';
+                    dashboardSection.style.display = 'block';
                     loadAllStudents();
                     loadBoards();
                 } else {
@@ -897,8 +930,8 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('dashboardSection').style.display = 'block';
+                    loginSection.style.display = 'none';
+                    dashboardSection.style.display = 'block';
                     loadAllStudents();
                     loadBoards();
                 } else {
@@ -916,10 +949,12 @@
         function logout() {
             localStorage.removeItem('token');
             token = null;
-            document.getElementById('loginSection').style.display = 'block';
-            document.getElementById('dashboardSection').style.display = 'none';
+            loginSection.style.display = 'block';
+            dashboardSection.style.display = 'none';
             document.getElementById('studentsGrid').innerHTML = '';
             document.getElementById('studentDetails').style.display = 'none';
+            boardSelect.innerHTML = '<option value="all">All Boards</option>';
+            classSelect.innerHTML = '<option value="all">All Classes</option>';
         }
 
         // Load all students
@@ -959,7 +994,6 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    const boardSelect = document.getElementById('boardSelect');
                     boardSelect.innerHTML = '<option value="all">All Boards</option>';
                     data.data.forEach(board => {
                         boardSelect.innerHTML += `<option value="${board}">${board}</option>`;
@@ -970,17 +1004,45 @@
             }
         }
 
+        // Load classes by board
+        async function loadClasses() {
+            const board = boardSelect.value;
+            
+            if (board === 'all') {
+                classSelect.innerHTML = '<option value="all">All Classes</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/classes/${encodeURIComponent(board)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    classSelect.innerHTML = '<option value="all">All Classes</option>';
+                    data.data.forEach(cls => {
+                        classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Load classes error:', error);
+            }
+        }
+
         // Search students function
         async function searchStudents() {
-            const board = document.getElementById('boardSelect').value;
-            const className = document.getElementById('classSelect').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const board = boardSelect.value;
+            const className = classSelect.value;
+            const searchTerm = searchInput.value.toLowerCase();
 
             try {
                 let url = '/api/students';
                 
                 if (board !== 'all' && className !== 'all') {
-                    // If both board and class are selected
                     url = `/api/students/${encodeURIComponent(board)}/${encodeURIComponent(className)}`;
                 }
 
@@ -995,7 +1057,6 @@
                 if (data.success) {
                     let students = data.data;
                     
-                    // Apply search filter
                     if (searchTerm) {
                         students = students.filter(student => {
                             const fullName = `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`.toLowerCase();
@@ -1014,9 +1075,9 @@
 
         // Reset filters
         function resetFilters() {
-            document.getElementById('boardSelect').value = 'all';
-            document.getElementById('classSelect').value = 'all';
-            document.getElementById('searchInput').value = '';
+            boardSelect.value = 'all';
+            classSelect.innerHTML = '<option value="all">All Classes</option>';
+            searchInput.value = '';
             loadAllStudents();
         }
 
@@ -1039,7 +1100,6 @@
             students.forEach(student => {
                 const fullName = `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
                 
-                // Calculate payment status
                 let status = 'unpaid';
                 if (student.feesHistory && student.feesHistory.length > 0) {
                     const latestFee = student.feesHistory[student.feesHistory.length - 1];
@@ -1049,17 +1109,19 @@
                 const statusClass = status === 'paid' ? 'status-paid' : 
                                    status === 'partial' ? 'status-partial' : 'status-unpaid';
                 
-                grid.innerHTML += `
-                    <div class="student-card ${selectedStudent && selectedStudent.studentId === student.studentId ? 'selected' : ''}" 
-                         onclick="selectStudent('${student.studentId}')">
-                        <div class="status-indicator ${statusClass}" title="Status: ${status}"></div>
-                        <img src="${student.photo}" alt="${fullName}" onerror="this.src='https://via.placeholder.com/100'">
-                        <h4>${fullName}</h4>
-                        <div class="student-id"><i class="fas fa-id-card"></i> ${student.studentId}</div>
-                        <div class="student-class"><i class="fas fa-graduation-cap"></i> ${student.education.board} - ${student.education.class}</div>
-                        <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ₹${student.classMonthlyFees}/month</span>
-                    </div>
+                const card = document.createElement('div');
+                card.className = `student-card ${selectedStudent && selectedStudent.studentId === student.studentId ? 'selected' : ''}`;
+                card.innerHTML = `
+                    <div class="status-indicator ${statusClass}" title="Status: ${status}"></div>
+                    <img src="${student.photo}" alt="${fullName}" onerror="this.src='https://via.placeholder.com/100'">
+                    <h4>${fullName}</h4>
+                    <div class="student-id"><i class="fas fa-id-card"></i> ${student.studentId}</div>
+                    <div class="student-class"><i class="fas fa-graduation-cap"></i> ${student.education.board} - ${student.education.class}</div>
+                    <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ₹${student.classMonthlyFees}/month</span>
                 `;
+                
+                card.addEventListener('click', () => selectStudent(student.studentId));
+                grid.appendChild(card);
             });
         }
 
@@ -1107,7 +1169,6 @@
                     document.getElementById('studentDetails').style.display = 'block';
                     updateChart(selectedStudent);
                     
-                    // Scroll to details
                     document.getElementById('studentDetails').scrollIntoView({ behavior: 'smooth' });
                 }
             } catch (error) {
@@ -1174,11 +1235,15 @@
                         <p><i class="fas fa-home"></i> Permanent: ${student.address.permanent}</p>
                     </div>
                 </div>
-
-                <button class="view-aadhar" onclick="viewAadhar('${student.aadharDocument}')">
-                    <i class="fas fa-eye"></i> View Aadhar Document
-                </button>
             `;
+
+            // View Aadhar button with event listener
+            const viewAadharBtn = document.createElement('button');
+            viewAadharBtn.className = 'view-aadhar';
+            viewAadharBtn.innerHTML = '<i class="fas fa-eye"></i> View Aadhar Document';
+            viewAadharBtn.addEventListener('click', () => viewAadhar(student.aadharDocument));
+            
+            document.getElementById('studentInfo').appendChild(viewAadharBtn);
         }
 
         // View Aadhar document
@@ -1331,7 +1396,6 @@
             tableBody.innerHTML = '';
             
             if (selectedStudent.feesHistory && selectedStudent.feesHistory.length > 0) {
-                // Sort fees history by year and month
                 const sortedHistory = [...selectedStudent.feesHistory].sort((a, b) => {
                     if (a.year !== b.year) return a.year - b.year;
                     return a.monthIndex - b.monthIndex;
@@ -1341,32 +1405,45 @@
                     const statusClass = fee.status === 'paid' ? 'status-paid' : 
                                        fee.status === 'partial' ? 'status-partial' : 'status-unpaid';
                     
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td class="month-name">${fee.month.split(' ')[0]}</td>
-                            <td>${fee.year}</td>
-                            <td>₹${selectedStudent.classMonthlyFees}</td>
-                            <td>
-                                <input type="number" 
-                                       class="fees-input" 
-                                       id="paid-${fee.month}-${fee.year}" 
-                                       value="${fee.paidAmount}" 
-                                       min="0" 
-                                       max="${selectedStudent.classMonthlyFees}"
-                                       step="1"
-                                       onchange="validatePaidAmount(this, ${selectedStudent.classMonthlyFees})">
-                            </td>
-                            <td class="due-amount" id="due-${fee.month}-${fee.year}">₹${fee.dueAmount}</td>
-                            <td>
-                                <span class="status-badge ${statusClass}">${fee.status}</span>
-                            </td>
-                            <td>
-                                <button class="save-fees" onclick="saveFees('${fee.month}', ${fee.year})">
-                                    <i class="fas fa-save"></i> Save
-                                </button>
-                            </td>
-                        </tr>
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="month-name">${fee.month.split(' ')[0]}</td>
+                        <td>${fee.year}</td>
+                        <td>₹${selectedStudent.classMonthlyFees}</td>
+                        <td>
+                            <input type="number" 
+                                   class="fees-input" 
+                                   id="paid-${fee.month}-${fee.year}" 
+                                   value="${fee.paidAmount}" 
+                                   min="0" 
+                                   max="${selectedStudent.classMonthlyFees}"
+                                   step="1">
+                        </td>
+                        <td class="due-amount" id="due-${fee.month}-${fee.year}">₹${fee.dueAmount}</td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${fee.status}</span>
+                        </td>
+                        <td>
+                            <button class="save-fees" id="save-${fee.month}-${fee.year}">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </td>
                     `;
+
+                    tableBody.appendChild(row);
+
+                    // Add event listener to save button
+                    document.getElementById(`save-${fee.month}-${fee.year}`).addEventListener('click', () => {
+                        saveFees(fee.month, fee.year);
+                    });
+
+                    // Add event listener to input for validation
+                    document.getElementById(`paid-${fee.month}-${fee.year}`).addEventListener('change', function() {
+                        let value = parseFloat(this.value) || 0;
+                        if (value < 0) value = 0;
+                        if (value > selectedStudent.classMonthlyFees) value = selectedStudent.classMonthlyFees;
+                        this.value = value;
+                    });
                 });
             } else {
                 tableBody.innerHTML = `
@@ -1380,14 +1457,6 @@
             }
 
             modal.style.display = 'block';
-        }
-
-        // Validate paid amount
-        function validatePaidAmount(input, maxAmount) {
-            let value = parseFloat(input.value) || 0;
-            if (value < 0) value = 0;
-            if (value > maxAmount) value = maxAmount;
-            input.value = value;
         }
 
         // Save fees
@@ -1433,8 +1502,6 @@
 
                     updateChart(selectedStudent);
                     updateStats();
-                    
-                    // Show success message
                     alert('✅ Fees updated successfully!');
                 }
             } catch (error) {
@@ -1446,14 +1513,6 @@
         // Close fees modal
         function closeFeesModal() {
             document.getElementById('feesModal').style.display = 'none';
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('feesModal');
-            if (event.target === modal) {
-                closeFeesModal();
-            }
         }
     </script>
 </body>
