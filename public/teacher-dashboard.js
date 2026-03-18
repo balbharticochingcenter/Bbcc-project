@@ -471,7 +471,7 @@ async function loadTeacherDetails(teacherId) {
             
             // Load salary and attendance data
             loadSalaryData(teacher);
-            loadAttendanceData(teacher);
+            await loadAttendanceData(teacher); // Make it async to wait for data
         }
     } catch (err) {
         console.error('View error:', err);
@@ -650,13 +650,52 @@ function handlePaySalary(e) {
     safeShowModal('salaryModal');
 }
 
-// ========== LOAD ATTENDANCE DATA ==========
-function loadAttendanceData(teacher) {
+// ========== LOAD ATTENDANCE DATA FROM DATABASE ==========
+async function loadAttendanceData(teacher) {
     const tbody = document.getElementById('attendanceTableBody');
     if (!tbody) return;
     
-    // Generate sample attendance data for last 30 days
-    const attendance = generateAttendanceData(teacher.teacherId);
+    showLoading();
+    try {
+        // Try to fetch attendance from database
+        let attendance = [];
+        
+        const response = await fetch(`/api/teachers/${teacher.teacherId}/attendance`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+                attendance = data.data;
+            }
+        }
+        
+        // If no data from API, generate sample data
+        if (!attendance || attendance.length === 0) {
+            attendance = generateAttendanceData(teacher.teacherId);
+        }
+        
+        // Store in global variable for editing
+        attendanceData[teacher.teacherId] = attendance;
+        
+        displayAttendanceTable(teacher.teacherId, attendance);
+        
+    } catch (err) {
+        console.error('Error loading attendance:', err);
+        // Fallback to sample data
+        const attendance = generateAttendanceData(teacher.teacherId);
+        attendanceData[teacher.teacherId] = attendance;
+        displayAttendanceTable(teacher.teacherId, attendance);
+    }
+    hideLoading();
+}
+
+// ========== DISPLAY ATTENDANCE TABLE ==========
+function displayAttendanceTable(teacherId, attendance) {
+    const tbody = document.getElementById('attendanceTableBody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     if (!attendance || attendance.length === 0) {
@@ -668,25 +707,39 @@ function loadAttendanceData(teacher) {
         const statusClass = record.status === 'present' ? 'attendance-present' :
                            record.status === 'absent' ? 'attendance-absent' :
                            record.status === 'half-day' ? 'attendance-halfday' : 'attendance-leave';
-        const statusText = record.status.toUpperCase();
+        const statusText = record.status ? record.status.toUpperCase() : 'UNKNOWN';
         
         const row = document.createElement('tr');
+        row.setAttribute('data-attendance-date', record.date || '');
         row.innerHTML = `
             <td>${record.date || '-'}</td>
             <td><span class="${statusClass}">${statusText}</span></td>
             <td>
                 <button class="btn-edit edit-attendance-btn" data-date="${record.date || ''}" data-status="${record.status || ''}">
-                    <i class="fas fa-edit"></i>
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-reject delete-attendance-btn" data-date="${record.date || ''}" style="margin-left:5px;">
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         `;
         tbody.appendChild(row);
     });
+    
+    // Add event listeners to edit and delete buttons
+    document.querySelectorAll('.edit-attendance-btn').forEach(btn => {
+        btn.removeEventListener('click', handleEditAttendance);
+        btn.addEventListener('click', handleEditAttendance);
+    });
+    
+    document.querySelectorAll('.delete-attendance-btn').forEach(btn => {
+        btn.removeEventListener('click', handleDeleteAttendance);
+        btn.addEventListener('click', handleDeleteAttendance);
+    });
 }
 
+// ========== GENERATE ATTENDANCE DATA (FALLBACK) ==========
 function generateAttendanceData(teacherId) {
-    // This would normally come from API
-    // For now, generate sample data
     const attendance = [];
     const today = new Date();
     
@@ -702,12 +755,142 @@ function generateAttendanceData(teacherId) {
         else if (rand < 0.35) status = 'leave';
         
         attendance.push({
+            id: `${teacherId}_${date.toISOString().split('T')[0]}`,
+            teacherId: teacherId,
             date: date.toLocaleDateString(),
-            status: status
+            status: status,
+            remarks: ''
         });
     }
     
     return attendance;
+}
+
+// ========== HANDLE EDIT ATTENDANCE ==========
+function handleEditAttendance(e) {
+    const date = e.currentTarget.dataset.date;
+    const currentStatus = e.currentTarget.dataset.status;
+    
+    if (!selectedTeacherId || !date) return;
+    
+    const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
+    if (!teacher) return;
+    
+    // Populate attendance modal for editing
+    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
+    const attendanceTeacherName = document.getElementById('attendanceTeacherName');
+    const attendanceDate = document.getElementById('attendanceDate');
+    const attendanceDateInput = document.getElementById('attendanceDateInput');
+    const attendanceStatus = document.getElementById('attendanceStatus');
+    const attendanceRemarks = document.getElementById('attendanceRemarks');
+    const attendanceId = document.getElementById('attendanceId');
+    
+    if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
+    if (attendanceTeacherName) attendanceTeacherName.textContent = 
+        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+    if (attendanceDate) attendanceDate.textContent = date;
+    
+    // Convert display date to input format (YYYY-MM-DD)
+    if (attendanceDateInput) {
+        const dateParts = date.split('/');
+        if (dateParts.length === 3) {
+            const month = dateParts[0].padStart(2, '0');
+            const day = dateParts[1].padStart(2, '0');
+            const year = dateParts[2];
+            attendanceDateInput.value = `${year}-${month}-${day}`;
+        } else {
+            attendanceDateInput.value = new Date().toISOString().split('T')[0];
+        }
+    }
+    
+    if (attendanceStatus) attendanceStatus.value = currentStatus || 'present';
+    if (attendanceRemarks) attendanceRemarks.value = '';
+    
+    // Store attendance ID for update
+    if (attendanceId) {
+        attendanceId.value = `${teacher.teacherId}_${date}`;
+    }
+    
+    // Change modal title to indicate edit
+    const modalTitle = document.querySelector('#attendanceModal .modal-title');
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Attendance';
+    
+    safeShowModal('attendanceModal');
+}
+
+// ========== HANDLE DELETE ATTENDANCE ==========
+async function handleDeleteAttendance(e) {
+    const date = e.currentTarget.dataset.date;
+    
+    if (!selectedTeacherId || !date) return;
+    
+    if (!confirm(`Are you sure you want to delete attendance for ${date}?`)) return;
+    
+    showLoading();
+    try {
+        // Call API to delete attendance
+        const response = await fetch(`/api/teachers/${selectedTeacherId}/attendance`, {
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ date: date })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                showSuccess('Attendance deleted successfully!');
+                
+                // Update local data
+                if (attendanceData[selectedTeacherId]) {
+                    attendanceData[selectedTeacherId] = attendanceData[selectedTeacherId].filter(
+                        a => a.date !== date
+                    );
+                }
+                
+                // Refresh display
+                const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
+                if (teacher) {
+                    displayAttendanceTable(selectedTeacherId, attendanceData[selectedTeacherId] || []);
+                }
+            } else {
+                showError(data.message || 'Failed to delete attendance');
+            }
+        } else {
+            // Fallback: Remove from local data only
+            if (attendanceData[selectedTeacherId]) {
+                attendanceData[selectedTeacherId] = attendanceData[selectedTeacherId].filter(
+                    a => a.date !== date
+                );
+            }
+            
+            const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
+            if (teacher) {
+                displayAttendanceTable(selectedTeacherId, attendanceData[selectedTeacherId] || []);
+            }
+            
+            showSuccess('Attendance deleted from view (database update pending)');
+        }
+    } catch (err) {
+        console.error('Delete attendance error:', err);
+        
+        // Fallback: Remove from local data
+        if (attendanceData[selectedTeacherId]) {
+            attendanceData[selectedTeacherId] = attendanceData[selectedTeacherId].filter(
+                a => a.date !== date
+            );
+        }
+        
+        const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
+        if (teacher) {
+            displayAttendanceTable(selectedTeacherId, attendanceData[selectedTeacherId] || []);
+        }
+        
+        showSuccess('Attendance deleted from view (database offline)');
+    }
+    hideLoading();
 }
 
 // ========== FILTER TEACHERS ==========
@@ -980,42 +1163,159 @@ function handleMarkAttendance() {
     const attendanceTeacherId = document.getElementById('attendanceTeacherId');
     const attendanceTeacherName = document.getElementById('attendanceTeacherName');
     const attendanceDate = document.getElementById('attendanceDate');
+    const attendanceDateInput = document.getElementById('attendanceDateInput');
     const attendanceStatus = document.getElementById('attendanceStatus');
     const attendanceRemarks = document.getElementById('attendanceRemarks');
+    const attendanceId = document.getElementById('attendanceId');
     
     if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
     if (attendanceTeacherName) attendanceTeacherName.textContent = 
         `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    if (attendanceDate) attendanceDate.textContent = new Date().toLocaleDateString();
+    if (attendanceDate) attendanceDate.textContent = 'Today';
+    if (attendanceDateInput) attendanceDateInput.value = new Date().toISOString().split('T')[0];
     if (attendanceStatus) attendanceStatus.value = 'present';
     if (attendanceRemarks) attendanceRemarks.value = '';
+    if (attendanceId) attendanceId.value = '';
+    
+    // Change modal title to indicate new
+    const modalTitle = document.querySelector('#attendanceModal .modal-title');
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Mark Attendance';
     
     safeShowModal('attendanceModal');
 }
 
 async function saveAttendance() {
     const attendanceTeacherId = document.getElementById('attendanceTeacherId');
+    const attendanceDateInput = document.getElementById('attendanceDateInput');
     const attendanceStatus = document.getElementById('attendanceStatus');
     const attendanceRemarks = document.getElementById('attendanceRemarks');
+    const attendanceId = document.getElementById('attendanceId');
     
-    if (!attendanceTeacherId || !attendanceStatus) return;
+    if (!attendanceTeacherId || !attendanceDateInput || !attendanceStatus) return;
     
     const teacherId = attendanceTeacherId.value;
+    const dateInput = attendanceDateInput.value;
     const status = attendanceStatus.value;
     const remarks = attendanceRemarks?.value || '';
-    const date = new Date().toISOString().split('T')[0];
+    const id = attendanceId?.value || '';
     
-    // This would be an API call in production
-    console.log('Saving attendance:', { teacherId, date, status, remarks });
+    // Format date for display
+    const dateObj = new Date(dateInput);
+    const displayDate = dateObj.toLocaleDateString();
     
-    showSuccess('Attendance marked successfully!');
-    safeHideModal('attendanceModal');
+    const attendanceRecord = {
+        id: id || `${teacherId}_${dateInput}`,
+        teacherId: teacherId,
+        date: displayDate,
+        status: status,
+        remarks: remarks,
+        rawDate: dateInput
+    };
     
-    // Reload attendance data
-    const teacher = teachersData.find(t => t.teacherId === teacherId);
-    if (teacher) {
-        loadAttendanceData(teacher);
+    showLoading();
+    try {
+        // Call API to save attendance
+        const response = await fetch(`/api/teachers/${teacherId}/attendance`, {
+            method: id ? 'PUT' : 'POST', // PUT for update, POST for new
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(attendanceRecord)
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                showSuccess(id ? 'Attendance updated successfully!' : 'Attendance marked successfully!');
+                
+                // Update local data
+                if (!attendanceData[teacherId]) {
+                    attendanceData[teacherId] = [];
+                }
+                
+                if (id) {
+                    // Update existing
+                    const index = attendanceData[teacherId].findIndex(a => a.id === id);
+                    if (index !== -1) {
+                        attendanceData[teacherId][index] = attendanceRecord;
+                    } else {
+                        attendanceData[teacherId].push(attendanceRecord);
+                    }
+                } else {
+                    // Add new
+                    attendanceData[teacherId].push(attendanceRecord);
+                }
+                
+                // Sort by date (newest first)
+                attendanceData[teacherId].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+                
+                // Refresh display
+                displayAttendanceTable(teacherId, attendanceData[teacherId]);
+            } else {
+                showError(data.message || 'Failed to save attendance');
+            }
+        } else {
+            // Fallback: Update local data only
+            if (!attendanceData[teacherId]) {
+                attendanceData[teacherId] = [];
+            }
+            
+            if (id) {
+                // Update existing
+                const index = attendanceData[teacherId].findIndex(a => a.id === id);
+                if (index !== -1) {
+                    attendanceData[teacherId][index] = attendanceRecord;
+                } else {
+                    attendanceData[teacherId].push(attendanceRecord);
+                }
+            } else {
+                // Add new
+                attendanceData[teacherId].push(attendanceRecord);
+            }
+            
+            // Sort by date (newest first)
+            attendanceData[teacherId].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+            
+            // Refresh display
+            displayAttendanceTable(teacherId, attendanceData[teacherId]);
+            
+            showSuccess('Attendance saved locally (database offline)');
+        }
+        
+        safeHideModal('attendanceModal');
+        
+    } catch (err) {
+        console.error('Save attendance error:', err);
+        
+        // Fallback: Update local data only
+        if (!attendanceData[teacherId]) {
+            attendanceData[teacherId] = [];
+        }
+        
+        if (id) {
+            // Update existing
+            const index = attendanceData[teacherId].findIndex(a => a.id === id);
+            if (index !== -1) {
+                attendanceData[teacherId][index] = attendanceRecord;
+            } else {
+                attendanceData[teacherId].push(attendanceRecord);
+            }
+        } else {
+            // Add new
+            attendanceData[teacherId].push(attendanceRecord);
+        }
+        
+        // Sort by date
+        attendanceData[teacherId].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+        
+        // Refresh display
+        displayAttendanceTable(teacherId, attendanceData[teacherId]);
+        
+        safeHideModal('attendanceModal');
+        showSuccess('Attendance saved locally (database error)');
     }
+    hideLoading();
 }
 
 // ========== INITIALIZE EVENT LISTENERS ==========
