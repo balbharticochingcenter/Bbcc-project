@@ -1,4 +1,4 @@
-// ========== CHECK BOOTSTRAP FIRST ==========
+
 if (typeof bootstrap === 'undefined') {
     console.error('❌ Bootstrap not loaded! Please check your HTML script tags.');
     // Create fallback
