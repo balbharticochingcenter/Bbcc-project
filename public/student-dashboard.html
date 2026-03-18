@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - BBCC</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Login Section */
+        .login-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            margin: 50px auto;
+        }
+
+        .login-section h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .login-form input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .login-form button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin-top: 20px;
+        }
+
+        .login-form button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Dashboard Section */
+        .dashboard-section {
+            display: none;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .header h1 i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .logout-btn {
+            padding: 10px 25px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #ff3344;
+            transform: translateY(-2px);
+        }
+
+        /* Selection Area */
+        .selection-area {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .selection-area h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .selection-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .selection-row select {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .selection-row select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        /* Students Grid */
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .student-card.selected {
+            border: 3px solid #667eea;
+            background: #f8f9ff;
+        }
+
+        .student-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #667eea;
+        }
+
+        .student-card h4 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        .student-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .student-card .fees-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Student Details */
+        .student-details {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .details-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .details-header img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #667eea;
+        }
+
+        .basic-info h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .basic-info p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .basic-info i {
+            color: #667eea;
+            width: 25px;
+            margin-right: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .info-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .info-card p {
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .info-card i {
+            color: #667eea;
+            width: 25px;
+        }
+
+        .view-aadhar {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .view-aadhar:hover {
+            background: #5a67d8;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        canvas {
+            max-height: 400px;
+            width: 100% !important;
+        }
+
+        /* Fees Tracker Button */
+        .fees-tracker-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .fees-tracker-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 90%;
+            position: relative;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close {
+            position: absolute;
+            right: 25px;
+            top: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+        }
+
+        .modal-header-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 22px;
+        }
+
+        .modal-header-info p {
+            color: #666;
+            margin: 3px 0;
+        }
+
+        /* Fees Table */
+        .fees-table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .fees-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .fees-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .fees-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .fees-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .month-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .fees-input {
+            width: 100px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .fees-input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .due-amount {
+            font-weight: 600;
+            color: #ff4757;
+        }
+
+        .paid-amount {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-unpaid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .save-fees {
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .save-fees:hover {
+            background: #218838;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .loading i {
+            margin-right: 10px;
+            color: #667eea;
+        }
+
+        /* Error */
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .details-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .modal-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .fees-table {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div class="login-section" id="loginSection">
+            <h2><i class="fas fa-graduation-cap"></i> Admin Login</h2>
+            <div class="login-form">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
+                <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Login</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="dashboard-section" id="dashboardSection">
+            <div class="header">
+                <h1><i class="fas fa-chart-line"></i> Student Dashboard - Fees Tracker</h1>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+
+            <!-- Selection Area -->
+            <div class="selection-area">
+                <h3><i class="fas fa-filter"></i> Select Board & Class</h3>
+                <div class="selection-row">
+                    <select id="boardSelect" onchange="loadClasses()">
+                        <option value="">Select Board</option>
+                    </select>
+                    <select id="classSelect" onchange="loadStudents()" disabled>
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Students Grid -->
+            <div id="studentsGrid" class="students-grid"></div>
+
+            <!-- Student Details -->
+            <div id="studentDetails" style="display: none;">
+                <div class="student-details" id="studentInfo"></div>
+                
+                <!-- Fees Tracker Button -->
+                <button class="fees-tracker-btn" onclick="openFeesModal()">
+                    <i class="fas fa-rupee-sign"></i> Fees Tracker
+                </button>
+
+                <!-- Chart -->
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-bar"></i> Fees Payment Chart</h3>
+                    <canvas id="feesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fees Tracker Modal -->
+    <div id="feesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFeesModal()">&times;</span>
+            <div class="modal-header" id="modalHeader"></div>
+            <div class="fees-table-container">
+                <table class="fees-table" id="feesTable">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Class Fees</th>
+                            <th>Paid (₹)</th>
+                            <th>Due (₹)</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let token = localStorage.getItem('token');
+        let selectedStudent = null;
+        let chart = null;
+        let boards = [];
+        let classes = [];
+        let students = [];
+
+        // Check if already logged in
+        if (token) {
+            verifyToken();
+        }
+
+        // Login function
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                alert('Please enter username and password');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userid: username, password: password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    token = data.token;
+                    localStorage.setItem('token', token);
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    loadBoards();
+                } else {
+                    alert('Wrong username or password!');
+                    localStorage.removeItem('token');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed. Please try again.');
+            }
+        }
+
+        // Verify token
+        async function verifyToken() {
+            try {
+                const response = await fetch('/api/verify-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    loadBoards();
+                } else {
+                    localStorage.removeItem('token');
+                    token = null;
+                }
+            } catch (error) {
+                console.error('Token verification error:', error);
+                localStorage.removeItem('token');
+                token = null;
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            token = null;
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('boardSelect').innerHTML = '<option value="">Select Board</option>';
+            document.getElementById('classSelect').innerHTML = '<option value="">Select Class</option>';
+            document.getElementById('classSelect').disabled = true;
+            document.getElementById('studentsGrid').innerHTML = '';
+            document.getElementById('studentDetails').style.display = 'none';
+        }
+
+        // Load boards
+        async function loadBoards() {
+            try {
+                const response = await fetch('/api/boards', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    boards = data.data;
+                    const boardSelect = document.getElementById('boardSelect');
+                    boardSelect.innerHTML = '<option value="">Select Board</option>';
+                    boards.forEach(board => {
+                        boardSelect.innerHTML += `<option value="${board}">${board}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Load boards error:', error);
+                if (error.status === 401) {
+                    logout();
+                }
+            }
+        }
+
+        // Load classes by board
+        async function loadClasses() {
+            const board = document.getElementById('boardSelect').value;
+            if (!board) return;
+
+            try {
+                const response = await fetch(`/api/classes/${encodeURIComponent(board)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    classes = data.data;
+                    const classSelect = document.getElementById('classSelect');
+                    classSelect.disabled = false;
+                    classSelect.innerHTML = '<option value="">Select Class</option>';
+                    classes.forEach(cls => {
+                        classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Load classes error:', error);
+                if (error.status === 401) {
+                    logout();
+                }
+            }
+        }
+
+        // Load students by board and class
+        async function loadStudents() {
+            const board = document.getElementById('boardSelect').value;
+            const className = document.getElementById('classSelect').value;
+            
+            if (!board || !className) return;
+
+            try {
+                const response = await fetch(`/api/students/${encodeURIComponent(board)}/${encodeURIComponent(className)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    students = data.data;
+                    displayStudents(students);
+                }
+            } catch (error) {
+                console.error('Load students error:', error);
+                if (error.status === 401) {
+                    logout();
+                }
+            }
+        }
+
+        // Display students in grid
+        function displayStudents(students) {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = '';
+
+            students.forEach(student => {
+                const fullName = `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
+                
+                grid.innerHTML += `
+                    <div class="student-card ${selectedStudent && selectedStudent.studentId === student.studentId ? 'selected' : ''}" 
+                         onclick="selectStudent('${student.studentId}')">
+                        <img src="${student.photo}" alt="${fullName}">
+                        <h4>${fullName}</h4>
+                        <p><i class="fas fa-id-card"></i> ${student.studentId}</p>
+                        <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ${student.classMonthlyFees}/month</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Select student
+        async function selectStudent(studentId) {
+            try {
+                const response = await fetch(`/api/student-dashboard/${studentId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    selectedStudent = data.data;
+                    displayStudentDetails(selectedStudent);
+                    displayStudents(students);
+                    document.getElementById('studentDetails').style.display = 'block';
+                    updateChart(selectedStudent);
+                }
+            } catch (error) {
+                console.error('Select student error:', error);
+                if (error.status === 401) {
+                    logout();
+                }
+            }
+        }
+
+        // Display student details
+        function displayStudentDetails(student) {
+            const fullName = `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
+            const fatherName = `${student.fatherName.first} ${student.fatherName.middle} ${student.fatherName.last}`.replace(/\s+/g, ' ').trim();
+            const motherName = `${student.motherName.first} ${student.motherName.middle} ${student.motherName.last}`.replace(/\s+/g, ' ').trim();
+            
+            const regDate = new Date(student.registrationDate).toLocaleDateString();
+            const joinDate = new Date(student.joiningDate).toLocaleDateString();
+
+            document.getElementById('studentInfo').innerHTML = `
+                <div class="details-header">
+                    <img src="${student.photo}" alt="${fullName}">
+                    <div class="basic-info">
+                        <h2>${fullName}</h2>
+                        <p><i class="fas fa-id-card"></i> Student ID: ${student.studentId}</p>
+                        <p><i class="fas fa-id-card"></i> Aadhar: ${student.aadharNumber}</p>
+                        <p><i class="fas fa-calendar"></i> Registration: ${regDate}</p>
+                        <p><i class="fas fa-calendar-check"></i> Joining: ${joinDate}</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-user"></i> Student Details</h3>
+                        <p><i class="fas fa-phone"></i> Mobile: ${student.mobile}</p>
+                        <p><i class="fas fa-graduation-cap"></i> Board: ${student.education.board}</p>
+                        <p><i class="fas fa-book"></i> Class: ${student.education.class}</p>
+                        <p><i class="fas fa-rupee-sign"></i> Monthly Fees: ₹${student.classMonthlyFees}</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3><i class="fas fa-user-tie"></i> Father Details</h3>
+                        <p><i class="fas fa-user"></i> Name: ${fatherName}</p>
+                        <p><i class="fas fa-phone"></i> Mobile: ${student.fatherMobile}</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3><i class="fas fa-user"></i> Mother Details</h3>
+                        <p><i class="fas fa-user"></i> Name: ${motherName || 'Not Provided'}</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
+                        <p><i class="fas fa-home"></i> Current: ${student.address.current}</p>
+                        <p><i class="fas fa-home"></i> Permanent: ${student.address.permanent}</p>
+                    </div>
+                </div>
+
+                <button class="view-aadhar" onclick="viewAadhar('${student.aadharDocument}')">
+                    <i class="fas fa-eye"></i> View Aadhar Document
+                </button>
+            `;
+        }
+
+        // View Aadhar document
+        function viewAadhar(aadharDoc) {
+            const win = window.open();
+            win.document.write(`
+                <html>
+                    <head><title>Aadhar Document</title></head>
+                    <body style="margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh;">
+                        <img src="${aadharDoc}" style="max-width:100%; max-height:100vh;" />
+                    </body>
+                </html>
+            `);
+        }
+
+        // Update chart
+        function updateChart(student) {
+            if (!student.feesHistory || student.feesHistory.length === 0) return;
+
+            const months = student.feesHistory.map(f => f.month);
+            const paidAmounts = student.feesHistory.map(f => f.paidAmount);
+            const dueAmounts = student.feesHistory.map(f => f.dueAmount);
+
+            const ctx = document.getElementById('feesChart').getContext('2d');
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Paid Amount (₹)',
+                            data: paidAmounts,
+                            backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                            borderColor: '#28a745',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Due Amount (₹)',
+                            data: dueAmounts,
+                            backgroundColor: 'rgba(255, 71, 87, 0.6)',
+                            borderColor: '#ff4757',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Amount (₹)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monthly Fees Status'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Open fees modal
+        function openFeesModal() {
+            if (!selectedStudent) return;
+
+            const modal = document.getElementById('feesModal');
+            const modalHeader = document.getElementById('modalHeader');
+            const tableBody = document.getElementById('feesTableBody');
+
+            const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.middle} ${selectedStudent.studentName.last}`.replace(/\s+/g, ' ').trim();
+
+            modalHeader.innerHTML = `
+                <img src="${selectedStudent.photo}" alt="${fullName}">
+                <div class="modal-header-info">
+                    <h3>${fullName}</h3>
+                    <p><i class="fas fa-id-card"></i> ID: ${selectedStudent.studentId}</p>
+                    <p><i class="fas fa-phone"></i> Mobile: ${selectedStudent.mobile}</p>
+                    <p><i class="fas fa-rupee-sign"></i> Monthly Fees: ₹${selectedStudent.classMonthlyFees}</p>
+                </div>
+            `;
+
+            tableBody.innerHTML = '';
+            
+            if (selectedStudent.feesHistory && selectedStudent.feesHistory.length > 0) {
+                selectedStudent.feesHistory.forEach(fee => {
+                    const statusClass = fee.status === 'paid' ? 'status-paid' : 
+                                       fee.status === 'partial' ? 'status-partial' : 'status-unpaid';
+                    
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td class="month-name">${fee.month}</td>
+                            <td>₹${selectedStudent.classMonthlyFees}</td>
+                            <td><input type="number" class="fees-input" id="paid-${fee.month}" value="${fee.paidAmount}" min="0" max="${selectedStudent.classMonthlyFees}"></td>
+                            <td class="due-amount" id="due-${fee.month}">₹${fee.dueAmount}</td>
+                            <td><span class="status-badge ${statusClass}">${fee.status}</span></td>
+                            <td>
+                                <button class="save-fees" onclick="saveFees('${fee.month}')">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            modal.style.display = 'block';
+        }
+
+        // Save fees
+        async function saveFees(month) {
+            const paidInput = document.getElementById(`paid-${month}`);
+            const paidAmount = parseFloat(paidInput.value) || 0;
+
+            if (paidAmount > selectedStudent.classMonthlyFees) {
+                alert(`Paid amount cannot exceed ₹${selectedStudent.classMonthlyFees}`);
+                paidInput.value = selectedStudent.classMonthlyFees;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/update-fees/${selectedStudent.studentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        month: month,
+                        paidAmount: paidAmount
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    selectedStudent.feesHistory = data.data.feesHistory;
+                    
+                    const feeEntry = selectedStudent.feesHistory.find(f => f.month === month);
+                    if (feeEntry) {
+                        const dueCell = document.getElementById(`due-${month}`);
+                        dueCell.innerHTML = `₹${feeEntry.dueAmount}`;
+                        
+                        const statusCell = dueCell.parentElement.cells[4];
+                        const statusClass = feeEntry.status === 'paid' ? 'status-paid' : 
+                                           feeEntry.status === 'partial' ? 'status-partial' : 'status-unpaid';
+                        statusCell.innerHTML = `<span class="status-badge ${statusClass}">${feeEntry.status}</span>`;
+                    }
+
+                    updateChart(selectedStudent);
+                    alert('Fees updated successfully!');
+                }
+            } catch (error) {
+                console.error('Save fees error:', error);
+                alert('Failed to update fees. Please try again.');
+            }
+        }
+
+        // Close fees modal
+        function closeFeesModal() {
+            document.getElementById('feesModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('feesModal');
+            if (event.target === modal) {
+                closeFeesModal();
+            }
+        }
+    </script>
+</body>
+</html>
