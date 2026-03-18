@@ -36,7 +36,6 @@ let selectedTeacherId = null;
 let attendanceData = {};
 
 // Image fallback URLs
-// Image fallback URLs - Fixed version (no external dependency)
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'12\'%3EPhoto%3C/text%3E%3C/svg%3E';
 const PLACEHOLDER_LARGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E';
 
@@ -472,7 +471,7 @@ async function loadTeacherDetails(teacherId) {
             
             // Load salary and attendance data
             loadSalaryData(teacher);
-            await loadAttendanceData(teacher); // Make it async to wait for data
+            await loadAttendanceData(teacher);
         }
     } catch (err) {
         console.error('View error:', err);
@@ -545,7 +544,6 @@ async function handleDeleteTeacher(e) {
         if (data.success) {
             showSuccess('Teacher deleted successfully!');
             
-            // Clear selection if deleted teacher was selected
             if (selectedTeacherId === teacherId) {
                 selectedTeacherId = null;
                 const teacherDetailsCard = document.getElementById('teacherDetailsCard');
@@ -583,7 +581,6 @@ function loadSalaryData(teacher) {
         return;
     }
     
-    // Prepare chart data
     const months = [];
     const paidData = [];
     const dueData = [];
@@ -613,13 +610,11 @@ function loadSalaryData(teacher) {
         tbody.appendChild(row);
     });
     
-    // Add event listeners to pay buttons
     document.querySelectorAll('.pay-salary-btn').forEach(btn => {
         btn.removeEventListener('click', handlePaySalary);
         btn.addEventListener('click', handlePaySalary);
     });
     
-    // Update teacher-specific chart
     updateTeacherSalaryChart(months, paidData, dueData);
 }
 
@@ -651,49 +646,99 @@ function handlePaySalary(e) {
     safeShowModal('salaryModal');
 }
 
-// ========== LOAD ATTENDANCE DATA FROM DATABASE ==========
+// ========== LOAD ATTENDANCE DATA FROM DATABASE - FIXED VERSION ==========
 async function loadAttendanceData(teacher) {
     const tbody = document.getElementById('attendanceTableBody');
     if (!tbody) return;
     
-    showLoading();
+    // Agar teacher approved nahi hai
+    if (teacher.status !== 'approved' || !teacher.joiningDate) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center">
+                    <div class="alert alert-info m-0">
+                        <i class="fas fa-info-circle"></i>
+                        Teacher not approved yet. Approval ke baad attendance available hogi.
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
     try {
-        // Try to fetch attendance from database
-        let attendance = [];
-        
+        // Fetch attendance from database
         const response = await fetch(`/api/teachers/${teacher.teacherId}/attendance`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-                attendance = data.data;
+            const result = await response.json();
+            if (result.success) {
+                const attendance = result.data || [];
+                
+                // Store in global variable
+                attendanceData[teacher.teacherId] = attendance;
+                
+                // Display with summary
+                displayAttendanceTable(teacher.teacherId, attendance, result.summary);
+                return;
             }
         }
         
-        // If no data from API, generate sample data
-        if (!attendance || attendance.length === 0) {
-            attendance = generateAttendanceData(teacher.teacherId);
-        }
-        
-        // Store in global variable for editing
-        attendanceData[teacher.teacherId] = attendance;
-        
-        displayAttendanceTable(teacher.teacherId, attendance);
+        // Fallback: Generate dates from joining date to today (all empty)
+        const emptyAttendance = generateEmptyAttendanceData(teacher);
+        attendanceData[teacher.teacherId] = emptyAttendance;
+        displayAttendanceTable(teacher.teacherId, emptyAttendance);
         
     } catch (err) {
         console.error('Error loading attendance:', err);
-        // Fallback to sample data
-        const attendance = generateAttendanceData(teacher.teacherId);
-        attendanceData[teacher.teacherId] = attendance;
-        displayAttendanceTable(teacher.teacherId, attendance);
+        
+        // Fallback: Generate dates from joining date to today (all empty)
+        const emptyAttendance = generateEmptyAttendanceData(teacher);
+        attendanceData[teacher.teacherId] = emptyAttendance;
+        displayAttendanceTable(teacher.teacherId, emptyAttendance);
     }
-    hideLoading();
 }
 
-// ========== DISPLAY ATTENDANCE TABLE ==========
-function displayAttendanceTable(teacherId, attendance) {
+// ========== GENERATE EMPTY ATTENDANCE DATA (Joining Date se Today tak) ==========
+function generateEmptyAttendanceData(teacher) {
+    if (!teacher.joiningDate || teacher.status !== 'approved') return [];
+    
+    const attendance = [];
+    const joiningDate = new Date(teacher.joiningDate);
+    const currentDate = new Date();
+    
+    // Set to start of day
+    joiningDate.setHours(0, 0, 0, 0);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    const currentLoopDate = new Date(joiningDate);
+    
+    while (currentLoopDate <= currentDate) {
+        const dateStr = currentLoopDate.toISOString().split('T')[0];
+        const displayDate = currentLoopDate.toLocaleDateString();
+        
+        attendance.push({
+            id: null,
+            teacherId: teacher.teacherId,
+            date: displayDate,
+            rawDate: dateStr,
+            status: null,
+            remarks: '',
+            markedBy: null,
+            markedAt: null
+        });
+        
+        currentLoopDate.setDate(currentLoopDate.getDate() + 1);
+    }
+    
+    // Reverse to show latest first
+    return attendance.reverse();
+}
+
+// ========== DISPLAY ATTENDANCE TABLE - FIXED VERSION ==========
+function displayAttendanceTable(teacherId, attendance, summary = null) {
     const tbody = document.getElementById('attendanceTableBody');
     if (!tbody) return;
     
@@ -704,30 +749,89 @@ function displayAttendanceTable(teacherId, attendance) {
         return;
     }
     
+    // Show summary if available
+    if (summary) {
+        const summaryRow = document.createElement('tr');
+        summaryRow.classList.add('table-info');
+        summaryRow.innerHTML = `
+            <td colspan="3" class="text-center">
+                <strong>Summary:</strong> 
+                Present: ${summary.present || 0} | 
+                Absent: ${summary.absent || 0} | 
+                Half Day: ${summary.halfDay || 0} | 
+                Leave: ${summary.leave || 0} | 
+                Pending: ${summary.pending || 0}
+            </td>
+        `;
+        tbody.appendChild(summaryRow);
+    }
+    
     attendance.forEach(record => {
-        const statusClass = record.status === 'present' ? 'attendance-present' :
-                           record.status === 'absent' ? 'attendance-absent' :
-                           record.status === 'half-day' ? 'attendance-halfday' : 'attendance-leave';
-        const statusText = record.status ? record.status.toUpperCase() : 'UNKNOWN';
+        // Determine status class and text
+        let statusClass = '';
+        let statusDisplay = '';
+        
+        if (record.status === null || record.status === undefined || record.status === '') {
+            statusClass = 'badge bg-secondary';
+            statusDisplay = `<span class="${statusClass}">Not Marked</span>`;
+        } else {
+            statusClass = record.status === 'present' ? 'badge bg-success' :
+                         record.status === 'absent' ? 'badge bg-danger' :
+                         record.status === 'half-day' ? 'badge bg-warning text-dark' :
+                         'badge bg-info text-dark';
+            statusDisplay = `<span class="${statusClass}">${record.status.toUpperCase()}</span>`;
+        }
         
         const row = document.createElement('tr');
         row.setAttribute('data-attendance-date', record.date || '');
-        row.innerHTML = `
-            <td>${record.date || '-'}</td>
-            <td><span class="${statusClass}">${statusText}</span></td>
-            <td>
-                <button class="btn-edit edit-attendance-btn" data-date="${record.date || ''}" data-status="${record.status || ''}">
+        row.setAttribute('data-raw-date', record.rawDate || '');
+        
+        // Action buttons - show based on status
+        let actionButtons = '';
+        if (record.status === null || record.status === undefined || record.status === '') {
+            actionButtons = `
+                <button class="btn btn-sm btn-primary mark-attendance-btn" 
+                        data-date="${record.date}" 
+                        data-raw-date="${record.rawDate}"
+                        data-status="">
+                    <i class="fas fa-plus"></i> Mark
+                </button>
+            `;
+        } else {
+            actionButtons = `
+                <button class="btn btn-sm btn-warning edit-attendance-btn" 
+                        data-date="${record.date}" 
+                        data-raw-date="${record.rawDate}"
+                        data-status="${record.status}">
                     <i class="fas fa-edit"></i> Edit
                 </button>
-                <button class="btn-reject delete-attendance-btn" data-date="${record.date || ''}" style="margin-left:5px;">
-                    <i class="fas fa-trash"></i>
+                <button class="btn btn-sm btn-danger delete-attendance-btn" 
+                        data-date="${record.date}" 
+                        data-raw-date="${record.rawDate}"
+                        style="margin-left:5px;">
+                    <i class="fas fa-trash"></i> Delete
                 </button>
+            `;
+        }
+        
+        row.innerHTML = `
+            <td>${record.date || '-'}</td>
+            <td>${statusDisplay}</td>
+            <td>
+                <div class="btn-group" role="group">
+                    ${actionButtons}
+                </div>
             </td>
         `;
         tbody.appendChild(row);
     });
     
-    // Add event listeners to edit and delete buttons
+    // Add event listeners
+    document.querySelectorAll('.mark-attendance-btn').forEach(btn => {
+        btn.removeEventListener('click', handleMarkAttendance);
+        btn.addEventListener('click', handleMarkAttendance);
+    });
+    
     document.querySelectorAll('.edit-attendance-btn').forEach(btn => {
         btn.removeEventListener('click', handleEditAttendance);
         btn.addEventListener('click', handleEditAttendance);
@@ -739,43 +843,54 @@ function displayAttendanceTable(teacherId, attendance) {
     });
 }
 
-// ========== GENERATE ATTENDANCE DATA (FALLBACK) ==========
-function generateAttendanceData(teacherId) {
-    const attendance = [];
-    const today = new Date();
+// ========== HANDLE MARK ATTENDANCE (for empty records) ==========
+function handleMarkAttendance(e) {
+    const date = e.currentTarget.dataset.date;
+    const rawDate = e.currentTarget.dataset.rawDate;
     
-    for (let i = 30; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        
-        // Random status
-        const rand = Math.random();
-        let status = 'present';
-        if (rand < 0.2) status = 'absent';
-        else if (rand < 0.3) status = 'half-day';
-        else if (rand < 0.35) status = 'leave';
-        
-        attendance.push({
-            id: `${teacherId}_${date.toISOString().split('T')[0]}`,
-            teacherId: teacherId,
-            date: date.toLocaleDateString(),
-            status: status,
-            remarks: ''
-        });
-    }
+    if (!selectedTeacherId || !date) return;
     
-    return attendance;
+    const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
+    if (!teacher) return;
+    
+    // Populate attendance modal for marking
+    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
+    const attendanceTeacherName = document.getElementById('attendanceTeacherName');
+    const attendanceDate = document.getElementById('attendanceDate');
+    const attendanceDateInput = document.getElementById('attendanceDateInput');
+    const attendanceStatus = document.getElementById('attendanceStatus');
+    const attendanceRemarks = document.getElementById('attendanceRemarks');
+    const attendanceId = document.getElementById('attendanceId');
+    
+    if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
+    if (attendanceTeacherName) attendanceTeacherName.textContent = 
+        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+    if (attendanceDate) attendanceDate.textContent = date;
+    if (attendanceDateInput) attendanceDateInput.value = rawDate || new Date().toISOString().split('T')[0];
+    if (attendanceStatus) attendanceStatus.value = 'present';
+    if (attendanceRemarks) attendanceRemarks.value = '';
+    if (attendanceId) attendanceId.value = '';
+    
+    // Change modal title
+    const modalTitle = document.querySelector('#attendanceModal .modal-title');
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Mark Attendance';
+    
+    safeShowModal('attendanceModal');
 }
 
 // ========== HANDLE EDIT ATTENDANCE ==========
 function handleEditAttendance(e) {
     const date = e.currentTarget.dataset.date;
+    const rawDate = e.currentTarget.dataset.rawDate;
     const currentStatus = e.currentTarget.dataset.status;
     
     if (!selectedTeacherId || !date) return;
     
     const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
     if (!teacher) return;
+    
+    // Find the record to get its ID
+    const record = attendanceData[selectedTeacherId]?.find(r => r.date === date);
     
     // Populate attendance modal for editing
     const attendanceTeacherId = document.getElementById('attendanceTeacherId');
@@ -790,29 +905,12 @@ function handleEditAttendance(e) {
     if (attendanceTeacherName) attendanceTeacherName.textContent = 
         `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
     if (attendanceDate) attendanceDate.textContent = date;
-    
-    // Convert display date to input format (YYYY-MM-DD)
-    if (attendanceDateInput) {
-        const dateParts = date.split('/');
-        if (dateParts.length === 3) {
-            const month = dateParts[0].padStart(2, '0');
-            const day = dateParts[1].padStart(2, '0');
-            const year = dateParts[2];
-            attendanceDateInput.value = `${year}-${month}-${day}`;
-        } else {
-            attendanceDateInput.value = new Date().toISOString().split('T')[0];
-        }
-    }
-    
+    if (attendanceDateInput) attendanceDateInput.value = rawDate || new Date().toISOString().split('T')[0];
     if (attendanceStatus) attendanceStatus.value = currentStatus || 'present';
-    if (attendanceRemarks) attendanceRemarks.value = '';
+    if (attendanceRemarks) attendanceRemarks.value = record?.remarks || '';
+    if (attendanceId) attendanceId.value = record?.id || '';
     
-    // Store attendance ID for update
-    if (attendanceId) {
-        attendanceId.value = `${teacher.teacherId}_${date}`;
-    }
-    
-    // Change modal title to indicate edit
+    // Change modal title
     const modalTitle = document.querySelector('#attendanceModal .modal-title');
     if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Attendance';
     
@@ -822,6 +920,7 @@ function handleEditAttendance(e) {
 // ========== HANDLE DELETE ATTENDANCE ==========
 async function handleDeleteAttendance(e) {
     const date = e.currentTarget.dataset.date;
+    const rawDate = e.currentTarget.dataset.rawDate;
     
     if (!selectedTeacherId || !date) return;
     
@@ -829,14 +928,13 @@ async function handleDeleteAttendance(e) {
     
     showLoading();
     try {
-        // Call API to delete attendance
         const response = await fetch(`/api/teachers/${selectedTeacherId}/attendance`, {
             method: 'DELETE',
             headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ date: date })
+            body: JSON.stringify({ date: rawDate })
         });
         
         if (response.ok) {
@@ -844,54 +942,139 @@ async function handleDeleteAttendance(e) {
             if (data.success) {
                 showSuccess('Attendance deleted successfully!');
                 
-                // Update local data
-                if (attendanceData[selectedTeacherId]) {
-                    attendanceData[selectedTeacherId] = attendanceData[selectedTeacherId].filter(
-                        a => a.date !== date
-                    );
-                }
-                
-                // Refresh display
-                const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
-                if (teacher) {
-                    displayAttendanceTable(selectedTeacherId, attendanceData[selectedTeacherId] || []);
+                // Refresh teacher details to reload attendance
+                if (selectedTeacherId) {
+                    await loadTeacherDetails(selectedTeacherId);
                 }
             } else {
                 showError(data.message || 'Failed to delete attendance');
             }
         } else {
-            // Fallback: Remove from local data only
-            if (attendanceData[selectedTeacherId]) {
-                attendanceData[selectedTeacherId] = attendanceData[selectedTeacherId].filter(
-                    a => a.date !== date
-                );
-            }
-            
-            const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
-            if (teacher) {
-                displayAttendanceTable(selectedTeacherId, attendanceData[selectedTeacherId] || []);
-            }
-            
-            showSuccess('Attendance deleted from view (database update pending)');
+            showError('Failed to delete attendance');
         }
     } catch (err) {
         console.error('Delete attendance error:', err);
-        
-        // Fallback: Remove from local data
-        if (attendanceData[selectedTeacherId]) {
-            attendanceData[selectedTeacherId] = attendanceData[selectedTeacherId].filter(
-                a => a.date !== date
-            );
-        }
-        
-        const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
-        if (teacher) {
-            displayAttendanceTable(selectedTeacherId, attendanceData[selectedTeacherId] || []);
-        }
-        
-        showSuccess('Attendance deleted from view (database offline)');
+        showError('Failed to delete attendance');
     }
     hideLoading();
+}
+
+// ========== SAVE ATTENDANCE (Mark/Edit) - UPDATED ==========
+async function saveAttendance() {
+    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
+    const attendanceDateInput = document.getElementById('attendanceDateInput');
+    const attendanceStatus = document.getElementById('attendanceStatus');
+    const attendanceRemarks = document.getElementById('attendanceRemarks');
+    const attendanceId = document.getElementById('attendanceId');
+    
+    if (!attendanceTeacherId || !attendanceDateInput || !attendanceStatus) return;
+    
+    const teacherId = attendanceTeacherId.value;
+    const dateInput = attendanceDateInput.value;
+    const status = attendanceStatus.value;
+    const remarks = attendanceRemarks?.value || '';
+    const id = attendanceId?.value || '';
+    
+    // Validate date is not in future
+    const selectedDate = new Date(dateInput);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate > today) {
+        showError('Cannot mark attendance for future dates');
+        return;
+    }
+    
+    const payload = {
+        date: dateInput,
+        status: status,
+        remarks: remarks
+    };
+    
+    showLoading();
+    try {
+        const url = `/api/teachers/${teacherId}/attendance`;
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                showSuccess(id ? 'Attendance updated successfully!' : 'Attendance marked successfully!');
+                
+                // Hide modal
+                safeHideModal('attendanceModal');
+                
+                // Refresh teacher details to reload attendance
+                if (selectedTeacherId) {
+                    await loadTeacherDetails(selectedTeacherId);
+                }
+            } else {
+                showError(result.message || 'Failed to save attendance');
+            }
+        } else {
+            const error = await response.json();
+            showError(error.message || 'Failed to save attendance');
+        }
+        
+    } catch (err) {
+        console.error('Save attendance error:', err);
+        showError('Failed to save attendance');
+    }
+    hideLoading();
+}
+
+// ========== HANDLE MARK ATTENDANCE MAIN BUTTON ==========
+function handleMarkAttendanceMain() {
+    if (!selectedTeacherId) {
+        showError('Please select a teacher first');
+        return;
+    }
+    
+    const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
+    if (!teacher) return;
+    
+    // Check if teacher is approved
+    if (teacher.status !== 'approved') {
+        showError('Cannot mark attendance for unapproved teacher');
+        return;
+    }
+    
+    // For main button, default to today's date
+    const today = new Date();
+    const dateStr = today.toLocaleDateString();
+    const rawDate = today.toISOString().split('T')[0];
+    
+    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
+    const attendanceTeacherName = document.getElementById('attendanceTeacherName');
+    const attendanceDate = document.getElementById('attendanceDate');
+    const attendanceDateInput = document.getElementById('attendanceDateInput');
+    const attendanceStatus = document.getElementById('attendanceStatus');
+    const attendanceRemarks = document.getElementById('attendanceRemarks');
+    const attendanceId = document.getElementById('attendanceId');
+    
+    if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
+    if (attendanceTeacherName) attendanceTeacherName.textContent = 
+        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+    if (attendanceDate) attendanceDate.textContent = dateStr;
+    if (attendanceDateInput) attendanceDateInput.value = rawDate;
+    if (attendanceStatus) attendanceStatus.value = 'present';
+    if (attendanceRemarks) attendanceRemarks.value = '';
+    if (attendanceId) attendanceId.value = '';
+    
+    // Change modal title
+    const modalTitle = document.querySelector('#attendanceModal .modal-title');
+    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Mark Today\'s Attendance';
+    
+    safeShowModal('attendanceModal');
 }
 
 // ========== FILTER TEACHERS ==========
@@ -1058,18 +1241,15 @@ function handleEditTeacher() {
         editJoiningDate.value = joinDate.toISOString().split('T')[0];
     }
     
-    // Show/hide joining date row based on status
     const joiningDateRow = document.getElementById('joiningDateRow');
     if (joiningDateRow) {
         joiningDateRow.style.display = teacher.status === 'approved' ? 'block' : 'none';
     }
     
-    // Photo preview
     if (editPhotoPreview) {
         editPhotoPreview.src = getSafeImageUrl(teacher.photo, true);
     }
     
-    // Document links
     if (editAadharLink) {
         if (teacher.aadharDoc) {
             editAadharLink.href = teacher.aadharDoc;
@@ -1111,13 +1291,11 @@ async function saveTeacherEdit() {
         status: document.getElementById('editStatus')?.value || 'pending'
     };
     
-    // Add joining date if status is approved
     if (teacherData.status === 'approved') {
         teacherData.joiningDate = document.getElementById('editJoiningDate')?.value || '';
     }
     
     showLoading();
-    
     try {
         const response = await fetch(`/api/teachers/${teacherId}`, {
             method: 'PUT',
@@ -1134,7 +1312,6 @@ async function saveTeacherEdit() {
             safeHideModal('editTeacherModal');
             showSuccess('Teacher updated successfully!');
             
-            // Reload data
             await loadTeachers();
             if (selectedTeacherId) {
                 await loadTeacherDetails(selectedTeacherId);
@@ -1147,181 +1324,11 @@ async function saveTeacherEdit() {
         console.error('Edit error:', err);
         showError('Failed to update teacher');
     }
-    
-    hideLoading();
-}
-
-// ========== MARK ATTENDANCE ==========
-function handleMarkAttendance() {
-    if (!selectedTeacherId) {
-        showError('Please select a teacher first');
-        return;
-    }
-    
-    const teacher = teachersData.find(t => t.teacherId === selectedTeacherId);
-    if (!teacher) return;
-    
-    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
-    const attendanceTeacherName = document.getElementById('attendanceTeacherName');
-    const attendanceDate = document.getElementById('attendanceDate');
-    const attendanceDateInput = document.getElementById('attendanceDateInput');
-    const attendanceStatus = document.getElementById('attendanceStatus');
-    const attendanceRemarks = document.getElementById('attendanceRemarks');
-    const attendanceId = document.getElementById('attendanceId');
-    
-    if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
-    if (attendanceTeacherName) attendanceTeacherName.textContent = 
-        `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    if (attendanceDate) attendanceDate.textContent = 'Today';
-    if (attendanceDateInput) attendanceDateInput.value = new Date().toISOString().split('T')[0];
-    if (attendanceStatus) attendanceStatus.value = 'present';
-    if (attendanceRemarks) attendanceRemarks.value = '';
-    if (attendanceId) attendanceId.value = '';
-    
-    // Change modal title to indicate new
-    const modalTitle = document.querySelector('#attendanceModal .modal-title');
-    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Mark Attendance';
-    
-    safeShowModal('attendanceModal');
-}
-
-async function saveAttendance() {
-    const attendanceTeacherId = document.getElementById('attendanceTeacherId');
-    const attendanceDateInput = document.getElementById('attendanceDateInput');
-    const attendanceStatus = document.getElementById('attendanceStatus');
-    const attendanceRemarks = document.getElementById('attendanceRemarks');
-    const attendanceId = document.getElementById('attendanceId');
-    
-    if (!attendanceTeacherId || !attendanceDateInput || !attendanceStatus) return;
-    
-    const teacherId = attendanceTeacherId.value;
-    const dateInput = attendanceDateInput.value;
-    const status = attendanceStatus.value;
-    const remarks = attendanceRemarks?.value || '';
-    const id = attendanceId?.value || '';
-    
-    // Format date for display
-    const dateObj = new Date(dateInput);
-    const displayDate = dateObj.toLocaleDateString();
-    
-    const attendanceRecord = {
-        id: id || `${teacherId}_${dateInput}`,
-        teacherId: teacherId,
-        date: displayDate,
-        status: status,
-        remarks: remarks,
-        rawDate: dateInput
-    };
-    
-    showLoading();
-    try {
-        // Call API to save attendance
-        const response = await fetch(`/api/teachers/${teacherId}/attendance`, {
-            method: id ? 'PUT' : 'POST', // PUT for update, POST for new
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify(attendanceRecord)
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                showSuccess(id ? 'Attendance updated successfully!' : 'Attendance marked successfully!');
-                
-                // Update local data
-                if (!attendanceData[teacherId]) {
-                    attendanceData[teacherId] = [];
-                }
-                
-                if (id) {
-                    // Update existing
-                    const index = attendanceData[teacherId].findIndex(a => a.id === id);
-                    if (index !== -1) {
-                        attendanceData[teacherId][index] = attendanceRecord;
-                    } else {
-                        attendanceData[teacherId].push(attendanceRecord);
-                    }
-                } else {
-                    // Add new
-                    attendanceData[teacherId].push(attendanceRecord);
-                }
-                
-                // Sort by date (newest first)
-                attendanceData[teacherId].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
-                
-                // Refresh display
-                displayAttendanceTable(teacherId, attendanceData[teacherId]);
-            } else {
-                showError(data.message || 'Failed to save attendance');
-            }
-        } else {
-            // Fallback: Update local data only
-            if (!attendanceData[teacherId]) {
-                attendanceData[teacherId] = [];
-            }
-            
-            if (id) {
-                // Update existing
-                const index = attendanceData[teacherId].findIndex(a => a.id === id);
-                if (index !== -1) {
-                    attendanceData[teacherId][index] = attendanceRecord;
-                } else {
-                    attendanceData[teacherId].push(attendanceRecord);
-                }
-            } else {
-                // Add new
-                attendanceData[teacherId].push(attendanceRecord);
-            }
-            
-            // Sort by date (newest first)
-            attendanceData[teacherId].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
-            
-            // Refresh display
-            displayAttendanceTable(teacherId, attendanceData[teacherId]);
-            
-            showSuccess('Attendance saved locally (database offline)');
-        }
-        
-        safeHideModal('attendanceModal');
-        
-    } catch (err) {
-        console.error('Save attendance error:', err);
-        
-        // Fallback: Update local data only
-        if (!attendanceData[teacherId]) {
-            attendanceData[teacherId] = [];
-        }
-        
-        if (id) {
-            // Update existing
-            const index = attendanceData[teacherId].findIndex(a => a.id === id);
-            if (index !== -1) {
-                attendanceData[teacherId][index] = attendanceRecord;
-            } else {
-                attendanceData[teacherId].push(attendanceRecord);
-            }
-        } else {
-            // Add new
-            attendanceData[teacherId].push(attendanceRecord);
-        }
-        
-        // Sort by date
-        attendanceData[teacherId].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
-        
-        // Refresh display
-        displayAttendanceTable(teacherId, attendanceData[teacherId]);
-        
-        safeHideModal('attendanceModal');
-        showSuccess('Attendance saved locally (database error)');
-    }
     hideLoading();
 }
 
 // ========== INITIALIZE EVENT LISTENERS ==========
 function initEventListeners() {
-    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
@@ -1332,13 +1339,11 @@ function initEventListeners() {
         });
     }
     
-    // Search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', debounce(filterTeachers, 500));
     }
     
-    // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1348,7 +1353,6 @@ function initEventListeners() {
         });
     });
     
-    // Refresh
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
@@ -1357,7 +1361,6 @@ function initEventListeners() {
         });
     }
     
-    // Teacher select dropdown
     const teacherSelect = document.getElementById('teacherSelect');
     if (teacherSelect) {
         teacherSelect.addEventListener('change', function() {
@@ -1378,22 +1381,20 @@ function initEventListeners() {
         });
     }
     
-    // Edit teacher button
     const editTeacherBtn = document.getElementById('editTeacherBtn');
     if (editTeacherBtn) {
         editTeacherBtn.addEventListener('click', handleEditTeacher);
     }
     
-    // Save edit button
     const saveEditBtn = document.getElementById('saveEditBtn');
     if (saveEditBtn) {
         saveEditBtn.addEventListener('click', saveTeacherEdit);
     }
     
-    // Mark attendance button
+    // Mark attendance button (main button)
     const markAttendanceBtn = document.getElementById('markAttendanceBtn');
     if (markAttendanceBtn) {
-        markAttendanceBtn.addEventListener('click', handleMarkAttendance);
+        markAttendanceBtn.addEventListener('click', handleMarkAttendanceMain);
     }
     
     // Save attendance button
@@ -1402,7 +1403,6 @@ function initEventListeners() {
         saveAttendanceBtn.addEventListener('click', saveAttendance);
     }
     
-    // Status change in edit form
     const editStatus = document.getElementById('editStatus');
     if (editStatus) {
         editStatus.addEventListener('change', function() {
@@ -1413,7 +1413,6 @@ function initEventListeners() {
         });
     }
     
-    // Approve teacher
     const confirmApproveBtn = document.getElementById('confirmApproveBtn');
     if (confirmApproveBtn) {
         confirmApproveBtn.addEventListener('click', async function() {
@@ -1466,7 +1465,6 @@ function initEventListeners() {
         });
     }
     
-    // Salary calculation
     const paidAmount = document.getElementById('paidAmount');
     if (paidAmount) {
         paidAmount.addEventListener('input', function() {
@@ -1485,7 +1483,6 @@ function initEventListeners() {
         });
     }
     
-    // Save salary
     const saveSalaryBtn = document.getElementById('saveSalaryBtn');
     if (saveSalaryBtn) {
         saveSalaryBtn.addEventListener('click', async function() {
