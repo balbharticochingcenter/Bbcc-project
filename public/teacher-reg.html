@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Registration - BBCC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .hidden { display: none; }
+        .preview-img { width: 100px; height: 100px; object-fit: cover; border: 1px solid #ccc; }
+        #camera-container video { width: 100%; max-width: 400px; }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <div id="form-section" class="card shadow p-4">
+        <h2 class="text-primary mb-4">Teacher Registration Form</h2>
+        <form id="regForm">
+            <div class="row g-3">
+                <div class="col-md-4"><label>First Name</label><input type="text" id="fName" class="form-control" required></div>
+                <div class="col-md-4"><label>Middle Name</label><input type="text" id="mName" class="form-control"></div>
+                <div class="col-md-4"><label>Last Name</label><input type="text" id="lName" class="form-control" required></div>
+                
+                <div class="col-md-4"><label>Father First Name</label><input type="text" id="ffName" class="form-control" required></div>
+                <div class="col-md-4"><label>Father Middle Name</label><input type="text" id="fmName" class="form-control"></div>
+                <div class="col-md-4"><label>Father Last Name</label><input type="text" id="flName" class="form-control" required></div>
+
+                <div class="col-md-4"><label>Mobile</label><input type="number" id="mobile" class="form-control" required></div>
+                <div class="col-md-4"><label>Alt Mobile</label><input type="number" id="altMobile" class="form-control"></div>
+                <div class="col-md-4"><label>Date of Birth</label><input type="date" id="dob" class="form-control" required></div>
+
+                <div class="col-md-6"><label>Aadhar Number (Unique ID)</label><input type="number" id="aadharNum" class="form-control" required></div>
+                <div class="col-md-6"><label>Last Qualification</label><input type="text" id="qual" class="form-control" required></div>
+
+                <div class="col-md-6">
+                    <label>Teacher Photo</label>
+                    <input type="file" id="photoFile" class="form-control" accept="image/*">
+                    <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="startCamera('photo')">Live Capture</button>
+                    <input type="hidden" id="photoData">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Aadhar Document</label>
+                    <input type="file" id="aadharFile" class="form-control" accept="image/*">
+                    <input type="hidden" id="aadharData">
+                </div>
+
+                <div class="col-md-6">
+                    <label>Qualification Document</label>
+                    <input type="file" id="qualFile" class="form-control" accept="image/*">
+                    <input type="hidden" id="qualData">
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary mt-4 w-100" onclick="showPreview()">Next (Preview)</button>
+        </form>
+    </div>
+
+    <div id="camera-modal" class="hidden text-center p-3 bg-white border">
+        <video id="video" autoplay></video><br>
+        <button class="btn btn-danger" onclick="capture()">Capture Now</button>
+    </div>
+
+    <div id="preview-section" class="card shadow p-4 hidden">
+        <h2 class="text-success">Review Details</h2>
+        <div id="preview-content" class="my-3"></div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-warning" onclick="editForm()">Edit</button>
+            <button class="btn btn-success" onclick="submitData()">Final Submit</button>
+        </div>
+    </div>
+
+    <div id="success-section" class="card shadow p-5 text-center hidden">
+        <h1 class="text-success">Registration Successful!</h1>
+        <div class="alert alert-info mt-3">
+            <p><strong>Your ID:</strong> <span id="resID"></span></p>
+            <p><strong>Your Password:</strong> <span id="resPWS"></span></p>
+        </div>
+        <h4 class="text-danger">Please take a SCREENSHOT of this page!</h4>
+    </div>
+</div>
+
+<script>
+    let currentTarget = '';
+
+    // Image Compression Logic
+    async function compressImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 400; canvas.height = 400;
+                    ctx.drawImage(img, 0, 0, 400, 400);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+            };
+        });
+    }
+
+    // Handle File inputs
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.onchange = async (e) => {
+            const compressed = await compressImage(e.target.files[0]);
+            document.getElementById(e.target.id.replace('File', 'Data')).value = compressed;
+        };
+    });
+
+    function startCamera(target) {
+        currentTarget = target;
+        document.getElementById('camera-modal').classList.remove('hidden');
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+            document.getElementById('video').srcObject = stream;
+        });
+    }
+
+    function capture() {
+        const video = document.getElementById('video');
+        const canvas = document.createElement('canvas');
+        canvas.width = 400; canvas.height = 400;
+        canvas.getContext('2d').drawImage(video, 0, 0, 400, 400);
+        document.getElementById(currentTarget + 'Data').value = canvas.toDataURL('image/jpeg', 0.7);
+        video.srcObject.getTracks().forEach(track => track.stop());
+        document.getElementById('camera-modal').classList.add('hidden');
+        alert("Photo Captured!");
+    }
+
+    function showPreview() {
+        const fName = document.getElementById('fName').value;
+        const aadharNum = document.getElementById('aadharNum').value;
+        const dob = document.getElementById('dob').value;
+        
+        if(!fName || !aadharNum || !dob) return alert("Please fill all fields!");
+
+        let html = `
+            <p><strong>Name:</strong> ${fName} ${document.getElementById('lName').value}</p>
+            <p><strong>Aadhar:</strong> ${aadharNum}</p>
+            <p><strong>Mobile:</strong> ${document.getElementById('mobile').value}</p>
+            <img src="${document.getElementById('photoData').value}" class="preview-img">
+        `;
+        document.getElementById('preview-content').innerHTML = html;
+        document.getElementById('form-section').classList.add('hidden');
+        document.getElementById('preview-section').classList.remove('hidden');
+    }
+
+    function editForm() {
+        document.getElementById('form-section').classList.remove('hidden');
+        document.getElementById('preview-section').classList.add('hidden');
+    }
+
+    async function submitData() {
+        const fName = document.getElementById('fName').value.toUpperCase();
+        const dob = document.getElementById('dob').value; // YYYY-MM-DD
+        const year = dob.split('-')[0];
+        const pws = fName.substring(0, 4) + year;
+
+        const payload = {
+            teacherId: document.getElementById('aadharNum').value,
+            password: pws,
+            photo: document.getElementById('photoData').value,
+            teacherName: {
+                first: document.getElementById('fName').value,
+                middle: document.getElementById('mName').value,
+                last: document.getElementById('lName').value
+            },
+            fatherName: {
+                first: document.getElementById('ffName').value,
+                middle: document.getElementById('fmName').value,
+                last: document.getElementById('flName').value
+            },
+            mobile: document.getElementById('mobile').value,
+            altMobile: document.getElementById('altMobile').value,
+            dob: dob,
+            lastQualification: document.getElementById('qual').value,
+            qualificationDoc: document.getElementById('qualData').value,
+            aadharNumber: document.getElementById('aadharNum').value,
+            aadharDoc: document.getElementById('aadharData').value
+        };
+
+        const res = await fetch('/api/teacher-register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        if(result.success) {
+            document.getElementById('preview-section').classList.add('hidden');
+            document.getElementById('success-section').classList.remove('hidden');
+            document.getElementById('resID').innerText = result.id;
+            document.getElementById('resPWS').innerText = result.pws;
+        } else {
+            alert(result.message);
+        }
+    }
+</script>
+</body>
+</html>
