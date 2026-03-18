@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* SAME CSS - Koi change nahi */
         * {
             margin: 0;
             padding: 0;
@@ -528,6 +529,70 @@
             width: 25px;
         }
 
+        .document-preview {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border: 2px dashed #667eea;
+        }
+
+        .document-preview h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .document-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .document-preview iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .view-document, .download-document {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .view-document {
+            background: #667eea;
+            color: white;
+        }
+
+        .view-document:hover {
+            background: #5a67d8;
+        }
+
+        .download-document {
+            background: #28a745;
+            color: white;
+        }
+
+        .download-document:hover {
+            background: #218838;
+        }
+
         .view-aadhar {
             display: inline-block;
             margin-top: 20px;
@@ -785,11 +850,61 @@
             transform: translateY(-2px);
         }
 
+        /* File Upload */
+        .file-upload {
+            margin-bottom: 15px;
+        }
+
+        .file-upload label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .file-upload input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .file-upload small {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .preview-container {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+        }
+
+        .preview-container img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 5px;
+        }
+
+        .preview-container iframe {
+            width: 100%;
+            height: 200px;
+            border: none;
+            border-radius: 5px;
+        }
+
         /* Edit Form Modal */
         .edit-form {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 20px;
         }
 
         .form-group {
@@ -826,6 +941,8 @@
             gap: 15px;
             justify-content: flex-end;
             margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
         }
 
         .save-changes-btn {
@@ -1006,6 +1123,10 @@
             cursor: pointer;
         }
 
+        .confirm-yes:hover {
+            background: #c82333;
+        }
+
         .confirm-no {
             padding: 10px 25px;
             background: #6c757d;
@@ -1013,6 +1134,10 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        .confirm-no:hover {
+            background: #5a6268;
         }
 
         /* Responsive */
@@ -1066,8 +1191,8 @@
         <div class="login-section" id="loginSection">
             <h2><i class="fas fa-graduation-cap"></i> Admin Login</h2>
             <div class="login-form">
-                <input type="text" id="username" placeholder="Username" value="admin">
-                <input type="password" id="password" placeholder="Password" value="admin123">
+                <input type="text" id="username" placeholder="Username">
+                <input type="password" id="password" placeholder="Password">
                 <button id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
             </div>
         </div>
@@ -1178,68 +1303,78 @@
             <h2><i class="fas fa-edit"></i> Edit Student Details</h2>
             <form id="editStudentForm" class="edit-form">
                 <div class="form-group">
-                    <label>Student ID</label>
+                    <label>Student ID *</label>
                     <input type="text" id="editStudentId" readonly>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="text" id="editPassword">
+                    <label>Password *</label>
+                    <input type="text" id="editPassword" required>
                 </div>
                 <div class="form-group">
-                    <label>First Name</label>
-                    <input type="text" id="editFirstName">
+                    <label>First Name *</label>
+                    <input type="text" id="editFirstName" required>
                 </div>
                 <div class="form-group">
                     <label>Middle Name</label>
                     <input type="text" id="editMiddleName">
                 </div>
                 <div class="form-group">
-                    <label>Last Name</label>
-                    <input type="text" id="editLastName">
+                    <label>Last Name *</label>
+                    <input type="text" id="editLastName" required>
                 </div>
                 <div class="form-group">
-                    <label>Mobile</label>
-                    <input type="text" id="editMobile" maxlength="10">
+                    <label>Mobile *</label>
+                    <input type="text" id="editMobile" maxlength="10" required>
                 </div>
                 <div class="form-group">
-                    <label>Aadhar Number</label>
-                    <input type="text" id="editAadhar" maxlength="12">
+                    <label>Aadhar Number *</label>
+                    <input type="text" id="editAadhar" maxlength="12" required>
+                </div>
+                <div class="form-group full-width">
+                    <label>Photo</label>
+                    <div class="file-upload">
+                        <input type="file" id="editPhotoFile" accept="image/*">
+                        <small>Upload new photo (JPG, PNG, GIF)</small>
+                    </div>
+                    <input type="hidden" id="editPhoto">
+                    <div class="preview-container" id="editPhotoPreview"></div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Aadhar Document</label>
+                    <div class="file-upload">
+                        <input type="file" id="editAadharFile" accept="image/*,.pdf">
+                        <small>Upload new Aadhar document (JPG, PNG, PDF)</small>
+                    </div>
+                    <input type="hidden" id="editAadharDoc">
+                    <div class="preview-container" id="editAadharPreview"></div>
                 </div>
                 <div class="form-group">
-                    <label>Photo URL</label>
-                    <input type="text" id="editPhoto">
+                    <label>Registration Date *</label>
+                    <input type="date" id="editRegDate" required>
                 </div>
                 <div class="form-group">
-                    <label>Aadhar Document URL</label>
-                    <input type="text" id="editAadharDoc">
+                    <label>Joining Date *</label>
+                    <input type="date" id="editJoinDate" required>
                 </div>
                 <div class="form-group">
-                    <label>Registration Date</label>
-                    <input type="date" id="editRegDate">
+                    <label>Monthly Fees *</label>
+                    <input type="number" id="editFees" required>
                 </div>
                 <div class="form-group">
-                    <label>Joining Date</label>
-                    <input type="date" id="editJoinDate">
-                </div>
-                <div class="form-group">
-                    <label>Monthly Fees</label>
-                    <input type="number" id="editFees">
-                </div>
-                <div class="form-group">
-                    <label>Father First Name</label>
-                    <input type="text" id="editFatherFirstName">
+                    <label>Father First Name *</label>
+                    <input type="text" id="editFatherFirstName" required>
                 </div>
                 <div class="form-group">
                     <label>Father Middle Name</label>
                     <input type="text" id="editFatherMiddleName">
                 </div>
                 <div class="form-group">
-                    <label>Father Last Name</label>
-                    <input type="text" id="editFatherLastName">
+                    <label>Father Last Name *</label>
+                    <input type="text" id="editFatherLastName" required>
                 </div>
                 <div class="form-group">
-                    <label>Father Mobile</label>
-                    <input type="text" id="editFatherMobile" maxlength="10">
+                    <label>Father Mobile *</label>
+                    <input type="text" id="editFatherMobile" maxlength="10" required>
                 </div>
                 <div class="form-group">
                     <label>Mother First Name</label>
@@ -1253,21 +1388,21 @@
                     <label>Mother Last Name</label>
                     <input type="text" id="editMotherLastName">
                 </div>
-                <div class="form-group">
-                    <label>Current Address</label>
-                    <textarea id="editCurrentAddress" rows="2"></textarea>
+                <div class="form-group full-width">
+                    <label>Current Address *</label>
+                    <textarea id="editCurrentAddress" rows="2" required></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label>Permanent Address *</label>
+                    <textarea id="editPermanentAddress" rows="2" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Permanent Address</label>
-                    <textarea id="editPermanentAddress" rows="2"></textarea>
+                    <label>Board *</label>
+                    <input type="text" id="editBoard" required>
                 </div>
                 <div class="form-group">
-                    <label>Board</label>
-                    <input type="text" id="editBoard">
-                </div>
-                <div class="form-group">
-                    <label>Class</label>
-                    <input type="text" id="editClass">
+                    <label>Class *</label>
+                    <input type="text" id="editClass" required>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="save-changes-btn" id="saveChangesBtn">
@@ -1315,13 +1450,23 @@
                     <label>Aadhar Number *</label>
                     <input type="text" id="addAadhar" maxlength="12" required>
                 </div>
-                <div class="form-group">
-                    <label>Photo URL *</label>
-                    <input type="text" id="addPhoto" required>
+                <div class="form-group full-width">
+                    <label>Photo *</label>
+                    <div class="file-upload">
+                        <input type="file" id="addPhotoFile" accept="image/*" required>
+                        <small>Upload photo (JPG, PNG, GIF)</small>
+                    </div>
+                    <input type="hidden" id="addPhoto">
+                    <div class="preview-container" id="addPhotoPreview"></div>
                 </div>
-                <div class="form-group">
-                    <label>Aadhar Document URL *</label>
-                    <input type="text" id="addAadharDoc" required>
+                <div class="form-group full-width">
+                    <label>Aadhar Document *</label>
+                    <div class="file-upload">
+                        <input type="file" id="addAadharFile" accept="image/*,.pdf" required>
+                        <small>Upload Aadhar document (JPG, PNG, PDF)</small>
+                    </div>
+                    <input type="hidden" id="addAadharDoc">
+                    <div class="preview-container" id="addAadharPreview"></div>
                 </div>
                 <div class="form-group">
                     <label>Registration Date *</label>
@@ -1391,6 +1536,20 @@
         </div>
     </div>
 
+    <!-- Document Viewer Modal -->
+    <div id="documentViewerModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" id="closeDocumentModal">&times;</span>
+            <h3 id="documentTitle"></h3>
+            <div id="documentContent"></div>
+            <div class="document-actions">
+                <button class="download-document" id="downloadDocumentBtn">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirmation Dialog -->
     <div class="confirm-dialog" id="confirmDialog">
         <div class="confirm-content">
@@ -1425,15 +1584,23 @@
         const closeModal = document.getElementById('closeModal');
         const closeEditModal = document.getElementById('closeEditModal');
         const closeAddModal = document.getElementById('closeAddModal');
+        const closeDocumentModal = document.getElementById('closeDocumentModal');
         const cancelEditBtn = document.getElementById('cancelEditBtn');
         const cancelAddBtn = document.getElementById('cancelAddBtn');
         const saveChangesBtn = document.getElementById('saveChangesBtn');
         const addStudentSubmitBtn = document.getElementById('addStudentSubmitBtn');
+        const downloadDocumentBtn = document.getElementById('downloadDocumentBtn');
         const confirmYes = document.getElementById('confirmYes');
         const confirmNo = document.getElementById('confirmNo');
         const boardSelect = document.getElementById('boardSelect');
         const classSelect = document.getElementById('classSelect');
         const searchInput = document.getElementById('searchInput');
+
+        // File upload elements
+        const addPhotoFile = document.getElementById('addPhotoFile');
+        const addAadharFile = document.getElementById('addAadharFile');
+        const editPhotoFile = document.getElementById('editPhotoFile');
+        const editAadharFile = document.getElementById('editAadharFile');
 
         // Event Listeners
         loginBtn.addEventListener('click', login);
@@ -1445,10 +1612,12 @@
         closeModal.addEventListener('click', closeFeesModal);
         closeEditModal.addEventListener('click', closeEditStudentModal);
         closeAddModal.addEventListener('click', closeAddStudentModal);
+        closeDocumentModal.addEventListener('click', closeDocumentViewer);
         cancelEditBtn.addEventListener('click', closeEditStudentModal);
         cancelAddBtn.addEventListener('click', closeAddStudentModal);
         saveChangesBtn.addEventListener('click', saveStudentChanges);
         addStudentSubmitBtn.addEventListener('click', addNewStudent);
+        downloadDocumentBtn.addEventListener('click', downloadDocument);
         confirmNo.addEventListener('click', hideConfirmDialog);
         boardSelect.addEventListener('change', loadClasses);
         classSelect.addEventListener('change', searchStudents);
@@ -1458,21 +1627,60 @@
             }
         });
 
+        // File upload handlers
+        addPhotoFile.addEventListener('change', function(e) {
+            handleFileUpload(e.target.files[0], 'addPhoto', 'addPhotoPreview');
+        });
+
+        addAadharFile.addEventListener('change', function(e) {
+            handleFileUpload(e.target.files[0], 'addAadharDoc', 'addAadharPreview');
+        });
+
+        editPhotoFile.addEventListener('change', function(e) {
+            handleFileUpload(e.target.files[0], 'editPhoto', 'editPhotoPreview');
+        });
+
+        editAadharFile.addEventListener('change', function(e) {
+            handleFileUpload(e.target.files[0], 'editAadharDoc', 'editAadharPreview');
+        });
+
+        // Handle file upload and convert to Base64
+        function handleFileUpload(file, inputId, previewId) {
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                document.getElementById(inputId).value = base64Data;
+                showPreview(base64Data, previewId, file.type);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Show preview of uploaded file
+        function showPreview(data, previewId, fileType) {
+            const preview = document.getElementById(previewId);
+            
+            if (fileType.startsWith('image/')) {
+                preview.innerHTML = `<img src="${data}" alt="Preview">`;
+            } else if (fileType === 'application/pdf') {
+                preview.innerHTML = `<iframe src="${data}" type="application/pdf"></iframe>`;
+            } else {
+                preview.innerHTML = `<p>File uploaded: ${fileType}</p>`;
+            }
+        }
+
         // Close modals when clicking outside
         window.addEventListener('click', function(event) {
             const feesModal = document.getElementById('feesModal');
             const editModal = document.getElementById('editStudentModal');
             const addModal = document.getElementById('addStudentModal');
+            const docModal = document.getElementById('documentViewerModal');
             
-            if (event.target === feesModal) {
-                closeFeesModal();
-            }
-            if (event.target === editModal) {
-                closeEditStudentModal();
-            }
-            if (event.target === addModal) {
-                closeAddStudentModal();
-            }
+            if (event.target === feesModal) closeFeesModal();
+            if (event.target === editModal) closeEditStudentModal();
+            if (event.target === addModal) closeAddStudentModal();
+            if (event.target === docModal) closeDocumentViewer();
         });
 
         // Check if already logged in
@@ -1613,9 +1821,7 @@
                 }
             } catch (error) {
                 console.error('Load students error:', error);
-                if (error.status === 401) {
-                    logout();
-                }
+                if (error.status === 401) logout();
             }
         }
 
@@ -1633,7 +1839,7 @@
                 if (data.success) {
                     boardSelect.innerHTML = '<option value="all">All Boards</option>';
                     data.data.forEach(board => {
-                        boardSelect.innerHTML += `<option value="${board}">${board}</option>`;
+                        boardSelect.innerHTML += `<option value="${board}">${board</option>`;
                     });
                 }
             } catch (error) {
@@ -1837,13 +2043,11 @@
                 }
             } catch (error) {
                 console.error('Select student error:', error);
-                if (error.status === 401) {
-                    logout();
-                }
+                if (error.status === 401) logout();
             }
         }
 
-        // Display student details
+        // Display student details with document preview
         function displayStudentDetails(student) {
             const fullName = `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
             const fatherName = `${student.fatherName.first} ${student.fatherName.middle} ${student.fatherName.last}`.replace(/\s+/g, ' ').trim();
@@ -1860,6 +2064,14 @@
                 month: 'long',
                 year: 'numeric'
             });
+
+            // Determine document type and create preview
+            const isPDF = student.aadharDocument?.includes('application/pdf') || 
+                         student.aadharDocument?.startsWith('data:application/pdf');
+            
+            const documentPreview = isPDF ? 
+                `<iframe src="${student.aadharDocument}" style="width:100%; height:300px; border:none; border-radius:5px;"></iframe>` :
+                `<img src="${student.aadharDocument}" style="max-width:100%; max-height:300px; border-radius:5px; cursor:pointer;" onclick="viewDocument('${student.aadharDocument}', 'Aadhar Document - ${fullName}')">`;
 
             document.getElementById('studentInfo').innerHTML = `
                 <div class="details-header">
@@ -1907,14 +2119,20 @@
                         <p><i class="fas fa-home"></i> Permanent: ${student.address.permanent}</p>
                     </div>
                 </div>
-            `;
 
-            // View Aadhar button
-            const viewAadharBtn = document.createElement('button');
-            viewAadharBtn.className = 'view-aadhar';
-            viewAadharBtn.innerHTML = '<i class="fas fa-eye"></i> View Aadhar Document';
-            viewAadharBtn.addEventListener('click', () => viewAadhar(student.aadharDocument));
-            document.getElementById('studentInfo').appendChild(viewAadharBtn);
+                <div class="document-preview">
+                    <h4><i class="fas fa-id-card"></i> Aadhar Document</h4>
+                    ${documentPreview}
+                    <div class="document-actions">
+                        <button class="view-document" onclick="viewDocument('${student.aadharDocument}', 'Aadhar Document - ${fullName}')">
+                            <i class="fas fa-eye"></i> View Full Screen
+                        </button>
+                        <button class="download-document" onclick="downloadDocumentFromUrl('${student.aadharDocument}', '${student.studentId}_Aadhar')">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+            `;
 
             // Edit and Delete buttons
             document.getElementById('editDetailsBtn').addEventListener('click', () => openEditStudentModal(student.studentId));
@@ -1923,34 +2141,47 @@
             });
         }
 
-        // View Aadhar document
-        function viewAadhar(aadharDoc) {
-            const win = window.open();
-            win.document.write(`
-                <html>
-                    <head>
-                        <title>Aadhar Document</title>
-                        <style>
-                            body {
-                                margin: 0;
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-                                min-height: 100vh;
-                                background: #f0f2f5;
-                            }
-                            img {
-                                max-width: 100%;
-                                max-height: 100vh;
-                                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <img src="${aadharDoc}" alt="Aadhar Document" />
-                    </body>
-                </html>
-            `);
+        // View document in modal
+        function viewDocument(docUrl, title) {
+            const modal = document.getElementById('documentViewerModal');
+            const titleEl = document.getElementById('documentTitle');
+            const content = document.getElementById('documentContent');
+            
+            titleEl.textContent = title;
+            
+            const isPDF = docUrl.includes('application/pdf') || docUrl.startsWith('data:application/pdf');
+            
+            if (isPDF) {
+                content.innerHTML = `<iframe src="${docUrl}" style="width:100%; height:70vh; border:none;"></iframe>`;
+            } else {
+                content.innerHTML = `<img src="${docUrl}" style="max-width:100%; max-height:70vh; display:block; margin:0 auto;">`;
+            }
+            
+            window.currentDocumentUrl = docUrl;
+            window.currentDocumentTitle = title;
+            
+            modal.style.display = 'block';
+        }
+
+        // Close document viewer
+        function closeDocumentViewer() {
+            document.getElementById('documentViewerModal').style.display = 'none';
+        }
+
+        // Download document
+        function downloadDocument() {
+            const url = window.currentDocumentUrl;
+            const title = window.currentDocumentTitle || 'document';
+            downloadDocumentFromUrl(url, title);
+        }
+
+        function downloadDocumentFromUrl(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename.replace(/[^a-zA-Z0-9]/g, '_') + '.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // Update chart
@@ -2004,42 +2235,16 @@
                             title: {
                                 display: true,
                                 text: 'Amount (₹)'
-                            },
-                            grid: {
-                                color: 'rgba(0,0,0,0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
                             }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20
-                            }
+                            position: 'top'
                         },
                         title: {
                             display: true,
-                            text: 'Monthly Fees Status',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            },
-                            padding: {
-                                bottom: 20
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ₹${context.raw}`;
-                                }
-                            }
+                            text: 'Monthly Fees Status'
                         }
                     }
                 }
@@ -2124,7 +2329,7 @@
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="7" style="text-align: center; padding: 30px;">
-                            <i class="fas fa-info-circle" style="font-size: 24px; color: #667eea; margin-bottom: 10px;"></i>
+                            <i class="fas fa-info-circle" style="font-size: 24px; color: #667eea;"></i>
                             <p>No fees history available</p>
                         </td>
                     </tr>
@@ -2214,6 +2419,16 @@
                     document.getElementById('editPhoto').value = student.photo;
                     document.getElementById('editAadharDoc').value = student.aadharDocument;
                     
+                    // Show existing previews
+                    if (student.photo) {
+                        showPreview(student.photo, 'editPhotoPreview', 'image/jpeg');
+                    }
+                    if (student.aadharDocument) {
+                        const isPDF = student.aadharDocument.includes('application/pdf') || 
+                                     student.aadharDocument.startsWith('data:application/pdf');
+                        showPreview(student.aadharDocument, 'editAadharPreview', isPDF ? 'application/pdf' : 'image/jpeg');
+                    }
+                    
                     const regDate = new Date(student.registrationDate).toISOString().split('T')[0];
                     const joinDate = new Date(student.joiningDate).toISOString().split('T')[0];
                     document.getElementById('editRegDate').value = regDate;
@@ -2243,6 +2458,9 @@
         // Close edit student modal
         function closeEditStudentModal() {
             document.getElementById('editStudentModal').style.display = 'none';
+            // Clear file inputs
+            document.getElementById('editPhotoFile').value = '';
+            document.getElementById('editAadharFile').value = '';
         }
 
         // Save student changes
@@ -2252,6 +2470,8 @@
             const updatedData = {
                 studentId: studentId,
                 password: document.getElementById('editPassword').value,
+                classMonthlyFees: parseInt(document.getElementById('editFees').value),
+                photo: document.getElementById('editPhoto').value,
                 student: {
                     firstName: document.getElementById('editFirstName').value,
                     middleName: document.getElementById('editMiddleName').value,
@@ -2259,13 +2479,11 @@
                     mobile: document.getElementById('editMobile').value
                 },
                 aadhar: document.getElementById('editAadhar').value,
-                photo: document.getElementById('editPhoto').value,
                 aadharDocument: document.getElementById('editAadharDoc').value,
                 dates: {
                     reg: document.getElementById('editRegDate').value,
                     join: document.getElementById('editJoinDate').value
                 },
-                classMonthlyFees: parseInt(document.getElementById('editFees').value),
                 father: {
                     firstName: document.getElementById('editFatherFirstName').value,
                     middleName: document.getElementById('editFatherMiddleName').value,
@@ -2322,6 +2540,10 @@
             document.getElementById('addRegDate').value = today;
             document.getElementById('addJoinDate').value = today;
             
+            // Clear previews
+            document.getElementById('addPhotoPreview').innerHTML = '';
+            document.getElementById('addAadharPreview').innerHTML = '';
+            
             document.getElementById('addStudentModal').style.display = 'block';
         }
 
@@ -2329,6 +2551,8 @@
         function closeAddStudentModal() {
             document.getElementById('addStudentModal').style.display = 'none';
             document.getElementById('addStudentForm').reset();
+            document.getElementById('addPhotoPreview').innerHTML = '';
+            document.getElementById('addAadharPreview').innerHTML = '';
         }
 
         // Add new student
@@ -2353,6 +2577,8 @@
             const studentData = {
                 studentId: document.getElementById('addStudentId').value,
                 password: document.getElementById('addPassword').value,
+                classMonthlyFees: parseInt(document.getElementById('addFees').value),
+                photo: document.getElementById('addPhoto').value,
                 student: {
                     firstName: document.getElementById('addFirstName').value,
                     middleName: document.getElementById('addMiddleName').value,
@@ -2360,13 +2586,11 @@
                     mobile: document.getElementById('addMobile').value
                 },
                 aadhar: document.getElementById('addAadhar').value,
-                photo: document.getElementById('addPhoto').value,
                 aadharDocument: document.getElementById('addAadharDoc').value,
                 dates: {
                     reg: document.getElementById('addRegDate').value,
                     join: document.getElementById('addJoinDate').value
                 },
-                classMonthlyFees: parseInt(document.getElementById('addFees').value),
                 father: {
                     firstName: document.getElementById('addFatherFirstName').value,
                     middleName: document.getElementById('addFatherMiddleName').value,
