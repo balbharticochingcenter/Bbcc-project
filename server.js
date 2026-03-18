@@ -1772,7 +1772,27 @@ app.get('/api/teachers/export/:format', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// Add these to your server.js:
 
+// GET attendance for a teacher
+app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    // Return attendance records
+});
+
+// POST new attendance
+app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    // Create new attendance record
+});
+
+// PUT update attendance
+app.put('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    // Update existing attendance
+});
+
+// DELETE attendance
+app.delete('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    // Delete attendance record
+});
 // ============================================
 // UPDATE CONFIG API
 // ============================================
