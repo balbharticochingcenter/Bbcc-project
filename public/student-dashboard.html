@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* SAME CSS - KOI CHANGE NAHI */
         * {
             margin: 0;
             padding: 0;
@@ -103,6 +102,30 @@
             margin-right: 10px;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-student-btn {
+            padding: 10px 25px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-student-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
         .logout-btn {
             padding: 10px 25px;
             background: #ff4757;
@@ -112,6 +135,9 @@
             cursor: pointer;
             font-size: 16px;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .logout-btn:hover {
@@ -167,6 +193,10 @@
             cursor: pointer;
             transition: all 0.3s;
             min-width: 120px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
         }
 
         .search-btn:hover {
@@ -185,6 +215,10 @@
             cursor: pointer;
             transition: all 0.3s;
             min-width: 120px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
         }
 
         .reset-btn:hover {
@@ -229,7 +263,7 @@
         /* Students Grid */
         .students-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -331,6 +365,45 @@
             background: #dc3545;
         }
 
+        .student-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .edit-card-btn, .delete-card-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .edit-card-btn {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .edit-card-btn:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        .delete-card-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-card-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
         /* Student Details */
         .student-details {
             background: white;
@@ -358,6 +431,10 @@
             border: 4px solid #667eea;
         }
 
+        .basic-info {
+            flex: 1;
+        }
+
         .basic-info h2 {
             color: #333;
             margin-bottom: 10px;
@@ -374,6 +451,44 @@
             color: #667eea;
             width: 25px;
             margin-right: 10px;
+        }
+
+        .details-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .edit-details-btn, .delete-details-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .edit-details-btn {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .edit-details-btn:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        .delete-details-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-details-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
         }
 
         .info-grid {
@@ -424,6 +539,9 @@
             cursor: pointer;
             transition: all 0.3s;
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .view-aadhar:hover {
@@ -667,6 +785,83 @@
             transform: translateY(-2px);
         }
 
+        /* Edit Form Modal */
+        .edit-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-actions {
+            grid-column: span 2;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .save-changes-btn {
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .save-changes-btn:hover {
+            background: #218838;
+        }
+
+        .cancel-btn {
+            padding: 12px 30px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cancel-btn:hover {
+            background: #5a6268;
+        }
+
         /* No Data */
         .no-data {
             text-align: center;
@@ -675,6 +870,7 @@
             font-size: 18px;
             background: white;
             border-radius: 15px;
+            grid-column: 1 / -1;
         }
 
         .no-data i {
@@ -701,6 +897,124 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast.warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        .toast i {
+            font-size: 20px;
+        }
+
+        .toast.success i {
+            color: #28a745;
+        }
+
+        .toast.error i {
+            color: #dc3545;
+        }
+
+        .toast.warning i {
+            color: #ffc107;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Confirmation Dialog */
+        .confirm-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .confirm-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .confirm-content i {
+            font-size: 50px;
+            color: #ffc107;
+            margin-bottom: 20px;
+        }
+
+        .confirm-content h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .confirm-content p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .confirm-yes {
+            padding: 10px 25px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .confirm-no {
+            padding: 10px 25px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .details-header {
@@ -708,6 +1022,12 @@
                 text-align: center;
             }
             
+            .details-actions {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
+
             .modal-header {
                 flex-direction: column;
                 text-align: center;
@@ -723,6 +1043,19 @@
 
             .search-row select, .search-row input, .search-btn, .reset-btn {
                 width: 100%;
+            }
+
+            .edit-form {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .form-actions {
+                grid-column: span 1;
+                flex-direction: column;
             }
         }
     </style>
@@ -743,7 +1076,14 @@
         <div class="dashboard-section" id="dashboardSection">
             <div class="header">
                 <h1><i class="fas fa-chart-line"></i> Student Dashboard - Fees Tracker</h1>
-                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <div class="header-actions">
+                    <button class="add-student-btn" id="addStudentBtn">
+                        <i class="fas fa-plus"></i> Add Student
+                    </button>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </div>
 
             <!-- Search Area -->
@@ -831,6 +1171,239 @@
         </div>
     </div>
 
+    <!-- Edit Student Modal -->
+    <div id="editStudentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditModal">&times;</span>
+            <h2><i class="fas fa-edit"></i> Edit Student Details</h2>
+            <form id="editStudentForm" class="edit-form">
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" id="editStudentId" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="text" id="editPassword">
+                </div>
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="editFirstName">
+                </div>
+                <div class="form-group">
+                    <label>Middle Name</label>
+                    <input type="text" id="editMiddleName">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="editLastName">
+                </div>
+                <div class="form-group">
+                    <label>Mobile</label>
+                    <input type="text" id="editMobile" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Aadhar Number</label>
+                    <input type="text" id="editAadhar" maxlength="12">
+                </div>
+                <div class="form-group">
+                    <label>Photo URL</label>
+                    <input type="text" id="editPhoto">
+                </div>
+                <div class="form-group">
+                    <label>Aadhar Document URL</label>
+                    <input type="text" id="editAadharDoc">
+                </div>
+                <div class="form-group">
+                    <label>Registration Date</label>
+                    <input type="date" id="editRegDate">
+                </div>
+                <div class="form-group">
+                    <label>Joining Date</label>
+                    <input type="date" id="editJoinDate">
+                </div>
+                <div class="form-group">
+                    <label>Monthly Fees</label>
+                    <input type="number" id="editFees">
+                </div>
+                <div class="form-group">
+                    <label>Father First Name</label>
+                    <input type="text" id="editFatherFirstName">
+                </div>
+                <div class="form-group">
+                    <label>Father Middle Name</label>
+                    <input type="text" id="editFatherMiddleName">
+                </div>
+                <div class="form-group">
+                    <label>Father Last Name</label>
+                    <input type="text" id="editFatherLastName">
+                </div>
+                <div class="form-group">
+                    <label>Father Mobile</label>
+                    <input type="text" id="editFatherMobile" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label>Mother First Name</label>
+                    <input type="text" id="editMotherFirstName">
+                </div>
+                <div class="form-group">
+                    <label>Mother Middle Name</label>
+                    <input type="text" id="editMotherMiddleName">
+                </div>
+                <div class="form-group">
+                    <label>Mother Last Name</label>
+                    <input type="text" id="editMotherLastName">
+                </div>
+                <div class="form-group">
+                    <label>Current Address</label>
+                    <textarea id="editCurrentAddress" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Permanent Address</label>
+                    <textarea id="editPermanentAddress" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Board</label>
+                    <input type="text" id="editBoard">
+                </div>
+                <div class="form-group">
+                    <label>Class</label>
+                    <input type="text" id="editClass">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="save-changes-btn" id="saveChangesBtn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" class="cancel-btn" id="cancelEditBtn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeAddModal">&times;</span>
+            <h2><i class="fas fa-plus"></i> Add New Student</h2>
+            <form id="addStudentForm" class="edit-form">
+                <div class="form-group">
+                    <label>Student ID *</label>
+                    <input type="text" id="addStudentId" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="text" id="addPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>First Name *</label>
+                    <input type="text" id="addFirstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Middle Name</label>
+                    <input type="text" id="addMiddleName">
+                </div>
+                <div class="form-group">
+                    <label>Last Name *</label>
+                    <input type="text" id="addLastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Mobile *</label>
+                    <input type="text" id="addMobile" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Aadhar Number *</label>
+                    <input type="text" id="addAadhar" maxlength="12" required>
+                </div>
+                <div class="form-group">
+                    <label>Photo URL *</label>
+                    <input type="text" id="addPhoto" required>
+                </div>
+                <div class="form-group">
+                    <label>Aadhar Document URL *</label>
+                    <input type="text" id="addAadharDoc" required>
+                </div>
+                <div class="form-group">
+                    <label>Registration Date *</label>
+                    <input type="date" id="addRegDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Joining Date *</label>
+                    <input type="date" id="addJoinDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Monthly Fees *</label>
+                    <input type="number" id="addFees" required>
+                </div>
+                <div class="form-group">
+                    <label>Father First Name *</label>
+                    <input type="text" id="addFatherFirstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Father Middle Name</label>
+                    <input type="text" id="addFatherMiddleName">
+                </div>
+                <div class="form-group">
+                    <label>Father Last Name *</label>
+                    <input type="text" id="addFatherLastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Father Mobile *</label>
+                    <input type="text" id="addFatherMobile" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Mother First Name</label>
+                    <input type="text" id="addMotherFirstName">
+                </div>
+                <div class="form-group">
+                    <label>Mother Middle Name</label>
+                    <input type="text" id="addMotherMiddleName">
+                </div>
+                <div class="form-group">
+                    <label>Mother Last Name</label>
+                    <input type="text" id="addMotherLastName">
+                </div>
+                <div class="form-group full-width">
+                    <label>Current Address *</label>
+                    <textarea id="addCurrentAddress" rows="2" required></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label>Permanent Address *</label>
+                    <textarea id="addPermanentAddress" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Board *</label>
+                    <input type="text" id="addBoard" required>
+                </div>
+                <div class="form-group">
+                    <label>Class *</label>
+                    <input type="text" id="addClass" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="save-changes-btn" id="addStudentSubmitBtn">
+                        <i class="fas fa-plus"></i> Add Student
+                    </button>
+                    <button type="button" class="cancel-btn" id="cancelAddBtn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div class="confirm-dialog" id="confirmDialog">
+        <div class="confirm-content">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Are you sure?</h3>
+            <p id="confirmMessage">This action cannot be undone.</p>
+            <div class="confirm-actions">
+                <button class="confirm-yes" id="confirmYes">Yes, Delete</button>
+                <button class="confirm-no" id="confirmNo">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables
         let token = localStorage.getItem('token');
@@ -838,16 +1411,26 @@
         let chart = null;
         let allStudents = [];
         let filteredStudents = [];
+        let deleteCallback = null;
 
-        // DOM Elements ke liye variables
+        // DOM Elements
         const loginSection = document.getElementById('loginSection');
         const dashboardSection = document.getElementById('dashboardSection');
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const addStudentBtn = document.getElementById('addStudentBtn');
         const searchBtn = document.getElementById('searchBtn');
         const resetBtn = document.getElementById('resetBtn');
         const feesTrackerBtn = document.getElementById('feesTrackerBtn');
         const closeModal = document.getElementById('closeModal');
+        const closeEditModal = document.getElementById('closeEditModal');
+        const closeAddModal = document.getElementById('closeAddModal');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const cancelAddBtn = document.getElementById('cancelAddBtn');
+        const saveChangesBtn = document.getElementById('saveChangesBtn');
+        const addStudentSubmitBtn = document.getElementById('addStudentSubmitBtn');
+        const confirmYes = document.getElementById('confirmYes');
+        const confirmNo = document.getElementById('confirmNo');
         const boardSelect = document.getElementById('boardSelect');
         const classSelect = document.getElementById('classSelect');
         const searchInput = document.getElementById('searchInput');
@@ -855,10 +1438,18 @@
         // Event Listeners
         loginBtn.addEventListener('click', login);
         logoutBtn.addEventListener('click', logout);
+        addStudentBtn.addEventListener('click', openAddStudentModal);
         searchBtn.addEventListener('click', searchStudents);
         resetBtn.addEventListener('click', resetFilters);
         feesTrackerBtn.addEventListener('click', openFeesModal);
         closeModal.addEventListener('click', closeFeesModal);
+        closeEditModal.addEventListener('click', closeEditStudentModal);
+        closeAddModal.addEventListener('click', closeAddStudentModal);
+        cancelEditBtn.addEventListener('click', closeEditStudentModal);
+        cancelAddBtn.addEventListener('click', closeAddStudentModal);
+        saveChangesBtn.addEventListener('click', saveStudentChanges);
+        addStudentSubmitBtn.addEventListener('click', addNewStudent);
+        confirmNo.addEventListener('click', hideConfirmDialog);
         boardSelect.addEventListener('change', loadClasses);
         classSelect.addEventListener('change', searchStudents);
         searchInput.addEventListener('keyup', function(e) {
@@ -867,11 +1458,20 @@
             }
         });
 
-        // Close modal when clicking outside
+        // Close modals when clicking outside
         window.addEventListener('click', function(event) {
-            const modal = document.getElementById('feesModal');
-            if (event.target === modal) {
+            const feesModal = document.getElementById('feesModal');
+            const editModal = document.getElementById('editStudentModal');
+            const addModal = document.getElementById('addStudentModal');
+            
+            if (event.target === feesModal) {
                 closeFeesModal();
+            }
+            if (event.target === editModal) {
+                closeEditStudentModal();
+            }
+            if (event.target === addModal) {
+                closeAddStudentModal();
             }
         });
 
@@ -880,13 +1480,48 @@
             verifyToken();
         }
 
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Show confirmation dialog
+        function showConfirmDialog(message, callback) {
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmDialog').style.display = 'flex';
+            deleteCallback = callback;
+        }
+
+        // Hide confirmation dialog
+        function hideConfirmDialog() {
+            document.getElementById('confirmDialog').style.display = 'none';
+            deleteCallback = null;
+        }
+
+        confirmYes.addEventListener('click', function() {
+            if (deleteCallback) {
+                deleteCallback();
+            }
+            hideConfirmDialog();
+        });
+
         // Login function
         async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
             if (!username || !password) {
-                alert('Please enter username and password');
+                showToast('Please enter username and password', 'warning');
                 return;
             }
 
@@ -908,13 +1543,14 @@
                     dashboardSection.style.display = 'block';
                     loadAllStudents();
                     loadBoards();
+                    showToast('Login successful!');
                 } else {
-                    alert('Wrong username or password!');
+                    showToast('Wrong username or password!', 'error');
                     localStorage.removeItem('token');
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                alert('Login failed. Please try again.');
+                showToast('Login failed. Please try again.', 'error');
             }
         }
 
@@ -955,6 +1591,7 @@
             document.getElementById('studentDetails').style.display = 'none';
             boardSelect.innerHTML = '<option value="all">All Boards</option>';
             classSelect.innerHTML = '<option value="all">All Classes</option>';
+            showToast('Logged out successfully');
         }
 
         // Load all students
@@ -1079,6 +1716,7 @@
             classSelect.innerHTML = '<option value="all">All Classes</option>';
             searchInput.value = '';
             loadAllStudents();
+            showToast('Filters reset');
         }
 
         // Display students in grid
@@ -1118,9 +1756,35 @@
                     <div class="student-id"><i class="fas fa-id-card"></i> ${student.studentId}</div>
                     <div class="student-class"><i class="fas fa-graduation-cap"></i> ${student.education.board} - ${student.education.class}</div>
                     <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ₹${student.classMonthlyFees}/month</span>
+                    <div class="student-card-actions">
+                        <button class="edit-card-btn" data-id="${student.studentId}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="delete-card-btn" data-id="${student.studentId}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
                 `;
                 
-                card.addEventListener('click', () => selectStudent(student.studentId));
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('button')) {
+                        selectStudent(student.studentId);
+                    }
+                });
+
+                const editBtn = card.querySelector('.edit-card-btn');
+                const deleteBtn = card.querySelector('.delete-card-btn');
+
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditStudentModal(student.studentId);
+                });
+
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showConfirmDialog(`Delete student ${fullName}?`, () => deleteStudent(student.studentId));
+                });
+
                 grid.appendChild(card);
             });
         }
@@ -1207,6 +1871,14 @@
                         <p><i class="fas fa-calendar"></i> Registration: ${regDate}</p>
                         <p><i class="fas fa-calendar-check"></i> Joining: ${joinDate}</p>
                     </div>
+                    <div class="details-actions">
+                        <button class="edit-details-btn" id="editDetailsBtn">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="delete-details-btn" id="deleteDetailsBtn">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
                 </div>
 
                 <div class="info-grid">
@@ -1237,13 +1909,18 @@
                 </div>
             `;
 
-            // View Aadhar button with event listener
+            // View Aadhar button
             const viewAadharBtn = document.createElement('button');
             viewAadharBtn.className = 'view-aadhar';
             viewAadharBtn.innerHTML = '<i class="fas fa-eye"></i> View Aadhar Document';
             viewAadharBtn.addEventListener('click', () => viewAadhar(student.aadharDocument));
-            
             document.getElementById('studentInfo').appendChild(viewAadharBtn);
+
+            // Edit and Delete buttons
+            document.getElementById('editDetailsBtn').addEventListener('click', () => openEditStudentModal(student.studentId));
+            document.getElementById('deleteDetailsBtn').addEventListener('click', () => {
+                showConfirmDialog(`Delete student ${fullName}?`, () => deleteStudent(student.studentId));
+            });
         }
 
         // View Aadhar document
@@ -1372,7 +2049,7 @@
         // Open fees modal
         function openFeesModal() {
             if (!selectedStudent) {
-                alert('Please select a student first');
+                showToast('Please select a student first', 'warning');
                 return;
             }
 
@@ -1432,12 +2109,10 @@
 
                     tableBody.appendChild(row);
 
-                    // Add event listener to save button
                     document.getElementById(`save-${fee.month}-${fee.year}`).addEventListener('click', () => {
                         saveFees(fee.month, fee.year);
                     });
 
-                    // Add event listener to input for validation
                     document.getElementById(`paid-${fee.month}-${fee.year}`).addEventListener('change', function() {
                         let value = parseFloat(this.value) || 0;
                         if (value < 0) value = 0;
@@ -1466,7 +2141,7 @@
             const paidAmount = parseFloat(paidInput.value) || 0;
 
             if (paidAmount > selectedStudent.classMonthlyFees) {
-                alert(`Paid amount cannot exceed ₹${selectedStudent.classMonthlyFees}`);
+                showToast(`Paid amount cannot exceed ₹${selectedStudent.classMonthlyFees}`, 'warning');
                 paidInput.value = selectedStudent.classMonthlyFees;
                 return;
             }
@@ -1502,17 +2177,270 @@
 
                     updateChart(selectedStudent);
                     updateStats();
-                    alert('✅ Fees updated successfully!');
+                    showToast('Fees updated successfully!');
                 }
             } catch (error) {
                 console.error('Save fees error:', error);
-                alert('❌ Failed to update fees. Please try again.');
+                showToast('Failed to update fees', 'error');
             }
         }
 
         // Close fees modal
         function closeFeesModal() {
             document.getElementById('feesModal').style.display = 'none';
+        }
+
+        // Open edit student modal
+        async function openEditStudentModal(studentId) {
+            try {
+                const response = await fetch(`/api/student-dashboard/${studentId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const student = data.data;
+                    
+                    document.getElementById('editStudentId').value = student.studentId;
+                    document.getElementById('editPassword').value = student.password;
+                    document.getElementById('editFirstName').value = student.studentName.first;
+                    document.getElementById('editMiddleName').value = student.studentName.middle || '';
+                    document.getElementById('editLastName').value = student.studentName.last;
+                    document.getElementById('editMobile').value = student.mobile;
+                    document.getElementById('editAadhar').value = student.aadharNumber;
+                    document.getElementById('editPhoto').value = student.photo;
+                    document.getElementById('editAadharDoc').value = student.aadharDocument;
+                    
+                    const regDate = new Date(student.registrationDate).toISOString().split('T')[0];
+                    const joinDate = new Date(student.joiningDate).toISOString().split('T')[0];
+                    document.getElementById('editRegDate').value = regDate;
+                    document.getElementById('editJoinDate').value = joinDate;
+                    
+                    document.getElementById('editFees').value = student.classMonthlyFees;
+                    document.getElementById('editFatherFirstName').value = student.fatherName.first;
+                    document.getElementById('editFatherMiddleName').value = student.fatherName.middle || '';
+                    document.getElementById('editFatherLastName').value = student.fatherName.last;
+                    document.getElementById('editFatherMobile').value = student.fatherMobile;
+                    document.getElementById('editMotherFirstName').value = student.motherName.first || '';
+                    document.getElementById('editMotherMiddleName').value = student.motherName.middle || '';
+                    document.getElementById('editMotherLastName').value = student.motherName.last || '';
+                    document.getElementById('editCurrentAddress').value = student.address.current;
+                    document.getElementById('editPermanentAddress').value = student.address.permanent;
+                    document.getElementById('editBoard').value = student.education.board;
+                    document.getElementById('editClass').value = student.education.class;
+
+                    document.getElementById('editStudentModal').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Open edit modal error:', error);
+                showToast('Failed to load student data', 'error');
+            }
+        }
+
+        // Close edit student modal
+        function closeEditStudentModal() {
+            document.getElementById('editStudentModal').style.display = 'none';
+        }
+
+        // Save student changes
+        async function saveStudentChanges() {
+            const studentId = document.getElementById('editStudentId').value;
+            
+            const updatedData = {
+                studentId: studentId,
+                password: document.getElementById('editPassword').value,
+                student: {
+                    firstName: document.getElementById('editFirstName').value,
+                    middleName: document.getElementById('editMiddleName').value,
+                    lastName: document.getElementById('editLastName').value,
+                    mobile: document.getElementById('editMobile').value
+                },
+                aadhar: document.getElementById('editAadhar').value,
+                photo: document.getElementById('editPhoto').value,
+                aadharDocument: document.getElementById('editAadharDoc').value,
+                dates: {
+                    reg: document.getElementById('editRegDate').value,
+                    join: document.getElementById('editJoinDate').value
+                },
+                classMonthlyFees: parseInt(document.getElementById('editFees').value),
+                father: {
+                    firstName: document.getElementById('editFatherFirstName').value,
+                    middleName: document.getElementById('editFatherMiddleName').value,
+                    lastName: document.getElementById('editFatherLastName').value,
+                    mobile: document.getElementById('editFatherMobile').value
+                },
+                mother: {
+                    firstName: document.getElementById('editMotherFirstName').value,
+                    middleName: document.getElementById('editMotherMiddleName').value,
+                    lastName: document.getElementById('editMotherLastName').value
+                },
+                address: {
+                    current: document.getElementById('editCurrentAddress').value,
+                    permanent: document.getElementById('editPermanentAddress').value
+                },
+                education: {
+                    board: document.getElementById('editBoard').value,
+                    class: document.getElementById('editClass').value
+                }
+            };
+
+            try {
+                const response = await fetch(`/api/students/${studentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Student updated successfully!');
+                    closeEditStudentModal();
+                    loadAllStudents();
+                    if (selectedStudent && selectedStudent.studentId === studentId) {
+                        selectStudent(studentId);
+                    }
+                } else {
+                    showToast(data.message || 'Update failed', 'error');
+                }
+            } catch (error) {
+                console.error('Save changes error:', error);
+                showToast('Failed to update student', 'error');
+            }
+        }
+
+        // Open add student modal
+        function openAddStudentModal() {
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('addRegDate').value = today;
+            document.getElementById('addJoinDate').value = today;
+            
+            document.getElementById('addStudentModal').style.display = 'block';
+        }
+
+        // Close add student modal
+        function closeAddStudentModal() {
+            document.getElementById('addStudentModal').style.display = 'none';
+            document.getElementById('addStudentForm').reset();
+        }
+
+        // Add new student
+        async function addNewStudent() {
+            // Validate required fields
+            const requiredFields = [
+                'addStudentId', 'addPassword', 'addFirstName', 'addLastName',
+                'addMobile', 'addAadhar', 'addPhoto', 'addAadharDoc',
+                'addRegDate', 'addJoinDate', 'addFees',
+                'addFatherFirstName', 'addFatherLastName', 'addFatherMobile',
+                'addCurrentAddress', 'addPermanentAddress', 'addBoard', 'addClass'
+            ];
+
+            for (const fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value) {
+                    showToast(`Please fill all required fields`, 'warning');
+                    return;
+                }
+            }
+
+            const studentData = {
+                studentId: document.getElementById('addStudentId').value,
+                password: document.getElementById('addPassword').value,
+                student: {
+                    firstName: document.getElementById('addFirstName').value,
+                    middleName: document.getElementById('addMiddleName').value,
+                    lastName: document.getElementById('addLastName').value,
+                    mobile: document.getElementById('addMobile').value
+                },
+                aadhar: document.getElementById('addAadhar').value,
+                photo: document.getElementById('addPhoto').value,
+                aadharDocument: document.getElementById('addAadharDoc').value,
+                dates: {
+                    reg: document.getElementById('addRegDate').value,
+                    join: document.getElementById('addJoinDate').value
+                },
+                classMonthlyFees: parseInt(document.getElementById('addFees').value),
+                father: {
+                    firstName: document.getElementById('addFatherFirstName').value,
+                    middleName: document.getElementById('addFatherMiddleName').value,
+                    lastName: document.getElementById('addFatherLastName').value,
+                    mobile: document.getElementById('addFatherMobile').value
+                },
+                mother: {
+                    firstName: document.getElementById('addMotherFirstName').value,
+                    middleName: document.getElementById('addMotherMiddleName').value,
+                    lastName: document.getElementById('addMotherLastName').value
+                },
+                address: {
+                    current: document.getElementById('addCurrentAddress').value,
+                    permanent: document.getElementById('addPermanentAddress').value
+                },
+                education: {
+                    board: document.getElementById('addBoard').value,
+                    class: document.getElementById('addClass').value
+                }
+            };
+
+            try {
+                const response = await fetch('/api/student-register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(studentData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Student added successfully!');
+                    closeAddStudentModal();
+                    loadAllStudents();
+                } else {
+                    showToast(data.message || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Add student error:', error);
+                showToast('Failed to add student', 'error');
+            }
+        }
+
+        // Delete student
+        async function deleteStudent(studentId) {
+            try {
+                const response = await fetch(`/api/students/${studentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Student deleted successfully!');
+                    
+                    if (selectedStudent && selectedStudent.studentId === studentId) {
+                        selectedStudent = null;
+                        document.getElementById('studentDetails').style.display = 'none';
+                    }
+                    
+                    loadAllStudents();
+                } else {
+                    showToast(data.message || 'Delete failed', 'error');
+                }
+            } catch (error) {
+                console.error('Delete student error:', error);
+                showToast('Failed to delete student', 'error');
+            }
         }
     </script>
 </body>
