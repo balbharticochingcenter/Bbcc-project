@@ -16,99 +16,80 @@
     
     <style>
         :root {
-            --primary-color: #3498db;
+            --primary: #0f172a;
+            --accent: #ffd700;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
             --danger-color: #e74c3c;
-            --dark-color: #2c3e50;
         }
         
         body {
-            background: #f4f6f9;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 280px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
-        .sidebar-header {
-            text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 20px;
-        }
-        
-        .sidebar-header h3 {
-            margin: 10px 0 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .sidebar-header p {
-            margin: 5px 0 0;
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-        
-        .nav-item {
-            margin-bottom: 5px;
-        }
-        
-        .nav-link {
-            color: rgba(255,255,255,0.9);
-            padding: 12px 15px;
-            border-radius: 10px;
-            transition: all 0.3s;
+        /* Navbar - Same as Index */
+        .vip-nav {
+            background: var(--primary);
+            padding: 10px 5%;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            background: rgba(255,255,255,0.2);
+            justify-content: space-between;
             color: white;
-            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         
-        .nav-link i {
-            width: 20px;
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent);
         }
         
         /* Main Content */
         .main-content {
-            margin-left: 280px;
-            padding: 20px 30px;
+            flex: 1;
+            padding: 30px 5%;
+            margin-top: 20px;
         }
         
-        /* Header */
-        .header {
-            background: white;
-            padding: 15px 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        /* Header Card */
+        .header-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
             margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-top: 5px solid var(--accent);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            animation: slideDown 0.5s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .page-title {
             margin: 0;
             font-size: 1.8rem;
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--primary);
         }
         
         .admin-info {
@@ -121,18 +102,20 @@
             background: var(--danger-color);
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: 10px 25px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
+            font-weight: 600;
         }
         
         .logout-btn:hover {
             background: #c0392b;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
         }
         
-        /* Stats Cards */
+        /* Stats Cards - Glass Morphism */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -141,55 +124,80 @@
         }
         
         .stat-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             transition: all 0.3s;
+            animation: slideUp 0.5s ease;
+            animation-fill-mode: both;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.4);
         }
         
         .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 15px;
         }
         
         .stat-value {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             margin: 0;
+            color: var(--primary);
         }
         
         .stat-label {
-            color: #6c757d;
+            color: #666;
             margin: 5px 0 0;
+            font-weight: 500;
         }
         
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: 15px;
+        /* Main Card */
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             border: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             margin-bottom: 30px;
+            border-top: 5px solid var(--accent);
+            animation: slideUp 0.5s ease 0.5s both;
         }
         
         .card-header {
             background: transparent;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 2px solid #eee;
             padding: 20px 25px;
             font-weight: 600;
             font-size: 1.2rem;
+            color: var(--primary);
         }
         
         .card-body {
@@ -202,40 +210,43 @@
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--accent);
         }
         
         .teacher-photo-lg {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--primary-color);
+            border: 3px solid var(--accent);
         }
         
         /* Status Badges */
         .badge-pending {
             background: #fff3cd;
             color: #856404;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
+            font-weight: 600;
         }
         
         .badge-approved {
             background: #d4edda;
             color: #155724;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
+            font-weight: 600;
         }
         
         .badge-rejected {
             background: #f8d7da;
             color: #721c24;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
+            font-weight: 600;
         }
         
         /* Buttons */
@@ -243,28 +254,45 @@
             background: var(--success-color);
             color: white;
             border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 0.9rem;
-            margin-right: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn-approve:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .btn-edit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
         }
         
         .btn-reject {
             background: var(--danger-color);
             color: white;
             border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 0.9rem;
+            transition: all 0.3s;
         }
         
-        .btn-edit {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
-            font-size: 0.9rem;
+        .btn-reject:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
         }
         
         .action-buttons {
@@ -273,17 +301,30 @@
             flex-wrap: wrap;
         }
         
-        /* Modal */
+        /* Modal Styles - Matching Index */
         .modal-content {
-            border-radius: 15px;
+            border-radius: 20px;
             border: none;
+            overflow: hidden;
         }
         
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary);
             color: white;
-            border-radius: 15px 15px 0 0;
+            border-radius: 0;
             padding: 20px 25px;
+        }
+        
+        .modal-header.bg-success {
+            background: var(--success-color) !important;
+        }
+        
+        .modal-header.bg-primary {
+            background: var(--primary) !important;
+        }
+        
+        .modal-header.bg-danger {
+            background: var(--danger-color) !important;
         }
         
         .modal-body {
@@ -292,47 +333,85 @@
         
         .modal-footer {
             padding: 15px 25px;
-            border-top: 1px solid #dee2e6;
+            border-top: 2px solid #eee;
         }
         
-        /* Form */
+        /* Form Controls */
         .form-label {
-            font-weight: 500;
-            color: var(--dark-color);
-            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
         }
         
         .form-control, .form-select {
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            transition: all 0.3s;
         }
         
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+            outline: none;
         }
         
-        /* Salary Progress */
-        .salary-progress {
-            height: 6px;
-            border-radius: 3px;
-            margin-top: 5px;
-        }
-        
-        .salary-paid {
-            background: var(--success-color);
-        }
-        
-        .salary-due {
-            background: var(--danger-color);
-        }
-        
-        /* Chart Container */
-        .chart-container {
+        /* Search Box */
+        .search-box {
             position: relative;
-            height: 300px;
-            width: 100%;
+            max-width: 400px;
+        }
+        
+        .search-box input {
+            border-radius: 30px;
+            padding-left: 45px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            z-index: 10;
+        }
+        
+        /* Filter Buttons */
+        .filter-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 8px 20px;
+            margin: 0 5px;
+            border-radius: 30px;
+            color: #666;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        /* Table Styles */
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
         }
         
         /* Loading Spinner */
@@ -347,13 +426,14 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            backdrop-filter: blur(5px);
         }
         
         .spinner {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
+            border-top: 5px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -363,105 +443,87 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s;
-            }
-            
-            .sidebar.show {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .menu-toggle {
-                display: block;
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                z-index: 1001;
-                background: var(--primary-color);
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 5px;
-            }
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            padding: 10px;
         }
         
-        /* Search Box */
-        .search-box {
-            max-width: 400px;
+        /* Login Required Message */
+        .login-required {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .login-required i {
+            font-size: 60px;
+            color: var(--accent);
             margin-bottom: 20px;
         }
         
-        .search-box input {
-            border-radius: 20px;
-            padding-left: 40px;
-            border: 1px solid #dee2e6;
+        .login-required h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
         }
         
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
-        
-        /* Filter Buttons */
-        .filter-btns {
-            margin-bottom: 20px;
-        }
-        
-        .filter-btn {
-            background: white;
-            border: 1px solid #dee2e6;
-            padding: 8px 20px;
-            margin-right: 10px;
-            border-radius: 20px;
-            color: #6c757d;
+        .login-required .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
             transition: all 0.3s;
         }
         
-        .filter-btn.active {
-            background: var(--primary-color);
+        .login-required .btn-primary:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--primary);
             color: white;
-            border-color: var(--primary-color);
+            padding: 20px 0;
+            margin-top: auto;
         }
         
-        .filter-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-card {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-btns {
+                text-align: center;
+                margin-top: 15px;
+            }
+            
+            .filter-btn {
+                margin: 5px;
+            }
         }
         
-        /* Salary Status */
-        .salary-paid-badge {
-            background: #d4edda;
-            color: #155724;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
+        /* DataTables Custom */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 30px !important;
+            margin: 0 3px;
         }
         
-        .salary-partial-badge {
-            background: #fff3cd;
-            color: #856404;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-        }
-        
-        .salary-unpaid-badge {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary) !important;
+            color: white !important;
+            border-color: var(--primary) !important;
         }
     </style>
 </head>
@@ -471,52 +533,37 @@
         <div class="spinner"></div>
     </div>
     
-    <!-- Mobile Menu Toggle -->
-    <button class="menu-toggle d-md-none" id="menuToggle">
-        <i class="fas fa-bars"></i>
-    </button>
-    
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-chalkboard-teacher fa-3x"></i>
-            <h3>Teacher Dashboard</h3>
-            <p>Bal Bharti Coaching</p>
+    <!-- Navbar - Same as Index -->
+    <header class="vip-nav">
+        <div class="logo fw-bold" id="db-logo">
+            <i class="fas fa-graduation-cap me-2"></i>LOGO
         </div>
-        
-        <div class="nav flex-column">
-            <a href="#" class="nav-link active" data-page="dashboard">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="#" class="nav-link" data-page="all-teachers">
-                <i class="fas fa-users"></i> All Teachers
-            </a>
-            <a href="#" class="nav-link" data-page="pending">
-                <i class="fas fa-clock"></i> Pending Approvals
-            </a>
-            <a href="#" class="nav-link" data-page="salary">
-                <i class="fas fa-rupee-sign"></i> Salary Management
-            </a>
-            <a href="#" class="nav-link" data-page="reports">
-                <i class="fas fa-chart-bar"></i> Reports
-            </a>
-            <hr style="border-color: rgba(255,255,255,0.2);">
-            <a href="index.html" class="nav-link">
-                <i class="fas fa-home"></i> Main Website
+        <div class="text-center">
+            <h1 class="fs-5 m-0 text-warning">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Dashboard
+            </h1>
+            <small>Admin Panel</small>
+        </div>
+        <div class="nav-links d-none d-md-block">
+            <a href="/index.html" class="text-white text-decoration-none">
+                <i class="fas fa-arrow-left me-1"></i>Back to Site
             </a>
         </div>
-    </div>
-    
+    </header>
+
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Header -->
-        <div class="header">
-            <h1 class="page-title" id="pageTitle">Teacher Dashboard</h1>
+        <!-- Header Card -->
+        <div class="header-card">
+            <h1 class="page-title" id="pageTitle">
+                <i class="fas fa-tachometer-alt me-2" style="color: var(--accent);"></i>
+                Teacher Dashboard
+            </h1>
             <div class="admin-info">
-                <span><i class="fas fa-user-circle fa-2x"></i></span>
-                <span id="adminName">Admin</span>
+                <span><i class="fas fa-user-circle fa-2x" style="color: var(--primary);"></i></span>
+                <span id="adminName" style="font-weight: 600;">Admin</span>
                 <button class="logout-btn" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </button>
             </div>
         </div>
@@ -524,7 +571,7 @@
         <!-- Stats Cards -->
         <div class="stats-grid" id="statsContainer">
             <div class="stat-card">
-                <div class="stat-icon" style="background: #e8f4fd; color: #3498db;">
+                <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
                     <i class="fas fa-users"></i>
                 </div>
                 <h3 class="stat-value" id="totalTeachers">0</h3>
@@ -532,7 +579,7 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background: #fff3cd; color: #f39c12;">
+                <div class="stat-icon" style="background: #fff3cd; color: var(--warning-color);">
                     <i class="fas fa-clock"></i>
                 </div>
                 <h3 class="stat-value" id="pendingTeachers">0</h3>
@@ -540,7 +587,7 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background: #d4edda; color: #2ecc71;">
+                <div class="stat-icon" style="background: #d4edda; color: var(--success-color);">
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <h3 class="stat-value" id="approvedTeachers">0</h3>
@@ -548,31 +595,34 @@
             </div>
             
             <div class="stat-card">
-                <div class="stat-icon" style="background: #f8d7da; color: #e74c3c;">
+                <div class="stat-icon" style="background: #f8d7da; color: var(--danger-color);">
                     <i class="fas fa-rupee-sign"></i>
                 </div>
                 <h3 class="stat-value" id="totalSalary">0</h3>
-                <p class="stat-label">Total Salary (Monthly)</p>
+                <p class="stat-label">Total Salary</p>
             </div>
         </div>
         
-        <!-- Main Card Container -->
-        <div class="card">
+        <!-- Main Card -->
+        <div class="main-card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span id="cardTitle">All Teachers</span>
+                <span>
+                    <i class="fas fa-list me-2" style="color: var(--accent);"></i>
+                    <span id="cardTitle">All Teachers</span>
+                </span>
                 <div>
-                    <button class="btn btn-primary" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i> Refresh
+                    <button class="btn-edit" id="refreshBtn">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
                     </button>
                 </div>
             </div>
             <div class="card-body">
                 <!-- Search and Filter -->
-                <div class="row mb-3">
+                <div class="row mb-4">
                     <div class="col-md-6">
-                        <div class="position-relative search-box">
+                        <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Search teachers...">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search teachers by name, ID, mobile...">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -596,14 +646,18 @@
                                 <th>Mobile</th>
                                 <th>Subject</th>
                                 <th>Salary</th>
-                                <th>Joining Date</th>
+                                <th>Joining</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="teachersTableBody">
                             <tr>
-                                <td colspan="9" class="text-center">Loading teachers...</td>
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -612,9 +666,10 @@
         </div>
         
         <!-- Chart Card -->
-        <div class="card" id="chartCard">
+        <div class="main-card" id="chartCard">
             <div class="card-header">
-                <i class="fas fa-chart-line me-2"></i>Salary Overview
+                <i class="fas fa-chart-line me-2" style="color: var(--accent);"></i>
+                Salary Overview
             </div>
             <div class="card-body">
                 <div class="chart-container">
@@ -623,6 +678,16 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <p class="m-0 small">
+            <i class="far fa-copyright me-1"></i>2024 Teacher Dashboard | 
+            <i class="fas fa-shield-alt me-1"></i>Bal Bharti Coaching
+        </p>
+    </footer>
+
+    <!-- ========== MODALS ========== -->
     
     <!-- View Teacher Modal -->
     <div class="modal fade" id="viewTeacherModal" tabindex="-1">
@@ -648,34 +713,11 @@
         </div>
     </div>
     
-    <!-- Edit Teacher Modal -->
-    <div class="modal fade" id="editTeacherModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-edit me-2"></i>Edit Teacher
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="editTeacherContent">
-                    <form id="editTeacherForm">
-                        <!-- Form will be populated dynamically -->
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveTeacherBtn">Save Changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <!-- Approve Teacher Modal -->
     <div class="modal fade" id="approveTeacherModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-success text-white">
+                <div class="modal-header bg-success">
                     <h5 class="modal-title">
                         <i class="fas fa-check-circle me-2"></i>Approve Teacher
                     </h5>
@@ -713,7 +755,7 @@
     <div class="modal fade" id="salaryModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header" style="background: var(--primary);">
                     <h5 class="modal-title">
                         <i class="fas fa-rupee-sign me-2"></i>Pay Salary
                     </h5>
@@ -757,28 +799,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">
-                        <i class="fas fa-trash me-2"></i>Confirm Delete
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this teacher? This action cannot be undone.</p>
-                    <input type="hidden" id="deleteTeacherId">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -787,28 +807,27 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
-        // ========== SIMPLE FIXED AUTHENTICATION ==========
-        let token = localStorage.getItem('adminToken');
+        // ========== CHECK TOKEN - FIXED ==========
+        let token = localStorage.getItem('token') || localStorage.getItem('adminToken');
         console.log('🔑 Token Status:', token ? '✅ LOGGED IN' : '❌ NOT LOGGED IN');
         
-        // Agar token nahi hai to redirect mat karo - bas message dikhao
+        // Agar token nahi hai to message dikhao, redirect mat karo
         if (!token) {
-            // Dashboard load mat karo, bas login message dikhao
             document.addEventListener('DOMContentLoaded', function() {
                 // Hide stats and chart
                 document.getElementById('statsContainer').style.display = 'none';
                 document.getElementById('chartCard').style.display = 'none';
                 
-                // Show login message in table
+                // Show login message
                 document.getElementById('teachersTableBody').innerHTML = `
                     <tr>
-                        <td colspan="9" class="text-center">
-                            <div class="alert alert-warning p-4">
-                                <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
-                                <h4>Please Login First!</h4>
-                                <p class="mb-3">You need to login as admin to access teacher dashboard.</p>
-                                <a href="/index.html" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-sign-in-alt"></i> Go to Login Page
+                        <td colspan="9">
+                            <div class="login-required">
+                                <i class="fas fa-lock"></i>
+                                <h3>Please Login First</h3>
+                                <p class="text-muted mb-4">You need to login as admin to access teacher dashboard.</p>
+                                <a href="/index.html" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Go to Login Page
                                 </a>
                             </div>
                         </td>
@@ -823,6 +842,7 @@
             $(document).ready(function() {
                 loadDashboard();
                 initEventListeners();
+                loadLogo();
             });
         }
         
@@ -832,17 +852,28 @@
         let salaryChart = null;
         let dataTable = null;
         
+        // ========== LOAD LOGO ==========
+        function loadLogo() {
+            fetch('/api/config')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('db-logo').innerHTML = data.logoText ? 
+                        `<i class="fas fa-graduation-cap me-2"></i>${data.logoText}` : 
+                        '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+                })
+                .catch(() => {
+                    document.getElementById('db-logo').innerHTML = '<i class="fas fa-graduation-cap me-2"></i>BBCC';
+                });
+        }
+        
         // ========== INITIALIZE EVENT LISTENERS ==========
         function initEventListeners() {
             // Logout
             $('#logoutBtn').click(function() {
+                localStorage.removeItem('token');
                 localStorage.removeItem('adminToken');
+                localStorage.removeItem('isAdmin');
                 window.location.href = '/index.html';
-            });
-            
-            // Menu toggle
-            $('#menuToggle').click(function() {
-                $('#sidebar').toggleClass('show');
             });
             
             // Navigation
@@ -852,7 +883,17 @@
                 $(this).addClass('active');
                 
                 const page = $(this).data('page');
-                loadPage(page);
+                if (page === 'dashboard') {
+                    currentFilter = 'all';
+                    $('.filter-btn[data-filter="all"]').click();
+                } else if (page === 'pending') {
+                    currentFilter = 'pending';
+                    $('.filter-btn[data-filter="pending"]').click();
+                } else if (page === 'salary') {
+                    currentFilter = 'approved';
+                    $('.filter-btn[data-filter="approved"]').click();
+                }
+                filterTeachers();
             });
             
             // Search
@@ -871,6 +912,7 @@
             // Refresh
             $('#refreshBtn').click(function() {
                 loadTeachers();
+                loadStats();
             });
         }
         
@@ -884,6 +926,7 @@
                 console.error('Dashboard error:', error);
                 if (error.message?.includes('401')) {
                     alert('Session expired! Please login again.');
+                    localStorage.removeItem('token');
                     localStorage.removeItem('adminToken');
                     window.location.href = '/index.html';
                 }
@@ -941,7 +984,7 @@
             tbody.empty();
             
             if (!teachers || teachers.length === 0) {
-                tbody.html('<tr><td colspan="9" class="text-center">No teachers found</td></tr>');
+                tbody.html('<tr><td colspan="9" class="text-center py-4">No teachers found</td></tr>');
                 return;
             }
             
@@ -955,10 +998,7 @@
                                    teacher.status === 'approved' ? 'badge-approved' : 'badge-rejected';
                 
                 const statusText = teacher.status ? teacher.status.toUpperCase() : 'PENDING';
-                
                 const joiningDate = teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-';
-                
-                // Current month for salary
                 const currentMonth = new Date().toLocaleString('default', { month: 'long' }) + ' ' + new Date().getFullYear();
                 
                 const row = `
@@ -1007,7 +1047,17 @@
                     ordering: true,
                     info: true,
                     lengthChange: false,
-                    pageLength: 10
+                    pageLength: 10,
+                    language: {
+                        emptyTable: "No teachers found",
+                        info: "Showing _START_ to _END_ of _TOTAL_ teachers",
+                        paginate: {
+                            first: "First",
+                            last: "Last",
+                            next: "Next",
+                            previous: "Previous"
+                        }
+                    }
                 });
             } else {
                 dataTable.clear().rows.add($(tbody).find('tr')).draw();
@@ -1128,7 +1178,7 @@
                 
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById('approveTeacherModal')).hide();
-                    alert('Teacher approved successfully!');
+                    alert('✅ Teacher approved successfully!');
                     loadTeachers();
                     loadStats();
                     $('#approveSubject').val('');
@@ -1194,7 +1244,7 @@
                 
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById('salaryModal')).hide();
-                    alert('Salary saved successfully!');
+                    alert('✅ Salary saved successfully!');
                     loadTeachers();
                     loadStats();
                 } else {
@@ -1223,7 +1273,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Teacher deleted successfully!');
+                    alert('✅ Teacher deleted successfully!');
                     loadTeachers();
                     loadStats();
                 } else {
@@ -1242,81 +1292,58 @@
             const ctx = document.getElementById('salaryChart')?.getContext('2d');
             if (!ctx) return;
             
-            // Simple chart for now
+            // Get last 6 months
             const months = [];
             const paidData = [];
             
             for (let i = 5; i >= 0; i--) {
                 const date = new Date();
                 date.setMonth(date.getMonth() - i);
-                months.push(date.toLocaleString('default', { month: 'short' }));
+                months.push(date.toLocaleString('default', { month: 'short' }) + ' ' + date.getFullYear());
                 paidData.push(0);
             }
             
             if (salaryChart) salaryChart.destroy();
             
             salaryChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: months,
                     datasets: [{
-                        label: 'Salary',
+                        label: 'Monthly Salary',
                         data: paidData,
-                        backgroundColor: '#3498db'
+                        borderColor: '#0f172a',
+                        backgroundColor: 'rgba(15, 23, 42, 0.1)',
+                        tension: 0.4,
+                        fill: true
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    }
                 }
             });
-        }
-        
-        // ========== LOAD PAGE ==========
-        function loadPage(page) {
-            $('#pageTitle').text(page.charAt(0).toUpperCase() + page.slice(1).replace('-', ' '));
-            
-            switch(page) {
-                case 'dashboard':
-                    $('#statsContainer').show();
-                    $('#chartCard').show();
-                    $('#cardTitle').text('All Teachers');
-                    currentFilter = 'all';
-                    $('.filter-btn[data-filter="all"]').click();
-                    break;
-                    
-                case 'pending':
-                    $('#statsContainer').hide();
-                    $('#chartCard').show();
-                    $('#cardTitle').text('Pending Approvals');
-                    currentFilter = 'pending';
-                    $('.filter-btn[data-filter="pending"]').click();
-                    break;
-                    
-                case 'salary':
-                    $('#statsContainer').hide();
-                    $('#chartCard').show();
-                    $('#cardTitle').text('Salary Management');
-                    currentFilter = 'approved';
-                    $('.filter-btn[data-filter="approved"]').click();
-                    break;
-                    
-                default:
-                    $('#statsContainer').show();
-                    $('#chartCard').show();
-                    $('#cardTitle').text('All Teachers');
-                    currentFilter = 'all';
-                    $('.filter-btn[data-filter="all"]').click();
-            }
-            
-            filterTeachers();
         }
         
         // ========== UTILITY FUNCTIONS ==========
         function showLoading() { $('#loadingSpinner').show(); }
         function hideLoading() { $('#loadingSpinner').hide(); }
-        function showSuccess(m) { alert('✅ Success: ' + m); }
-        function showError(m) { alert('❌ Error: ' + m); }
         
         function debounce(func, wait) {
             let timeout;
