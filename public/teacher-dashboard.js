@@ -446,28 +446,9 @@ async function loadTeacherDetails(teacherId) {
             safeSetText('detailSalary', teacher.salary?.toLocaleString() || '0');
             safeSetText('detailJoining', teacher.joiningDate ? new Date(teacher.joiningDate).toLocaleDateString() : '-');
             
-            // Document links
-            const aadharLink = document.getElementById('aadharDocLink');
-            if (aadharLink) {
-                if (teacher.aadharDoc) {
-                    aadharLink.href = teacher.aadharDoc;
-                    aadharLink.style.display = 'inline';
-                    aadharLink.textContent = 'View Aadhar';
-                } else {
-                    aadharLink.style.display = 'none';
-                }
-            }
-            
-            const qualLink = document.getElementById('qualificationDocLink');
-            if (qualLink) {
-                if (teacher.qualificationDoc) {
-                    qualLink.href = teacher.qualificationDoc;
-                    qualLink.style.display = 'inline';
-                    qualLink.textContent = 'View Qualification';
-                } else {
-                    qualLink.style.display = 'none';
-                }
-            }
+            // Document links with preview
+            setupDocumentPreview('aadharDoc', teacher.aadharDoc);
+            setupDocumentPreview('qualificationDoc', teacher.qualificationDoc);
             
             // Load salary and attendance data
             loadSalaryData(teacher);
@@ -478,6 +459,40 @@ async function loadTeacherDetails(teacherId) {
         showError('Failed to load teacher details');
     }
     hideLoading();
+}
+
+// ========== SETUP DOCUMENT PREVIEW ==========
+function setupDocumentPreview(prefix, docUrl) {
+    const previewImg = document.getElementById(`${prefix}Preview`);
+    const link = document.getElementById(`${prefix}Link`);
+    const noDoc = document.getElementById(`${prefix.replace('Doc', 'NoDoc')}`);
+    
+    if (!previewImg || !link || !noDoc) return;
+    
+    if (docUrl && docUrl !== '') {
+        // Show preview if it's an image
+        if (docUrl.startsWith('data:image') || docUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
+            previewImg.src = docUrl;
+            previewImg.style.display = 'inline-block';
+            previewImg.onclick = () => {
+                const modalImg = document.getElementById('documentPreviewImage');
+                if (modalImg) {
+                    modalImg.src = docUrl;
+                    safeShowModal('documentPreviewModal');
+                }
+            };
+        } else {
+            previewImg.style.display = 'none';
+        }
+        
+        link.href = docUrl;
+        link.style.display = 'inline-block';
+        noDoc.style.display = 'none';
+    } else {
+        previewImg.style.display = 'none';
+        link.style.display = 'none';
+        noDoc.style.display = 'inline';
+    }
 }
 
 // Helper function to safely set text content
@@ -646,7 +661,7 @@ function handlePaySalary(e) {
     safeShowModal('salaryModal');
 }
 
-// ========== LOAD ATTENDANCE DATA FROM DATABASE - FIXED VERSION ==========
+// ========== LOAD ATTENDANCE DATA FROM DATABASE - FIXED VERSION WITH DELETE ==========
 async function loadAttendanceData(teacher) {
     const tbody = document.getElementById('attendanceTableBody');
     if (!tbody) return;
@@ -655,7 +670,7 @@ async function loadAttendanceData(teacher) {
     if (teacher.status !== 'approved' || !teacher.joiningDate) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3" class="text-center">
+                <td colspan="4" class="text-center">
                     <div class="alert alert-info m-0">
                         <i class="fas fa-info-circle"></i>
                         Teacher not approved yet. Approval ke baad attendance available hogi.
@@ -680,8 +695,8 @@ async function loadAttendanceData(teacher) {
                 // Store in global variable
                 attendanceData[teacher.teacherId] = attendance;
                 
-                // Display with summary
-                displayAttendanceTable(teacher.teacherId, attendance, result.summary);
+                // Display with full details including photo
+                displayAttendanceTable(teacher.teacherId, attendance);
                 return;
             }
         }
@@ -717,15 +732,20 @@ function generateEmptyAttendanceData(teacher) {
     
     while (currentLoopDate <= currentDate) {
         const dateStr = currentLoopDate.toISOString().split('T')[0];
-        const displayDate = currentLoopDate.toLocaleDateString();
+        const displayDate = currentLoopDate.toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
         
         attendance.push({
-            id: null,
+            _id: null,
             teacherId: teacher.teacherId,
-            date: displayDate,
-            rawDate: dateStr,
+            date: dateStr,
+            displayDate: displayDate,
             status: null,
             remarks: '',
+            photo: null,
             markedBy: null,
             markedAt: null
         });
@@ -737,77 +757,78 @@ function generateEmptyAttendanceData(teacher) {
     return attendance.reverse();
 }
 
-// ========== DISPLAY ATTENDANCE TABLE - FIXED VERSION ==========
-function displayAttendanceTable(teacherId, attendance, summary = null) {
+// ========== DISPLAY ATTENDANCE TABLE - FIXED WITH DELETE ==========
+function displayAttendanceTable(teacherId, attendance) {
     const tbody = document.getElementById('attendanceTableBody');
     if (!tbody) return;
     
     tbody.innerHTML = '';
     
     if (!attendance || attendance.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center">No attendance records found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No attendance records found</td></tr>';
         return;
-    }
-    
-    // Show summary if available
-    if (summary) {
-        const summaryRow = document.createElement('tr');
-        summaryRow.classList.add('table-info');
-        summaryRow.innerHTML = `
-            <td colspan="3" class="text-center">
-                <strong>Summary:</strong> 
-                Present: ${summary.present || 0} | 
-                Absent: ${summary.absent || 0} | 
-                Half Day: ${summary.halfDay || 0} | 
-                Leave: ${summary.leave || 0} | 
-                Pending: ${summary.pending || 0}
-            </td>
-        `;
-        tbody.appendChild(summaryRow);
     }
     
     attendance.forEach(record => {
         // Determine status class and text
         let statusClass = '';
         let statusDisplay = '';
+        let statusBadge = '';
         
         if (record.status === null || record.status === undefined || record.status === '') {
-            statusClass = 'badge bg-secondary';
-            statusDisplay = `<span class="${statusClass}">Not Marked</span>`;
+            statusBadge = 'bg-secondary';
+            statusDisplay = 'Not Marked';
         } else {
-            statusClass = record.status === 'present' ? 'badge bg-success' :
-                         record.status === 'absent' ? 'badge bg-danger' :
-                         record.status === 'half-day' ? 'badge bg-warning text-dark' :
-                         'badge bg-info text-dark';
-            statusDisplay = `<span class="${statusClass}">${record.status.toUpperCase()}</span>`;
+            statusBadge = record.status === 'present' ? 'bg-success' :
+                         record.status === 'absent' ? 'bg-danger' :
+                         record.status === 'half-day' ? 'bg-warning text-dark' :
+                         'bg-info text-dark';
+            statusDisplay = record.status.toUpperCase();
+        }
+        
+        // Format date for display
+        const displayDate = record.displayDate || new Date(record.date).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Photo column
+        let photoHtml = '<span class="text-muted">-</span>';
+        if (record.photo) {
+            photoHtml = `<img src="${record.photo}" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover; cursor: pointer;" onclick="window.open('${record.photo}', '_blank')">`;
         }
         
         const row = document.createElement('tr');
+        row.setAttribute('data-attendance-id', record._id || '');
         row.setAttribute('data-attendance-date', record.date || '');
-        row.setAttribute('data-raw-date', record.rawDate || '');
         
-        // Action buttons - show based on status
+        // Action buttons - always show delete if exists in database
         let actionButtons = '';
+        
         if (record.status === null || record.status === undefined || record.status === '') {
+            // Not marked - show only Mark button
             actionButtons = `
                 <button class="btn btn-sm btn-primary mark-attendance-btn" 
-                        data-date="${record.date}" 
-                        data-raw-date="${record.rawDate}"
-                        data-status="">
+                        data-date="${record.date}"
+                        data-display-date="${displayDate}">
                     <i class="fas fa-plus"></i> Mark
                 </button>
             `;
         } else {
+            // Marked - show Edit and Delete buttons
             actionButtons = `
                 <button class="btn btn-sm btn-warning edit-attendance-btn" 
-                        data-date="${record.date}" 
-                        data-raw-date="${record.rawDate}"
-                        data-status="${record.status}">
+                        data-date="${record.date}"
+                        data-display-date="${displayDate}"
+                        data-status="${record.status}"
+                        data-remarks="${record.remarks || ''}"
+                        data-photo="${record.photo || ''}">
                     <i class="fas fa-edit"></i> Edit
                 </button>
                 <button class="btn btn-sm btn-danger delete-attendance-btn" 
-                        data-date="${record.date}" 
-                        data-raw-date="${record.rawDate}"
+                        data-date="${record.date}"
+                        data-display-date="${displayDate}"
                         style="margin-left:5px;">
                     <i class="fas fa-trash"></i> Delete
                 </button>
@@ -815,8 +836,9 @@ function displayAttendanceTable(teacherId, attendance, summary = null) {
         }
         
         row.innerHTML = `
-            <td>${record.date || '-'}</td>
-            <td>${statusDisplay}</td>
+            <td>${displayDate}</td>
+            <td><span class="badge ${statusBadge}">${statusDisplay}</span></td>
+            <td>${photoHtml}</td>
             <td>
                 <div class="btn-group" role="group">
                     ${actionButtons}
@@ -846,7 +868,7 @@ function displayAttendanceTable(teacherId, attendance, summary = null) {
 // ========== HANDLE MARK ATTENDANCE (for empty records) ==========
 function handleMarkAttendance(e) {
     const date = e.currentTarget.dataset.date;
-    const rawDate = e.currentTarget.dataset.rawDate;
+    const displayDate = e.currentTarget.dataset.displayDate;
     
     if (!selectedTeacherId || !date) return;
     
@@ -861,15 +883,21 @@ function handleMarkAttendance(e) {
     const attendanceStatus = document.getElementById('attendanceStatus');
     const attendanceRemarks = document.getElementById('attendanceRemarks');
     const attendanceId = document.getElementById('attendanceId');
+    const attendancePhoto = document.getElementById('attendancePhoto');
     
     if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
     if (attendanceTeacherName) attendanceTeacherName.textContent = 
         `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    if (attendanceDate) attendanceDate.textContent = date;
-    if (attendanceDateInput) attendanceDateInput.value = rawDate || new Date().toISOString().split('T')[0];
+    if (attendanceDate) attendanceDate.textContent = displayDate;
+    if (attendanceDateInput) attendanceDateInput.value = date;
     if (attendanceStatus) attendanceStatus.value = 'present';
     if (attendanceRemarks) attendanceRemarks.value = '';
     if (attendanceId) attendanceId.value = '';
+    if (attendancePhoto) attendancePhoto.value = '';
+    
+    // Hide photo preview
+    const photoPreview = document.getElementById('photoPreview');
+    if (photoPreview) photoPreview.style.display = 'none';
     
     // Change modal title
     const modalTitle = document.querySelector('#attendanceModal .modal-title');
@@ -881,8 +909,10 @@ function handleMarkAttendance(e) {
 // ========== HANDLE EDIT ATTENDANCE ==========
 function handleEditAttendance(e) {
     const date = e.currentTarget.dataset.date;
-    const rawDate = e.currentTarget.dataset.rawDate;
+    const displayDate = e.currentTarget.dataset.displayDate;
     const currentStatus = e.currentTarget.dataset.status;
+    const currentRemarks = e.currentTarget.dataset.remarks;
+    const currentPhoto = e.currentTarget.dataset.photo;
     
     if (!selectedTeacherId || !date) return;
     
@@ -900,15 +930,27 @@ function handleEditAttendance(e) {
     const attendanceStatus = document.getElementById('attendanceStatus');
     const attendanceRemarks = document.getElementById('attendanceRemarks');
     const attendanceId = document.getElementById('attendanceId');
+    const attendancePhoto = document.getElementById('attendancePhoto');
+    const capturedPhoto = document.getElementById('capturedPhoto');
+    const photoPreview = document.getElementById('photoPreview');
     
     if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
     if (attendanceTeacherName) attendanceTeacherName.textContent = 
         `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    if (attendanceDate) attendanceDate.textContent = date;
-    if (attendanceDateInput) attendanceDateInput.value = rawDate || new Date().toISOString().split('T')[0];
+    if (attendanceDate) attendanceDate.textContent = displayDate;
+    if (attendanceDateInput) attendanceDateInput.value = date;
     if (attendanceStatus) attendanceStatus.value = currentStatus || 'present';
-    if (attendanceRemarks) attendanceRemarks.value = record?.remarks || '';
-    if (attendanceId) attendanceId.value = record?.id || '';
+    if (attendanceRemarks) attendanceRemarks.value = currentRemarks || '';
+    if (attendanceId) attendanceId.value = record?._id || '';
+    if (attendancePhoto) attendancePhoto.value = currentPhoto || '';
+    
+    // Show photo preview if exists
+    if (currentPhoto && capturedPhoto && photoPreview) {
+        capturedPhoto.src = currentPhoto;
+        photoPreview.style.display = 'block';
+    } else if (photoPreview) {
+        photoPreview.style.display = 'none';
+    }
     
     // Change modal title
     const modalTitle = document.querySelector('#attendanceModal .modal-title');
@@ -917,14 +959,14 @@ function handleEditAttendance(e) {
     safeShowModal('attendanceModal');
 }
 
-// ========== HANDLE DELETE ATTENDANCE ==========
+// ========== HANDLE DELETE ATTENDANCE - FIXED VERSION ==========
 async function handleDeleteAttendance(e) {
     const date = e.currentTarget.dataset.date;
-    const rawDate = e.currentTarget.dataset.rawDate;
+    const displayDate = e.currentTarget.dataset.displayDate;
     
     if (!selectedTeacherId || !date) return;
     
-    if (!confirm(`Are you sure you want to delete attendance for ${date}?`)) return;
+    if (!confirm(`Are you sure you want to delete attendance for ${displayDate || date}?`)) return;
     
     showLoading();
     try {
@@ -934,7 +976,7 @@ async function handleDeleteAttendance(e) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ date: rawDate })
+            body: JSON.stringify({ date: date })
         });
         
         if (response.ok) {
@@ -950,22 +992,24 @@ async function handleDeleteAttendance(e) {
                 showError(data.message || 'Failed to delete attendance');
             }
         } else {
-            showError('Failed to delete attendance');
+            const error = await response.json();
+            showError(error.message || 'Failed to delete attendance');
         }
     } catch (err) {
         console.error('Delete attendance error:', err);
-        showError('Failed to delete attendance');
+        showError('Failed to delete attendance: ' + err.message);
     }
     hideLoading();
 }
 
-// ========== SAVE ATTENDANCE (Mark/Edit) - UPDATED ==========
+// ========== SAVE ATTENDANCE (Mark/Edit) ==========
 async function saveAttendance() {
     const attendanceTeacherId = document.getElementById('attendanceTeacherId');
     const attendanceDateInput = document.getElementById('attendanceDateInput');
     const attendanceStatus = document.getElementById('attendanceStatus');
     const attendanceRemarks = document.getElementById('attendanceRemarks');
     const attendanceId = document.getElementById('attendanceId');
+    const attendancePhoto = document.getElementById('attendancePhoto');
     
     if (!attendanceTeacherId || !attendanceDateInput || !attendanceStatus) return;
     
@@ -974,6 +1018,7 @@ async function saveAttendance() {
     const status = attendanceStatus.value;
     const remarks = attendanceRemarks?.value || '';
     const id = attendanceId?.value || '';
+    const photo = attendancePhoto?.value || '';
     
     // Validate date is not in future
     const selectedDate = new Date(dateInput);
@@ -988,7 +1033,8 @@ async function saveAttendance() {
     const payload = {
         date: dateInput,
         status: status,
-        remarks: remarks
+        remarks: remarks,
+        photo: photo || undefined
     };
     
     showLoading();
@@ -1027,7 +1073,7 @@ async function saveAttendance() {
         
     } catch (err) {
         console.error('Save attendance error:', err);
-        showError('Failed to save attendance');
+        showError('Failed to save attendance: ' + err.message);
     }
     hideLoading();
 }
@@ -1050,8 +1096,12 @@ function handleMarkAttendanceMain() {
     
     // For main button, default to today's date
     const today = new Date();
-    const dateStr = today.toLocaleDateString();
-    const rawDate = today.toISOString().split('T')[0];
+    const dateStr = today.toISOString().split('T')[0];
+    const displayDate = today.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
     
     const attendanceTeacherId = document.getElementById('attendanceTeacherId');
     const attendanceTeacherName = document.getElementById('attendanceTeacherName');
@@ -1060,15 +1110,21 @@ function handleMarkAttendanceMain() {
     const attendanceStatus = document.getElementById('attendanceStatus');
     const attendanceRemarks = document.getElementById('attendanceRemarks');
     const attendanceId = document.getElementById('attendanceId');
+    const attendancePhoto = document.getElementById('attendancePhoto');
     
     if (attendanceTeacherId) attendanceTeacherId.value = teacher.teacherId || '';
     if (attendanceTeacherName) attendanceTeacherName.textContent = 
         `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
-    if (attendanceDate) attendanceDate.textContent = dateStr;
-    if (attendanceDateInput) attendanceDateInput.value = rawDate;
+    if (attendanceDate) attendanceDate.textContent = displayDate;
+    if (attendanceDateInput) attendanceDateInput.value = dateStr;
     if (attendanceStatus) attendanceStatus.value = 'present';
     if (attendanceRemarks) attendanceRemarks.value = '';
     if (attendanceId) attendanceId.value = '';
+    if (attendancePhoto) attendancePhoto.value = '';
+    
+    // Hide photo preview
+    const photoPreview = document.getElementById('photoPreview');
+    if (photoPreview) photoPreview.style.display = 'none';
     
     // Change modal title
     const modalTitle = document.querySelector('#attendanceModal .modal-title');
@@ -1211,7 +1267,9 @@ function handleEditTeacher() {
     const editStatus = document.getElementById('editStatus');
     const editJoiningDate = document.getElementById('editJoiningDate');
     const editPhotoPreview = document.getElementById('editPhotoPreview');
+    const editAadharPreview = document.getElementById('editAadharPreview');
     const editAadharLink = document.getElementById('editAadharLink');
+    const editAadharNoDoc = document.getElementById('editAadharNoDoc');
     
     if (editTeacherId) editTeacherId.value = teacher.teacherId || '';
     if (editFirstName) editFirstName.value = teacher.teacherName?.first || '';
@@ -1250,14 +1308,33 @@ function handleEditTeacher() {
         editPhotoPreview.src = getSafeImageUrl(teacher.photo, true);
     }
     
-    if (editAadharLink) {
-        if (teacher.aadharDoc) {
-            editAadharLink.href = teacher.aadharDoc;
-            editAadharLink.style.display = 'inline';
-            editAadharLink.textContent = 'View Aadhar';
-        } else {
-            editAadharLink.style.display = 'none';
+    // Setup Aadhar preview in edit modal
+    if (teacher.aadharDoc && teacher.aadharDoc !== '') {
+        if (editAadharPreview) {
+            if (teacher.aadharDoc.startsWith('data:image') || teacher.aadharDoc.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
+                editAadharPreview.src = teacher.aadharDoc;
+                editAadharPreview.style.display = 'inline-block';
+                editAadharPreview.onclick = () => {
+                    const modalImg = document.getElementById('documentPreviewImage');
+                    if (modalImg) {
+                        modalImg.src = teacher.aadharDoc;
+                        safeShowModal('documentPreviewModal');
+                    }
+                };
+            } else {
+                editAadharPreview.style.display = 'none';
+            }
         }
+        if (editAadharLink) {
+            editAadharLink.href = teacher.aadharDoc;
+            editAadharLink.style.display = 'inline-block';
+            editAadharLink.textContent = 'View Full Document';
+        }
+        if (editAadharNoDoc) editAadharNoDoc.style.display = 'none';
+    } else {
+        if (editAadharPreview) editAadharPreview.style.display = 'none';
+        if (editAadharLink) editAadharLink.style.display = 'none';
+        if (editAadharNoDoc) editAadharNoDoc.style.display = 'inline';
     }
     
     safeShowModal('editTeacherModal');
