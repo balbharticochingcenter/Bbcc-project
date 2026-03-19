@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Teacher Dashboard - Bal Bharti Coaching</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS (MUST BE HERE) -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Font Awesome -->
@@ -22,40 +22,46 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
-    <!-- Custom CSS -->
     <style>
+        /* ===== ROOT VARIABLES ===== */
         :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --accent: #f093fb;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --dark: #0f172a;
-            --light: #f8fafc;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f94144;
+            --dark: #0b132b;
+            --light: #f8f9fa;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.12);
+            --border-radius: 16px;
+            --border-radius-sm: 12px;
         }
 
+        /* ===== GLOBAL STYLES ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f0f2f5;
             min-height: 100vh;
-            color: #333;
+            color: var(--dark);
         }
 
-        /* Loading Spinner */
+        /* ===== LOADING SPINNER ===== */
         .spinner-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
             display: none;
             justify-content: center;
             align-items: center;
@@ -63,12 +69,12 @@
         }
 
         .spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
         }
 
         @keyframes spin {
@@ -76,191 +82,267 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Navbar */
+        /* ===== NAVBAR - Mobile First ===== */
         .vip-nav {
             background: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+            padding: 0.8rem 1rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .logo {
-            font-size: 24px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: var(--gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* Main Content */
+        /* ===== MAIN CONTENT ===== */
         .main-content {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
+            max-width: 1600px;
+            margin: 1rem auto;
+            padding: 0 1rem;
         }
 
-        /* Header Card */
+        /* ===== HEADER CARD ===== */
         .header-card {
             background: white;
-            border-radius: 20px;
-            padding: 20px 30px;
-            margin-bottom: 30px;
+            border-radius: var(--border-radius-sm);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        @media (min-width: 768px) {
+            .header-card {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem 2rem;
+            }
         }
 
         .page-title {
-            font-size: 28px;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--dark);
-            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
         }
 
         .admin-info {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 1rem;
         }
 
         .logout-btn {
-            background: var(--danger-color);
+            background: var(--danger);
             color: white;
             border: none;
-            padding: 10px 25px;
-            border-radius: 10px;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
             font-weight: 600;
-            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             transition: all 0.3s;
         }
 
         .logout-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+            box-shadow: 0 5px 15px rgba(249, 65, 68, 0.3);
         }
 
-        /* Stats Grid */
+        /* ===== STATS GRID ===== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1rem;
+            }
         }
 
         .stat-card {
             background: white;
-            border-radius: 20px;
-            padding: 25px;
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
             display: flex;
             align-items: center;
-            gap: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            gap: 0.8rem;
+            box-shadow: var(--shadow);
             transition: transform 0.3s;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 15px;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .stat-info {
+            min-width: 0;
         }
 
         .stat-value {
-            font-size: 32px;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--dark);
-            margin-bottom: 5px;
+            line-height: 1.2;
         }
 
         .stat-label {
+            font-size: 0.7rem;
             color: #666;
-            margin: 0;
-            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Teacher Select Card */
+        @media (min-width: 768px) {
+            .stat-card {
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+            .stat-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+            }
+            .stat-value {
+                font-size: 1.8rem;
+            }
+            .stat-label {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ===== TEACHER SELECT CARD ===== */
         .teacher-select-card {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
         }
 
         .summary-card {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
+            box-shadow: var(--shadow);
             display: flex;
             align-items: center;
         }
 
-        /* Main Card */
+        @media (min-width: 768px) {
+            .teacher-select-card, .summary-card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* ===== MAIN CARD ===== */
         .main-card {
             background: white;
-            border-radius: 20px;
+            border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
         }
 
         .card-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: var(--gradient);
             color: white;
-            padding: 20px 30px;
+            padding: 1rem 1.2rem;
             font-weight: 600;
-            font-size: 18px;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .card-header {
+                padding: 1.2rem 1.8rem;
+                font-size: 1.1rem;
+            }
         }
 
         .card-body {
-            padding: 30px;
+            padding: 1.2rem;
         }
 
-        /* Search Box */
+        @media (min-width: 768px) {
+            .card-body {
+                padding: 1.8rem;
+            }
+        }
+
+        /* ===== SEARCH & FILTER ===== */
         .search-box {
             position: relative;
+            margin-bottom: 1rem;
         }
 
         .search-icon {
             position: absolute;
-            left: 15px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: #999;
         }
 
         .search-box input {
-            padding-left: 45px;
-            border-radius: 10px;
-            border: 2px solid #e0e0e0;
+            padding-left: 40px;
+            border-radius: 50px;
+            border: 2px solid #eef2f6;
+            height: 45px;
+            width: 100%;
         }
 
-        .search-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .filter-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
 
-        /* Filter Buttons */
         .filter-btn {
-            padding: 8px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            border: 2px solid #eef2f6;
+            border-radius: 50px;
             background: white;
             color: #666;
             font-weight: 600;
-            margin-left: 10px;
+            font-size: 0.85rem;
             transition: all 0.3s;
+            flex: 1 1 auto;
         }
 
         .filter-btn.active {
@@ -269,80 +351,108 @@
             border-color: var(--primary);
         }
 
-        .filter-btn:hover {
-            border-color: var(--primary);
+        @media (min-width: 768px) {
+            .search-box {
+                margin-bottom: 0;
+            }
+            .filter-btns {
+                justify-content: flex-end;
+                margin-bottom: 0;
+            }
+            .filter-btn {
+                flex: 0 1 auto;
+            }
         }
 
-        /* Teacher Photo */
+        /* ===== TABLE STYLES ===== */
+        .table-responsive {
+            border-radius: var(--border-radius-sm);
+            overflow-x: auto;
+        }
+
+        .table {
+            margin-bottom: 0;
+            min-width: 800px;
+        }
+
+        .table th {
+            background: #f8fafd;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .table td {
+            vertical-align: middle;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        /* Mobile table view */
+        @media (max-width: 768px) {
+            .table {
+                min-width: 100%;
+            }
+            .table td, .table th {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+        }
+
+        /* ===== TEACHER PHOTO ===== */
         .teacher-photo {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--primary);
         }
 
         .teacher-photo-detail {
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             border-radius: 20px;
             object-fit: cover;
             border: 4px solid var(--primary);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow);
         }
 
-        /* Status Badges */
-        .badge-pending {
-            background: #fff3cd;
-            color: #856404;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 600;
+        @media (min-width: 768px) {
+            .teacher-photo-detail {
+                width: 150px;
+                height: 150px;
+            }
         }
 
-        .badge-approved {
-            background: #d4edda;
-            color: #155724;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-rejected {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
+        /* ===== STATUS BADGES ===== */
         .status-badge {
-            padding: 5px 15px;
+            padding: 0.3rem 0.8rem;
             border-radius: 50px;
-            font-size: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
+            display: inline-block;
         }
 
         .status-badge.pending { background: #fff3cd; color: #856404; }
         .status-badge.approved { background: #d4edda; color: #155724; }
         .status-badge.rejected { background: #f8d7da; color: #721c24; }
 
-        .salary-paid { background: #d4edda; color: #155724; padding: 3px 10px; border-radius: 50px; }
-        .salary-partial { background: #fff3cd; color: #856404; padding: 3px 10px; border-radius: 50px; }
-        .salary-unpaid { background: #f8d7da; color: #721c24; padding: 3px 10px; border-radius: 50px; }
+        .salary-paid { background: #d4edda; color: #155724; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.75rem; }
+        .salary-partial { background: #fff3cd; color: #856404; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.75rem; }
+        .salary-unpaid { background: #f8d7da; color: #721c24; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.75rem; }
 
-        /* Action Buttons */
+        /* ===== ACTION BUTTONS ===== */
         .action-buttons {
             display: flex;
-            gap: 5px;
+            gap: 0.3rem;
+            flex-wrap: wrap;
         }
 
-        .btn-edit, .btn-approve, .btn-reject {
-            width: 35px;
-            height: 35px;
+        .btn-icon {
+            width: 32px;
+            height: 32px;
             border: none;
             border-radius: 8px;
             display: inline-flex;
@@ -350,38 +460,41 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 0.9rem;
         }
 
-        .btn-edit { background: var(--primary); color: white; }
-        .btn-approve { background: var(--success-color); color: white; }
-        .btn-reject { background: var(--danger-color); color: white; }
+        .btn-icon.view { background: var(--primary); color: white; }
+        .btn-icon.edit { background: var(--warning); color: white; }
+        .btn-icon.approve { background: var(--success); color: white; }
+        .btn-icon.reject { background: var(--danger); color: white; }
+        .btn-icon.delete { background: #6c757d; color: white; }
+        .btn-icon.salary { background: #20c997; color: white; }
+        .btn-icon.attendance { background: #fd7e14; color: white; }
 
-        .btn-edit:hover, .btn-approve:hover, .btn-reject:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-        }
-
-        /* Info Sections */
+        /* ===== INFO SECTIONS ===== */
         .info-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
+            background: #f8fafd;
+            border-radius: 12px;
+            padding: 1rem;
             border-left: 4px solid var(--primary);
+            margin-bottom: 1rem;
         }
 
         .info-section h6 {
-            color: var(--dark);
             font-weight: 700;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eef2f6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        /* Document Preview */
+        /* ===== DOCUMENT PREVIEW ===== */
         .doc-preview {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
             object-fit: cover;
             border: 2px solid var(--primary);
             cursor: pointer;
@@ -395,47 +508,26 @@
         .doc-link {
             color: var(--primary);
             text-decoration: none;
-            font-weight: 600;
+            font-size: 0.85rem;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 0.3rem;
         }
 
-        .doc-link:hover {
-            text-decoration: underline;
-        }
-
-        /* Chart Container */
+        /* ===== CHARTS ===== */
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 250px;
             width: 100%;
         }
 
-        /* Login Required */
-        .login-required {
-            text-align: center;
-            padding: 60px;
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
         }
 
-        .login-required i {
-            font-size: 80px;
-            color: var(--danger-color);
-            margin-bottom: 20px;
-        }
-
-        /* Footer */
-        footer {
-            background: white;
-            padding: 20px;
-            margin-top: 50px;
-            color: #666;
-        }
-
-        /* Modal Styles */
-        .modal-header.bg-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)) !important; }
-        .modal-header.bg-success { background: linear-gradient(135deg, #2ecc71, #27ae60) !important; }
-        
+        /* ===== MODAL STYLES ===== */
         .modal-content {
             border: none;
             border-radius: 20px;
@@ -443,41 +535,102 @@
         }
 
         .modal-header {
+            background: var(--gradient);
             color: white;
             border: none;
+            padding: 1rem 1.5rem;
         }
 
         .modal-header .btn-close {
             filter: brightness(0) invert(1);
         }
 
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
         .form-section-title {
             color: var(--primary);
             font-weight: 700;
-            margin: 20px 0 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
+            margin: 1.2rem 0 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eef2f6;
+            font-size: 1rem;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
+        /* ===== CAMERA SECTION ===== */
+        .camera-preview {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        /* ===== LOGIN REQUIRED ===== */
+        .login-required {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .login-required i {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: white;
+            padding: 1rem;
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .text-gradient {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-gradient-custom {
+            background: var(--gradient);
+        }
+
+        /* Smooth scrolling */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .btn-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
             }
             
-            .header-card {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
+            .action-buttons {
+                gap: 0.2rem;
             }
             
-            .filter-btn {
-                margin: 5px;
+            .status-badge {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
             }
             
-            .filter-btns {
-                text-align: center !important;
-                margin-top: 15px;
+            .doc-preview {
+                width: 40px;
+                height: 40px;
             }
         }
     </style>
@@ -490,19 +643,22 @@
     
     <!-- Navbar -->
     <header class="vip-nav">
-        <div class="logo fw-bold" id="db-logo">
-            <i class="fas fa-graduation-cap me-2"></i>LOGO
-        </div>
-        <div class="text-center">
-            <h1 class="fs-5 m-0 text-warning">
-                <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Dashboard
-            </h1>
-            <small>Admin Panel</small>
-        </div>
-        <div class="nav-links d-none d-md-block">
-            <a href="/index.html" class="text-white text-decoration-none">
-                <i class="fas fa-arrow-left me-1"></i>Back to Site
-            </a>
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <div class="logo fw-bold" id="db-logo">
+                <i class="fas fa-graduation-cap me-2"></i>BBCC
+            </div>
+            <div class="d-none d-md-block text-center">
+                <h1 class="fs-5 m-0 text-dark">
+                    <i class="fas fa-chalkboard-teacher me-2 text-primary"></i>Teacher Dashboard
+                </h1>
+                <small class="text-muted">Admin Panel</small>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/index.html" class="text-decoration-none d-none d-sm-inline">
+                    <i class="fas fa-arrow-left me-1 text-primary"></i>
+                    <span class="text-dark">Back</span>
+                </a>
+            </div>
         </div>
     </header>
 
@@ -510,15 +666,16 @@
     <div class="main-content">
         <!-- Header Card -->
         <div class="header-card">
-            <h1 class="page-title" id="pageTitle">
-                <i class="fas fa-tachometer-alt me-2" style="color: var(--accent);"></i>
-                Teacher Dashboard
-            </h1>
+            <h2 class="page-title">
+                <i class="fas fa-tachometer-alt" style="color: var(--accent);"></i>
+                Teacher Management
+            </h2>
             <div class="admin-info">
-                <span><i class="fas fa-user-circle fa-2x" style="color: var(--primary);"></i></span>
+                <i class="fas fa-user-circle fa-2x" style="color: var(--primary);"></i>
                 <span id="adminName" style="font-weight: 600;">Admin</span>
                 <button class="logout-btn" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="d-none d-sm-inline">Logout</span>
                 </button>
             </div>
         </div>
@@ -529,73 +686,83 @@
                 <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
                     <i class="fas fa-users"></i>
                 </div>
-                <h3 class="stat-value" id="totalTeachers">0</h3>
-                <p class="stat-label">Total Teachers</p>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="totalTeachers">0</h3>
+                    <p class="stat-label">Total Teachers</p>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon" style="background: #fff3cd; color: var(--warning-color);">
+                <div class="stat-icon" style="background: #fff3cd; color: #f39c12;">
                     <i class="fas fa-clock"></i>
                 </div>
-                <h3 class="stat-value" id="pendingTeachers">0</h3>
-                <p class="stat-label">Pending Approvals</p>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="pendingTeachers">0</h3>
+                    <p class="stat-label">Pending</p>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon" style="background: #d4edda; color: var(--success-color);">
+                <div class="stat-icon" style="background: #d4edda; color: #2ecc71;">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h3 class="stat-value" id="approvedTeachers">0</h3>
-                <p class="stat-label">Active Teachers</p>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="approvedTeachers">0</h3>
+                    <p class="stat-label">Approved</p>
+                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon" style="background: #f8d7da; color: var(--danger-color);">
+                <div class="stat-icon" style="background: #f8d7da; color: #e74c3c;">
                     <i class="fas fa-rupee-sign"></i>
                 </div>
-                <h3 class="stat-value" id="totalSalary">0</h3>
-                <p class="stat-label">Total Salary</p>
+                <div class="stat-info">
+                    <h3 class="stat-value" id="totalSalary">0</h3>
+                    <p class="stat-label">Total Salary</p>
+                </div>
             </div>
         </div>
         
-        <!-- Teacher Selection Dropdown -->
-        <div class="row mb-4">
-            <div class="col-md-6">
+        <!-- Teacher Selection Dropdown (Mobile Friendly) -->
+        <div class="row g-2 mb-4">
+            <div class="col-12 col-md-6">
                 <div class="teacher-select-card">
-                    <label class="form-label fw-bold">Select Teacher for Details:</label>
+                    <label class="form-label fw-bold mb-2">
+                        <i class="fas fa-search me-2 text-primary"></i>Select Teacher:
+                    </label>
                     <select class="form-select" id="teacherSelect">
-                        <option value="">-- Select a Teacher --</option>
+                        <option value="">-- Choose a Teacher --</option>
                     </select>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <div class="summary-card">
-                    <span><strong>Selected Teacher:</strong> <span id="selectedTeacherName">None</span></span>
+                    <i class="fas fa-user-check me-2 text-success"></i>
+                    <span><strong>Selected:</strong> <span id="selectedTeacherName">None</span></span>
                 </div>
             </div>
         </div>
         
-        <!-- Main Card - Teacher Table -->
+        <!-- Teachers Table Card -->
         <div class="main-card">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header">
                 <span>
-                    <i class="fas fa-list me-2" style="color: var(--accent);"></i>
-                    <span id="cardTitle">All Teachers</span>
+                    <i class="fas fa-list me-2"></i>
+                    Teacher Directory
                 </span>
-                <div>
-                    <button class="btn-edit" id="refreshBtn">
-                        <i class="fas fa-sync-alt me-2"></i>Refresh
-                    </button>
-                </div>
+                <button class="btn btn-sm btn-light" id="refreshBtn">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    <span class="d-none d-sm-inline">Refresh</span>
+                </button>
             </div>
             <div class="card-body">
-                <!-- Search and Filter -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
+                <!-- Search and Filter - Mobile Optimized -->
+                <div class="row g-2 mb-4">
+                    <div class="col-12 col-md-6">
                         <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
                             <input type="text" class="form-control" id="searchInput" placeholder="Search teachers...">
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="filter-btns text-end">
+                    <div class="col-12 col-md-6">
+                        <div class="filter-btns">
                             <button class="filter-btn active" data-filter="all">All</button>
                             <button class="filter-btn" data-filter="pending">Pending</button>
                             <button class="filter-btn" data-filter="approved">Approved</button>
@@ -604,13 +771,13 @@
                     </div>
                 </div>
                 
-                <!-- Teachers Table -->
+                <!-- Teachers Table (Scrollable on Mobile) -->
                 <div class="table-responsive">
                     <table class="table table-hover" id="teachersTable">
                         <thead>
                             <tr>
                                 <th>Photo</th>
-                                <th>Teacher ID</th>
+                                <th>ID</th>
                                 <th>Name</th>
                                 <th>Mobile</th>
                                 <th>Subject</th>
@@ -633,95 +800,160 @@
             </div>
         </div>
         
-        <!-- Teacher Details Card (Selected Teacher) -->
+        <!-- Teacher Details Card -->
         <div class="main-card" id="teacherDetailsCard" style="display: none;">
             <div class="card-header">
-                <i class="fas fa-user-graduate me-2" style="color: var(--accent);"></i>
-                Teacher Details: <span id="detailsTeacherName"></span>
+                <i class="fas fa-user-graduate me-2"></i>
+                Teacher Profile: <span id="detailsTeacherName"></span>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <!-- Left Column - Photo & Basic Info -->
-                    <div class="col-md-4 text-center">
-                        <img id="detailsPhoto" src="" class="teacher-photo-detail mb-3" alt="Teacher Photo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E'">
-                        <h5 id="detailsFullName"></h5>
-                        <p class="text-muted" id="detailsTeacherId"></p>
+                <div class="row g-3">
+                    <!-- Photo Column -->
+                    <div class="col-12 col-md-4 text-center">
+                        <img id="detailsPhoto" src="" class="teacher-photo-detail mb-3" alt="Teacher Photo" 
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E'">
+                        <h5 id="detailsFullName" class="mb-1"></h5>
+                        <p class="text-muted small" id="detailsTeacherId"></p>
                         <span class="status-badge" id="detailsStatus"></span>
-                    </div>
-                    
-                    <!-- Right Column - Detailed Info -->
-                    <div class="col-md-8">
-                        <!-- Edit Button -->
-                        <div class="text-end mb-3">
-                            <button class="btn-edit" id="editTeacherBtn">
-                                <i class="fas fa-edit me-2"></i>Edit Teacher
+                        
+                        <!-- Quick Actions for Mobile -->
+                        <div class="d-flex gap-2 justify-content-center mt-3">
+                            <button class="btn-icon edit" id="editTeacherBtn" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon approve" id="quickApproveBtn" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-icon salary" id="quickSalaryBtn" title="Pay Salary">
+                                <i class="fas fa-rupee-sign"></i>
+                            </button>
+                            <button class="btn-icon attendance" id="quickAttendanceBtn" title="Mark Attendance">
+                                <i class="fas fa-calendar-check"></i>
                             </button>
                         </div>
-                        
-                        <!-- Personal Information -->
+                    </div>
+                    
+                    <!-- Details Column -->
+                    <div class="col-12 col-md-8">
+                        <!-- Personal Info -->
                         <div class="info-section">
-                            <h6><i class="fas fa-user me-2"></i>Personal Information</h6>
-                            <div class="row">
-                                <div class="col-md-4"><strong>First Name:</strong> <span id="detailFirstName"></span></div>
-                                <div class="col-md-4"><strong>Middle Name:</strong> <span id="detailMiddleName"></span></div>
-                                <div class="col-md-4"><strong>Last Name:</strong> <span id="detailLastName"></span></div>
-                            </div>
-                            <div class="row mt-2">
-                                <div class="col-md-4"><strong>Father's First:</strong> <span id="detailFatherFirst"></span></div>
-                                <div class="col-md-4"><strong>Father's Middle:</strong> <span id="detailFatherMiddle"></span></div>
-                                <div class="col-md-4"><strong>Father's Last:</strong> <span id="detailFatherLast"></span></div>
+                            <h6><i class="fas fa-user me-2"></i>Personal Details</h6>
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4"><small class="text-muted d-block">First Name:</small> <span id="detailFirstName"></span></div>
+                                <div class="col-6 col-md-4"><small class="text-muted d-block">Middle Name:</small> <span id="detailMiddleName"></span></div>
+                                <div class="col-6 col-md-4"><small class="text-muted d-block">Last Name:</small> <span id="detailLastName"></span></div>
+                                <div class="col-6 col-md-4"><small class="text-muted d-block">DOB:</small> <span id="detailDob"></span></div>
+                                <div class="col-6 col-md-4"><small class="text-muted d-block">Aadhar:</small> <span id="detailAadhar"></span></div>
+                                <div class="col-6 col-md-4"><small class="text-muted d-block">Qualification:</small> <span id="detailQualification"></span></div>
                             </div>
                         </div>
                         
-                        <!-- Contact Information -->
-                        <div class="info-section mt-3">
-                            <h6><i class="fas fa-phone me-2"></i>Contact Information</h6>
-                            <div class="row">
-                                <div class="col-md-6"><strong>Mobile:</strong> <span id="detailMobile"></span></div>
-                                <div class="col-md-6"><strong>Alt Mobile:</strong> <span id="detailAltMobile"></span></div>
+                        <!-- Father's Name -->
+                        <div class="info-section">
+                            <h6><i class="fas fa-male me-2"></i>Father's Name</h6>
+                            <div class="row g-2">
+                                <div class="col-4"><small class="text-muted d-block">First:</small> <span id="detailFatherFirst"></span></div>
+                                <div class="col-4"><small class="text-muted d-block">Middle:</small> <span id="detailFatherMiddle"></span></div>
+                                <div class="col-4"><small class="text-muted d-block">Last:</small> <span id="detailFatherLast"></span></div>
                             </div>
                         </div>
                         
-                        <!-- Professional Information -->
-                        <div class="info-section mt-3">
-                            <h6><i class="fas fa-briefcase me-2"></i>Professional Information</h6>
-                            <div class="row">
-                                <div class="col-md-4"><strong>DOB:</strong> <span id="detailDob"></span></div>
-                                <div class="col-md-4"><strong>Aadhar:</strong> <span id="detailAadhar"></span></div>
-                                <div class="col-md-4"><strong>Qualification:</strong> <span id="detailQualification"></span></div>
-                            </div>
-                            <div class="row mt-2">
-                                <div class="col-md-4"><strong>Subject:</strong> <span id="detailSubject"></span></div>
-                                <div class="col-md-4"><strong>Salary:</strong> ₹<span id="detailSalary"></span>/month</div>
-                                <div class="col-md-4"><strong>Joining:</strong> <span id="detailJoining"></span></div>
+                        <!-- Contact Info -->
+                        <div class="info-section">
+                            <h6><i class="fas fa-phone me-2"></i>Contact</h6>
+                            <div class="row g-2">
+                                <div class="col-6"><small class="text-muted d-block">Mobile:</small> <span id="detailMobile"></span></div>
+                                <div class="col-6"><small class="text-muted d-block">Alt Mobile:</small> <span id="detailAltMobile"></span></div>
                             </div>
                         </div>
                         
-                        <!-- Documents with Preview -->
-                        <div class="info-section mt-3">
+                        <!-- Professional Info -->
+                        <div class="info-section">
+                            <h6><i class="fas fa-briefcase me-2"></i>Professional</h6>
+                            <div class="row g-2">
+                                <div class="col-6"><small class="text-muted d-block">Subject:</small> <span id="detailSubject"></span></div>
+                                <div class="col-6"><small class="text-muted d-block">Salary:</small> ₹<span id="detailSalary"></span>/month</div>
+                                <div class="col-6"><small class="text-muted d-block">Experience:</small> <span id="detailExperience"></span> years</div>
+                                <div class="col-6"><small class="text-muted d-block">Previous School:</small> <span id="detailPrevSchool"></span></div>
+                                <div class="col-6"><small class="text-muted d-block">Joining:</small> <span id="detailJoining"></span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bank Details -->
+                        <div class="info-section">
+                            <h6><i class="fas fa-university me-2"></i>Bank Details</h6>
+                            <div class="row g-2">
+                                <div class="col-12"><small class="text-muted d-block">Account Holder:</small> <span id="detailBankHolder"></span></div>
+                                <div class="col-6"><small class="text-muted d-block">Account No:</small> <span id="detailBankAccount"></span></div>
+                                <div class="col-6"><small class="text-muted d-block">IFSC:</small> <span id="detailBankIfsc"></span></div>
+                                <div class="col-6"><small class="text-muted d-block">Bank Name:</small> <span id="detailBankName"></span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Emergency Contact -->
+                        <div class="info-section">
+                            <h6><i class="fas fa-ambulance me-2"></i>Emergency Contact</h6>
+                            <div class="row g-2">
+                                <div class="col-4"><small class="text-muted d-block">Name:</small> <span id="detailEmerName"></span></div>
+                                <div class="col-4"><small class="text-muted d-block">Relation:</small> <span id="detailEmerRelation"></span></div>
+                                <div class="col-4"><small class="text-muted d-block">Phone:</small> <span id="detailEmerPhone"></span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Address -->
+                        <div class="info-section">
+                            <h6><i class="fas fa-map-marker-alt me-2"></i>Address</h6>
+                            <div class="row g-2">
+                                <div class="col-12"><small class="text-muted d-block">Current:</small> <span id="detailCurrentAddr"></span></div>
+                                <div class="col-12"><small class="text-muted d-block">Permanent:</small> <span id="detailPermAddr"></span></div>
+                                <div class="col-4"><small class="text-muted d-block">City:</small> <span id="detailCity"></span></div>
+                                <div class="col-4"><small class="text-muted d-block">State:</small> <span id="detailState"></span></div>
+                                <div class="col-4"><small class="text-muted d-block">Pincode:</small> <span id="detailPincode"></span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Documents -->
+                        <div class="info-section">
                             <h6><i class="fas fa-file me-2"></i>Documents</h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <strong>Aadhar Document:</strong>
-                                    <div class="mt-2">
-                                        <img id="aadharDocPreview" class="doc-preview" src="" alt="Aadhar Preview" style="display: none;" onclick="window.open(document.getElementById('aadharDocLink').href, '_blank')">
-                                        <a href="#" id="aadharDocLink" class="doc-link" target="_blank" style="display: none;">
-                                            <i class="fas fa-eye"></i> View Full Document
-                                        </a>
-                                        <span id="aadharNoDoc" class="text-muted">No document uploaded</span>
-                                    </div>
+                            <div class="row g-3">
+                                <div class="col-6 col-md-4 text-center">
+                                    <small class="text-muted d-block">Aadhar</small>
+                                    <img id="aadharDocPreview" class="doc-preview mt-1" src="" alt="Aadhar" style="display: none;" onclick="window.open(document.getElementById('aadharDocLink').href, '_blank')">
+                                    <a href="#" id="aadharDocLink" class="doc-link" target="_blank" style="display: none;">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <span id="aadharNoDoc" class="text-muted small">No doc</span>
                                 </div>
-                                <div class="col-md-6">
-                                    <strong>Qualification Document:</strong>
-                                    <div class="mt-2">
-                                        <img id="qualificationDocPreview" class="doc-preview" src="" alt="Qualification Preview" style="display: none;" onclick="window.open(document.getElementById('qualificationDocLink').href, '_blank')">
-                                        <a href="#" id="qualificationDocLink" class="doc-link" target="_blank" style="display: none;">
-                                            <i class="fas fa-eye"></i> View Full Document
-                                        </a>
-                                        <span id="qualNoDoc" class="text-muted">No document uploaded</span>
-                                    </div>
+                                <div class="col-6 col-md-4 text-center">
+                                    <small class="text-muted d-block">Qualification</small>
+                                    <img id="qualificationDocPreview" class="doc-preview mt-1" src="" alt="Qualification" style="display: none;" onclick="window.open(document.getElementById('qualificationDocLink').href, '_blank')">
+                                    <a href="#" id="qualificationDocLink" class="doc-link" target="_blank" style="display: none;">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <span id="qualNoDoc" class="text-muted small">No doc</span>
+                                </div>
+                                <div class="col-6 col-md-4 text-center">
+                                    <small class="text-muted d-block">Resume</small>
+                                    <a href="#" id="resumeLink" class="doc-link" target="_blank" style="display: none;">
+                                        <i class="fas fa-file-pdf"></i> View
+                                    </a>
+                                    <span id="resumeNoDoc" class="text-muted small">No doc</span>
+                                </div>
+                                <div class="col-6 col-md-4 text-center">
+                                    <small class="text-muted d-block">Experience</small>
+                                    <a href="#" id="expCertLink" class="doc-link" target="_blank" style="display: none;">
+                                        <i class="fas fa-certificate"></i> View
+                                    </a>
+                                    <span id="expNoDoc" class="text-muted small">No doc</span>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Remarks -->
+                        <div class="info-section">
+                            <h6><i class="fas fa-comment me-2"></i>Remarks</h6>
+                            <p id="detailRemarks" class="mb-0 small"></p>
+                            <p id="detailRejection" class="mb-0 small text-danger mt-1"></p>
                         </div>
                     </div>
                 </div>
@@ -731,13 +963,13 @@
         <!-- Salary & Attendance Card -->
         <div class="main-card" id="salaryAttendanceCard" style="display: none;">
             <div class="card-header">
-                <i class="fas fa-chart-line me-2" style="color: var(--accent);"></i>
+                <i class="fas fa-chart-line me-2"></i>
                 Salary & Attendance: <span id="salaryTeacherName"></span>
             </div>
             <div class="card-body">
                 <!-- Salary Chart -->
-                <div class="row">
-                    <div class="col-md-12">
+                <div class="row mb-4">
+                    <div class="col-12">
                         <h6 class="mb-3">Salary History Chart</h6>
                         <div class="chart-container">
                             <canvas id="teacherSalaryChart"></canvas>
@@ -745,12 +977,12 @@
                     </div>
                 </div>
                 
-                <!-- Salary Records Table -->
-                <div class="row mt-4">
-                    <div class="col-md-12">
+                <!-- Salary Records -->
+                <div class="row mb-4">
+                    <div class="col-12">
                         <h6 class="mb-3">Monthly Salary Records</h6>
                         <div class="table-responsive">
-                            <table class="table table-bordered" id="salaryTable">
+                            <table class="table table-bordered table-sm" id="salaryTable">
                                 <thead>
                                     <tr>
                                         <th>Month</th>
@@ -763,7 +995,7 @@
                                 </thead>
                                 <tbody id="salaryTableBody">
                                     <tr>
-                                        <td colspan="6" class="text-center">Select a teacher to view salary records</td>
+                                        <td colspan="6" class="text-center">Select a teacher</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -772,11 +1004,11 @@
                 </div>
                 
                 <!-- Attendance Records -->
-                <div class="row mt-4">
-                    <div class="col-md-12">
+                <div class="row">
+                    <div class="col-12">
                         <h6 class="mb-3">Attendance Records</h6>
                         <div class="table-responsive">
-                            <table class="table table-bordered" id="attendanceTable">
+                            <table class="table table-bordered table-sm" id="attendanceTable">
                                 <thead>
                                     <tr>
                                         <th>Date</th>
@@ -787,14 +1019,14 @@
                                 </thead>
                                 <tbody id="attendanceTableBody">
                                     <tr>
-                                        <td colspan="4" class="text-center">Select a teacher to view attendance</td>
+                                        <td colspan="4" class="text-center">Select a teacher</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="text-end mt-2">
-                            <button class="btn-edit" id="markAttendanceBtn">
-                                <i class="fas fa-plus me-2"></i>Mark Today's Attendance
+                        <div class="d-flex gap-2 justify-content-end mt-2">
+                            <button class="btn-icon attendance" id="markAttendanceBtn">
+                                <i class="fas fa-plus"></i> Mark Today
                             </button>
                         </div>
                     </div>
@@ -802,11 +1034,11 @@
             </div>
         </div>
         
-        <!-- Chart Card (Overall) -->
+        <!-- Overall Stats Card -->
         <div class="main-card" id="chartCard">
             <div class="card-header">
-                <i class="fas fa-chart-line me-2" style="color: var(--accent);"></i>
-                Overall Salary Overview
+                <i class="fas fa-chart-bar me-2"></i>
+                Overall Salary Overview (6 Months)
             </div>
             <div class="card-body">
                 <div class="chart-container">
@@ -824,37 +1056,13 @@
         </p>
     </footer>
 
-    <!-- ========== MODALS ========== -->
-    
-    <!-- View Teacher Modal (Legacy) -->
-    <div class="modal fade" id="viewTeacherModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-user-circle me-2"></i>Teacher Details
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="viewTeacherContent">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+    <!-- ===== MODALS ===== -->
+
     <!-- Edit Teacher Modal -->
     <div class="modal fade" id="editTeacherModal" tabindex="-1">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header bg-primary">
+                <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="fas fa-edit me-2"></i>Edit Teacher
                     </h5>
@@ -866,82 +1074,90 @@
                         
                         <!-- Personal Information -->
                         <h6 class="form-section-title">Personal Information</h6>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="editFirstName" required>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">First Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editFirstName" required>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Middle Name</label>
-                                <input type="text" class="form-control" id="editMiddleName">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Middle Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editMiddleName">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="editLastName" required>
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Last Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editLastName" required>
                             </div>
                         </div>
                         
                         <!-- Father's Name -->
                         <h6 class="form-section-title">Father's Name</h6>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="editFatherFirst" required>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">First Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editFatherFirst" required>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Middle Name</label>
-                                <input type="text" class="form-control" id="editFatherMiddle">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Middle Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editFatherMiddle">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="editFatherLast" required>
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Last Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editFatherLast" required>
                             </div>
                         </div>
                         
                         <!-- Contact Information -->
                         <h6 class="form-section-title">Contact Information</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Mobile Number</label>
-                                <input type="text" class="form-control" id="editMobile" required>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-6 mb-2">
+                                <label class="form-label small">Mobile Number</label>
+                                <input type="text" class="form-control form-control-sm" id="editMobile" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Alternative Mobile</label>
-                                <input type="text" class="form-control" id="editAltMobile">
+                            <div class="col-6 col-md-6 mb-2">
+                                <label class="form-label small">Alternative Mobile</label>
+                                <input type="text" class="form-control form-control-sm" id="editAltMobile">
                             </div>
                         </div>
                         
                         <!-- Personal Details -->
                         <h6 class="form-section-title">Personal Details</h6>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Date of Birth</label>
-                                <input type="date" class="form-control" id="editDob" required>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Date of Birth</label>
+                                <input type="date" class="form-control form-control-sm" id="editDob" required>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Aadhar Number</label>
-                                <input type="text" class="form-control" id="editAadhar" required>
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Aadhar Number</label>
+                                <input type="text" class="form-control form-control-sm" id="editAadhar" required>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Last Qualification</label>
-                                <input type="text" class="form-control" id="editQualification" required>
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Qualification</label>
+                                <input type="text" class="form-control form-control-sm" id="editQualification" required>
                             </div>
                         </div>
                         
                         <!-- Professional Details -->
                         <h6 class="form-section-title">Professional Details</h6>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Subject</label>
-                                <input type="text" class="form-control" id="editSubject">
+                        <div class="row g-2">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Subject</label>
+                                <input type="text" class="form-control form-control-sm" id="editSubject">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Salary (Monthly)</label>
-                                <input type="number" class="form-control" id="editSalary" min="0">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Salary (Monthly)</label>
+                                <input type="number" class="form-control form-control-sm" id="editSalary" min="0">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="editStatus">
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Experience (Years)</label>
+                                <input type="number" class="form-control form-control-sm" id="editExperience" min="0">
+                            </div>
+                            <div class="col-6 col-md-6 mb-2">
+                                <label class="form-label small">Previous School</label>
+                                <input type="text" class="form-control form-control-sm" id="editPrevSchool">
+                            </div>
+                            <div class="col-6 col-md-6 mb-2">
+                                <label class="form-label small">Status</label>
+                                <select class="form-select form-select-sm" id="editStatus">
                                     <option value="pending">Pending</option>
                                     <option value="approved">Approved</option>
                                     <option value="rejected">Rejected</option>
@@ -949,42 +1165,123 @@
                             </div>
                         </div>
                         
-                        <!-- Joining Date (if approved) -->
-                        <div class="row" id="joiningDateRow">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Joining Date</label>
-                                <input type="date" class="form-control" id="editJoiningDate">
+                        <!-- Address -->
+                        <h6 class="form-section-title">Address</h6>
+                        <div class="row g-2">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small">Current Address</label>
+                                <input type="text" class="form-control form-control-sm" id="editCurrentAddr">
+                            </div>
+                            <div class="col-12 mb-2">
+                                <label class="form-label small">Permanent Address</label>
+                                <input type="text" class="form-control form-control-sm" id="editPermAddr">
+                            </div>
+                            <div class="col-4 col-md-4 mb-2">
+                                <label class="form-label small">City</label>
+                                <input type="text" class="form-control form-control-sm" id="editCity">
+                            </div>
+                            <div class="col-4 col-md-4 mb-2">
+                                <label class="form-label small">State</label>
+                                <input type="text" class="form-control form-control-sm" id="editState">
+                            </div>
+                            <div class="col-4 col-md-4 mb-2">
+                                <label class="form-label small">Pincode</label>
+                                <input type="text" class="form-control form-control-sm" id="editPincode">
                             </div>
                         </div>
                         
-                        <!-- Documents (Read-only) -->
-                        <h6 class="form-section-title">Documents</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Teacher Photo</label>
-                                <div><img id="editPhotoPreview" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'12\'%3EPhoto%3C/text%3E%3C/svg%3E';"></div>
-                                <small class="text-muted">Cannot change photo via edit</small>
+                        <!-- Bank Details -->
+                        <h6 class="form-section-title">Bank Details</h6>
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6 mb-2">
+                                <label class="form-label small">Account Holder</label>
+                                <input type="text" class="form-control form-control-sm" id="editBankHolder">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Aadhar Document</label>
-                                <div>
-                                    <img id="editAadharPreview" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; cursor: pointer; display: none;" onclick="window.open(document.getElementById('editAadharLink').href, '_blank')">
-                                    <a href="#" id="editAadharLink" target="_blank" style="display: none;">View Full Document</a>
-                                    <span id="editAadharNoDoc" class="text-muted">No document uploaded</span>
-                                </div>
-                                <small class="text-muted">Cannot change document via edit</small>
+                            <div class="col-6 col-md-6 mb-2">
+                                <label class="form-label small">Account Number</label>
+                                <input type="text" class="form-control form-control-sm" id="editBankAccount">
+                            </div>
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">IFSC Code</label>
+                                <input type="text" class="form-control form-control-sm" id="editBankIfsc">
+                            </div>
+                            <div class="col-6 col-md-4 mb-2">
+                                <label class="form-label small">Bank Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editBankName">
+                            </div>
+                        </div>
+                        
+                        <!-- Emergency Contact -->
+                        <h6 class="form-section-title">Emergency Contact</h6>
+                        <div class="row g-2">
+                            <div class="col-4 col-md-4 mb-2">
+                                <label class="form-label small">Name</label>
+                                <input type="text" class="form-control form-control-sm" id="editEmerName">
+                            </div>
+                            <div class="col-4 col-md-4 mb-2">
+                                <label class="form-label small">Relation</label>
+                                <input type="text" class="form-control form-control-sm" id="editEmerRelation">
+                            </div>
+                            <div class="col-4 col-md-4 mb-2">
+                                <label class="form-label small">Phone</label>
+                                <input type="text" class="form-control form-control-sm" id="editEmerPhone">
+                            </div>
+                        </div>
+                        
+                        <!-- Remarks -->
+                        <h6 class="form-section-title">Remarks</h6>
+                        <div class="row g-2">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small">Remarks</label>
+                                <textarea class="form-control form-control-sm" id="editRemarks" rows="2"></textarea>
+                            </div>
+                            <div class="col-12 mb-2" id="rejectionReasonRow" style="display: none;">
+                                <label class="form-label small text-danger">Rejection Reason</label>
+                                <input type="text" class="form-control form-control-sm" id="editRejectionReason">
+                            </div>
+                        </div>
+                        
+                        <!-- Joining Date -->
+                        <div class="row mt-3" id="joiningDateRow">
+                            <div class="col-12">
+                                <label class="form-label small">Joining Date</label>
+                                <input type="date" class="form-control form-control-sm" id="editJoiningDate">
+                            </div>
+                        </div>
+                        
+                        <!-- Documents Preview (Read-only) -->
+                        <h6 class="form-section-title">Documents (Read-only)</h6>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-3 text-center">
+                                <label class="form-label small d-block">Photo</label>
+                                <img id="editPhotoPreview" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px;" 
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Crect width=\'60\' height=\'60\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'8\'%3EPhoto%3C/text%3E%3C/svg%3E';">
+                            </div>
+                            <div class="col-6 col-md-3 text-center">
+                                <label class="form-label small d-block">Aadhar</label>
+                                <img id="editAadharPreview" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
+                                     onclick="window.open(document.getElementById('editAadharLink').href, '_blank')"
+                                     onerror="this.style.display='none'">
+                                <a href="#" id="editAadharLink" target="_blank" style="display: none;">Link</a>
+                            </div>
+                            <div class="col-6 col-md-3 text-center">
+                                <label class="form-label small d-block">Qualification</label>
+                                <img id="editQualPreview" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
+                                     onclick="window.open(document.getElementById('editQualLink').href, '_blank')"
+                                     onerror="this.style.display='none'">
+                                <a href="#" id="editQualLink" target="_blank" style="display: none;">Link</a>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="saveEditBtn">Save Changes</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Approve Teacher Modal -->
     <div class="modal fade" id="approveTeacherModal" tabindex="-1">
         <div class="modal-dialog">
@@ -1013,13 +1310,40 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" id="confirmApproveBtn">Approve Teacher</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-sm" id="confirmApproveBtn">Approve Teacher</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Reject Teacher Modal -->
+    <div class="modal fade" id="rejectTeacherModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title">
+                        <i class="fas fa-times-circle me-2"></i>Reject Teacher
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rejectTeacherForm">
+                        <input type="hidden" id="rejectTeacherId">
+                        <div class="mb-3">
+                            <label class="form-label">Rejection Reason</label>
+                            <textarea class="form-control" id="rejectReason" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="confirmRejectBtn">Reject Teacher</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Salary Payment Modal -->
     <div class="modal fade" id="salaryModal" tabindex="-1">
         <div class="modal-dialog">
@@ -1034,49 +1358,53 @@
                     <form id="salaryForm">
                         <input type="hidden" id="salaryTeacherId">
                         <input type="hidden" id="salaryMonth">
-                        <input type="hidden" id="salaryYear">
                         
                         <div class="text-center mb-3">
-                            <h5 id="salaryTeacherName"></h5>
-                            <p class="text-muted" id="salaryMonthDisplay"></p>
+                            <h6 id="salaryTeacherName" class="fw-bold"></h6>
+                            <p class="text-muted small" id="salaryMonthDisplay"></p>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Monthly Salary</label>
+                            <label class="form-label small">Monthly Salary</label>
                             <input type="text" class="form-control" id="salaryAmount" readonly>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Paid Amount (₹)</label>
+                            <label class="form-label small">Paid Amount (₹)</label>
                             <input type="number" class="form-control" id="paidAmount" required min="0">
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Due Amount</label>
+                            <label class="form-label small">Due Amount</label>
                             <input type="text" class="form-control" id="dueAmount" readonly>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Payment Status</label>
+                            <label class="form-label small">Payment Status</label>
                             <input type="text" class="form-control" id="paymentStatus" readonly>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small">Remarks</label>
+                            <input type="text" class="form-control" id="salaryRemarks" placeholder="Optional">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveSalaryBtn">Save Payment</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="saveSalaryBtn">Save Payment</button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- UPDATED Attendance Modal with Edit/Delete Support -->
+
+    <!-- Attendance Modal with Camera -->
     <div class="modal fade" id="attendanceModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header" style="background: var(--primary);">
                     <h5 class="modal-title">
-                        <i class="fas fa-calendar-check me-2"></i>Attendance
+                        <i class="fas fa-calendar-check me-2"></i>Mark Attendance
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -1086,54 +1414,79 @@
                         <input type="hidden" id="attendanceId">
                         
                         <div class="text-center mb-3">
-                            <h5 id="attendanceTeacherName"></h5>
-                            <p class="text-muted" id="attendanceDate"></p>
+                            <h6 id="attendanceTeacherName" class="fw-bold"></h6>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Select Date</label>
+                            <label class="form-label small">Select Date</label>
                             <input type="date" class="form-control" id="attendanceDateInput" required>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Status</label>
+                            <label class="form-label small">Status</label>
                             <select class="form-select" id="attendanceStatus" required>
                                 <option value="present">Present</option>
                                 <option value="absent">Absent</option>
+                                <option value="late">Late</option>
                                 <option value="half-day">Half Day</option>
                                 <option value="leave">Leave</option>
                             </select>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Remarks</label>
+                            <label class="form-label small">Remarks</label>
                             <input type="text" class="form-control" id="attendanceRemarks" placeholder="Optional">
                         </div>
                         
-                        <!-- Camera Capture Section (Optional for mobile) -->
-                        <div class="mb-3" id="cameraSection" style="display: none;">
-                            <label class="form-label">Capture Photo (Optional)</label>
+                        <!-- Camera Capture -->
+                        <div class="mb-3">
+                            <label class="form-label small">Capture Photo (Optional)</label>
                             <div class="camera-preview mb-2">
                                 <video id="cameraFeed" autoplay playsinline style="width: 100%; border-radius: 10px; background: #000;"></video>
                             </div>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
                                 <button type="button" class="btn btn-sm btn-primary" id="startCameraBtn">
-                                    <i class="fas fa-camera"></i> Start Camera
+                                    <i class="fas fa-camera"></i> Start
                                 </button>
                                 <button type="button" class="btn btn-sm btn-success" id="capturePhotoBtn">
                                     <i class="fas fa-camera-retro"></i> Capture
                                 </button>
+                                <button type="button" class="btn btn-sm btn-secondary" id="stopCameraBtn">
+                                    <i class="fas fa-stop"></i> Stop
+                                </button>
                             </div>
                             <input type="hidden" id="attendancePhoto">
                             <div id="photoPreview" class="mt-2" style="display: none;">
-                                <img id="capturedPhoto" style="width: 100px; height: 100px; border-radius: 10px; object-fit: cover;">
+                                <img id="capturedPhoto" style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 2px solid var(--primary);">
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveAttendanceBtn">Save Attendance</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="saveAttendanceBtn">Save Attendance</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title">
+                        <i class="fas fa-trash me-2"></i>Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this teacher? This action cannot be undone.</p>
+                    <input type="hidden" id="deleteTeacherId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="confirmDeleteBtn">Delete</button>
                 </div>
             </div>
         </div>
@@ -1154,7 +1507,54 @@
         </div>
     </div>
 
-    <!-- Custom JavaScript -->
+    <!-- Bulk Registration Modal -->
+    <div class="modal fade" id="bulkRegisterModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title">
+                        <i class="fas fa-upload me-2"></i>Bulk Teacher Registration
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">Upload JSON file with teacher data or paste JSON below:</p>
+                    <textarea class="form-control" id="bulkTeacherData" rows="8" placeholder='[{"teacherId":"T001","teacherName":{"first":"John","last":"Doe"},"mobile":"9876543210","aadharNumber":"123456789012", ...}]'></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-sm" id="processBulkBtn">Process Bulk Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h5 class="modal-title">
+                        <i class="fas fa-download me-2"></i>Export Teachers
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Choose export format:</p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="/api/teachers/export/json" class="btn btn-primary" target="_blank">
+                            <i class="fas fa-file-code me-2"></i>JSON
+                        </a>
+                        <a href="/api/teachers/export/csv" class="btn btn-success" target="_blank">
+                            <i class="fas fa-file-csv me-2"></i>CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript File (External) -->
     <script src="teacher-dashboard.js"></script>
 </body>
 </html>
