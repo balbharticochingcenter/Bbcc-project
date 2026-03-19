@@ -950,6 +950,111 @@
                 margin: 0 auto;
             }
         }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 20px;
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            color: #666;
+            margin: 0;
+        }
+
+        /* Edit/Delete Buttons */
+        .history-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .history-actions button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .history-actions button:active {
+            transform: scale(0.9);
+        }
+
+        .edit-attendance-btn {
+            background: #0f172a;
+        }
+
+        .delete-attendance-btn {
+            background: #e74c3c;
+        }
+
+        /* Bulk Actions */
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .bulk-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .bulk-present {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .bulk-absent {
+            background: #f44336;
+            color: white;
+        }
+
+        .bulk-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Search Bar */
+        .search-bar {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 14px 14px 14px 48px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+
+        .search-bar input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -962,7 +1067,7 @@
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Loading...</div>
+        <div class="loading-text">लोड हो रहा है...</div>
     </div>
 
     <!-- Toast Notification -->
@@ -1086,6 +1191,22 @@
 
             <!-- Mark Attendance Tab -->
             <div class="tab-content active" id="markTab">
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchStudent" placeholder="छात्र खोजें..." autocomplete="off">
+                </div>
+
+                <!-- Bulk Actions -->
+                <div class="bulk-actions" id="bulkActions" style="display: none;">
+                    <button class="bulk-btn bulk-present" id="bulkPresent">
+                        <i class="fas fa-check"></i> सभी उपस्थित
+                    </button>
+                    <button class="bulk-btn bulk-absent" id="bulkAbsent">
+                        <i class="fas fa-times"></i> सभी अनुपस्थित
+                    </button>
+                </div>
+
                 <!-- Students List -->
                 <div id="studentsSection" style="display: none;">
                     <div class="class-card" style="padding: 16px;">
@@ -1161,6 +1282,13 @@
                         </div>
                     </div>
 
+                    <!-- Refresh Button -->
+                    <div class="text-end mb-3">
+                        <button class="btn btn-sm btn-primary" id="refreshHistoryBtn">
+                            <i class="fas fa-sync-alt"></i> रिफ्रेश
+                        </button>
+                    </div>
+
                     <!-- History List -->
                     <div class="history-list" id="historyList"></div>
                 </div>
@@ -1228,6 +1356,53 @@
         </div>
     </div>
 
+    <!-- Edit Attendance Modal -->
+    <div class="attendance-modal" id="editAttendanceModal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> उपस्थिति संपादित करें</h3>
+            </div>
+            
+            <div class="student-info-sheet">
+                <img id="editModalStudentPhoto" src="" alt="Student" class="student-photo-sheet">
+                <div class="student-details-sheet">
+                    <div class="student-name-sheet" id="editModalStudentName"></div>
+                    <div class="student-class-sheet" id="editModalStudentClass"></div>
+                </div>
+            </div>
+            
+            <div class="date-info">
+                <i class="fas fa-calendar-day"></i>
+                <span>तारीख: <strong id="editModalDate"></strong></span>
+            </div>
+
+            <div class="attendance-options">
+                <div class="attendance-option">
+                    <input type="radio" name="editAttendance" id="edit-option-present" value="present">
+                    <label for="edit-option-present">
+                        <i class="fas fa-check-circle" style="color: #4CAF50;"></i>
+                        <span>उपस्थित</span>
+                    </label>
+                </div>
+                <div class="attendance-option">
+                    <input type="radio" name="editAttendance" id="edit-option-absent" value="absent">
+                    <label for="edit-option-absent">
+                        <i class="fas fa-times-circle" style="color: #f44336;"></i>
+                        <span>अनुपस्थित</span>
+                    </label>
+                </div>
+            </div>
+            
+            <button class="btn-submit" id="updateAttendanceBtn">
+                <i class="fas fa-save"></i> अपडेट करें
+            </button>
+            
+            <button class="btn-close-sheet" id="closeEditModalBtn">
+                <i class="fas fa-times"></i> रद्द करें
+            </button>
+        </div>
+    </div>
+
     <script>
         // ============================================
         // CONFIGURATION
@@ -1259,6 +1434,16 @@
             attachEventListeners();
             populateYearFilter();
             
+            // Check for saved session
+            const savedTeacher = localStorage.getItem('attendanceTeacher');
+            if (savedTeacher) {
+                currentTeacher = JSON.parse(savedTeacher);
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                loadTeacherInfo();
+                loadBoards();
+            }
+            
             // Welcome message
             setTimeout(() => {
                 speakText('बाल भारती कोचिंग के छात्र उपस्थिति प्रणाली में आपका स्वागत है।');
@@ -1272,12 +1457,20 @@
             document.getElementById('classSelect').addEventListener('change', handleClassChange);
             document.getElementById('completeBtn').addEventListener('click', showSummary);
             document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('closeEditModalBtn').addEventListener('click', closeEditModal);
             document.getElementById('submitAttendanceBtn').addEventListener('click', submitAttendance);
+            document.getElementById('updateAttendanceBtn').addEventListener('click', updateAttendance);
             document.getElementById('repeatVoiceBtn').addEventListener('click', () => {
                 speakText(document.getElementById('voiceMessage').textContent);
             });
             document.getElementById('toggleVoiceBtn').addEventListener('click', toggleVoiceGuidance);
             document.getElementById('bgmToggle').addEventListener('click', toggleBGM);
+            document.getElementById('refreshHistoryBtn').addEventListener('click', () => {
+                if (students.length > 0) loadAllAttendanceHistory();
+            });
+            document.getElementById('searchStudent').addEventListener('input', filterStudents);
+            document.getElementById('bulkPresent').addEventListener('click', () => markAllAttendance('present'));
+            document.getElementById('bulkAbsent').addEventListener('click', () => markAllAttendance('absent'));
             
             // Tab switching
             document.getElementById('markTabBtn').addEventListener('click', () => switchTab('mark'));
@@ -1316,6 +1509,15 @@
             return new Date().toISOString().split('T')[0];
         }
 
+        function formatDateForDisplay(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('hi-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
         function isAttendanceTimeAllowed() {
             const now = new Date();
             const hour = now.getHours();
@@ -1343,6 +1545,13 @@
                 historyBtn.classList.add('active');
                 if (students.length > 0) {
                     loadAllAttendanceHistory();
+                } else {
+                    document.getElementById('historyList').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users-slash"></i>
+                            <p>पहले कक्षा चुनें</p>
+                        </div>
+                    `;
                 }
             }
         }
@@ -1465,6 +1674,7 @@
         function populateYearFilter() {
             const yearFilter = document.getElementById('historyYearFilter');
             const currentYear = new Date().getFullYear();
+            yearFilter.innerHTML = '<option value="">साल चुनें</option>';
             for (let year = currentYear; year >= 2020; year--) {
                 const option = document.createElement('option');
                 option.value = year;
@@ -1485,6 +1695,11 @@
             if (!aadharNumber || !dob) {
                 showToast('आधार नंबर और जन्म तिथि दर्ज करें', 'error');
                 speakText('आधार नंबर और जन्म तिथि दर्ज करें');
+                return;
+            }
+            
+            if (!/^\d{12}$/.test(aadharNumber)) {
+                showToast('आधार नंबर 12 अंकों का होना चाहिए', 'error');
                 return;
             }
             
@@ -1578,6 +1793,7 @@
                 document.getElementById('classSelect').disabled = true;
                 document.getElementById('studentsSection').style.display = 'none';
                 document.getElementById('completeBtn').style.display = 'none';
+                document.getElementById('bulkActions').style.display = 'none';
                 return;
             }
             
@@ -1633,6 +1849,8 @@
                     displayStudents();
                     document.getElementById('studentsSection').style.display = 'block';
                     document.getElementById('completeBtn').style.display = 'block';
+                    document.getElementById('bulkActions').style.display = 'flex';
+                    document.getElementById('searchStudent').value = '';
                     
                     const markedCount = Object.keys(todayAttendance).length;
                     if (markedCount > 0) {
@@ -1641,6 +1859,7 @@
                         speakText(`${className} कक्षा के ${students.length} छात्र मिले`);
                     }
                     
+                    updateSummaryCounts();
                     switchTab('mark');
                 }
             } catch (err) {
@@ -1648,6 +1867,69 @@
             } finally {
                 showLoading(false);
             }
+        }
+
+        // ============================================
+        // STUDENT FILTERING
+        // ============================================
+        function filterStudents() {
+            const searchTerm = document.getElementById('searchStudent').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayStudents();
+                return;
+            }
+            
+            const filtered = students.filter(student => {
+                const fullName = `${student.studentName.first} ${student.studentName.last}`.toLowerCase();
+                return fullName.includes(searchTerm) || 
+                       student.studentId.toLowerCase().includes(searchTerm);
+            });
+            
+            displayFilteredStudents(filtered);
+        }
+
+        function displayFilteredStudents(filteredStudents) {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = '';
+            
+            if (filteredStudents.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <p>कोई छात्र नहीं मिला</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredStudents.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.setAttribute('data-student-id', student.studentId);
+                
+                const attendanceStatus = todayAttendance[student.studentId];
+                let statusHtml = '';
+                
+                if (attendanceStatus) {
+                    card.classList.add('marked');
+                    const statusText = attendanceStatus === 'present' ? 'उपस्थित' : 'अनुपस्थित';
+                    const statusClass = attendanceStatus === 'present' ? 'status-present' : 'status-absent';
+                    statusHtml = `<span class="student-status ${statusClass}">${statusText}</span>`;
+                }
+                
+                card.innerHTML = `
+                    <img src="${student.photo || 'https://via.placeholder.com/48'}" class="student-photo" onerror="this.src='https://via.placeholder.com/48'">
+                    <div class="student-info">
+                        <div class="student-name">${student.studentName.first} ${student.studentName.last}</div>
+                        <div class="student-class">${student.education?.class || currentClass}</div>
+                        ${statusHtml}
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => openAttendanceModal(student));
+                grid.appendChild(card);
+            });
         }
 
         // ============================================
@@ -1659,7 +1941,7 @@
             
             for (const student of students) {
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/students/${student.studentId}/attendance?date=${today}`, {
+                    const response = await fetch(`${API_BASE_URL}/api/students/${student.studentId}/attendance`, {
                         headers: { 'Authorization': `Bearer ${localStorage.getItem('teacherToken')}` }
                     });
                     
@@ -1711,6 +1993,63 @@
         }
 
         // ============================================
+        // BULK ATTENDANCE
+        // ============================================
+        async function markAllAttendance(status) {
+            if (!isAttendanceTimeAllowed()) {
+                showToast('अटेंडेंस केवल सुबह 6 बजे से रात 10 बजे तक ही दर्ज हो सकता है', 'error');
+                speakText('अटेंडेंस का समय समाप्त हुआ');
+                return;
+            }
+            
+            if (!students.length) return;
+            
+            const unmarkedStudents = students.filter(s => !todayAttendance[s.studentId]);
+            if (unmarkedStudents.length === 0) {
+                showToast('सभी छात्रों की उपस्थिति पहले से दर्ज है', 'info');
+                return;
+            }
+            
+            showLoading(true);
+            const today = getCurrentDateISO();
+            let success = 0;
+            
+            for (const student of unmarkedStudents) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/students/${student.studentId}/attendance`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                        },
+                        body: JSON.stringify({
+                            date: today,
+                            status: status,
+                            remarks: `Bulk marked by ${currentTeacher.teacherName.first}`
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        todayAttendance[student.studentId] = status;
+                        success++;
+                    }
+                } catch (err) {
+                    console.error('Error marking bulk attendance:', err);
+                }
+            }
+            
+            displayStudents();
+            updateSummaryCounts();
+            showLoading(false);
+            
+            const statusText = status === 'present' ? 'उपस्थित' : 'अनुपस्थित';
+            showToast(`${success} छात्र ${statusText} दर्ज हुए`, 'success');
+            speakText(`${success} छात्र ${statusText} दर्ज हुए`);
+        }
+
+        // ============================================
         // ATTENDANCE MODAL
         // ============================================
         function openAttendanceModal(student) {
@@ -1749,7 +2088,7 @@
                 
                 // Disable options if already marked (prevent double entry)
                 document.querySelectorAll('.attendance-option input').forEach(radio => {
-                    radio.disabled = !timeAllowed; // Disable if time not allowed
+                    radio.disabled = true;
                 });
             } else {
                 warningDiv.style.display = 'none';
@@ -1773,6 +2112,10 @@
 
         function closeModal() {
             document.getElementById('attendanceModal').style.display = 'none';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editAttendanceModal').style.display = 'none';
         }
 
         async function submitAttendance() {
@@ -1858,11 +2201,12 @@
             document.getElementById('totalStudents').textContent = total;
             document.getElementById('presentCount').textContent = present;
             document.getElementById('absentCount').textContent = absent;
+            
+            document.getElementById('summaryCard').style.display = 'block';
         }
 
         function showSummary() {
             updateSummaryCounts();
-            document.getElementById('summaryCard').style.display = 'block';
             
             const total = students.length;
             const present = Object.values(todayAttendance).filter(s => s === 'present').length;
@@ -1894,6 +2238,7 @@
                         data.data.forEach(record => {
                             allAttendanceHistory.push({
                                 ...record,
+                                studentId: student.studentId,
                                 studentName: `${student.studentName.first} ${student.studentName.last}`,
                                 studentClass: `${student.education?.board || currentBoard} - ${student.education?.class || currentClass}`,
                                 studentPhoto: student.photo
@@ -1938,6 +2283,9 @@
                 filtered = filtered.filter(record => record.status === status);
             }
             
+            // Sort by date (newest first)
+            filtered.sort((a, b) => b.date.localeCompare(a.date));
+            
             displayHistory(filtered);
         }
 
@@ -1946,25 +2294,18 @@
             
             if (!history || history.length === 0) {
                 list.innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <i class="fas fa-calendar-times" style="font-size: 40px; color: #ccc;"></i>
-                        <p style="margin-top: 16px; color: #666;">कोई इतिहास नहीं</p>
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>कोई इतिहास नहीं</p>
                     </div>
                 `;
                 return;
             }
             
-            // Sort by date (newest first)
-            history.sort((a, b) => b.date.localeCompare(a.date));
             const today = getCurrentDateISO();
             
             list.innerHTML = history.map(record => {
-                const date = new Date(record.date);
-                const formattedDate = date.toLocaleDateString('hi-IN', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
+                const formattedDate = formatDateForDisplay(record.date);
                 
                 const statusClass = record.status === 'present' ? 'status-present' : 'status-absent';
                 const statusText = record.status === 'present' ? 'उपस्थित' : 'अनुपस्थित';
@@ -1983,10 +2324,137 @@
                                 <span>${record.studentClass}</span>
                             </div>
                         </div>
-                        <div><span class="history-status ${statusClass}">${statusText}</span></div>
+                        <div class="history-actions">
+                            <span class="history-status ${statusClass}">${statusText}</span>
+                            <button class="edit-attendance-btn" onclick="openEditModal('${record.studentId}', '${record.date}', '${record.status}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-attendance-btn" onclick="deleteAttendance('${record.studentId}', '${record.date}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        // ============================================
+        // EDIT ATTENDANCE
+        // ============================================
+        function openEditModal(studentId, date, currentStatus) {
+            const student = students.find(s => s.studentId === studentId);
+            if (!student) return;
+            
+            document.getElementById('editModalStudentPhoto').src = student.photo || 'https://via.placeholder.com/60';
+            document.getElementById('editModalStudentName').textContent = `${student.studentName.first} ${student.studentName.last}`;
+            document.getElementById('editModalStudentClass').textContent = `${currentBoard} - ${currentClass}`;
+            document.getElementById('editModalDate').textContent = formatDateForDisplay(date);
+            
+            document.getElementById('editAttendanceModal').setAttribute('data-student-id', studentId);
+            document.getElementById('editAttendanceModal').setAttribute('data-attendance-date', date);
+            
+            if (currentStatus === 'present') {
+                document.getElementById('edit-option-present').checked = true;
+            } else {
+                document.getElementById('edit-option-absent').checked = true;
+            }
+            
+            document.getElementById('editAttendanceModal').style.display = 'flex';
+        }
+
+        async function updateAttendance() {
+            const studentId = document.getElementById('editAttendanceModal').getAttribute('data-student-id');
+            const date = document.getElementById('editAttendanceModal').getAttribute('data-attendance-date');
+            const status = document.querySelector('input[name="editAttendance"]:checked')?.value;
+            
+            if (!status) {
+                showToast('स्थिति चुनें', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/students/${studentId}/attendance`, {
+                    method: 'POST', // PUT not available, using POST to update
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                    },
+                    body: JSON.stringify({
+                        date: date,
+                        status: status,
+                        remarks: `Updated by ${currentTeacher.teacherName.first}`
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('उपस्थिति अपडेट हुई', 'success');
+                    closeEditModal();
+                    
+                    // Reload history
+                    await loadAllAttendanceHistory();
+                    
+                    // Update today's attendance if it's today
+                    if (date === getCurrentDateISO()) {
+                        await loadTodayAttendance();
+                        displayStudents();
+                        updateSummaryCounts();
+                    }
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                showToast('त्रुटि: ' + err.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ============================================
+        // DELETE ATTENDANCE
+        // ============================================
+        async function deleteAttendance(studentId, date) {
+            if (!confirm('क्या आप यह उपस्थिति रिकॉर्ड हटाना चाहते हैं?')) {
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/students/${studentId}/attendance`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                    },
+                    body: JSON.stringify({ date: date })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('उपस्थिति हटा दी गई', 'success');
+                    
+                    // Reload history
+                    await loadAllAttendanceHistory();
+                    
+                    // Update today's attendance if it's today
+                    if (date === getCurrentDateISO()) {
+                        delete todayAttendance[studentId];
+                        displayStudents();
+                        updateSummaryCounts();
+                    }
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                showToast('त्रुटि: ' + err.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         // ============================================
@@ -1996,12 +2464,21 @@
             localStorage.removeItem('attendanceTeacher');
             localStorage.removeItem('teacherToken');
             currentTeacher = null;
+            students = [];
             todayAttendance = {};
             allAttendanceHistory = [];
             
             document.getElementById('loginSection').style.display = 'flex';
             document.getElementById('dashboardSection').style.display = 'none';
             document.getElementById('loginForm').reset();
+            document.getElementById('boardSelect').innerHTML = '<option value="">-- बोर्ड चुनें --</option>';
+            document.getElementById('classSelect').innerHTML = '<option value="">-- कक्षा चुनें --</option>';
+            document.getElementById('classSelect').disabled = true;
+            document.getElementById('studentsSection').style.display = 'none';
+            document.getElementById('completeBtn').style.display = 'none';
+            document.getElementById('bulkActions').style.display = 'none';
+            document.getElementById('summaryCard').style.display = 'none';
+            document.getElementById('teacherInfoCard').style.display = 'none';
             
             speakText('लॉगआउट हुआ');
             showToast('लॉगआउट सफल', 'success');
