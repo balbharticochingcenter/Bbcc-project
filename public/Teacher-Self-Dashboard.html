@@ -1545,246 +1545,230 @@
         }
 
         // Handle Aadhar Login
-        async function handleAadharLogin(event) {
-            event.preventDefault();
+      // ============================================
+// FIXED AADHAR LOGIN FUNCTION
+// ============================================
+
+async function handleAadharLogin(event) {
+    event.preventDefault();
+    
+    const aadharNumber = document.getElementById('aadharNumber').value.trim();
+    const dob = document.getElementById('dob').value;
+    
+    if (!aadharNumber || !dob) {
+        showToast('Please enter Aadhar number and date of birth', 'error');
+        speakText('Please enter Aadhar number and date of birth');
+        return;
+    }
+    
+    showLoading(true);
+    
+    try {
+        // USE TEACHER LOGIN API - NOT DIRECT TEACHER FETCH
+        const response = await fetch(`${API_BASE_URL}/api/teacher-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                aadharNumber: aadharNumber, 
+                dob: dob 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Login successful
+            currentTeacher = data.data;
+            localStorage.setItem('currentTeacher', JSON.stringify(data.data));
+            localStorage.setItem('teacherToken', data.token);
             
-            const aadharNumber = document.getElementById('aadharNumber').value.trim();
-            const dob = document.getElementById('dob').value;
+            showToast('Login successful!', 'success');
+            speakText(`Welcome ${data.data.teacherName.first} ${data.data.teacherName.last}`);
             
-            if (!aadharNumber || !dob) {
-                showToast('Please enter Aadhar number and date of birth', 'error');
-                speakText('Please enter Aadhar number and date of birth');
-                return;
+            showDashboard();
+            loadTeacherData();
+            loadAttendanceHistory();
+            document.getElementById('startCameraBtn').disabled = false;
+        } else {
+            showToast(data.message || 'Login failed', 'error');
+            speakText(data.message || 'Login failed');
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        showToast('Login failed: ' + err.message, 'error');
+        speakText('Login failed. Please try again.');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ============================================
+// FIXED PASSWORD LOGIN FUNCTION
+// ============================================
+
+async function handlePasswordLogin(event) {
+    event.preventDefault();
+    
+    const teacherId = document.getElementById('teacherId').value.trim();
+    const password = document.getElementById('password').value;
+    
+    if (!teacherId || !password) {
+        showToast('Please enter Teacher ID and password', 'error');
+        speakText('Please enter Teacher ID and password');
+        return;
+    }
+    
+    showLoading(true);
+    
+    try {
+        // USE TEACHER LOGIN API
+        const response = await fetch(`${API_BASE_URL}/api/teacher-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                teacherId: teacherId, 
+                password: password 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Login successful
+            currentTeacher = data.data;
+            localStorage.setItem('currentTeacher', JSON.stringify(data.data));
+            localStorage.setItem('teacherToken', data.token);
+            
+            showToast('Login successful!', 'success');
+            speakText(`Welcome ${data.data.teacherName.first} ${data.data.teacherName.last}`);
+            
+            showDashboard();
+            loadTeacherData();
+            loadAttendanceHistory();
+            document.getElementById('startCameraBtn').disabled = false;
+        } else {
+            showToast(data.message || 'Login failed', 'error');
+            speakText(data.message || 'Login failed');
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        showToast('Login failed: ' + err.message, 'error');
+        speakText('Login failed. Please try again.');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ============================================
+// FIXED LOAD TEACHER DATA FUNCTION
+// ============================================
+
+function loadTeacherData() {
+    if (!currentTeacher) return;
+    
+    const teacher = currentTeacher;
+    
+    // Basic info
+    document.getElementById('teacherName').textContent = 
+        `${teacher.teacherName.first} ${teacher.teacherName.last}`;
+    document.getElementById('teacherFullName').textContent = 
+        `${teacher.teacherName.first} ${teacher.teacherName.middle || ''} ${teacher.teacherName.last}`;
+    document.getElementById('teacherSubject').textContent = 
+        teacher.subject || 'Not Assigned';
+    document.getElementById('teacherIdDisplay').textContent = teacher.teacherId;
+    
+    // Father's name
+    document.getElementById('teacherFatherName').textContent = 
+        `${teacher.fatherName.first} ${teacher.fatherName.last}`;
+    
+    // Mobile
+    document.getElementById('teacherMobile').textContent = teacher.mobile;
+    if (teacher.altMobile) {
+        document.getElementById('teacherAltMobile').textContent = `Alt: ${teacher.altMobile}`;
+    } else {
+        document.getElementById('teacherAltMobile').textContent = '';
+    }
+    
+    // Subject
+    document.getElementById('teacherSubjectDetail').textContent = 
+        teacher.subject || 'Not Assigned';
+    
+    // Salary
+    document.getElementById('teacherSalary').textContent = teacher.salary || 0;
+    
+    // Photo
+    if (teacher.photo) {
+        document.getElementById('teacherPhoto').src = teacher.photo;
+    } else {
+        document.getElementById('teacherPhoto').src = 'https://via.placeholder.com/120';
+    }
+    
+    // Aadhar document
+    if (teacher.aadharDoc) {
+        document.getElementById('aadharDocLink').href = teacher.aadharDoc;
+    } else {
+        document.getElementById('aadharDocLink').href = '#';
+    }
+    
+    // Check today's attendance
+    checkTodayAttendance();
+}
+
+// ============================================
+// FIXED CHECK TODAY ATTENDANCE FUNCTION
+// ============================================
+
+async function checkTodayAttendance() {
+    if (!currentTeacher) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance?date=${today}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                }
             }
+        );
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            const todayAttendance = data.data.find(a => a.date === today);
             
-            showLoading(true);
-            
-            try {
-                // First, get teacher by Aadhar
-                const response = await fetch(`${API_BASE_URL}/api/teachers/${aadharNumber}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                });
+            if (todayAttendance) {
+                document.getElementById('todayStatus').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Today's attendance already marked as: 
+                        <strong class="status-${todayAttendance.status}">${todayAttendance.status}</strong>
+                        ${todayAttendance.remarks ? `<br><small>Remarks: ${todayAttendance.remarks}</small>` : ''}
+                    </div>
+                `;
+                document.getElementById('markAttendanceBtn').disabled = true;
                 
-                if (!response.ok) {
-                    throw new Error('Teacher not found');
+                // Pre-select status
+                const radio = document.getElementById(`status-${todayAttendance.status}`);
+                if (radio) radio.checked = true;
+                if (todayAttendance.remarks) {
+                    document.getElementById('attendanceRemarks').value = todayAttendance.remarks;
                 }
-                
-                const data = await response.json();
-                
-                if (data.success && data.data) {
-                    const teacher = data.data;
-                    const teacherDob = new Date(teacher.dob).toISOString().split('T')[0];
-                    
-                    if (teacherDob === dob) {
-                        // Login successful
-                        currentTeacher = teacher;
-                        localStorage.setItem('currentTeacher', JSON.stringify(teacher));
-                        
-                        // Generate token (simplified - in production use JWT)
-                        const token = btoa(JSON.stringify({
-                            id: teacher.teacherId,
-                            type: 'teacher',
-                            exp: Date.now() + 3600000
-                        }));
-                        localStorage.setItem('teacherToken', token);
-                        
-                        showToast('Login successful!', 'success');
-                        speakText(`Welcome ${teacher.teacherName.first} ${teacher.teacherName.last}`);
-                        
-                        showDashboard();
-                        loadTeacherData();
-                        loadAttendanceHistory();
-                        document.getElementById('startCameraBtn').disabled = false;
-                    } else {
-                        showToast('Invalid date of birth', 'error');
-                        speakText('Invalid date of birth');
-                    }
-                } else {
-                    showToast('Teacher not found', 'error');
-                    speakText('Teacher not found');
-                }
-            } catch (err) {
-                console.error('Login error:', err);
-                showToast('Login failed: ' + err.message, 'error');
-                speakText('Login failed. Please try again.');
-            } finally {
-                showLoading(false);
+            } else {
+                document.getElementById('todayStatus').innerHTML = '';
+                document.getElementById('markAttendanceBtn').disabled = false;
             }
         }
-
-        // Handle Password Login
-        async function handlePasswordLogin(event) {
-            event.preventDefault();
-            
-            const teacherId = document.getElementById('teacherId').value.trim();
-            const password = document.getElementById('password').value;
-            
-            if (!teacherId || !password) {
-                showToast('Please enter Teacher ID and password', 'error');
-                speakText('Please enter Teacher ID and password');
-                return;
-            }
-            
-            showLoading(true);
-            
-            try {
-                // Get teacher by ID
-                const response = await fetch(`${API_BASE_URL}/api/teachers/${teacherId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Teacher not found');
-                }
-                
-                const data = await response.json();
-                
-                if (data.success && data.data) {
-                    const teacher = data.data;
-                    
-                    // Check password (simplified - in production use proper encryption)
-                    const dobFormatted = new Date(teacher.dob).toLocaleDateString('en-IN').replace(/\//g, '');
-                    if (teacher.password === password || dobFormatted === password) {
-                        // Login successful
-                        currentTeacher = teacher;
-                        localStorage.setItem('currentTeacher', JSON.stringify(teacher));
-                        
-                        // Generate token
-                        const token = btoa(JSON.stringify({
-                            id: teacher.teacherId,
-                            type: 'teacher',
-                            exp: Date.now() + 3600000
-                        }));
-                        localStorage.setItem('teacherToken', token);
-                        
-                        showToast('Login successful!', 'success');
-                        speakText(`Welcome ${teacher.teacherName.first} ${teacher.teacherName.last}`);
-                        
-                        showDashboard();
-                        loadTeacherData();
-                        loadAttendanceHistory();
-                        document.getElementById('startCameraBtn').disabled = false;
-                    } else {
-                        showToast('Invalid password', 'error');
-                        speakText('Invalid password');
-                    }
-                } else {
-                    showToast('Teacher not found', 'error');
-                    speakText('Teacher not found');
-                }
-            } catch (err) {
-                console.error('Login error:', err);
-                showToast('Login failed: ' + err.message, 'error');
-                speakText('Login failed. Please try again.');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Show Dashboard
-        function showDashboard() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('dashboardPage').style.display = 'block';
-        }
-
-        // Load Teacher Data
-        function loadTeacherData() {
-            if (!currentTeacher) return;
-            
-            const teacher = currentTeacher;
-            
-            // Basic info
-            document.getElementById('teacherName').textContent = 
-                `${teacher.teacherName.first} ${teacher.teacherName.last}`;
-            document.getElementById('teacherFullName').textContent = 
-                `${teacher.teacherName.first} ${teacher.teacherName.middle || ''} ${teacher.teacherName.last}`;
-            document.getElementById('teacherSubject').textContent = 
-                teacher.subject || 'Not Assigned';
-            document.getElementById('teacherIdDisplay').textContent = teacher.teacherId;
-            
-            // Father's name
-            document.getElementById('teacherFatherName').textContent = 
-                `${teacher.fatherName.first} ${teacher.fatherName.last}`;
-            
-            // Mobile
-            document.getElementById('teacherMobile').textContent = teacher.mobile;
-            if (teacher.altMobile) {
-                document.getElementById('teacherAltMobile').textContent = `Alt: ${teacher.altMobile}`;
-            }
-            
-            // Subject
-            document.getElementById('teacherSubjectDetail').textContent = 
-                teacher.subject || 'Not Assigned';
-            
-            // Salary
-            document.getElementById('teacherSalary').textContent = teacher.salary || 0;
-            
-            // Photo
-            if (teacher.photo) {
-                document.getElementById('teacherPhoto').src = teacher.photo;
-            }
-            
-            // Aadhar document
-            if (teacher.aadharDoc) {
-                document.getElementById('aadharDocLink').href = teacher.aadharDoc;
-            }
-            
-            // Check today's attendance
-            checkTodayAttendance();
-        }
-
-        // Check Today's Attendance
-        async function checkTodayAttendance() {
-            if (!currentTeacher) return;
-            
-            const today = new Date().toISOString().split('T')[0];
-            
-            try {
-                const response = await fetch(
-                    `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance?date=${today}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
-                        }
-                    }
-                );
-                
-                const data = await response.json();
-                
-                if (data.success && data.data) {
-                    const todayAttendance = data.data.find(a => a.date === today);
-                    
-                    if (todayAttendance) {
-                        document.getElementById('todayStatus').innerHTML = `
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i>
-                                Today's attendance already marked as: 
-                                <strong class="status-${todayAttendance.status}">${todayAttendance.status}</strong>
-                                ${todayAttendance.remarks ? `<br><small>Remarks: ${todayAttendance.remarks}</small>` : ''}
-                            </div>
-                        `;
-                        document.getElementById('markAttendanceBtn').disabled = true;
-                        
-                        // Pre-select status
-                        const radio = document.getElementById(`status-${todayAttendance.status}`);
-                        if (radio) radio.checked = true;
-                        if (todayAttendance.remarks) {
-                            document.getElementById('attendanceRemarks').value = todayAttendance.remarks;
-                        }
-                    } else {
-                        document.getElementById('todayStatus').innerHTML = '';
-                        document.getElementById('markAttendanceBtn').disabled = false;
-                    }
-                }
-            } catch (err) {
-                console.error('Error checking today\'s attendance:', err);
-            }
-        }
-
+    } catch (err) {
+        console.error('Error checking today\'s attendance:', err);
+    }
+}
+//////////////////////////////////////////////////////////////////////////////////////////
         // Start Camera
         async function startCamera() {
             try {
