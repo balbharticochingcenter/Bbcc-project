@@ -3,445 +3,818 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard - Bal Bharti Coaching</title>
+    <title>Teacher Self Dashboard - Bal Bharti Coaching</title>
+    
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
     <style>
-        /* Previous styles same rahenge - maine yahan shorten kiya hai */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
         }
 
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        /* Login Page Styles */
+        #loginPage {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
         }
 
-        .login-container {
-            max-width: 450px;
-            margin: 50px auto;
+        .login-card {
             background: white;
             border-radius: 20px;
-            padding: 40px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideInUp 0.5s ease;
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            animation: slideInUp 0.8s ease;
         }
 
         .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
             text-align: center;
-            margin-bottom: 30px;
         }
 
         .login-header h2 {
-            color: #333;
+            margin: 0;
+            font-size: 28px;
             font-weight: 600;
         }
 
         .login-header p {
-            color: #666;
-            font-size: 14px;
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 16px;
         }
 
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: none;
-            animation: fadeIn 0.5s ease;
+        .login-body {
+            padding: 40px 30px;
         }
 
-        .dashboard-navbar {
+        .login-option {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .login-option-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             background: white;
-            border-radius: 15px;
-            padding: 15px 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-brand img {
-            height: 40px;
-            width: 40px;
-            border-radius: 10px;
-        }
-
-        .nav-brand span {
-            font-weight: 600;
-            color: #333;
-            font-size: 18px;
-        }
-
-        .nav-user {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .logout-btn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
+            color: #666;
             font-weight: 500;
             transition: all 0.3s;
             cursor: pointer;
         }
 
+        .login-option-btn.active {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .login-option-btn i {
+            margin-right: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 18px;
+        }
+
+        .form-control {
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .password-hint {
+            font-size: 13px;
+            color: #999;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .password-hint i {
+            font-size: 14px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Dashboard Styles */
+        #dashboardPage {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            animation: slideInDown 0.5s ease;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .header-left p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .current-time {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-time i {
+            color: #667eea;
+        }
+
+        .btn-logout {
+            padding: 10px 25px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-logout:hover {
+            background: #ff3344;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        /* Voice Assistant Bar */
+        .voice-bar {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            border-radius: 50px;
+            padding: 15px 25px;
+            margin-bottom: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 5px 20px rgba(67, 233, 123, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .voice-message {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .voice-message i {
+            font-size: 24px;
+            animation: soundWave 1.5s infinite;
+        }
+
+        .voice-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .voice-controls button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .voice-controls button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        /* Profile Card */
         .profile-card {
             background: white;
             border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease;
         }
 
         .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            flex-wrap: wrap;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+            position: relative;
         }
 
         .profile-photo {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #667eea;
+            border: 4px solid white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin-right: 25px;
+            float: left;
         }
 
-        .profile-info h3 {
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-title h2 {
+            margin: 0;
             font-size: 28px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
         }
 
-        .profile-tags {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+        .profile-title p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+            font-size: 18px;
         }
 
-        .tag {
-            background: #f0f2f5;
-            padding: 8px 15px;
-            border-radius: 30px;
+        .profile-badge {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 50px;
             font-size: 14px;
-            color: #555;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            backdrop-filter: blur(5px);
         }
 
-        .stats-grid {
+        .profile-body {
+            padding: 30px;
+        }
+
+        .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
         }
 
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        .info-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
-        .stat-icon {
+        .info-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .info-icon {
             width: 50px;
             height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
             font-size: 24px;
         }
 
-        .stat-icon.salary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .stat-icon.paid { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: #2c7a4d; }
-        .stat-icon.due { background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%); color: #c44536; }
-        .stat-icon.attendance { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color: #2c3e50; }
+        .info-content {
+            flex: 1;
+        }
 
-        .stat-info h4 {
+        .info-label {
             font-size: 14px;
-            color: #666;
+            color: #999;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .stat-info .stat-value {
-            font-size: 24px;
+        .info-value {
+            font-size: 18px;
             font-weight: 600;
             color: #333;
         }
 
-        .chart-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        .info-value small {
+            font-weight: normal;
+            color: #999;
+            font-size: 14px;
         }
 
-        .chart-container {
-            height: 300px;
-            margin-top: 20px;
+        /* Document Preview */
+        .document-link {
+            color: #667eea;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 15px;
+            background: #e8f0fe;
+            border-radius: 50px;
+            font-size: 14px;
+            transition: all 0.3s;
         }
 
-        .salary-table-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        .document-link:hover {
+            background: #d0e2ff;
+            transform: translateX(5px);
         }
 
-        .salary-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .salary-table th {
-            background: #f8f9fa;
-            padding: 15px;
+        /* Attendance Section */
+        .section-title {
+            font-size: 24px;
             font-weight: 600;
-            text-align: left;
+            color: white;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .salary-table td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+        .section-title i {
+            font-size: 28px;
         }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .status-paid { background: #d4edda; color: #155724; }
-        .status-partial { background: #fff3cd; color: #856404; }
-        .status-unpaid { background: #f8d7da; color: #721c24; }
 
         .attendance-card {
             background: white;
             border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         }
 
-        .attendance-header {
+        .date-time-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 20px;
         }
 
-        .current-date {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .date-display {
-            font-size: 28px;
+        .current-datetime {
+            font-size: 32px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
+        .current-datetime i {
+            font-size: 40px;
+        }
+
+        .deadline-warning {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .deadline-warning i {
+            color: #ffd700;
+        }
+
+        /* Camera Section */
         .camera-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin: 25px 0;
-        }
-
-        .camera-container {
             background: #f8f9fa;
             border-radius: 15px;
             padding: 20px;
-            text-align: center;
+            margin-bottom: 30px;
         }
 
-        #camera, #capturedPhoto {
+        .camera-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .camera-preview {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            position: relative;
+        }
+
+        #cameraFeed {
             width: 100%;
-            max-width: 400px;
-            height: 300px;
-            border-radius: 15px;
+            height: 100%;
             object-fit: cover;
-            border: 3px solid #667eea;
-            margin: 0 auto;
-            display: block;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+        }
+
+        .camera-capture {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
+            border: 3px dashed #ddd;
         }
 
         #capturedPhoto {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             display: none;
         }
 
+        .capture-placeholder {
+            text-align: center;
+            color: #999;
+        }
+
+        .capture-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
         .camera-controls {
-            margin-top: 20px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            margin-top: 20px;
             justify-content: center;
         }
 
-        .cam-btn {
-            padding: 12px 25px;
+        .btn-camera {
+            padding: 12px 30px;
             border: none;
             border-radius: 10px;
             font-weight: 500;
             cursor: pointer;
-            display: inline-flex;
+            transition: all 0.3s;
+            display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .btn-capture {
+        .btn-camera.primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
-        .btn-retake {
-            background: #6c757d;
-            color: white;
+        .btn-camera.secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-camera:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-camera:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Attendance Status */
+        .attendance-status {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .status-option {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .status-option input[type="radio"] {
+            display: none;
+        }
+
+        .status-option label {
+            display: block;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .status-option label i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .status-option label span {
+            font-size: 18px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .status-option input[type="radio"]:checked + label {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+        }
+
+        #status-present:checked + label { border-color: #4CAF50; background: #e8f5e9; }
+        #status-absent:checked + label { border-color: #f44336; background: #ffebee; }
+        #status-late:checked + label { border-color: #ff9800; background: #fff3e0; }
+        #status-halfday:checked + label { border-color: #9c27b0; background: #f3e5f5; }
+
+        .remarks-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 30px;
+            resize: vertical;
         }
 
         .btn-mark {
-            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-            color: #155724;
-            font-weight: 600;
             width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            margin-top: 20px;
+            padding: 18px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-mark:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(67, 233, 123, 0.4);
         }
 
         .btn-mark:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
-        .attendance-options {
+        /* Attendance History */
+        .history-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .history-filters {
             display: flex;
             gap: 20px;
-            justify-content: center;
-            margin: 20px 0;
+            margin-bottom: 30px;
             flex-wrap: wrap;
         }
 
-        .attendance-option {
+        .filter-group {
             flex: 1;
-            min-width: 120px;
-            padding: 15px;
+            min-width: 200px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 12px 20px;
             border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
             background: white;
         }
 
-        .attendance-option.selected {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
         }
 
-        .attendance-option i {
-            font-size: 24px;
-            display: block;
-            margin-bottom: 5px;
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .option-present i { color: #28a745; }
-        .option-absent i { color: #dc3545; }
-        .option-late i { color: #ffc107; }
-        .option-halfday i { color: #17a2b8; }
+        .attendance-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-        .voice-guide-btn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            border: none;
-            padding: 12px 25px;
+        .attendance-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .attendance-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
             border-radius: 50px;
+            font-size: 14px;
             font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-present { background: #e8f5e9; color: #4CAF50; }
+        .status-absent { background: #ffebee; color: #f44336; }
+        .status-late { background: #fff3e0; color: #ff9800; }
+        .status-halfday { background: #f3e5f5; color: #9c27b0; }
+
+        /* BGM Control */
+        .bgm-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .bgm-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
             cursor: pointer;
-            display: inline-flex;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin: 10px 0;
         }
 
-        .voice-feedback {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 15px;
-            margin: 15px 0;
-            text-align: center;
-            display: none;
-            border-left: 5px solid #ffd700;
+        .bgm-btn:hover {
+            transform: scale(1.1) rotate(360deg);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
         }
 
-        .attendance-history {
-            margin-top: 30px;
+        .bgm-btn.muted {
+            background: #666;
         }
 
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .history-status {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-
+        /* Loading Overlay */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(255,255,255,0.9);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 9999;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .loading-spinner {
@@ -453,693 +826,1326 @@
             animation: spin 1s linear infinite;
         }
 
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideInRight 0.3s ease;
+            max-width: 400px;
+        }
+
+        .toast.success { border-left: 5px solid #4CAF50; }
+        .toast.error { border-left: 5px solid #f44336; }
+        .toast.warning { border-left: 5px solid #ff9800; }
+        .toast.info { border-left: 5px solid #2196F3; }
+
+        .toast-icon {
+            font-size: 24px;
+        }
+
+        .toast.success .toast-icon { color: #4CAF50; }
+        .toast.error .toast-icon { color: #f44336; }
+        .toast.warning .toast-icon { color: #ff9800; }
+        .toast.info .toast-icon { color: #2196F3; }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .toast-message {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .toast-close {
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .toast-close:hover {
+            color: #333;
+        }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes soundWave {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            min-width: 300px;
-            background: white;
-            border-radius: 10px;
-            padding: 15px 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: none;
-            align-items: center;
-            gap: 15px;
-            z-index: 10000;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-photo {
+                float: none;
+                margin: 0 auto 20px;
+            }
+            
+            .profile-title {
+                text-align: center;
+            }
+            
+            .profile-badge {
+                position: relative;
+                top: 0;
+                right: 0;
+                display: inline-block;
+                margin-top: 10px;
+            }
+            
+            .camera-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .current-datetime {
+                font-size: 24px;
+            }
+            
+            .header-left h1 {
+                font-size: 24px;
+            }
+            
+            .voice-message {
+                font-size: 16px;
+            }
         }
 
-        .toast-success { border-left: 4px solid #28a745; }
-        .toast-error { border-left: 4px solid #dc3545; }
-        .toast-warning { border-left: 4px solid #ffc107; }
-
-        .toast-icon { font-size: 24px; }
-        .toast-close { cursor: pointer; color: #999; }
+        @media (max-width: 480px) {
+            .login-card {
+                margin: 20px;
+            }
+            
+            .login-header {
+                padding: 30px 20px;
+            }
+            
+            .login-body {
+                padding: 30px 20px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .attendance-status {
+                flex-direction: column;
+            }
+            
+            .current-datetime {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
-
-<!-- Loading Overlay -->
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-spinner"></div>
-</div>
-
-<!-- Toast Notification -->
-<div class="toast-notification" id="toast">
-    <div class="toast-icon" id="toastIcon"></div>
-    <div class="toast-content">
-        <div class="toast-title" id="toastTitle"></div>
-        <div class="toast-message" id="toastMessage"></div>
-    </div>
-    <div class="toast-close" id="toastClose"><i class="fas fa-times"></i></div>
-</div>
-
-<!-- Login Container -->
-<div class="login-container" id="loginContainer">
-    <div class="login-header">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E" style="width:80px;height:80px;border-radius:50%;margin-bottom:15px;">
-        <h2>Teacher Login</h2>
-        <p>अपना आधार नंबर / टीचर आईडी और पासवर्ड डालें</p>
-    </div>
-    
-    <form id="loginForm">
-        <div class="mb-4">
-            <label class="form-label">Aadhar Number / Teacher ID</label>
-            <input type="text" class="form-control form-control-lg" id="teacherId" placeholder="Enter your Aadhar or ID" required>
-        </div>
-        
-        <div class="mb-4">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-control form-control-lg" id="teacherPassword" placeholder="Enter your password" required>
-        </div>
-        
-        <button type="button" class="btn btn-primary w-100 py-3" id="loginBtn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-            <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
-        </button>
-    </form>
-    
-    <div class="text-center mt-4">
-        <a href="#" id="helpLink">Forgot Password? / पासवर्ड भूल गए?</a>
-    </div>
-</div>
-
-<!-- Dashboard Container -->
-<div class="dashboard-container" id="dashboardContainer">
-    <!-- Navbar -->
-    <div class="dashboard-navbar">
-        <div class="nav-brand">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E">
-            <span>Bal Bharti Coaching</span>
-        </div>
-        <div class="nav-user">
-            <span><i class="fas fa-user-circle me-2"></i><span id="teacherName">Teacher</span></span>
-            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
-        </div>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading...</div>
     </div>
 
-    <!-- Profile Card -->
-    <div class="profile-card">
-        <div class="profile-header">
-            <img id="teacherPhoto" class="profile-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23e0e0e0'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='%23999'%3E📷%3C/text%3E%3C/svg%3E">
-            <div class="profile-info">
-                <h3 id="displayTeacherName">Loading...</h3>
-                <div class="profile-tags" id="profileTags"></div>
-            </div>
-        </div>
-        
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="d-flex align-items-center gap-3 p-3 bg-light rounded">
-                    <i class="fas fa-id-card fa-2x text-primary"></i>
-                    <div>
-                        <small class="text-muted">Aadhar Document</small>
-                        <div><a href="#" id="aadharDocLink" target="_blank">View Aadhar Card</a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="d-flex align-items-center gap-3 p-3 bg-light rounded">
-                    <i class="fas fa-graduation-cap fa-2x text-success"></i>
-                    <div>
-                        <small class="text-muted">Qualification Document</small>
-                        <div><a href="#" id="qualificationDocLink" target="_blank">View Certificate</a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon salary"><i class="fas fa-rupee-sign"></i></div>
-            <div class="stat-info"><h4>Monthly Salary</h4><div class="stat-value" id="monthlySalary">₹0</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon paid"><i class="fas fa-check-circle"></i></div>
-            <div class="stat-info"><h4>Total Paid</h4><div class="stat-value" id="totalPaid">₹0</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon due"><i class="fas fa-exclamation-circle"></i></div>
-            <div class="stat-info"><h4>Total Due</h4><div class="stat-value" id="totalDue">₹0</div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon attendance"><i class="fas fa-calendar-check"></i></div>
-            <div class="stat-info"><h4>Attendance</h4><div class="stat-value" id="monthAttendance">0%</div></div>
-        </div>
-    </div>
-
-    <!-- Salary Chart -->
-    <div class="chart-card">
-        <h5><i class="fas fa-chart-line me-2"></i>Salary History (Last 6 Months)</h5>
-        <div class="chart-container"><canvas id="salaryChart"></canvas></div>
-    </div>
-
-    <!-- Salary Table -->
-    <div class="salary-table-card">
-        <h5><i class="fas fa-history me-2"></i>Salary Payment History</h5>
-        <div class="table-responsive">
-            <table class="salary-table">
-                <thead><tr><th>Month</th><th>Salary</th><th>Paid</th><th>Due</th><th>Status</th><th>Date</th></tr></thead>
-                <tbody id="salaryHistoryBody"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Voice Guide Button -->
-    <div class="text-center">
-        <button class="voice-guide-btn" id="voiceGuideBtn">
-            <i class="fas fa-volume-up"></i> 🔊 Voice Guide / आवाज़ मार्गदर्शन
+    <!-- BGM Control -->
+    <div class="bgm-control">
+        <button class="bgm-btn" id="bgmToggle" title="Toggle Background Music">
+            <i class="fas fa-music"></i>
         </button>
     </div>
 
-    <!-- Voice Feedback -->
-    <div class="voice-feedback" id="voiceFeedback">
-        <i class="fas fa-volume-up"></i> <span id="voiceFeedbackText">...</span>
-    </div>
+    <!-- Audio Elements -->
+    <audio id="bgmAudio" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
 
-    <!-- Attendance Card -->
-    <div class="attendance-card">
-        <div class="attendance-header">
-            <h5><i class="fas fa-clock me-2"></i>Mark Your Attendance</h5>
-            <div class="current-date" id="currentDateDisplay"></div>
-        </div>
+    <!-- Login Page -->
+    <div id="loginPage">
+        <div class="login-card animate__animated">
+            <div class="login-header">
+                <h2><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h2>
+                <p>Bal Bharti Coaching Center</p>
+            </div>
+            <div class="login-body">
+                <div class="login-option">
+                    <button class="login-option-btn active" id="loginAadharOption" onclick="switchLoginMethod('aadhar')">
+                        <i class="fas fa-id-card"></i> Aadhar Login
+                    </button>
+                    <button class="login-option-btn" id="loginPasswordOption" onclick="switchLoginMethod('password')">
+                        <i class="fas fa-key"></i> Password Login
+                    </button>
+                </div>
 
-        <!-- Camera -->
-        <div class="camera-section">
-            <div class="camera-container">
-                <h5>Live Camera <span class="badge bg-danger">कोचिंग में फोटो लें</span></h5>
-                <video id="camera" autoplay playsinline></video>
-                <div class="camera-controls">
-                    <button class="cam-btn btn-capture" id="captureBtn"><i class="fas fa-camera"></i> Capture Photo</button>
+                <!-- Aadhar Login Form -->
+                <form id="aadharLoginForm" onsubmit="handleAadharLogin(event)">
+                    <div class="form-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" class="form-control" id="aadharNumber" 
+                               placeholder="Enter Aadhar Number" maxlength="12" 
+                               pattern="\d{12}" required>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="date" class="form-control" id="dob" required>
+                    </div>
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> Login with Aadhar
+                    </button>
+                </form>
+
+                <!-- Password Login Form -->
+                <form id="passwordLoginForm" style="display: none;" onsubmit="handlePasswordLogin(event)">
+                    <div class="form-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" class="form-control" id="teacherId" 
+                               placeholder="Enter Teacher ID" required>
+                    </div>
+                    <div class="form-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="password" 
+                               placeholder="Enter Password" required>
+                    </div>
+                    <div class="password-hint">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Default password is your date of birth (DDMMYYYY)</span>
+                    </div>
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> Login with Password
+                    </button>
+                </form>
+
+                <!-- Voice Guidance for Login -->
+                <div class="password-hint" style="margin-top: 20px; justify-content: center;">
+                    <i class="fas fa-microphone-alt" style="color: #667eea;"></i>
+                    <span id="loginVoiceText">Please enter your credentials to login</span>
                 </div>
             </div>
-            <div class="camera-container">
-                <h5>Captured Photo</h5>
-                <img id="capturedPhoto" src="#">
-                <div class="camera-controls">
-                    <button class="cam-btn btn-retake" id="retakeBtn" style="display:none;"><i class="fas fa-redo"></i> Retake</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage">
+        <div class="dashboard-container">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h1>
+                    <p>Welcome back, <span id="teacherName">Teacher</span></p>
+                </div>
+                <div class="header-right">
+                    <div class="current-time">
+                        <i class="far fa-clock"></i>
+                        <span id="currentDateTime"></span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Voice Assistant Bar -->
+            <div class="voice-bar">
+                <div class="voice-message">
+                    <i class="fas fa-microphone-alt"></i>
+                    <span id="voiceMessage">Welcome to your dashboard. Please mark your attendance for today.</span>
+                </div>
+                <div class="voice-controls">
+                    <button onclick="speakText('Welcome to your dashboard. Please mark your attendance for today.')" title="Repeat">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <button onclick="toggleVoiceGuidance()" title="Toggle Voice">
+                        <i class="fas fa-microphone-slash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-photo">
+                        <img id="teacherPhoto" src="" alt="Teacher Photo">
+                    </div>
+                    <div class="profile-title">
+                        <h2 id="teacherFullName"></h2>
+                        <p id="teacherSubject"></p>
+                    </div>
+                    <div class="profile-badge">
+                        <i class="fas fa-check-circle"></i> Active
+                    </div>
+                </div>
+                <div class="profile-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">
+                                    <i class="fas fa-tag"></i> Teacher ID
+                                </div>
+                                <div class="info-value" id="teacherIdDisplay"></div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">
+                                    <i class="fas fa-father"></i> Father's Name
+                                </div>
+                                <div class="info-value" id="teacherFatherName"></div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">
+                                    <i class="fas fa-mobile-alt"></i> Mobile Number
+                                </div>
+                                <div class="info-value" id="teacherMobile"></div>
+                                <small id="teacherAltMobile"></small>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">
+                                    <i class="fas fa-chalkboard"></i> Subject
+                                </div>
+                                <div class="info-value" id="teacherSubjectDetail"></div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-rupee-sign"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">
+                                    <i class="fas fa-wallet"></i> Monthly Salary
+                                </div>
+                                <div class="info-value">
+                                    ₹<span id="teacherSalary"></span>
+                                    <small id="teacherSalaryStatus"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">
+                                    <i class="fas fa-id-card"></i> Aadhar Document
+                                </div>
+                                <div class="info-value">
+                                    <a href="#" id="aadharDocLink" class="document-link" target="_blank">
+                                        <i class="fas fa-eye"></i> View Document
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Section -->
+            <div class="section-title">
+                <i class="fas fa-calendar-check"></i>
+                <span>Today's Attendance</span>
+            </div>
+
+            <div class="attendance-card">
+                <!-- Date & Time Display -->
+                <div class="date-time-display">
+                    <div class="current-datetime">
+                        <i class="far fa-calendar-alt"></i>
+                        <span id="attendanceDate"></span>
+                    </div>
+                    <div class="deadline-warning">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span>Mark before 8:00 PM today</span>
+                    </div>
+                </div>
+
+                <!-- Camera Section -->
+                <div class="camera-section">
+                    <div class="camera-container">
+                        <div class="camera-preview">
+                            <video id="cameraFeed" autoplay playsinline></video>
+                            <div class="camera-overlay"></div>
+                        </div>
+                        <div class="camera-capture">
+                            <img id="capturedPhoto" alt="Captured Photo">
+                            <div class="capture-placeholder" id="capturePlaceholder">
+                                <i class="fas fa-camera"></i>
+                                <p>Click Capture to take photo</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="btn-camera primary" onclick="startCamera()" id="startCameraBtn">
+                            <i class="fas fa-video"></i> Start Camera
+                        </button>
+                        <button class="btn-camera secondary" onclick="capturePhoto()" id="captureBtn" disabled>
+                            <i class="fas fa-camera"></i> Capture
+                        </button>
+                        <button class="btn-camera secondary" onclick="retakePhoto()" id="retakeBtn" style="display: none;">
+                            <i class="fas fa-redo"></i> Retake
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Attendance Status Options -->
+                <div class="attendance-status">
+                    <div class="status-option">
+                        <input type="radio" name="attendanceStatus" id="status-present" value="present">
+                        <label for="status-present">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Present</span>
+                        </label>
+                    </div>
+                    <div class="status-option">
+                        <input type="radio" name="attendanceStatus" id="status-absent" value="absent">
+                        <label for="status-absent">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Absent</span>
+                        </label>
+                    </div>
+                    <div class="status-option">
+                        <input type="radio" name="attendanceStatus" id="status-late" value="late">
+                        <label for="status-late">
+                            <i class="fas fa-clock"></i>
+                            <span>Late</span>
+                        </label>
+                    </div>
+                    <div class="status-option">
+                        <input type="radio" name="attendanceStatus" id="status-halfday" value="half-day">
+                        <label for="status-halfday">
+                            <i class="fas fa-adjust"></i>
+                            <span>Half Day</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Remarks -->
+                <textarea class="remarks-input" id="attendanceRemarks" 
+                          placeholder="Add remarks (optional)" rows="3"></textarea>
+
+                <!-- Mark Attendance Button -->
+                <button class="btn-mark" onclick="markAttendance()" id="markAttendanceBtn" disabled>
+                    <i class="fas fa-check-double"></i>
+                    Mark Today's Attendance
+                </button>
+
+                <!-- Today's Status -->
+                <div style="margin-top: 20px; text-align: center;" id="todayStatus"></div>
+            </div>
+
+            <!-- Attendance History Section -->
+            <div class="section-title">
+                <i class="fas fa-history"></i>
+                <span>Attendance History</span>
+            </div>
+
+            <div class="history-card">
+                <div class="history-filters">
+                    <div class="filter-group">
+                        <select id="monthFilter" onchange="loadAttendanceHistory()">
+                            <option value="">Select Month</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="yearFilter" onchange="loadAttendanceHistory()">
+                            <option value="">Select Year</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="statusFilter" onchange="loadAttendanceHistory()">
+                            <option value="">All Status</option>
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                            <option value="late">Late</option>
+                            <option value="half-day">Half Day</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                                <th>Marked By</th>
+                                <th>Marked At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceHistoryBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 50px;">
+                                    <i class="fas fa-calendar-times" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                                    <p>No attendance records found</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-
-        <!-- Attendance Options -->
-        <div class="attendance-options">
-            <div class="attendance-option option-present" data-status="present"><i class="fas fa-check-circle"></i><span>Present</span></div>
-            <div class="attendance-option option-absent" data-status="absent"><i class="fas fa-times-circle"></i><span>Absent</span></div>
-            <div class="attendance-option option-late" data-status="late"><i class="fas fa-clock"></i><span>Late</span></div>
-            <div class="attendance-option option-halfday" data-status="half-day"><i class="fas fa-adjust"></i><span>Half Day</span></div>
-        </div>
-
-        <!-- Remarks -->
-        <div class="mb-3">
-            <textarea class="form-control" id="attendanceRemarks" rows="2" placeholder="Add remarks (optional)"></textarea>
-        </div>
-
-        <!-- Mark Button -->
-        <button class="btn-mark" id="markAttendanceBtn" disabled><i class="fas fa-check-circle me-2"></i>Mark Attendance</button>
-
-        <!-- History -->
-        <div class="attendance-history">
-            <h6 class="mb-3"><i class="fas fa-history me-2"></i>Recent Attendance</h6>
-            <div id="attendanceHistoryList"></div>
-        </div>
     </div>
-</div>
 
-<!-- Help Modal -->
-<div class="modal fade" id="helpModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Help & Support</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Login Issues?</h6>
-                <p>Use your registered Teacher ID and password. If forgot, contact admin.</p>
-                <h6>How to Mark Attendance?</h6>
-                <ol>
-                    <li>Allow camera access</li>
-                    <li>Click "Capture Photo" (must be in coaching)</li>
-                    <li>Select status (Present/Absent/Late/Half Day)</li>
-                    <li>Click "Mark Attendance"</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
+    <script>
+        // Configuration
+        const API_BASE_URL = window.location.origin;
+        let currentTeacher = null;
+        let cameraStream = null;
+        let capturedImage = null;
+        let voiceGuidanceEnabled = true;
+        let bgmPlaying = false;
+        let speechSynthesis = window.speechSynthesis;
+        let currentSpeech = null;
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    // Global Variables
-    let teacherData = null;
-    let salaryChart = null;
-    let selectedStatus = null;
-    let cameraStream = null;
-    let capturedImageData = null;
-    let token = null;
-    let teacherId = null;
-
-    // ========== INITIALIZATION ==========
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Page loaded');
-        checkSavedSession();
-        updateCurrentDate();
-        attachEventListeners();
-    });
-
-    function attachEventListeners() {
-        document.getElementById('loginBtn').addEventListener('click', teacherLogin);
-        document.getElementById('logoutBtn').addEventListener('click', logout);
-        document.getElementById('voiceGuideBtn').addEventListener('click', playVoiceGuide);
-        document.getElementById('captureBtn').addEventListener('click', capturePhoto);
-        document.getElementById('retakeBtn').addEventListener('click', retakePhoto);
-        document.getElementById('markAttendanceBtn').addEventListener('click', markAttendance);
-        document.getElementById('helpLink').addEventListener('click', (e) => { e.preventDefault(); showHelpModal(); });
-        document.getElementById('toastClose').addEventListener('click', hideToast);
-        
-        document.querySelectorAll('.attendance-option').forEach(opt => {
-            opt.addEventListener('click', function() {
-                selectStatus(this.dataset.status);
-            });
-        });
-
-        document.getElementById('loginForm').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') teacherLogin();
-        });
-    }
-
-    // ========== SESSION MANAGEMENT ==========
-    function checkSavedSession() {
-        const savedToken = localStorage.getItem('teacherToken');
-        const savedId = localStorage.getItem('teacherId');
-        if (savedToken && savedId) {
-            token = savedToken;
-            teacherId = savedId;
-            fetchTeacherData();
-        }
-    }
-
-    // ========== 🔥 FIXED LOGIN FUNCTION ==========
-    async function teacherLogin() {
-        const inputId = document.getElementById('teacherId').value.trim();
-        const password = document.getElementById('teacherPassword').value;
-        
-        if (!inputId || !password) {
-            showToast('Error', 'Please enter both ID and password', 'error');
-            return;
-        }
-
-        showLoading();
-        
-        try {
-            // Step 1: Fetch teacher by ID
-            const response = await fetch(`/api/teachers/${inputId}`);
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            populateYearFilter();
+            checkExistingSession();
+            initBGM();
             
-            if (!response.ok) {
-                hideLoading();
-                showToast('Error', 'Teacher not found!', 'error');
-                speakText('टीचर नहीं मिला');
-                return;
-            }
-            
-            const result = await response.json();
-            
-            if (!result.success || !result.data) {
-                hideLoading();
-                showToast('Error', 'Invalid response from server', 'error');
-                return;
-            }
-
-            const teacher = result.data;
-            
-            // Step 2: Check if teacher is approved
-            if (teacher.status !== 'approved') {
-                hideLoading();
-                let msg = teacher.status === 'pending' 
-                    ? 'Your account is pending approval. Please contact admin.'
-                    : 'Your account has been rejected. Contact admin.';
-                showToast('Error', msg, 'error');
-                speakText(msg === 'pending' ? 'आपका अकाउंट अप्रूवल के लिए लंबित है' : 'आपका अकाउंट रिजेक्ट हो गया है');
-                return;
-            }
-
-            // Step 3: 🔑 PASSWORD CHECK - Frontend mein hi compare kar rahe hain
-            // Kyunki aapke server.js mein password field hai but compare nahi ho raha
-            if (teacher.password !== password) {
-                hideLoading();
-                showToast('Error', 'Wrong password!', 'error');
-                speakText('गलत पासवर्ड');
-                return;
-            }
-
-            // Step 4: Login successful
-            teacherData = teacher;
-            teacherId = inputId;
-            token = 'teacher-token-' + Date.now();
-            
-            localStorage.setItem('teacherToken', token);
-            localStorage.setItem('teacherId', inputId);
-            
-            hideLoading();
-            showDashboard();
-            loadTeacherData();
-            
-            const teacherName = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`.trim();
-            speakText(`प्रणाम सर! आपका स्वागत है, ${teacherName} जी`, 'hi-IN');
-            
-            initCamera();
-            fetchAttendanceHistory();
-            
-        } catch (error) {
-            hideLoading();
-            showToast('Error', 'Login failed: ' + error.message, 'error');
-            speakText('लॉगिन में समस्या हुई');
-            console.error('Login error:', error);
-        }
-    }
-
-    // Fetch teacher data (for saved session)
-    async function fetchTeacherData() {
-        showLoading();
-        try {
-            const response = await fetch(`/api/teachers/${teacherId}`);
-            const result = await response.json();
-            
-            if (result.success) {
-                teacherData = result.data;
-                
-                // Check if approved
-                if (teacherData.status !== 'approved') {
-                    logout();
-                    showToast('Error', 'Account not approved', 'error');
-                    return;
-                }
-                
+            // Check if already logged in
+            const savedTeacher = localStorage.getItem('currentTeacher');
+            if (savedTeacher) {
+                currentTeacher = JSON.parse(savedTeacher);
                 showDashboard();
                 loadTeacherData();
-                initCamera();
-                fetchAttendanceHistory();
-            } else {
-                throw new Error('Failed to fetch');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            logout();
-        } finally {
-            hideLoading();
-        }
-    }
-
-    // ========== UI FUNCTIONS ==========
-    function showDashboard() {
-        document.getElementById('loginContainer').style.display = 'none';
-        document.getElementById('dashboardContainer').style.display = 'block';
-    }
-
-    function loadTeacherData() {
-        if (!teacherData) return;
-
-        const fullName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
-        document.getElementById('displayTeacherName').textContent = fullName;
-        document.getElementById('teacherName').textContent = fullName.split(' ')[0] || 'Teacher';
-        
-        if (teacherData.photo) document.getElementById('teacherPhoto').src = teacherData.photo;
-        
-        const tags = [
-            `<span class="tag"><i class="fas fa-id-card"></i>ID: ${teacherData.teacherId || 'N/A'}</span>`,
-            `<span class="tag"><i class="fas fa-phone"></i>${teacherData.mobile || 'N/A'}</span>`,
-            `<span class="tag"><i class="fas fa-calendar"></i>Joined: ${formatDate(teacherData.joiningDate)}</span>`,
-            `<span class="tag"><i class="fas fa-book"></i>${teacherData.subject || 'General'}</span>`,
-            `<span class="tag"><i class="fas fa-rupee-sign"></i>Salary: ₹${teacherData.salary || 0}</span>`
-        ];
-        document.getElementById('profileTags').innerHTML = tags.join('');
-
-        if (teacherData.aadharDoc) document.getElementById('aadharDocLink').href = teacherData.aadharDoc;
-        if (teacherData.qualificationDoc) document.getElementById('qualificationDocLink').href = teacherData.qualificationDoc;
-
-        document.getElementById('monthlySalary').textContent = `₹${teacherData.salary || 0}`;
-        
-        let totalPaid = 0, totalDue = 0;
-        if (teacherData.salaryHistory) {
-            totalPaid = teacherData.salaryHistory.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
-            totalDue = teacherData.salaryHistory.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
-        }
-        document.getElementById('totalPaid').textContent = `₹${totalPaid}`;
-        document.getElementById('totalDue').textContent = `₹${totalDue}`;
-
-        loadSalaryChart();
-        loadSalaryTable();
-    }
-
-    function loadSalaryChart() {
-        const ctx = document.getElementById('salaryChart').getContext('2d');
-        const months = [], paid = [], due = [];
-        const history = teacherData.salaryHistory || [];
-        
-        history.slice(-6).forEach(h => {
-            months.push(h.month || '');
-            paid.push(h.paidAmount || 0);
-            due.push(h.dueAmount || 0);
-        });
-
-        if (salaryChart) salaryChart.destroy();
-        salaryChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Paid', data: paid, backgroundColor: '#28a745' },
-                    { label: 'Due', data: due, backgroundColor: '#dc3545' }
-                ]
+                loadAttendanceHistory();
+                startCamera();
             }
         });
-    }
 
-    function loadSalaryTable() {
-        const tbody = document.getElementById('salaryHistoryBody');
-        const history = teacherData.salaryHistory || [];
-        
-        if (history.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No history</td></tr>';
-            return;
-        }
-
-        let html = '';
-        history.slice().reverse().forEach(h => {
-            html += `<tr>
-                <td>${h.month || ''}</td>
-                <td>₹${h.salary || teacherData.salary || 0}</td>
-                <td class="text-success">₹${h.paidAmount || 0}</td>
-                <td class="text-danger">₹${h.dueAmount || 0}</td>
-                <td><span class="status-badge status-${h.status || 'unpaid'}">${(h.status || 'unpaid').toUpperCase()}</span></td>
-                <td>${h.paymentDate ? formatDate(h.paymentDate) : '-'}</td>
-            </tr>`;
-        });
-        tbody.innerHTML = html;
-    }
-
-    function updateCurrentDate() {
-        const now = new Date();
-        const date = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        document.getElementById('currentDateDisplay').innerHTML = `<div class="date-display">${now.getDate()} ${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}</div><div class="day-display">${now.toLocaleString('default', { weekday: 'long' })}</div>`;
-    }
-
-    // ========== VOICE FUNCTIONS ==========
-    function speakText(text) {
-        if (!window.speechSynthesis) return;
-        const feedback = document.getElementById('voiceFeedback');
-        document.getElementById('voiceFeedbackText').textContent = text;
-        feedback.style.display = 'block';
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'hi-IN';
-        utterance.rate = 0.9;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-        
-        setTimeout(() => feedback.style.display = 'none', 8000);
-    }
-
-    function playVoiceGuide() {
-        if (!teacherData) {
-            speakText('पहले लॉगिन करें');
-            return;
-        }
-        const name = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
-        speakText(`प्रणाम सर! ${name} जी। आज की उपस्थिति दर्ज करने के लिए फोटो खींचे, स्थिति चुनें और मार्क अटेंडेंस दबाएं।`, 'hi-IN');
-    }
-
-    // ========== CAMERA ==========
-    async function initCamera() {
-        try {
-            cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById('camera').srcObject = cameraStream;
-        } catch (error) {
-            showToast('Camera Error', 'Cannot access camera', 'error');
-        }
-    }
-
-    function capturePhoto() {
-        const video = document.getElementById('camera');
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        
-        capturedImageData = canvas.toDataURL('image/jpeg');
-        const img = document.getElementById('capturedPhoto');
-        img.src = capturedImageData;
-        img.style.display = 'block';
-        document.getElementById('retakeBtn').style.display = 'inline-flex';
-        
-        speakText('फोटो कैप्चर हो गया');
-        showToast('Success', 'Photo captured', 'success');
-        
-        if (selectedStatus) document.getElementById('markAttendanceBtn').disabled = false;
-    }
-
-    function retakePhoto() {
-        capturedImageData = null;
-        document.getElementById('capturedPhoto').style.display = 'none';
-        document.getElementById('retakeBtn').style.display = 'none';
-        document.getElementById('markAttendanceBtn').disabled = true;
-    }
-
-    // ========== ATTENDANCE ==========
-    function selectStatus(status) {
-        selectedStatus = status;
-        document.querySelectorAll('.attendance-option').forEach(opt => opt.classList.remove('selected'));
-        document.querySelector(`[data-status="${status}"]`).classList.add('selected');
-        document.getElementById('markAttendanceBtn').disabled = !capturedImageData;
-        
-        let msg = { present: 'उपस्थित', absent: 'अनुपस्थित', late: 'विलंब', 'half-day': 'आधा दिन' }[status];
-        speakText(msg + ' चुना गया');
-    }
-
-    async function markAttendance() {
-        if (!selectedStatus) { speakText('स्थिति चुनें'); return; }
-        if (!capturedImageData) { speakText('फोटो खींचे'); return; }
-
-        showLoading();
-        const today = new Date().toISOString().split('T')[0];
-        const remarks = document.getElementById('attendanceRemarks').value;
-        const name = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
-
-        try {
-            const response = await fetch(`/api/teachers/${teacherData.teacherId}/attendance`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ date: today, status: selectedStatus, remarks, photo: capturedImageData })
-            });
-
-            const result = await response.json();
+        // Update Date & Time
+        function updateDateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-IN', options);
             
-            if (result.success) {
-                const date = new Date().toLocaleDateString('hi-IN');
-                let statusMsg = { present: 'उपस्थित', absent: 'अनुपस्थित', late: 'विलंब से', 'half-day': 'आधे दिन के लिए' }[selectedStatus];
-                speakText(`प्रणाम सर! ${name} जी, आपकी आज की उपस्थिति ${statusMsg} दर्ज हो गई है। तारीख ${date}। धन्यवाद।`);
-                
-                showToast('Success', 'Attendance marked!', 'success');
-                
-                selectedStatus = null;
-                document.querySelectorAll('.attendance-option').forEach(opt => opt.classList.remove('selected'));
-                document.getElementById('attendanceRemarks').value = '';
-                document.getElementById('markAttendanceBtn').disabled = true;
-                retakePhoto();
-                
-                fetchAttendanceHistory();
-            } else {
-                showToast('Error', result.message || 'Failed', 'error');
+            // Update attendance date
+            const dateOptions = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            document.getElementById('attendanceDate').textContent = now.toLocaleDateString('en-IN', dateOptions);
+        }
+
+        // Populate Year Filter
+        function populateYearFilter() {
+            const yearFilter = document.getElementById('yearFilter');
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear; year >= 2020; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
             }
-        } catch (error) {
-            showToast('Error', 'Failed to mark attendance', 'error');
-        } finally {
-            hideLoading();
-        }
-    }
-
-    async function fetchAttendanceHistory() {
-        if (!teacherData) return;
-        try {
-            const response = await fetch(`/api/teachers/${teacherData.teacherId}/attendance`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const result = await response.json();
-            if (result.success) displayAttendanceHistory(result.data);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    function displayAttendanceHistory(attendance) {
-        const list = document.getElementById('attendanceHistoryList');
-        if (!attendance || attendance.length === 0) {
-            list.innerHTML = '<p class="text-muted text-center">No records</p>';
-            return;
         }
 
-        let html = '';
-        attendance.slice(0, 10).forEach(r => {
-            html += `<div class="history-item">
-                <div><div class="history-date">${new Date(r.date).toLocaleDateString()}</div><div class="history-remarks">${r.remarks || '-'}</div></div>
-                <div><span class="history-status status-${r.status}">${r.status.toUpperCase()}</span></div>
-            </div>`;
-        });
-        list.innerHTML = html;
-        
-        // Update attendance %
-        const currentMonth = new Date().getMonth();
-        const monthRecords = attendance.filter(r => new Date(r.date).getMonth() === currentMonth);
-        const present = monthRecords.filter(r => r.status === 'present').length;
-        const pct = monthRecords.length ? Math.round((present / monthRecords.length) * 100) : 0;
-        document.getElementById('monthAttendance').textContent = pct + '%';
-    }
+        // Check Existing Session
+        function checkExistingSession() {
+            const token = localStorage.getItem('teacherToken');
+            if (token) {
+                // Verify token with server
+                verifyToken(token);
+            }
+        }
 
-    // ========== LOGOUT ==========
-    function logout() {
-        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
-        window.speechSynthesis?.cancel();
-        
-        localStorage.removeItem('teacherToken');
-        localStorage.removeItem('teacherId');
-        
-        teacherData = null; teacherId = null; token = null; selectedStatus = null; capturedImageData = null;
-        
-        document.getElementById('loginContainer').style.display = 'block';
-        document.getElementById('dashboardContainer').style.display = 'none';
-        document.getElementById('teacherId').value = '';
-        document.getElementById('teacherPassword').value = '';
-    }
+        // Verify Token
+        async function verifyToken(token) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    // Token valid
+                } else {
+                    localStorage.removeItem('teacherToken');
+                    localStorage.removeItem('currentTeacher');
+                }
+            } catch (err) {
+                console.error('Token verification failed:', err);
+            }
+        }
 
-    // ========== HELPER FUNCTIONS ==========
-    function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'; }
-    function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
-    function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
-    
-    function showToast(title, msg, type = 'info') {
-        const toast = document.getElementById('toast');
-        document.getElementById('toastIcon').innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle text-success' : type === 'error' ? 'exclamation-circle text-danger' : 'info-circle text-info'}"></i>`;
-        document.getElementById('toastTitle').textContent = title;
-        document.getElementById('toastMessage').textContent = msg;
-        toast.className = `toast-notification toast-${type}`;
-        toast.style.display = 'flex';
-        setTimeout(hideToast, 5000);
-    }
-    
-    function hideToast() { document.getElementById('toast').style.display = 'none'; }
-    function showHelpModal() { new bootstrap.Modal(document.getElementById('helpModal')).show(); }
-</script>
+        // Switch Login Method
+        function switchLoginMethod(method) {
+            document.getElementById('loginAadharOption').classList.remove('active');
+            document.getElementById('loginPasswordOption').classList.remove('active');
+            
+            if (method === 'aadhar') {
+                document.getElementById('loginAadharOption').classList.add('active');
+                document.getElementById('aadharLoginForm').style.display = 'block';
+                document.getElementById('passwordLoginForm').style.display = 'none';
+                speakText('Please enter your Aadhar number and date of birth');
+            } else {
+                document.getElementById('loginPasswordOption').classList.add('active');
+                document.getElementById('aadharLoginForm').style.display = 'none';
+                document.getElementById('passwordLoginForm').style.display = 'block';
+                speakText('Please enter your Teacher ID and password');
+            }
+        }
 
+        // Handle Aadhar Login
+        async function handleAadharLogin(event) {
+            event.preventDefault();
+            
+            const aadharNumber = document.getElementById('aadharNumber').value.trim();
+            const dob = document.getElementById('dob').value;
+            
+            if (!aadharNumber || !dob) {
+                showToast('Please enter Aadhar number and date of birth', 'error');
+                speakText('Please enter Aadhar number and date of birth');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // First, get teacher by Aadhar
+                const response = await fetch(`${API_BASE_URL}/api/teachers/${aadharNumber}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Teacher not found');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const teacher = data.data;
+                    const teacherDob = new Date(teacher.dob).toISOString().split('T')[0];
+                    
+                    if (teacherDob === dob) {
+                        // Login successful
+                        currentTeacher = teacher;
+                        localStorage.setItem('currentTeacher', JSON.stringify(teacher));
+                        
+                        // Generate token (simplified - in production use JWT)
+                        const token = btoa(JSON.stringify({
+                            id: teacher.teacherId,
+                            type: 'teacher',
+                            exp: Date.now() + 3600000
+                        }));
+                        localStorage.setItem('teacherToken', token);
+                        
+                        showToast('Login successful!', 'success');
+                        speakText(`Welcome ${teacher.teacherName.first} ${teacher.teacherName.last}`);
+                        
+                        showDashboard();
+                        loadTeacherData();
+                        loadAttendanceHistory();
+                        startCamera();
+                    } else {
+                        showToast('Invalid date of birth', 'error');
+                        speakText('Invalid date of birth');
+                    }
+                } else {
+                    showToast('Teacher not found', 'error');
+                    speakText('Teacher not found');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                showToast('Login failed: ' + err.message, 'error');
+                speakText('Login failed. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Handle Password Login
+        async function handlePasswordLogin(event) {
+            event.preventDefault();
+            
+            const teacherId = document.getElementById('teacherId').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!teacherId || !password) {
+                showToast('Please enter Teacher ID and password', 'error');
+                speakText('Please enter Teacher ID and password');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // Get teacher by ID
+                const response = await fetch(`${API_BASE_URL}/api/teachers/${teacherId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Teacher not found');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const teacher = data.data;
+                    
+                    // Check password (simplified - in production use proper encryption)
+                    const dobFormatted = new Date(teacher.dob).toLocaleDateString('en-IN').replace(/\//g, '');
+                    if (teacher.password === password || dobFormatted === password) {
+                        // Login successful
+                        currentTeacher = teacher;
+                        localStorage.setItem('currentTeacher', JSON.stringify(teacher));
+                        
+                        // Generate token
+                        const token = btoa(JSON.stringify({
+                            id: teacher.teacherId,
+                            type: 'teacher',
+                            exp: Date.now() + 3600000
+                        }));
+                        localStorage.setItem('teacherToken', token);
+                        
+                        showToast('Login successful!', 'success');
+                        speakText(`Welcome ${teacher.teacherName.first} ${teacher.teacherName.last}`);
+                        
+                        showDashboard();
+                        loadTeacherData();
+                        loadAttendanceHistory();
+                        startCamera();
+                    } else {
+                        showToast('Invalid password', 'error');
+                        speakText('Invalid password');
+                    }
+                } else {
+                    showToast('Teacher not found', 'error');
+                    speakText('Teacher not found');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                showToast('Login failed: ' + err.message, 'error');
+                speakText('Login failed. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Show Dashboard
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+        }
+
+        // Load Teacher Data
+        function loadTeacherData() {
+            if (!currentTeacher) return;
+            
+            const teacher = currentTeacher;
+            
+            // Basic info
+            document.getElementById('teacherName').textContent = 
+                `${teacher.teacherName.first} ${teacher.teacherName.last}`;
+            document.getElementById('teacherFullName').textContent = 
+                `${teacher.teacherName.first} ${teacher.teacherName.middle} ${teacher.teacherName.last}`;
+            document.getElementById('teacherSubject').textContent = 
+                teacher.subject || 'Not Assigned';
+            document.getElementById('teacherIdDisplay').textContent = teacher.teacherId;
+            
+            // Father's name
+            document.getElementById('teacherFatherName').textContent = 
+                `${teacher.fatherName.first} ${teacher.fatherName.last}`;
+            
+            // Mobile
+            document.getElementById('teacherMobile').textContent = teacher.mobile;
+            if (teacher.altMobile) {
+                document.getElementById('teacherAltMobile').textContent = `Alt: ${teacher.altMobile}`;
+            }
+            
+            // Subject
+            document.getElementById('teacherSubjectDetail').textContent = 
+                teacher.subject || 'Not Assigned';
+            
+            // Salary
+            document.getElementById('teacherSalary').textContent = teacher.salary || 0;
+            
+            // Photo
+            if (teacher.photo) {
+                document.getElementById('teacherPhoto').src = teacher.photo;
+            }
+            
+            // Aadhar document
+            if (teacher.aadharDoc) {
+                document.getElementById('aadharDocLink').href = teacher.aadharDoc;
+            }
+            
+            // Check today's attendance
+            checkTodayAttendance();
+        }
+
+        // Check Today's Attendance
+        async function checkTodayAttendance() {
+            if (!currentTeacher) return;
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance?date=${today}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const todayAttendance = data.data.find(a => a.date === today);
+                    
+                    if (todayAttendance) {
+                        document.getElementById('todayStatus').innerHTML = `
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Today's attendance already marked as: 
+                                <strong class="status-${todayAttendance.status}">${todayAttendance.status}</strong>
+                                ${todayAttendance.remarks ? `<br><small>Remarks: ${todayAttendance.remarks}</small>` : ''}
+                            </div>
+                        `;
+                        document.getElementById('markAttendanceBtn').disabled = true;
+                        
+                        // Pre-select status
+                        const radio = document.getElementById(`status-${todayAttendance.status}`);
+                        if (radio) radio.checked = true;
+                        if (todayAttendance.remarks) {
+                            document.getElementById('attendanceRemarks').value = todayAttendance.remarks;
+                        }
+                    } else {
+                        document.getElementById('todayStatus').innerHTML = '';
+                        document.getElementById('markAttendanceBtn').disabled = false;
+                    }
+                }
+            } catch (err) {
+                console.error('Error checking today\'s attendance:', err);
+            }
+        }
+
+        // Start Camera
+        async function startCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'environment'
+                    }
+                });
+                
+                const video = document.getElementById('cameraFeed');
+                video.srcObject = cameraStream;
+                
+                document.getElementById('startCameraBtn').disabled = true;
+                document.getElementById('captureBtn').disabled = false;
+                
+                speakText('Camera started. Please capture your photo.');
+            } catch (err) {
+                console.error('Camera error:', err);
+                showToast('Could not access camera: ' + err.message, 'error');
+                speakText('Could not access camera. Please check permissions.');
+            }
+        }
+
+        // Capture Photo
+        function capturePhoto() {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            capturedImage = canvas.toDataURL('image/jpeg', 0.8);
+            
+            const img = document.getElementById('capturedPhoto');
+            img.src = capturedImage;
+            img.style.display = 'block';
+            
+            document.getElementById('capturePlaceholder').style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'none';
+            document.getElementById('retakeBtn').style.display = 'inline-block';
+            
+            speakText('Photo captured successfully');
+        }
+
+        // Retake Photo
+        function retakePhoto() {
+            capturedImage = null;
+            
+            const img = document.getElementById('capturedPhoto');
+            img.src = '';
+            img.style.display = 'none';
+            
+            document.getElementById('capturePlaceholder').style.display = 'block';
+            document.getElementById('captureBtn').style.display = 'inline-block';
+            document.getElementById('retakeBtn').style.display = 'none';
+            
+            speakText('Please capture your photo again');
+        }
+
+        // Mark Attendance
+        async function markAttendance() {
+            if (!currentTeacher) {
+                showToast('Please login first', 'error');
+                return;
+            }
+            
+            if (!capturedImage) {
+                showToast('Please capture your photo first', 'warning');
+                speakText('Please capture your photo first');
+                return;
+            }
+            
+            const status = document.querySelector('input[name="attendanceStatus"]:checked');
+            if (!status) {
+                showToast('Please select attendance status', 'warning');
+                speakText('Please select your attendance status');
+                return;
+            }
+            
+            const remarks = document.getElementById('attendanceRemarks').value;
+            const today = new Date().toISOString().split('T')[0];
+            
+            showLoading(true);
+            
+            try {
+                // First, verify it's before 8 PM
+                const now = new Date();
+                if (now.getHours() >= 20) {
+                    // Auto-mark as absent after 8 PM
+                    if (!confirm('It\'s after 8:00 PM. Attendance will be marked as ABSENT. Continue?')) {
+                        showLoading(false);
+                        return;
+                    }
+                }
+                
+                // Save attendance with photo
+                const attendanceData = {
+                    date: today,
+                    status: status.value,
+                    remarks: remarks,
+                    photo: capturedImage,
+                    markedAt: new Date().toISOString()
+                };
+                
+                const response = await fetch(
+                    `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                        },
+                        body: JSON.stringify(attendanceData)
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Attendance marked successfully!', 'success');
+                    speakText(`Your attendance has been marked as ${status.value}`);
+                    
+                    // Reload history and update UI
+                    loadAttendanceHistory();
+                    checkTodayAttendance();
+                    
+                    // Reset camera
+                    if (cameraStream) {
+                        cameraStream.getTracks().forEach(track => track.stop());
+                        cameraStream = null;
+                    }
+                    retakePhoto();
+                    document.getElementById('startCameraBtn').disabled = false;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                console.error('Error marking attendance:', err);
+                showToast('Failed to mark attendance: ' + err.message, 'error');
+                speakText('Failed to mark attendance. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Load Attendance History
+        async function loadAttendanceHistory() {
+            if (!currentTeacher) return;
+            
+            const month = document.getElementById('monthFilter').value;
+            const year = document.getElementById('yearFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            
+            let url = `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance`;
+            const params = new URLSearchParams();
+            if (month) params.append('month', month);
+            if (year) params.append('year', year);
+            if (status) params.append('status', status);
+            if (params.toString()) url += '?' + params.toString();
+            
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayAttendanceHistory(data.data);
+                }
+            } catch (err) {
+                console.error('Error loading attendance:', err);
+            }
+        }
+
+        // Display Attendance History
+        function displayAttendanceHistory(attendance) {
+            const tbody = document.getElementById('attendanceHistoryBody');
+            
+            if (!attendance || attendance.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 50px;">
+                            <i class="fas fa-calendar-times" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                            <p>No attendance records found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = attendance.sort((a, b) => b.date.localeCompare(a.date)).map(record => `
+                <tr>
+                    <td>${new Date(record.date).toLocaleDateString('en-IN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}</td>
+                    <td>
+                        <span class="status-badge status-${record.status}">
+                            <i class="fas ${getStatusIcon(record.status)}"></i>
+                            ${record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                        </span>
+                    </td>
+                    <td>${record.remarks || '-'}</td>
+                    <td>${record.markedBy || 'Self'}</td>
+                    <td>${record.markedAt ? new Date(record.markedAt).toLocaleTimeString('en-IN') : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Get Status Icon
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'present': return 'fa-check-circle';
+                case 'absent': return 'fa-times-circle';
+                case 'late': return 'fa-clock';
+                case 'half-day': return 'fa-adjust';
+                default: return 'fa-circle';
+            }
+        }
+
+        // Logout
+        function logout() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            
+            localStorage.removeItem('teacherToken');
+            localStorage.removeItem('currentTeacher');
+            currentTeacher = null;
+            
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboardPage').style.display = 'none';
+            
+            // Reset forms
+            document.getElementById('aadharLoginForm').reset();
+            document.getElementById('passwordLoginForm').reset();
+            
+            speakText('You have been logged out');
+        }
+
+        // Voice Guidance Functions
+        function speakText(text) {
+            if (!voiceGuidanceEnabled) return;
+            
+            if (currentSpeech) {
+                speechSynthesis.cancel();
+            }
+            
+            currentSpeech = new SpeechSynthesisUtterance(text);
+            currentSpeech.lang = 'en-IN';
+            currentSpeech.rate = 0.9;
+            currentSpeech.pitch = 1;
+            
+            speechSynthesis.speak(currentSpeech);
+            
+            // Update voice message
+            document.getElementById('voiceMessage').textContent = text;
+        }
+
+        function toggleVoiceGuidance() {
+            voiceGuidanceEnabled = !voiceGuidanceEnabled;
+            const btn = document.querySelector('.voice-controls button:last-child i');
+            
+            if (voiceGuidanceEnabled) {
+                btn.className = 'fas fa-microphone';
+                speakText('Voice guidance enabled');
+            } else {
+                btn.className = 'fas fa-microphone-slash';
+                if (currentSpeech) {
+                    speechSynthesis.cancel();
+                }
+            }
+        }
+
+        // BGM Functions
+        function initBGM() {
+            const bgm = document.getElementById('bgmAudio');
+            bgm.volume = 0.3;
+        }
+
+        function toggleBGM() {
+            const bgm = document.getElementById('bgmAudio');
+            const btn = document.getElementById('bgmToggle');
+            
+            if (bgmPlaying) {
+                bgm.pause();
+                btn.innerHTML = '<i class="fas fa-music"></i>';
+                btn.classList.add('muted');
+            } else {
+                bgm.play().catch(err => {
+                    console.log('BGM play failed:', err);
+                });
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                btn.classList.remove('muted');
+            }
+            
+            bgmPlaying = !bgmPlaying;
+        }
+
+        document.getElementById('bgmToggle').addEventListener('click', toggleBGM);
+
+        // Toast Notifications
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            const titles = {
+                success: 'Success',
+                error: 'Error',
+                warning: 'Warning',
+                info: 'Information'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.id = toastId;
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${icons[type]}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${titles[type]}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <div class="toast-close" onclick="document.getElementById('${toastId}').remove()">
+                    <i class="fas fa-times"></i>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                const toastElement = document.getElementById(toastId);
+                if (toastElement) {
+                    toastElement.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => toastElement.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        // Loading Overlay
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+
+        // Auto-mark absent after 8 PM
+        setInterval(async () => {
+            const now = new Date();
+            if (now.getHours() >= 20 && currentTeacher) {
+                const today = now.toISOString().split('T')[0];
+                
+                try {
+                    const response = await fetch(
+                        `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance?date=${today}`,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                            }
+                        }
+                    );
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && !data.data.find(a => a.date === today)) {
+                        // Auto-mark absent
+                        await fetch(
+                            `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                                },
+                                body: JSON.stringify({
+                                    date: today,
+                                    status: 'absent',
+                                    remarks: 'Auto-marked absent (after 8 PM)',
+                                    markedAt: now.toISOString()
+                                })
+                            }
+                        );
+                        
+                        loadAttendanceHistory();
+                        checkTodayAttendance();
+                    }
+                } catch (err) {
+                    console.error('Auto-mark absent error:', err);
+                }
+            }
+        }, 60000); // Check every minute
+    </script>
 </body>
 </html>
