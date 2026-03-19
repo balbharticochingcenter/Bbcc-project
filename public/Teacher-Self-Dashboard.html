@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Bal Bharti Coaching</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Login Container */
+        .login-container {
+            max-width: 450px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideInUp 0.5s ease;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Navbar */
+        .dashboard-navbar {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-brand img {
+            height: 40px;
+            width: 40px;
+            border-radius: 10px;
+        }
+
+        .nav-brand span {
+            font-weight: 600;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h3 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .profile-tags {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #f0f2f5;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 14px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tag i {
+            color: #667eea;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.salary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-icon.paid { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: #2c7a4d; }
+        .stat-icon.due { background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%); color: #c44536; }
+        .stat-icon.attendance { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color: #2c3e50; }
+
+        .stat-info h4 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Salary Chart */
+        .chart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        /* Salary Table */
+        .salary-table-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .salary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .salary-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            font-weight: 600;
+            color: #555;
+            text-align: left;
+        }
+
+        .salary-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-paid { background: #d4edda; color: #155724; }
+        .status-partial { background: #fff3cd; color: #856404; }
+        .status-unpaid { background: #f8d7da; color: #721c24; }
+
+        /* Location Status */
+        .location-status {
+            background: linear-gradient(135deg, #ffd166 0%, #ffb347 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+        }
+
+        .location-verified {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: #155724;
+        }
+
+        .location-icon {
+            font-size: 24px;
+        }
+
+        /* Attendance Section */
+        .attendance-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .attendance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .current-date {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .date-display {
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .day-display {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .camera-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 25px 0;
+        }
+
+        .camera-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .camera-container h5 {
+            margin-bottom: 15px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        #camera, #capturedPhoto {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 15px;
+            object-fit: cover;
+            border: 3px solid #667eea;
+            margin: 0 auto;
+            display: block;
+        }
+
+        #capturedPhoto {
+            display: none;
+        }
+
+        .camera-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cam-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-capture {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-retake {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-mark {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: #155724;
+            font-weight: 600;
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .attendance-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .attendance-option {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .attendance-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .attendance-option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .attendance-option i {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .option-present i { color: #28a745; }
+        .option-absent i { color: #dc3545; }
+        .option-late i { color: #ffc107; }
+        .option-halfday i { color: #17a2b8; }
+
+        .voice-command-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        .voice-command-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+        }
+
+        .voice-feedback {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .voice-feedback i {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .attendance-history {
+            margin-top: 30px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-date {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .history-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .history-remarks {
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* Modal */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .toast-success { border-left: 4px solid #28a745; }
+        .toast-error { border-left: 4px solid #dc3545; }
+        .toast-warning { border-left: 4px solid #ffc107; }
+
+        .toast-icon {
+            font-size: 24px;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .toast-message {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .toast-close {
+            cursor: pointer;
+            color: #999;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .camera-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-header {
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .profile-tags {
+                justify-content: center;
+            }
+            
+            .attendance-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .attendance-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-notification" id="toast">
+    <div class="toast-icon" id="toastIcon"></div>
+    <div class="toast-content">
+        <div class="toast-title" id="toastTitle"></div>
+        <div class="toast-message" id="toastMessage"></div>
+    </div>
+    <div class="toast-close" onclick="hideToast()">
+        <i class="fas fa-times"></i>
+    </div>
+</div>
+
+<!-- Login Container -->
+<div class="login-container" id="loginContainer">
+    <div class="login-header">
+        <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=100" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
+        <h2>Teacher Login</h2>
+        <p>Enter your Aadhar Number / Teacher ID and Password</p>
+    </div>
+    
+    <form id="loginForm" onsubmit="event.preventDefault(); teacherLogin();">
+        <div class="mb-4">
+            <label class="form-label">Aadhar Number / Teacher ID</label>
+            <input type="text" class="form-control form-control-lg" id="teacherId" 
+                   placeholder="Enter your Aadhar or ID" required>
+            <small class="text-muted">Use your registered Aadhar number or Teacher ID</small>
+        </div>
+        
+        <div class="mb-4">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control form-control-lg" id="teacherPassword" 
+                   placeholder="Enter your password" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+            <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
+        </button>
+    </form>
+    
+    <div class="text-center mt-4">
+        <a href="#" onclick="showHelpModal()">Forgot Password?</a>
+    </div>
+</div>
+
+<!-- Dashboard Container -->
+<div class="dashboard-container" id="dashboardContainer">
+    <!-- Navbar -->
+    <div class="dashboard-navbar">
+        <div class="nav-brand">
+            <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=50" alt="Logo">
+            <span>Bal Bharti Coaching</span>
+        </div>
+        <div class="nav-user">
+            <span><i class="fas fa-user-circle me-2"></i><span id="teacherName">Teacher</span></span>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profile-card" id="profileCard">
+        <div class="profile-header">
+            <img id="teacherPhoto" class="profile-photo" src="https://via.placeholder.com/120" alt="Teacher Photo">
+            <div class="profile-info">
+                <h3 id="displayTeacherName">Loading...</h3>
+                <div class="profile-tags" id="profileTags">
+                    <!-- Dynamic tags will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Document Links -->
+        <div class="row mt-4" id="documentLinks">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3 p-3 bg-light rounded">
+                    <i class="fas fa-id-card fa-2x text-primary"></i>
+                    <div>
+                        <small class="text-muted">Aadhar Document</small>
+                        <div><a href="#" id="aadharDocLink" target="_blank">View Aadhar Card</a></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3 p-3 bg-light rounded">
+                    <i class="fas fa-graduation-cap fa-2x text-success"></i>
+                    <div>
+                        <small class="text-muted">Qualification Document</small>
+                        <div><a href="#" id="qualificationDocLink" target="_blank">View Certificate</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="stat-icon salary">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h4>Monthly Salary</h4>
+                <div class="stat-value" id="monthlySalary">₹0</div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon paid">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h4>Total Paid</h4>
+                <div class="stat-value" id="totalPaid">₹0</div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon due">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h4>Total Due</h4>
+                <div class="stat-value" id="totalDue">₹0</div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon attendance">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-info">
+                <h4>This Month Attendance</h4>
+                <div class="stat-value" id="monthAttendance">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Salary Chart -->
+    <div class="chart-card">
+        <h5><i class="fas fa-chart-line me-2"></i>Salary History (Last 6 Months)</h5>
+        <div class="chart-container">
+            <canvas id="salaryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Salary Table -->
+    <div class="salary-table-card">
+        <h5><i class="fas fa-history me-2"></i>Salary Payment History</h5>
+        <div class="table-responsive">
+            <table class="salary-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Salary</th>
+                        <th>Paid</th>
+                        <th>Due</th>
+                        <th>Status</th>
+                        <th>Payment Date</th>
+                    </tr>
+                </thead>
+                <tbody id="salaryHistoryBody">
+                    <tr>
+                        <td colspan="6" class="text-center">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Location Status (Optional - uncomment if you want location verification) -->
+    <!-- <div class="location-status" id="locationStatus">
+        <i class="fas fa-map-marker-alt location-icon"></i>
+        <span id="locationText">Verifying your location...</span>
+    </div> -->
+
+    <!-- Voice Feedback Area -->
+    <div class="voice-feedback" id="voiceFeedback">
+        <i class="fas fa-volume-up"></i>
+        <span id="voiceFeedbackText">...</span>
+    </div>
+
+    <!-- Attendance Card -->
+    <div class="attendance-card">
+        <div class="attendance-header">
+            <h5><i class="fas fa-clock me-2"></i>Mark Your Attendance</h5>
+            <div class="current-date" id="currentDateDisplay"></div>
+        </div>
+
+        <!-- Voice Command Button -->
+        <button class="voice-command-btn" id="voiceCommandBtn" onclick="toggleVoiceRecognition()">
+            <i class="fas fa-microphone"></i>
+            <span id="voiceBtnText">बोलें / Speak to Mark Attendance</span>
+        </button>
+
+        <!-- Camera Section -->
+        <div class="camera-section">
+            <div class="camera-container">
+                <h5>Live Camera <span class="badge bg-danger">Coaching Campus Only</span></h5>
+                <video id="camera" autoplay playsinline></video>
+                <div class="camera-controls">
+                    <button class="cam-btn btn-capture" onclick="capturePhoto()">
+                        <i class="fas fa-camera"></i> Capture Photo
+                    </button>
+                </div>
+            </div>
+            
+            <div class="camera-container">
+                <h5>Captured Photo</h5>
+                <img id="capturedPhoto" src="#" alt="Captured">
+                <div class="camera-controls">
+                    <button class="cam-btn btn-retake" onclick="retakePhoto()" style="display: none;">
+                        <i class="fas fa-redo"></i> Retake
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Options -->
+        <div class="attendance-options" id="attendanceOptions">
+            <div class="attendance-option option-present" onclick="selectStatus('present')" id="optPresent">
+                <i class="fas fa-check-circle"></i>
+                <span>Present (उपस्थित)</span>
+            </div>
+            <div class="attendance-option option-absent" onclick="selectStatus('absent')" id="optAbsent">
+                <i class="fas fa-times-circle"></i>
+                <span>Absent (अनुपस्थित)</span>
+            </div>
+            <div class="attendance-option option-late" onclick="selectStatus('late')" id="optLate">
+                <i class="fas fa-clock"></i>
+                <span>Late (विलंब)</span>
+            </div>
+            <div class="attendance-option option-halfday" onclick="selectStatus('half-day')" id="optHalfday">
+                <i class="fas fa-adjust"></i>
+                <span>Half Day (आधा दिन)</span>
+            </div>
+        </div>
+
+        <!-- Remarks Input -->
+        <div class="mb-3">
+            <textarea class="form-control" id="attendanceRemarks" rows="2" 
+                      placeholder="Add remarks / टिप्पणी जोड़ें (optional)"></textarea>
+        </div>
+
+        <!-- Mark Attendance Button -->
+        <button class="btn-mark" onclick="markAttendance()" id="markAttendanceBtn" disabled>
+            <i class="fas fa-check-circle me-2"></i>Mark Attendance for Today
+        </button>
+
+        <!-- Attendance History -->
+        <div class="attendance-history">
+            <h6 class="mb-3"><i class="fas fa-history me-2"></i>Recent Attendance</h6>
+            <div id="attendanceHistoryList">
+                <!-- History will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Help & Support | सहायता</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Login Credentials</h6>
+                <p>Use your registered Aadhar number or Teacher ID as username and the password you set during registration.</p>
+                
+                <h6>Forgot Password?</h6>
+                <p>Please contact the admin to reset your password.</p>
+                
+                <h6>Voice Commands | आवाज़ आदेश</h6>
+                <ul>
+                    <li>Say "Present" or "उपस्थित" - Mark present</li>
+                    <li>Say "Absent" or "अनुपस्थित" - Mark absent</li>
+                    <li>Say "Late" or "विलंब" - Mark late</li>
+                    <li>Say "Half day" or "आधा दिन" - Mark half day</li>
+                    <li>Say "Capture" or "फोटो" - Take photo</li>
+                    <li>Say "Mark" or "जमा करें" - Submit attendance</li>
+                </ul>
+                
+                <h6>Camera Access</h6>
+                <p>Allow camera access when prompted. Your photo will be captured for attendance verification. You must be inside the coaching premises.</p>
+                
+                <h6>Voice Feedback</h6>
+                <p>After marking attendance, the system will speak your name and confirmation in Hindi/English.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Global Variables
+    let teacherData = null;
+    let salaryChart = null;
+    let selectedStatus = null;
+    let cameraStream = null;
+    let capturedImageData = null;
+    let recognition = null;
+    let isListening = false;
+    let token = null;
+    let isLocationVerified = false; // Set to true if you want to skip location check
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkSavedSession();
+        updateCurrentDate();
+        loadWebsiteConfig();
+        // Uncomment to enable location verification
+        // checkLocation();
+    });
+
+    // Check for saved session
+    function checkSavedSession() {
+        const savedToken = localStorage.getItem('teacherToken');
+        const savedTeacherId = localStorage.getItem('teacherId');
+        
+        if (savedToken && savedTeacherId) {
+            token = savedToken;
+            document.getElementById('teacherId').value = savedTeacherId;
+            verifyAndLoadDashboard(savedToken, savedTeacherId);
+        }
+    }
+
+    // Verify token and load dashboard
+    async function verifyAndLoadDashboard(token, teacherId) {
+        showLoading();
+        try {
+            await fetchTeacherData(teacherId);
+        } catch (error) {
+            console.error('Session expired:', error);
+            localStorage.removeItem('teacherToken');
+            localStorage.removeItem('teacherId');
+            hideLoading();
+        }
+    }
+
+    // Load website config
+    async function loadWebsiteConfig() {
+        try {
+            const response = await fetch('/api/config');
+            const config = await response.json();
+            // Update UI with config if needed
+        } catch (error) {
+            console.error('Error loading config:', error);
+        }
+    }
+
+    // Check location (optional - uncomment to enable)
+    function checkLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Here you would check if the location is within coaching premises
+                    // For demo, we'll assume it's verified
+                    isLocationVerified = true;
+                    document.getElementById('locationStatus').classList.add('location-verified');
+                    document.getElementById('locationText').innerHTML = '<i class="fas fa-check-circle me-2"></i>Location Verified - You are in coaching premises';
+                    
+                    // Enable camera after location verified
+                    initCamera();
+                },
+                function(error) {
+                    console.error('Location error:', error);
+                    isLocationVerified = false;
+                    document.getElementById('locationText').innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Location not verified. Please enable location services.';
+                }
+            );
+        } else {
+            isLocationVerified = true; // Skip if geolocation not supported
+            initCamera();
+        }
+    }
+
+    // Text-to-Speech function with Hindi/English support
+    function speakText(text, language = 'hi-IN') {
+        if (!window.speechSynthesis) {
+            console.log('Speech synthesis not supported');
+            return;
+        }
+
+        // Show voice feedback area
+        const feedbackEl = document.getElementById('voiceFeedback');
+        const feedbackTextEl = document.getElementById('voiceFeedbackText');
+        feedbackEl.style.display = 'block';
+        feedbackTextEl.textContent = text;
+        
+        // Create utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Try to get Hindi voice if available
+        const voices = window.speechSynthesis.getVoices();
+        const hindiVoice = voices.find(voice => voice.lang === 'hi-IN');
+        
+        if (hindiVoice) {
+            utterance.voice = hindiVoice;
+            utterance.lang = 'hi-IN';
+        } else {
+            utterance.lang = language;
+        }
+        
+        utterance.rate = 0.9; // Slightly slower for clarity
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        
+        // Speak
+        window.speechSynthesis.cancel(); // Cancel any ongoing speech
+        window.speechSynthesis.speak(utterance);
+        
+        // Hide feedback after 5 seconds
+        setTimeout(() => {
+            feedbackEl.style.display = 'none';
+        }, 5000);
+    }
+
+    // Teacher Login
+    async function teacherLogin() {
+        const teacherId = document.getElementById('teacherId').value.trim();
+        const password = document.getElementById('teacherPassword').value;
+        
+        if (!teacherId || !password) {
+            showToast('Error', 'Please enter both ID and password', 'error');
+            return;
+        }
+
+        showLoading();
+        
+        try {
+            const response = await fetch(`/api/teachers/${teacherId}`);
+            
+            if (!response.ok) {
+                throw new Error('Invalid credentials');
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                teacherData = result.data;
+                
+                token = 'dummy-token-' + Date.now();
+                localStorage.setItem('teacherToken', token);
+                localStorage.setItem('teacherId', teacherId);
+                
+                hideLoading();
+                showDashboard();
+                loadTeacherData();
+                
+                // Welcome message with teacher's name
+                const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
+                const welcomeMsg = `प्रणाम सर! आपका स्वागत है, ${teacherName} जी। आज की उपस्थिति दर्ज करने के लिए फोटो खींचे और स्थिति चुनें।`;
+                speakText(welcomeMsg, 'hi-IN');
+                
+                // Check location and init camera
+                if (isLocationVerified) {
+                    initCamera();
+                } else {
+                    // Uncomment for location verification
+                    // checkLocation();
+                    initCamera(); // Skip location check for demo
+                }
+                
+                initVoiceRecognition();
+                fetchAttendanceHistory();
+            } else {
+                hideLoading();
+                showToast('Error', result.message || 'Login failed', 'error');
+            }
+        } catch (error) {
+            hideLoading();
+            showToast('Error', 'Login failed: ' + error.message, 'error');
+            console.error('Login error:', error);
+        }
+    }
+
+    // Fetch teacher data
+    async function fetchTeacherData(teacherId) {
+        try {
+            const response = await fetch(`/api/teachers/${teacherId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                teacherData = result.data;
+                showDashboard();
+                loadTeacherData();
+                initCamera();
+                initVoiceRecognition();
+                fetchAttendanceHistory();
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Show dashboard
+    function showDashboard() {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('dashboardContainer').style.display = 'block';
+    }
+
+    // Load teacher data into UI
+    function loadTeacherData() {
+        if (!teacherData) return;
+
+        // Basic info
+        const fullName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.middle || ''} ${teacherData.teacherName?.last || ''}`.trim();
+        document.getElementById('displayTeacherName').textContent = fullName;
+        document.getElementById('teacherName').textContent = fullName.split(' ')[0] || 'Teacher';
+        
+        // Photo
+        if (teacherData.photo) {
+            document.getElementById('teacherPhoto').src = teacherData.photo;
+        }
+
+        // Profile tags
+        const tags = [
+            `<span class="tag"><i class="fas fa-id-card"></i>ID: ${teacherData.teacherId || 'N/A'}</span>`,
+            `<span class="tag"><i class="fas fa-phone"></i>${teacherData.mobile || 'N/A'}</span>`,
+            `<span class="tag"><i class="fas fa-calendar"></i>Joined: ${formatDate(teacherData.joiningDate)}</span>`,
+            `<span class="tag"><i class="fas fa-book"></i>${teacherData.subject || 'General'}</span>`,
+            `<span class="tag"><i class="fas fa-rupee-sign"></i>Salary: ₹${teacherData.salary || 0}</span>`
+        ];
+        document.getElementById('profileTags').innerHTML = tags.join('');
+
+        // Documents
+        if (teacherData.aadharDoc) {
+            document.getElementById('aadharDocLink').href = teacherData.aadharDoc;
+        }
+        if (teacherData.qualificationDoc) {
+            document.getElementById('qualificationDocLink').href = teacherData.qualificationDoc;
+        }
+
+        // Stats
+        document.getElementById('monthlySalary').textContent = `₹${teacherData.salary || 0}`;
+        
+        // Calculate totals from salary history
+        let totalPaid = 0;
+        let totalDue = 0;
+        
+        if (teacherData.salaryHistory && teacherData.salaryHistory.length > 0) {
+            totalPaid = teacherData.salaryHistory.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
+            totalDue = teacherData.salaryHistory.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
+        } else if (teacherData.salaryMonths) {
+            totalPaid = teacherData.salaryMonths.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
+            totalDue = teacherData.salaryMonths.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
+        }
+        
+        document.getElementById('totalPaid').textContent = `₹${totalPaid}`;
+        document.getElementById('totalDue').textContent = `₹${totalDue}`;
+
+        // Load salary chart
+        loadSalaryChart();
+        
+        // Load salary table
+        loadSalaryTable();
+    }
+
+    // Load salary chart
+    function loadSalaryChart() {
+        const ctx = document.getElementById('salaryChart').getContext('2d');
+        
+        // Get last 6 months data
+        const months = [];
+        const paidData = [];
+        const dueData = [];
+        
+        const salaryMonths = teacherData.salaryMonths || teacherData.salaryHistory || [];
+        const last6Months = salaryMonths.slice(-6);
+        
+        last6Months.forEach(month => {
+            months.push(month.month || 'Unknown');
+            paidData.push(month.paidAmount || 0);
+            dueData.push(month.dueAmount || 0);
+        });
+
+        if (salaryChart) {
+            salaryChart.destroy();
+        }
+
+        salaryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Paid Amount',
+                        data: paidData,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: '#28a745',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Due Amount',
+                        data: dueData,
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: '#dc3545',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₹' + context.raw;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Load salary table
+    function loadSalaryTable() {
+        const tbody = document.getElementById('salaryHistoryBody');
+        const salaryMonths = teacherData.salaryMonths || teacherData.salaryHistory || [];
+        
+        if (salaryMonths.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No salary history available</td></tr>';
+            return;
+        }
+
+        let html = '';
+        salaryMonths.slice().reverse().forEach(month => {
+            const statusClass = `status-${month.status || 'unpaid'}`;
+            const statusText = (month.status || 'unpaid').toUpperCase();
+            const paymentDate = month.paymentDate ? formatDate(month.paymentDate) : '-';
+            
+            html += `
+                <tr>
+                    <td><strong>${month.month || 'Unknown'}</strong></td>
+                    <td>₹${month.salary || teacherData.salary || 0}</td>
+                    <td class="text-success">₹${month.paidAmount || 0}</td>
+                    <td class="text-danger">₹${month.dueAmount || 0}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${paymentDate}</td>
+                </tr>
+            `;
+        });
+        
+        tbody.innerHTML = html;
+    }
+
+    // Update current date display
+    function updateCurrentDate() {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('en-IN', options);
+        const dateParts = dateStr.split(',');
+        
+        document.getElementById('currentDateDisplay').innerHTML = `
+            <div class="date-display">${dateParts[2] || dateParts[1] || ''}</div>
+            <div class="day-display">${dateParts[0] || ''}</div>
+        `;
+    }
+
+    // Camera functions
+    async function initCamera() {
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: 'user'
+                } 
+            });
+            document.getElementById('camera').srcObject = cameraStream;
+        } catch (error) {
+            console.error('Camera access error:', error);
+            showToast('Camera Error', 'Unable to access camera. Please check permissions.', 'error');
+        }
+    }
+
+    function capturePhoto() {
+        // Check if location is verified (uncomment if using location)
+        // if (!isLocationVerified) {
+        //     showToast('Location Error', 'Please enable location and be in coaching premises', 'error');
+        //     speakText('कृपया लोकेशन चालू करें और कोचिंग में आएं', 'hi-IN');
+        //     return;
+        // }
+
+        const video = document.getElementById('camera');
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        capturedImageData = canvas.toDataURL('image/jpeg');
+        
+        const capturedImg = document.getElementById('capturedPhoto');
+        capturedImg.src = capturedImageData;
+        capturedImg.style.display = 'block';
+        
+        document.querySelector('.btn-retake').style.display = 'inline-flex';
+        
+        // Voice feedback for photo capture
+        speakText('फोटो कैप्चर हो गया है। अब उपस्थिति स्थिति चुनें।', 'hi-IN');
+        
+        showToast('Success', 'Photo captured successfully!', 'success');
+    }
+
+    function retakePhoto() {
+        capturedImageData = null;
+        document.getElementById('capturedPhoto').style.display = 'none';
+        document.querySelector('.btn-retake').style.display = 'none';
+        document.getElementById('markAttendanceBtn').disabled = true;
+        
+        speakText('कृपया दोबारा फोटो खींचे', 'hi-IN');
+    }
+
+    // Select attendance status
+    function selectStatus(status) {
+        selectedStatus = status;
+        
+        // Remove selected class from all options
+        document.querySelectorAll('.attendance-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        
+        // Add selected class to chosen option
+        document.getElementById(`opt${status.charAt(0).toUpperCase() + status.slice(1).replace('-', '')}`).classList.add('selected');
+        
+        // Enable mark button if photo is captured
+        document.getElementById('markAttendanceBtn').disabled = !capturedImageData;
+        
+        // Voice feedback for status selection
+        let statusMsg = '';
+        switch(status) {
+            case 'present': statusMsg = 'उपस्थित'; break;
+            case 'absent': statusMsg = 'अनुपस्थित'; break;
+            case 'late': statusMsg = 'विलंब'; break;
+            case 'half-day': statusMsg = 'आधा दिन'; break;
+        }
+        speakText(`${statusMsg} चुना गया। अब मार्क अटेंडेंस बटन दबाएं।`, 'hi-IN');
+    }
+
+    // Mark attendance
+    async function markAttendance() {
+        if (!selectedStatus) {
+            showToast('Warning', 'Please select attendance status', 'warning');
+            speakText('कृपया उपस्थिति स्थिति चुनें', 'hi-IN');
+            return;
+        }
+        
+        if (!capturedImageData) {
+            showToast('Warning', 'Please capture your photo', 'warning');
+            speakText('कृपया अपना फोटो खींचे', 'hi-IN');
+            return;
+        }
+
+        // Check if location is verified (uncomment if using location)
+        // if (!isLocationVerified) {
+        //     showToast('Location Error', 'You must be in coaching premises', 'error');
+        //     speakText('आप कोचिंग में नहीं हैं। कृपया कोचिंग में आकर अटेंडेंस दर्ज करें।', 'hi-IN');
+        //     return;
+        // }
+
+        showLoading();
+
+        const today = new Date().toISOString().split('T')[0];
+        const remarks = document.getElementById('attendanceRemarks').value;
+        const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
+
+        try {
+            const response = await fetch(`/api/teachers/${teacherData.teacherId}/attendance`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    date: today,
+                    status: selectedStatus,
+                    remarks: remarks,
+                    photo: capturedImageData
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Success message with teacher's name and date
+                const date = new Date().toLocaleDateString('hi-IN', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+                
+                let statusMsg = '';
+                switch(selectedStatus) {
+                    case 'present': statusMsg = 'उपस्थित'; break;
+                    case 'absent': statusMsg = 'अनुपस्थित'; break;
+                    case 'late': statusMsg = 'विलंब से'; break;
+                    case 'half-day': statusMsg = 'आधे दिन के लिए'; break;
+                }
+                
+                const successMsg = `प्रणाम सर! ${teacherName} जी, आपकी आज की उपस्थिति ${statusMsg} दर्ज हो गई है। तारीख ${date}। धन्यवाद।`;
+                speakText(successMsg, 'hi-IN');
+                
+                showToast('Success', 'Attendance marked successfully!', 'success');
+                
+                // Reset form
+                selectedStatus = null;
+                document.querySelectorAll('.attendance-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                document.getElementById('attendanceRemarks').value = '';
+                document.getElementById('markAttendanceBtn').disabled = true;
+                retakePhoto();
+                
+                // Refresh attendance history
+                fetchAttendanceHistory();
+                
+                // Update attendance percentage
+                updateAttendanceStats();
+            } else {
+                showToast('Error', result.message || 'Failed to mark attendance', 'error');
+                speakText('उपस्थिति दर्ज करने में समस्या हुई। कृपया पुनः प्रयास करें।', 'hi-IN');
+            }
+        } catch (error) {
+            showToast('Error', 'Failed to mark attendance: ' + error.message, 'error');
+            speakText('उपस्थिति दर्ज करने में समस्या हुई। कृपया पुनः प्रयास करें।', 'hi-IN');
+            console.error('Attendance error:', error);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // Fetch attendance history
+    async function fetchAttendanceHistory() {
+        if (!teacherData) return;
+
+        try {
+            const response = await fetch(`/api/teachers/${teacherData.teacherId}/attendance`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                displayAttendanceHistory(result.data);
+                updateAttendanceStats(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching attendance:', error);
+        }
+    }
+
+    // Display attendance history
+    function displayAttendanceHistory(attendance) {
+        const historyList = document.getElementById('attendanceHistoryList');
+        
+        if (!attendance || attendance.length === 0) {
+            historyList.innerHTML = '<p class="text-muted text-center">No attendance records found</p>';
+            return;
+        }
+
+        let html = '';
+        attendance.slice(0, 10).forEach(record => {
+            const statusClass = `status-${record.status}`;
+            const statusText = record.status.toUpperCase();
+            const date = new Date(record.date).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+
+            html += `
+                <div class="history-item">
+                    <div>
+                        <div class="history-date">${date}</div>
+                        <div class="history-remarks">${record.remarks || '-'}</div>
+                    </div>
+                    <div>
+                        <span class="history-status ${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        historyList.innerHTML = html;
+    }
+
+    // Update attendance stats
+    function updateAttendanceStats(attendance = null) {
+        if (!attendance) return;
+
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        const monthAttendance = attendance.filter(record => {
+            const recordDate = new Date(record.date);
+            return recordDate.getMonth() === currentMonth && 
+                   recordDate.getFullYear() === currentYear;
+        });
+
+        const presentCount = monthAttendance.filter(r => r.status === 'present').length;
+        const totalDays = monthAttendance.length;
+        const percentage = totalDays > 0 ? Math.round((presentCount / totalDays) * 100) : 0;
+
+        document.getElementById('monthAttendance').textContent = percentage + '%';
+    }
+
+    // Voice recognition with Hindi/English support
+    function initVoiceRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            document.getElementById('voiceCommandBtn').style.display = 'none';
+            return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'hi-IN'; // Support Hindi
+        
+        // Add multiple languages
+        recognition.onstart = function() {
+            isListening = true;
+            document.getElementById('voiceCommandBtn').classList.add('listening');
+            document.getElementById('voiceBtnText').textContent = 'सुन रहा हूँ... बोलिए';
+            speakText('बोलिए सर', 'hi-IN');
+        };
+
+        recognition.onend = function() {
+            isListening = false;
+            document.getElementById('voiceCommandBtn').classList.remove('listening');
+            document.getElementById('voiceBtnText').textContent = 'बोलें / Speak to Mark Attendance';
+        };
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript.toLowerCase();
+            showToast('Voice Command', `You said: "${transcript}"`, 'info');
+            processVoiceCommand(transcript);
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            showToast('Voice Error', 'Could not understand. Please try again.', 'error');
+            isListening = false;
+            document.getElementById('voiceCommandBtn').classList.remove('listening');
+            document.getElementById('voiceBtnText').textContent = 'बोलें / Speak to Mark Attendance';
+        };
+    }
+
+    function toggleVoiceRecognition() {
+        if (!recognition) {
+            showToast('Error', 'Voice recognition not supported in your browser', 'error');
+            return;
+        }
+
+        if (isListening) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    }
+
+    function processVoiceCommand(command) {
+        // Hindi and English commands
+        if (command.includes('present') || command.includes('उपस्थित') || command.includes('हाजिर')) {
+            selectStatus('present');
+            speakText('उपस्थित चुना गया', 'hi-IN');
+        } 
+        else if (command.includes('absent') || command.includes('अनुपस्थित') || command.includes('गैरहाजिर')) {
+            selectStatus('absent');
+            speakText('अनुपस्थित चुना गया', 'hi-IN');
+        } 
+        else if (command.includes('late') || command.includes('विलंब') || command.includes('लेट')) {
+            selectStatus('late');
+            speakText('विलंब चुना गया', 'hi-IN');
+        } 
+        else if (command.includes('half') || command.includes('आधा') || command.includes('half day')) {
+            selectStatus('half-day');
+            speakText('आधा दिन चुना गया', 'hi-IN');
+        } 
+        else if (command.includes('capture') || command.includes('फोटो') || command.includes('खींचो') || command.includes('photo')) {
+            capturePhoto();
+        } 
+        else if (command.includes('mark') || command.includes('जमा') || command.includes('करो') || command.includes('submit')) {
+            markAttendance();
+        } 
+        else if (command.includes('help') || command.includes('मदद')) {
+            showHelpModal();
+            speakText('मदद के लिए यहाँ दिए गए निर्देश देखें', 'hi-IN');
+        }
+        else {
+            showToast('Voice Command', 'Command not recognized. Try: present, absent, late, half day, capture, or mark', 'warning');
+            speakText('कमांड समझ में नहीं आया। कृपया फिर से बोलें', 'hi-IN');
+        }
+    }
+
+    // Logout
+    function logout() {
+        // Stop camera
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+
+        // Stop voice recognition
+        if (recognition && isListening) {
+            recognition.stop();
+        }
+
+        // Cancel any speaking
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+
+        // Clear session
+        localStorage.removeItem('teacherToken');
+        localStorage.removeItem('teacherId');
+        
+        // Reset UI
+        document.getElementById('loginContainer').style.display = 'block';
+        document.getElementById('dashboardContainer').style.display = 'none';
+        document.getElementById('teacherId').value = '';
+        document.getElementById('teacherPassword').value = '';
+        
+        showToast('Success', 'Logged out successfully', 'success');
+    }
+
+    // Helper functions
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    function showToast(title, message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const titleEl = document.getElementById('toastTitle');
+        const messageEl = document.getElementById('toastMessage');
+        
+        let iconHtml = '';
+        switch(type) {
+            case 'success':
+                iconHtml = '<i class="fas fa-check-circle text-success"></i>';
+                toast.className = 'toast-notification toast-success';
+                break;
+            case 'error':
+                iconHtml = '<i class="fas fa-exclamation-circle text-danger"></i>';
+                toast.className = 'toast-notification toast-error';
+                break;
+            case 'warning':
+                iconHtml = '<i class="fas fa-exclamation-triangle text-warning"></i>';
+                toast.className = 'toast-notification toast-warning';
+                break;
+            default:
+                iconHtml = '<i class="fas fa-info-circle text-info"></i>';
+                toast.className = 'toast-notification';
+        }
+        
+        icon.innerHTML = iconHtml;
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        
+        toast.style.display = 'flex';
+        
+        setTimeout(hideToast, 5000);
+    }
+
+    function hideToast() {
+        document.getElementById('toast').style.display = 'none';
+    }
+
+    function showHelpModal() {
+        const modal = new bootstrap.Modal(document.getElementById('helpModal'));
+        modal.show();
+    }
+
+    // Load voices for speech synthesis
+    window.speechSynthesis.onvoiceschanged = function() {
+        // Voices loaded
+        console.log('Voices loaded for speech synthesis');
+    };
+</script>
+
+</body>
+</html>
