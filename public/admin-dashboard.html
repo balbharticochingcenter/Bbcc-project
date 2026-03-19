@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Admin Dashboard | Bal Bharti Coaching</title>
     
     <!-- ============================================
@@ -20,129 +20,541 @@
         })();
     </script>
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS (Lightweight) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- Google Fonts - Inter for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Animate.css for smooth animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     
     <style>
-        :root { 
-            --primary: #0f172a; 
-            --accent: #ffd700; 
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* ===== MODERN VARIABLES ===== */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f94144;
+            --dark: #0b132b;
+            --light: #f8f9fa;
+            --accent: #ffd700;
+            --gradient-primary: linear-gradient(135deg, #4361ee, #3a0ca3);
+            --gradient-success: linear-gradient(135deg, #4cc9f0, #4895ef);
+            --gradient-warning: linear-gradient(135deg, #f8961e, #f3722c);
+            --gradient-danger: linear-gradient(135deg, #f94144, #f72585);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
+            --border-radius-xs: 8px;
+            --border-radius-sm: 12px;
+            --border-radius-md: 16px;
+            --border-radius-lg: 24px;
+            --border-radius-xl: 32px;
         }
-        
+
+        /* ===== GLOBAL RESET ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        body { 
-            background: #f8fafc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
             min-height: 100vh;
+            color: #1e293b;
+            overflow-x: hidden;
         }
-        
-        /* Admin Header */
-        .admin-header { 
-            background: var(--primary); 
-            color: white; 
-            padding: 15px 5%; 
-            display: flex; 
-            justify-content: space-between; 
+
+        /* ===== LOADING OVERLAY ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 99999;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #eef2f6;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        .loading-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 16px;
+            right: 16px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast-message {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: var(--shadow-xl);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(-100px);
+            animation: slideDown 0.3s forwards;
+            border-left: 5px solid;
+            pointer-events: auto;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .toast-message.success { border-left-color: var(--success); }
+        .toast-message.error { border-left-color: var(--danger); }
+        .toast-message.warning { border-left-color: var(--warning); }
+        .toast-message.info { border-left-color: var(--accent); }
+
+        .toast-message i {
+            font-size: 1.3rem;
+        }
+
+        .toast-message.success i { color: var(--success); }
+        .toast-message.error i { color: var(--danger); }
+        .toast-message.warning i { color: var(--warning); }
+        .toast-message.info i { color: var(--accent); }
+
+        .toast-message span {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-message.fade-out {
+            animation: fadeOut 0.3s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* ===== ADMIN HEADER - MOBILE FIRST ===== */
+        .admin-header {
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: var(--shadow-md);
             position: sticky;
             top: 0;
             z-index: 1000;
-            flex-wrap: wrap;
-            gap: 10px;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
         }
-        
-        @media (max-width: 768px) {
+
+        @media (min-width: 768px) {
             .admin-header {
-                flex-direction: column;
-                text-align: center;
-                padding: 12px;
-            }
-            
-            .admin-header div:first-child {
-                width: 100%;
-            }
-            
-            .admin-header .text-center {
-                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px 5%;
             }
         }
-        
-        /* Sidebar Card */
-        .sidebar-card { 
-            background: white; 
-            border-radius: 15px; 
-            padding: 25px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            border-left: 5px solid var(--accent);
-            transition: transform 0.3s, box-shadow 0.3s;
-            height: 100%;
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
-        .sidebar-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+
+        .logo-wrapper {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-md);
         }
-        
-        /* Buttons */
-        .btn-save, .btn-primary-custom { 
-            background: var(--primary); 
-            color: white; 
-            border-radius: 10px; 
-            padding: 10px 30px; 
-            border: none; 
-            font-weight: bold;
+
+        .header-title h5 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--dark);
+        }
+
+        .header-title small {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .refresh-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            border: none;
+            color: var(--dark);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.95);
+            background: #e2e8f0;
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(249, 65, 68, 0.3);
+        }
+
+        .logout-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .main-container {
+            padding: 16px 16px 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .main-container {
+                padding: 24px 5%;
+            }
+        }
+
+        /* ===== STATS GRID - MOBILE OPTIMIZED ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 16px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-md);
             transition: all 0.3s;
-            position: relative;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .stat-card:active {
+            transform: scale(0.98);
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .stat-info {
+            min-width: 0;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            white-space: nowrap;
             overflow: hidden;
-            display: inline-flex;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        @media (min-width: 768px) {
+            .stat-card {
+                padding: 20px;
+            }
+            .stat-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 1.6rem;
+            }
+            .stat-value {
+                font-size: 1.8rem;
+            }
+            .stat-label {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* ===== TABS - MOBILE FRIENDLY ===== */
+        .tabs-wrapper {
+            background: white;
+            border-radius: 30px;
+            padding: 6px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tabs-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: max-content;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 25px;
+            background: transparent;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn i {
+            font-size: 1rem;
+        }
+
+        .tab-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        @media (min-width: 768px) {
+            .tab-btn {
+                padding: 14px 20px;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* ===== CARD STYLES ===== */
+        .content-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.03);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header-custom {
+            padding: 18px 20px;
+            border-bottom: 1px solid #eef2f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .card-header-custom h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
             align-items: center;
             gap: 8px;
         }
-        
-        .btn-save:hover, .btn-primary-custom:hover { 
-            background: #1e293b; 
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
+
+        .card-header-custom h3 i {
+            color: var(--primary);
         }
-        
-        .btn-save:active {
-            transform: translateY(0);
+
+        .card-body-custom {
+            padding: 20px;
         }
-        
-        .btn-save.loading {
-            background: #94a3b8;
+
+        @media (min-width: 768px) {
+            .card-header-custom {
+                padding: 20px 25px;
+            }
+            .card-header-custom h3 {
+                font-size: 1.2rem;
+            }
+            .card-body-custom {
+                padding: 25px;
+            }
+        }
+
+        /* ===== FORM ELEMENTS ===== */
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 14px;
+            border: 2px solid #eef2f6;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+            outline: none;
+        }
+
+        .input-group-custom {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .input-with-icon {
+            padding-left: 45px !important;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-primary-custom {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-primary-custom:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary-custom.loading {
+            opacity: 0.7;
             pointer-events: none;
             color: transparent;
+            position: relative;
         }
-        
-        .btn-save.loading::after {
+
+        .btn-primary-custom.loading::after {
             content: '';
             position: absolute;
             width: 20px;
@@ -152,501 +564,440 @@
             margin-left: -10px;
             margin-top: -10px;
             border: 2px solid white;
-            border-top-color: var(--accent);
+            border-top-color: transparent;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .logout-btn { 
-            background: var(--danger); 
-            color: white; 
-            border: none; 
-            padding: 8px 20px; 
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s;
-            cursor: pointer;
+
+        .btn-outline-custom {
+            background: transparent;
+            border: 2px solid #eef2f6;
+            border-radius: 14px;
+            padding: 12px 20px;
+            font-weight: 600;
+            color: var(--dark);
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        
-        .logout-btn:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+
+        .btn-outline-custom:active {
+            background: #f1f5f9;
+            transform: scale(0.96);
         }
-        
-        .btn-approve {
-            background: var(--success);
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 12px;
+        }
+
+        .btn-success-custom {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
+            border-radius: 14px;
+            padding: 12px 20px;
+            font-weight: 600;
         }
-        
-        .btn-reject {
+
+        /* ===== PASSWORD TOGGLE ===== */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            padding: 5px;
+            z-index: 10;
+        }
+
+        .toggle-password:active {
+            color: var(--primary);
+        }
+
+        /* ===== SLIDER IMAGES ===== */
+        .slides-container {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .slide-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+            background: white;
+            padding: 8px;
+            border-radius: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-remove-slide {
             background: var(--danger);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        
-        .btn-edit {
-            background: var(--info);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        
-        .btn-delete {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        
-        /* Form Controls */
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-            padding: 10px 15px;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
-            outline: none;
-        }
-        
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-        
-        .toast-message {
-            background: white;
             border-radius: 10px;
-            padding: 15px 20px;
-            margin-bottom: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transform: translateX(400px);
-            animation: slideIn 0.3s forwards;
-            border-left: 4px solid;
-        }
-        
-        .toast-message.success { border-left-color: var(--success); }
-        .toast-message.error { border-left-color: var(--danger); }
-        .toast-message.warning { border-left-color: var(--warning); }
-        .toast-message.info { border-left-color: var(--accent); }
-        
-        @keyframes slideIn {
-            to { transform: translateX(0); }
-        }
-        
-        .toast-message.fade-out {
-            animation: fadeOut 0.3s forwards;
-        }
-        
-        @keyframes fadeOut {
-            to { 
-                opacity: 0;
-                transform: translateX(400px);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .toast-container {
-                left: 20px;
-                right: 20px;
-            }
-        }
-        
-        /* Preview Card */
-        .preview-card {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            border: 2px dashed #cbd5e1;
-        }
-        
-        .preview-title {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-bottom: 10px;
-        }
-        
-        .logo-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 10px;
-            border: 2px dashed #cbd5e1;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 10px auto;
-            overflow: hidden;
-            background: #f1f5f9;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
         }
-        
+
+        .btn-remove-slide:active {
+            transform: scale(0.9);
+        }
+
+        .btn-add-slide {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn-add-slide:active {
+            transform: scale(0.96);
+        }
+
+        /* ===== LOGO PREVIEW ===== */
+        .logo-preview-wrapper {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            border: 3px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            background: white;
+        }
+
         .logo-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
-        /* Slides Container */
-        .slides-container {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 10px;
+
+        .preview-text {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.85rem;
         }
-        
-        .slide-item {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        
-        .slide-item input {
-            flex: 1;
-        }
-        
-        .btn-add-slide {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .btn-add-slide:hover {
-            background: #1e293b;
-        }
-        
-        .btn-remove-slide {
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        
-        .btn-remove-slide:hover {
-            background: #dc2626;
-        }
-        
-        /* Navigation Tabs */
-        .nav-tabs .nav-link {
-            color: var(--primary);
-            font-weight: 500;
-            padding: 12px 20px;
-        }
-        
-        .nav-tabs .nav-link.active {
-            color: var(--accent);
-            border-bottom: 3px solid var(--accent);
-            font-weight: bold;
-        }
-        
-        .nav-tabs .nav-link i {
-            margin-right: 8px;
-        }
-        
-        /* Password Wrapper */
-        .password-wrapper {
-            position: relative;
-        }
-        
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #666;
-            z-index: 10;
-        }
-        
-        .toggle-password:hover {
-            color: var(--accent);
-        }
-        
-        /* Tables */
+
+        /* ===== TABLES - MOBILE OPTIMIZED ===== */
         .table-responsive {
-            border-radius: 10px;
+            border-radius: 16px;
             overflow-x: auto;
+            margin: 0 -5px;
+            padding: 0 5px;
         }
-        
+
         .table {
             margin-bottom: 0;
-            min-width: 800px;
+            min-width: 900px;
         }
-        
+
         .table th {
             background: #f8fafc;
             font-weight: 600;
+            font-size: 0.8rem;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 12px 8px;
             white-space: nowrap;
         }
-        
+
         .table td {
             vertical-align: middle;
+            padding: 12px 8px;
+            font-size: 0.85rem;
         }
-        
-        @media (max-width: 768px) {
-            .table {
-                min-width: 100%;
-            }
-            .table td, .table th {
-                font-size: 0.85rem;
-                padding: 0.5rem;
-            }
+
+        .student-photo, .teacher-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid var(--primary);
         }
-        
-        /* Status Badges */
+
+        .action-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.9);
+        }
+
+        .action-btn.approve { background: var(--success); }
+        .action-btn.edit { background: var(--primary); }
+        .action-btn.view { background: #8b5cf6; }
+
+        /* ===== STATUS BADGES ===== */
         .status-badge {
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.7rem;
             font-weight: 600;
             display: inline-block;
+            white-space: nowrap;
         }
-        
+
         .status-badge.pending {
             background: #fff3cd;
             color: #856404;
         }
-        
+
         .status-badge.approved {
             background: #d4edda;
             color: #155724;
         }
-        
+
         .status-badge.rejected {
             background: #f8d7da;
             color: #721c24;
         }
-        
+
         .status-badge.paid {
             background: #d4edda;
             color: #155724;
         }
-        
+
         .status-badge.partial {
             background: #fff3cd;
             color: #856404;
         }
-        
+
         .status-badge.unpaid {
             background: #f8d7da;
             color: #721c24;
         }
-        
-        /* Cards */
-        .card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        
-        .card-header {
-            background: white;
-            border-bottom: 2px solid #e2e8f0;
-            padding: 15px 20px;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        
-        .card-body {
-            padding: 20px;
-        }
-        
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
+
+        /* ===== FILTER BUTTONS ===== */
+        .filter-buttons {
             display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-        
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-        
-        .stat-label {
-            font-size: 0.85rem;
-            color: #666;
-        }
-        
-        /* Chart Container */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-            padding: 10px;
-            background: white;
-            border-radius: 10px;
-        }
-        
-        /* Action Buttons Group */
-        .action-group {
-            display: flex;
-            gap: 5px;
+            gap: 8px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
         }
-        
-        .action-btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            color: white;
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #eef2f6;
+            border-radius: 30px;
+            background: white;
+            color: #64748b;
+            font-weight: 600;
             font-size: 0.8rem;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            transition: all 0.2s;
         }
-        
-        .action-btn.approve { background: var(--success); }
-        .action-btn.reject { background: var(--danger); }
-        .action-btn.edit { background: var(--info); }
-        .action-btn.delete { background: #6c757d; }
-        .action-btn.view { background: var(--primary); }
-        
-        /* Loading Spinner */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
-        .loading-spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        /* Filter Buttons */
-        .filter-btn {
-            padding: 6px 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            background: white;
-            color: #666;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
+
         .filter-btn.active {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
         }
-        
-        .filter-btn:hover {
+
+        .filter-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== SEARCH BOX ===== */
+        .search-box {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            border: 2px solid #eef2f6;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        }
+
+        /* ===== SIDEBAR CARD ===== */
+        .sidebar-card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0,0,0,0.03);
+            height: 100%;
+        }
+
+        .security-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 8px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== BOTTOM NAVIGATION (Mobile) ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 16px 20px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            z-index: 999;
+            border-radius: 30px 30px 0 0;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #64748b;
+            font-size: 0.7rem;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+        }
+
+        .bottom-nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .bottom-nav-item.active {
             background: var(--primary);
             color: white;
         }
-        
-        /* Search Box */
-        .search-box {
-            position: relative;
-            max-width: 300px;
+
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none;
+            }
+            .main-container {
+                padding-bottom: 30px;
+            }
         }
-        
-        .search-box input {
-            padding-left: 35px;
-            border-radius: 20px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-        
-        /* Footer */
+
+        /* ===== FOOTER ===== */
         footer {
-            background: white;
+            text-align: center;
             padding: 20px;
-            margin-top: 40px;
-            color: #666;
-            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            font-size: 0.8rem;
+            border-top: 1px solid #eef2f6;
+            background: white;
+            margin-top: 30px;
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .text-gradient {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-gradient-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .rounded-20 {
+            border-radius: 20px;
+        }
+
+        .shadow-custom {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -662,34 +1013,35 @@
 
     <!-- Admin Header -->
     <header class="admin-header">
-        <div class="fw-bold fs-4">
-            <i class="fas fa-crown text-warning me-2"></i>ADMIN PANEL
+        <div class="header-left">
+            <div class="logo-wrapper">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div class="header-title">
+                <h5>Admin Dashboard</h5>
+                <small>Complete Management System</small>
+            </div>
         </div>
-        <div class="text-center">
-            <h5 class="m-0 text-warning">
-                <i class="fas fa-tachometer-alt me-2"></i>Complete Management System
-            </h5>
-            <small>Website | Students | Teachers | Attendance | Fees | Salary</small>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-light" id="refreshAllBtn">
+        <div class="header-right">
+            <button class="refresh-btn" id="refreshAllBtn">
                 <i class="fas fa-sync-alt"></i>
             </button>
             <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="d-none d-sm-inline">Logout</span>
             </button>
         </div>
     </header>
 
     <!-- Main Container -->
-    <div class="container my-4">
+    <div class="main-container">
         <!-- Quick Stats Row -->
         <div class="stats-grid" id="quickStats">
             <div class="stat-card">
                 <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
                     <i class="fas fa-users"></i>
                 </div>
-                <div>
+                <div class="stat-info">
                     <div class="stat-value" id="totalStudentsStat">0</div>
                     <div class="stat-label">Total Students</div>
                 </div>
@@ -698,7 +1050,7 @@
                 <div class="stat-icon" style="background: #d4edda; color: var(--success);">
                     <i class="fas fa-chalkboard-teacher"></i>
                 </div>
-                <div>
+                <div class="stat-info">
                     <div class="stat-value" id="totalTeachersStat">0</div>
                     <div class="stat-label">Total Teachers</div>
                 </div>
@@ -707,7 +1059,7 @@
                 <div class="stat-icon" style="background: #fff3cd; color: var(--warning);">
                     <i class="fas fa-clock"></i>
                 </div>
-                <div>
+                <div class="stat-info">
                     <div class="stat-value" id="pendingTeachersStat">0</div>
                     <div class="stat-label">Pending Approval</div>
                 </div>
@@ -716,61 +1068,50 @@
                 <div class="stat-icon" style="background: #f8d7da; color: var(--danger);">
                     <i class="fas fa-rupee-sign"></i>
                 </div>
-                <div>
+                <div class="stat-info">
                     <div class="stat-value" id="totalFeesStat">₹0</div>
                     <div class="stat-label">Monthly Fees</div>
                 </div>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="website-tab" data-bs-toggle="tab" data-bs-target="#website" type="button" role="tab">
-                    <i class="fas fa-globe me-2"></i>Website Settings
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">
-                    <i class="fas fa-users me-2"></i>Student Management
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="teachers-tab" data-bs-toggle="tab" data-bs-target="#teachers" type="button" role="tab">
-                    <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Management
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab">
-                    <i class="fas fa-user-shield me-2"></i>Admin Settings
-                </button>
-            </li>
-        </ul>
-        
+        <!-- Tabs (Desktop) -->
+        <div class="tabs-wrapper d-none d-md-flex" id="desktopTabs">
+            <button class="tab-btn active" data-tab="website">
+                <i class="fas fa-globe"></i> Website
+            </button>
+            <button class="tab-btn" data-tab="students">
+                <i class="fas fa-users"></i> Students
+            </button>
+            <button class="tab-btn" data-tab="teachers">
+                <i class="fas fa-chalkboard-teacher"></i> Teachers
+            </button>
+            <button class="tab-btn" data-tab="admin">
+                <i class="fas fa-user-shield"></i> Admin
+            </button>
+        </div>
+
         <!-- Tab Content -->
         <div class="tab-content" id="myTabContent">
             <!-- ============================================
                  TAB 1: WEBSITE SETTINGS
                  ============================================ -->
-            <div class="tab-pane fade show active" id="website" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-4 mb-4">
+            <div class="tab-pane active" id="website" data-tab-content="website">
+                <div class="row g-4">
+                    <div class="col-md-4">
                         <div class="sidebar-card">
-                            <h4><i class="fas fa-cog me-2"></i>Settings</h4>
-                            <p class="text-muted small">Yahan se aap Logo, Title aur Social Links badal sakte hain.</p>
-                            <hr>
+                            <h5 class="mb-3 fw-bold">
+                                <i class="fas fa-cog me-2" style="color: var(--primary);"></i>Settings
+                            </h5>
+                            <p class="text-muted small mb-4">Logo, Title aur Social Links update karein</p>
                             
-                            <div class="mb-3">
-                                <small class="text-muted d-block mb-2">
-                                    <i class="fas fa-shield-alt me-1"></i>Security Status:
-                                </small>
-                                <span class="badge bg-success" id="securityBadge">
-                                    <i class="fas fa-check-circle me-1"></i>Token Active
-                                </span>
+                            <div class="security-badge mb-4">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                <span id="securityBadge">Token Active</span>
                             </div>
                             
                             <!-- Logo Preview -->
-                            <div class="text-center mb-3">
+                            <div class="logo-preview-wrapper mb-4">
                                 <div class="logo-preview" id="logoPreview">
                                     <img src="" alt="Logo Preview" id="previewImage" style="display: none;">
                                     <i class="fas fa-image fa-3x text-muted" id="previewIcon"></i>
@@ -778,122 +1119,99 @@
                                 <small class="text-muted">Logo Preview</small>
                             </div>
                             
-                            <div class="preview-card">
-                                <div class="preview-title">
-                                    <i class="fas fa-eye me-1"></i>Live Preview
+                            <div class="preview-text mb-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Title:</span>
+                                    <span class="fw-bold" id="previewTitle">Not set</span>
                                 </div>
-                                <div id="livePreview">
-                                    <div><strong>Title:</strong> <span id="previewTitle">Not set</span></div>
-                                    <div><strong>Subtitle:</strong> <span id="previewSubtitle">Not set</span></div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Subtitle:</span>
+                                    <span class="fw-bold" id="previewSubtitle">Not set</span>
                                 </div>
                             </div>
                             
-                            <hr>
-                            <a href="index.html" class="btn btn-outline-primary w-100" target="_blank">
+                            <a href="index.html" class="btn-outline-custom w-100 mb-3" target="_blank">
                                 <i class="fas fa-external-link-alt me-2"></i>View Live Site
                             </a>
                             
-                            <div class="mt-3 text-center">
-                                <small class="text-muted" id="lastUpdate">
-                                    <i class="far fa-clock me-1"></i>Last updated: Never
-                                </small>
+                            <div class="text-center small text-muted" id="lastUpdate">
+                                <i class="far fa-clock me-1"></i>Last updated: Never
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-8">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-header">
-                                <i class="fas fa-edit me-2"></i>Update Website Content
+                        <div class="content-card">
+                            <div class="card-header-custom">
+                                <h3><i class="fas fa-edit"></i>Update Website Content</h3>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body-custom">
                                 <form id="updateForm">
-                                    <!-- Logo Upload Section -->
+                                    <!-- Logo Upload -->
                                     <div class="mb-4">
                                         <label class="form-label fw-bold">
                                             <i class="fas fa-image me-2"></i>Website Logo
                                         </label>
-                                        <div class="row">
-                                            <div class="col-md-8">
+                                        <div class="row g-2">
+                                            <div class="col-8">
                                                 <input type="file" id="logoUpload" class="form-control" accept="image/*">
-                                                <small class="text-muted">Max size: 5KB (Auto-compress hoga)</small>
+                                                <small class="text-muted">Max size: 5KB (Auto-compress)</small>
                                             </div>
-                                            <div class="col-md-4">
-                                                <input type="text" id="edit-logo" class="form-control" 
-                                                       placeholder="Logo URL" readonly>
+                                            <div class="col-4">
+                                                <input type="text" id="edit-logo" class="form-control" placeholder="Logo URL" readonly>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">
-                                                <i class="fas fa-heading me-2"></i>Main Title
-                                            </label>
-                                            <input type="text" id="edit-title" class="form-control" 
-                                                   placeholder="Enter website title" required>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Main Title</label>
+                                            <input type="text" id="edit-title" class="form-control" placeholder="Enter website title" required>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">
-                                                <i class="fas fa-subscript me-2"></i>Sub-Title
-                                            </label>
-                                            <input type="text" id="edit-subtitle" class="form-control" 
-                                                   placeholder="Enter subtitle">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Sub-Title</label>
+                                            <input type="text" id="edit-subtitle" class="form-control" placeholder="Enter subtitle">
                                         </div>
                                     </div>
 
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-align-left me-2"></i>About Text
-                                        </label>
-                                        <textarea id="edit-about" class="form-control" rows="4" 
-                                                  placeholder="Enter about description"></textarea>
+                                    <div class="mb-4">
+                                        <label class="form-label">About Text</label>
+                                        <textarea id="edit-about" class="form-control" rows="4" placeholder="Enter about description"></textarea>
                                     </div>
 
                                     <div class="slides-container">
-                                        <h6 class="mb-3">
+                                        <h6 class="mb-3 fw-bold">
                                             <i class="fas fa-images me-2"></i>Slider Images
-                                            <small class="text-muted ms-2">(Add/Remove Images)</small>
                                         </h6>
                                         <div id="slidesList"></div>
-                                        <button type="button" class="btn-add-slide" onclick="addSlideField()">
-                                            <i class="fas fa-plus-circle me-2"></i>Add New Slide
+                                        <button type="button" class="btn-add-slide" id="addSlideBtn">
+                                            <i class="fas fa-plus-circle"></i>Add New Slide
                                         </button>
                                     </div>
 
-                                    <hr>
-                                    <h5 class="mb-3">
-                                        <i class="fas fa-share-alt me-2"></i>Social Media Links
-                                    </h5>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label text-success">
-                                                <i class="fab fa-whatsapp me-2"></i>WhatsApp URL
-                                            </label>
-                                            <input type="url" id="edit-whatsapp" class="form-control" 
-                                                   placeholder="https://wa.me/...">
+                                    <hr class="my-4">
+                                    
+                                    <h5 class="mb-3 fw-bold">Social Media Links</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label text-success">WhatsApp URL</label>
+                                            <input type="url" id="edit-whatsapp" class="form-control" placeholder="https://wa.me/...">
                                         </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label text-danger">
-                                                <i class="fab fa-instagram me-2"></i>Instagram URL
-                                            </label>
-                                            <input type="url" id="edit-insta" class="form-control" 
-                                                   placeholder="https://instagram.com/...">
+                                        <div class="col-md-4">
+                                            <label class="form-label text-danger">Instagram URL</label>
+                                            <input type="url" id="edit-insta" class="form-control" placeholder="https://instagram.com/...">
                                         </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label text-primary">
-                                                <i class="fab fa-facebook me-2"></i>Facebook URL
-                                            </label>
-                                            <input type="url" id="edit-fb" class="form-control" 
-                                                   placeholder="https://facebook.com/...">
+                                        <div class="col-md-4">
+                                            <label class="form-label text-primary">Facebook URL</label>
+                                            <input type="url" id="edit-fb" class="form-control" placeholder="https://facebook.com/...">
                                         </div>
                                     </div>
 
                                     <div class="d-flex gap-2 justify-content-end mt-4">
-                                        <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                        <button type="button" class="btn-outline-custom" id="resetFormBtn">
                                             <i class="fas fa-undo me-2"></i>Reset
                                         </button>
-                                        <button type="submit" class="btn-save" id="saveBtn">
+                                        <button type="submit" class="btn-primary-custom" id="saveBtn">
                                             <i class="fas fa-save me-2"></i>Update Website
                                         </button>
                                     </div>
@@ -905,235 +1223,223 @@
             </div>
             
             <!-- ============================================
-                 TAB 2: STUDENT MANAGEMENT (FULL DASHBOARD)
+                 TAB 2: STUDENT MANAGEMENT
                  ============================================ -->
-            <div class="tab-pane fade" id="students" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <i class="fas fa-users me-2"></i>Student Management Dashboard
-                                <div class="float-end">
-                                    <button class="btn btn-sm btn-light" id="refreshStudentsBtn">
-                                        <i class="fas fa-sync-alt"></i> Refresh
-                                    </button>
+            <div class="tab-pane" id="students" data-tab-content="students">
+                <div class="content-card">
+                    <div class="card-header-custom">
+                        <h3><i class="fas fa-users" style="color: var(--primary);"></i>Student Management</h3>
+                        <button class="btn-sm btn-outline-custom" id="refreshStudentsBtn">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="card-body-custom">
+                        <!-- Student Stats -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #e8f4fd; color: var(--primary); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-value" id="studentTotal" style="font-size: 1.3rem;">0</div>
+                                        <div class="stat-label">Total</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <!-- Student Stats -->
-                                <div class="row mb-4">
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
-                                                <i class="fas fa-users"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="studentTotal">0</div>
-                                                <div class="stat-label">Total Students</div>
-                                            </div>
-                                        </div>
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #d4edda; color: var(--success); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-rupee-sign"></i>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #d4edda; color: var(--success);">
-                                                <i class="fas fa-rupee-sign"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="studentFeesTotal">₹0</div>
-                                                <div class="stat-label">Total Fees</div>
-                                            </div>
-                                        </div>
+                                    <div>
+                                        <div class="stat-value" id="studentFeesTotal" style="font-size: 1.3rem;">₹0</div>
+                                        <div class="stat-label">Fees</div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #fff3cd; color: var(--warning);">
-                                                <i class="fas fa-check-circle"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="studentPresent">0</div>
-                                                <div class="stat-label">Present Today</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #f8d7da; color: var(--danger);">
-                                                <i class="fas fa-times-circle"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="studentAbsent">0</div>
-                                                <div class="stat-label">Absent Today</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Filter Row -->
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <select class="form-select" id="studentBoardFilter">
-                                            <option value="">All Boards</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <select class="form-select" id="studentClassFilter">
-                                            <option value="">All Classes</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="search-box">
-                                            <i class="fas fa-search"></i>
-                                            <input type="text" class="form-control" id="studentSearch" placeholder="Search students...">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Students Table -->
-                                <div class="table-responsive">
-                                    <table class="table table-hover" id="studentsTable">
-                                        <thead>
-                                            <tr>
-                                                <th>Photo</th>
-                                                <th>Student ID</th>
-                                                <th>Name</th>
-                                                <th>Board</th>
-                                                <th>Class</th>
-                                                <th>Mobile</th>
-                                                <th>Monthly Fees</th>
-                                                <th>Attendance</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="studentsTableBody">
-                                            <tr>
-                                                <td colspan="9" class="text-center">Loading...</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="mt-3 d-flex gap-2 justify-content-end">
-                                    <button class="btn btn-success" onclick="window.open('/student-dashboard.html', '_blank')">
-                                        <i class="fas fa-external-link-alt me-2"></i>Open Full Dashboard
-                                    </button>
                                 </div>
                             </div>
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #fff3cd; color: var(--warning); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-value" id="studentPresent" style="font-size: 1.3rem;">0</div>
+                                        <div class="stat-label">Present</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #f8d7da; color: var(--danger); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-times-circle"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-value" id="studentAbsent" style="font-size: 1.3rem;">0</div>
+                                        <div class="stat-label">Absent</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <select class="form-select" id="studentBoardFilter">
+                                    <option value="">All Boards</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="studentClassFilter">
+                                    <option value="">All Classes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="studentSearch" placeholder="Search students...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Students Table -->
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Photo</th>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Board</th>
+                                        <th>Class</th>
+                                        <th>Mobile</th>
+                                        <th>Fees</th>
+                                        <th>Attendance</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-5">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-4 text-end">
+                            <button class="btn-primary-custom" id="openStudentDashboardBtn">
+                                <i class="fas fa-external-link-alt me-2"></i>Open Full Dashboard
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- ============================================
-                 TAB 3: TEACHER MANAGEMENT (FULL DASHBOARD)
+                 TAB 3: TEACHER MANAGEMENT
                  ============================================ -->
-            <div class="tab-pane fade" id="teachers" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <div class="card">
-                            <div class="card-header bg-success text-white">
-                                <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Management Dashboard
-                                <div class="float-end">
-                                    <button class="btn btn-sm btn-light" id="refreshTeachersBtn">
-                                        <i class="fas fa-sync-alt"></i> Refresh
-                                    </button>
+            <div class="tab-pane" id="teachers" data-tab-content="teachers">
+                <div class="content-card">
+                    <div class="card-header-custom">
+                        <h3><i class="fas fa-chalkboard-teacher" style="color: var(--success);"></i>Teacher Management</h3>
+                        <button class="btn-sm btn-outline-custom" id="refreshTeachersBtn">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh
+                        </button>
+                    </div>
+                    <div class="card-body-custom">
+                        <!-- Teacher Stats -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #e8f4fd; color: var(--primary); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-value" id="teacherTotal" style="font-size: 1.3rem;">0</div>
+                                        <div class="stat-label">Total</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <!-- Teacher Stats -->
-                                <div class="row mb-4">
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
-                                                <i class="fas fa-users"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="teacherTotal">0</div>
-                                                <div class="stat-label">Total Teachers</div>
-                                            </div>
-                                        </div>
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #fff3cd; color: var(--warning); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-clock"></i>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #fff3cd; color: var(--warning);">
-                                                <i class="fas fa-clock"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="teacherPending">0</div>
-                                                <div class="stat-label">Pending</div>
-                                            </div>
-                                        </div>
+                                    <div>
+                                        <div class="stat-value" id="teacherPending" style="font-size: 1.3rem;">0</div>
+                                        <div class="stat-label">Pending</div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #d4edda; color: var(--success);">
-                                                <i class="fas fa-check-circle"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="teacherApproved">0</div>
-                                                <div class="stat-label">Approved</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="stat-card">
-                                            <div class="stat-icon" style="background: #f8d7da; color: var(--danger);">
-                                                <i class="fas fa-rupee-sign"></i>
-                                            </div>
-                                            <div>
-                                                <div class="stat-value" id="teacherSalary">₹0</div>
-                                                <div class="stat-label">Monthly Salary</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Filter Buttons -->
-                                <div class="mb-3 d-flex gap-2 flex-wrap">
-                                    <button class="filter-btn active" data-filter="all">All</button>
-                                    <button class="filter-btn" data-filter="pending">Pending</button>
-                                    <button class="filter-btn" data-filter="approved">Approved</button>
-                                    <button class="filter-btn" data-filter="rejected">Rejected</button>
-                                </div>
-
-                                <!-- Search -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="search-box">
-                                            <i class="fas fa-search"></i>
-                                            <input type="text" class="form-control" id="teacherSearch" placeholder="Search teachers...">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 text-end">
-                                        <button class="btn btn-primary btn-sm" onclick="window.open('/teacher-dashboard.html', '_blank')">
-                                            <i class="fas fa-external-link-alt me-2"></i>Open Teacher Dashboard
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Teachers Table -->
-                                <div class="table-responsive">
-                                    <table class="table table-hover" id="teachersTable">
-                                        <thead>
-                                            <tr>
-                                                <th>Photo</th>
-                                                <th>Teacher ID</th>
-                                                <th>Name</th>
-                                                <th>Subject</th>
-                                                <th>Mobile</th>
-                                                <th>Salary</th>
-                                                <th>Status</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="teachersTableBody">
-                                            <tr>
-                                                <td colspan="8" class="text-center">Loading...</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
                                 </div>
                             </div>
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #d4edda; color: var(--success); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-value" id="teacherApproved" style="font-size: 1.3rem;">0</div>
+                                        <div class="stat-label">Approved</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="stat-card p-3">
+                                    <div class="stat-icon" style="background: #f8d7da; color: var(--danger); width: 40px; height: 40px; font-size: 1.2rem;">
+                                        <i class="fas fa-rupee-sign"></i>
+                                    </div>
+                                    <div>
+                                        <div class="stat-value" id="teacherSalary" style="font-size: 1.3rem;">₹0</div>
+                                        <div class="stat-label">Salary</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Buttons -->
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="pending">Pending</button>
+                            <button class="filter-btn" data-filter="approved">Approved</button>
+                            <button class="filter-btn" data-filter="rejected">Rejected</button>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="teacherSearch" placeholder="Search teachers...">
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn-primary-custom" id="openTeacherDashboardBtn">
+                                    <i class="fas fa-external-link-alt me-2"></i>Open Dashboard
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Teachers Table -->
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Photo</th>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Subject</th>
+                                        <th>Mobile</th>
+                                        <th>Salary</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="teachersTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-5">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1142,57 +1448,50 @@
             <!-- ============================================
                  TAB 4: ADMIN SETTINGS
                  ============================================ -->
-            <div class="tab-pane fade" id="admin" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-6 mx-auto">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-header">
-                                <i class="fas fa-user-cog me-2"></i>Admin Settings
+            <div class="tab-pane" id="admin" data-tab-content="admin">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="content-card">
+                            <div class="card-header-custom">
+                                <h3><i class="fas fa-user-shield"></i>Admin Settings</h3>
                             </div>
-                            <div class="card-body">
+                            <div class="card-body-custom">
                                 <form id="adminSettingsForm">
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-id-card me-2"></i>Current Admin ID
-                                        </label>
+                                    <div class="mb-4">
+                                        <label class="form-label">Current Admin ID</label>
                                         <input type="text" class="form-control" id="currentAdminId" readonly>
                                     </div>
                                     
-                                    <hr>
-                                    <h5 class="mb-3">Change Password</h5>
+                                    <hr class="my-4">
+                                    
+                                    <h5 class="mb-3 fw-bold">Change Password</h5>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-lock me-2"></i>Current Password
-                                        </label>
+                                        <label class="form-label">Current Password</label>
                                         <div class="password-wrapper">
                                             <input type="password" class="form-control" id="oldPassword" required>
-                                            <i class="fas fa-eye toggle-password" onclick="togglePassword('oldPassword')"></i>
+                                            <i class="fas fa-eye toggle-password" data-target="oldPassword"></i>
                                         </div>
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-key me-2"></i>New Password
-                                        </label>
+                                        <label class="form-label">New Password</label>
                                         <div class="password-wrapper">
                                             <input type="password" class="form-control" id="newPassword" required>
-                                            <i class="fas fa-eye toggle-password" onclick="togglePassword('newPassword')"></i>
+                                            <i class="fas fa-eye toggle-password" data-target="newPassword"></i>
                                         </div>
                                         <small class="text-muted">Minimum 6 characters</small>
                                     </div>
                                     
                                     <div class="mb-4">
-                                        <label class="form-label">
-                                            <i class="fas fa-check-circle me-2"></i>Confirm New Password
-                                        </label>
+                                        <label class="form-label">Confirm New Password</label>
                                         <div class="password-wrapper">
                                             <input type="password" class="form-control" id="confirmPassword" required>
-                                            <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmPassword')"></i>
+                                            <i class="fas fa-eye toggle-password" data-target="confirmPassword"></i>
                                         </div>
                                     </div>
                                     
-                                    <button type="submit" class="btn-save w-100" id="changePasswordBtn">
+                                    <button type="submit" class="btn-primary-custom w-100" id="changePasswordBtn">
                                         <i class="fas fa-sync-alt me-2"></i>Change Password
                                     </button>
                                 </form>
@@ -1204,10 +1503,30 @@
         </div>
     </div>
 
+    <!-- Bottom Navigation (Mobile) -->
+    <div class="bottom-nav d-md-none">
+        <div class="bottom-nav-item active" data-tab="website">
+            <i class="fas fa-globe"></i>
+            <span>Website</span>
+        </div>
+        <div class="bottom-nav-item" data-tab="students">
+            <i class="fas fa-users"></i>
+            <span>Students</span>
+        </div>
+        <div class="bottom-nav-item" data-tab="teachers">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>Teachers</span>
+        </div>
+        <div class="bottom-nav-item" data-tab="admin">
+            <i class="fas fa-user-shield"></i>
+            <span>Admin</span>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="text-center">
+    <footer>
         <small>
-            <i class="far fa-copyright me-1"></i>2026 Bal Bharti Coaching Admin Panel | 
+            <i class="far fa-copyright me-1"></i>2026 Bal Bharti Coaching | 
             <i class="fas fa-shield-alt me-1"></i>Complete Management System
         </small>
     </footer>
@@ -1215,9 +1534,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- ============================================
-         MAIN SCRIPT - ADMIN DASHBOARD
-         ============================================ -->
+    <!-- Main Script -->
     <script>
         // ============================================
         // GLOBAL VARIABLES
@@ -1229,23 +1546,28 @@
         const saveBtn = document.getElementById('saveBtn');
         let students = [];
         let teachers = [];
+        let currentTab = 'website';
 
         // ============================================
-        // TOGGLE PASSWORD VISIBILITY
+        // TAB SWITCHING
         // ============================================
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            const icon = window.event ? window.event.target : document.querySelector(`[onclick="togglePassword('${inputId}')"]`);
+        function switchTab(tabId) {
+            currentTab = tabId;
             
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
+            // Update desktop tabs
+            document.querySelectorAll('#desktopTabs .tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabId);
+            });
+            
+            // Update bottom nav
+            document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.tab === tabId);
+            });
+            
+            // Update tab content
+            document.querySelectorAll('[data-tab-content]').forEach(content => {
+                content.classList.toggle('active', content.id === tabId);
+            });
         }
 
         // ============================================
@@ -1280,7 +1602,7 @@
         }
 
         // ============================================
-        // COMPRESS IMAGE TO <5KB
+        // COMPRESS IMAGE
         // ============================================
         function compressImage(file) {
             return new Promise((resolve, reject) => {
@@ -1296,7 +1618,6 @@
                         let width = img.width;
                         let height = img.height;
                         
-                        // Resize gradually until size < 5KB
                         let quality = 0.7;
                         let compressedData = '';
                         
@@ -1309,11 +1630,9 @@
                             
                             compressedData = canvas.toDataURL('image/jpeg', quality);
                             
-                            // Check size (approximately)
                             const sizeInKB = compressedData.length * 0.75 / 1024;
                             
                             if (sizeInKB > 5 && (width > 100 || quality > 0.1)) {
-                                // Reduce size
                                 if (quality > 0.2) {
                                     quality -= 0.1;
                                 } else {
@@ -1335,7 +1654,7 @@
         }
 
         // ============================================
-        // LOGO UPLOAD HANDLER
+        // LOGO UPLOAD
         // ============================================
         document.getElementById('logoUpload').addEventListener('change', async function(e) {
             const file = e.target.files[0];
@@ -1347,10 +1666,8 @@
                 
                 const compressedImage = await compressImage(file);
                 
-                // Update logo input
                 document.getElementById('edit-logo').value = compressedImage;
                 
-                // Update preview
                 const previewImage = document.getElementById('previewImage');
                 const previewIcon = document.getElementById('previewIcon');
                 
@@ -1416,7 +1733,7 @@
             slideDiv.innerHTML = `
                 <input type="url" class="form-control slide-input" 
                        placeholder="Enter image URL" value="${slideUrl}">
-                <button type="button" class="btn-remove-slide" onclick="removeSlideField('${slideId}')">
+                <button type="button" class="btn-remove-slide" data-slide-id="${slideId}">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
@@ -1450,7 +1767,6 @@
             if (slides && slides.length > 0) {
                 slides.forEach(slide => addSlideField(slide));
             } else {
-                // Add 3 default empty slides
                 for (let i = 0; i < 3; i++) addSlideField('');
             }
         }
@@ -1473,13 +1789,10 @@
                 document.getElementById('edit-insta').value = data.insta || '';
                 document.getElementById('edit-fb').value = data.fb || '';
                 
-                // Update logo preview if exists
                 if (data.logoText && data.logoText.startsWith('data:image')) {
-                    const previewImage = document.getElementById('previewImage');
-                    const previewIcon = document.getElementById('previewIcon');
-                    previewImage.src = data.logoText;
-                    previewImage.style.display = 'block';
-                    previewIcon.style.display = 'none';
+                    document.getElementById('previewImage').src = data.logoText;
+                    document.getElementById('previewImage').style.display = 'block';
+                    document.getElementById('previewIcon').style.display = 'none';
                 }
                 
                 loadSlides(data.slides || []);
@@ -1510,7 +1823,6 @@
             document.getElementById('edit-insta').value = currentData.insta || '';
             document.getElementById('edit-fb').value = currentData.fb || '';
             
-            // Reset logo preview
             if (currentData.logoText && currentData.logoText.startsWith('data:image')) {
                 document.getElementById('previewImage').src = currentData.logoText;
                 document.getElementById('previewImage').style.display = 'block';
@@ -1527,7 +1839,7 @@
         }
 
         // ============================================
-        // UPDATE WEBSITE FORM
+        // UPDATE WEBSITE
         // ============================================
         document.getElementById('updateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1584,7 +1896,7 @@
         });
 
         // ============================================
-        // CHANGE PASSWORD FORM
+        // CHANGE PASSWORD
         // ============================================
         document.getElementById('adminSettingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1631,7 +1943,6 @@
                     document.getElementById('newPassword').value = '';
                     document.getElementById('confirmPassword').value = '';
                     
-                    // Logout after password change
                     setTimeout(() => {
                         showToast('Please login with new password', 'info');
                         setTimeout(() => logout(), 2000);
@@ -1675,7 +1986,7 @@
             const tbody = document.getElementById('studentsTableBody');
             
             if (!studentList || studentList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No students found</td></tr>';
                 return;
             }
             
@@ -1683,22 +1994,23 @@
                 const name = `${student.studentName?.first || ''} ${student.studentName?.last || ''}`;
                 const today = new Date().toISOString().split('T')[0];
                 const attendanceToday = student.attendance?.find(a => a.date === today);
-                const attendanceStatus = attendanceToday ? (attendanceToday.status === 'present' ? '✅ Present' : '❌ Absent') : '⏳ Not Marked';
+                const attendanceStatus = attendanceToday ? (attendanceToday.status === 'present' ? '✅' : '❌') : '⏳';
+                const statusClass = attendanceToday ? (attendanceToday.status === 'present' ? 'bg-success' : 'bg-danger') : 'bg-secondary';
                 
                 return `
                     <tr>
-                        <td><img src="${student.photo || 'https://via.placeholder.com/40'}" class="rounded-circle" width="40" height="40"></td>
+                        <td><img src="${student.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
                         <td>${student.studentId || '-'}</td>
                         <td>${name || '-'}</td>
                         <td>${student.education?.board || '-'}</td>
                         <td>${student.education?.class || '-'}</td>
                         <td>${student.mobile || '-'}</td>
                         <td>₹${student.classMonthlyFees || 0}</td>
-                        <td><span class="badge ${attendanceToday ? (attendanceToday.status === 'present' ? 'bg-success' : 'bg-danger') : 'bg-secondary'}">${attendanceStatus}</span></td>
+                        <td><span class="badge ${statusClass}">${attendanceStatus}</span></td>
                         <td>
                             <div class="action-group">
-                                <button class="action-btn edit" onclick="editStudent('${student.studentId}')"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn view" onclick="window.open('/student-dashboard.html?student=${student.studentId}', '_blank')"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn edit" data-student-id="${student.studentId}"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn view" data-student-id="${student.studentId}"><i class="fas fa-eye"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -1731,10 +2043,6 @@
             document.getElementById('totalFeesStat').textContent = `₹${totalFees}`;
         }
 
-        function editStudent(studentId) {
-            window.open(`/student-dashboard.html?edit=${studentId}`, '_blank');
-        }
-
         // ============================================
         // FETCH TEACHERS
         // ============================================
@@ -1761,7 +2069,7 @@
             const tbody = document.getElementById('teachersTableBody');
             
             if (!teacherList || teacherList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No teachers found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No teachers found</td></tr>';
                 return;
             }
             
@@ -1772,7 +2080,7 @@
                 
                 return `
                     <tr>
-                        <td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="rounded-circle" width="40" height="40"></td>
+                        <td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
                         <td>${teacher.teacherId || '-'}</td>
                         <td>${name || '-'}</td>
                         <td>${teacher.subject || '-'}</td>
@@ -1781,9 +2089,9 @@
                         <td><span class="status-badge ${statusClass}">${teacher.status || 'pending'}</span></td>
                         <td>
                             <div class="action-group">
-                                <button class="action-btn approve" onclick="approveTeacher('${teacher.teacherId}')"><i class="fas fa-check"></i></button>
-                                <button class="action-btn edit" onclick="editTeacher('${teacher.teacherId}')"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn view" onclick="window.open('/teacher-dashboard.html?teacher=${teacher.teacherId}', '_blank')"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn approve" data-teacher-id="${teacher.teacherId}"><i class="fas fa-check"></i></button>
+                                <button class="action-btn edit" data-teacher-id="${teacher.teacherId}"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn view" data-teacher-id="${teacher.teacherId}"><i class="fas fa-eye"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -1845,28 +2153,6 @@
             .finally(() => showLoading(false));
         }
 
-        function editTeacher(teacherId) {
-            window.open(`/teacher-dashboard.html?edit=${teacherId}`, '_blank');
-        }
-
-        // ============================================
-        // FILTER TEACHERS
-        // ============================================
-        document.querySelectorAll('[data-filter]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                const filter = this.getAttribute('data-filter');
-                if (filter === 'all') {
-                    displayTeachers(teachers);
-                } else {
-                    const filtered = teachers.filter(t => t.status === filter);
-                    displayTeachers(filtered);
-                }
-            });
-        });
-
         // ============================================
         // SEARCH STUDENTS
         // ============================================
@@ -1907,41 +2193,22 @@
         });
 
         // ============================================
-        // AUTO-SAVE DRAFT
+        // FILTER TEACHERS
         // ============================================
-        function autoSaveDraft() {
-            const draft = {
-                logoText: document.getElementById('edit-logo').value,
-                title: document.getElementById('edit-title').value,
-                subTitle: document.getElementById('edit-subtitle').value,
-                aboutText: document.getElementById('edit-about').value,
-                whatsapp: document.getElementById('edit-whatsapp').value,
-                insta: document.getElementById('edit-insta').value,
-                fb: document.getElementById('edit-fb').value,
-                slides: getSlidesArray()
-            };
-            
-            localStorage.setItem('adminDraft', JSON.stringify(draft));
-        }
-
-        // ============================================
-        // LOGOUT FUNCTION
-        // ============================================
-        function logout() {
-            // Clear all auth data
-            localStorage.removeItem('token');
-            localStorage.removeItem('isAdmin');
-            localStorage.removeItem('savedUserid');
-            localStorage.removeItem('savedPassword');
-            localStorage.removeItem('rememberMe');
-            localStorage.removeItem('adminDraft');
-            
-            showToast('Logging out...', 'info');
-            
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
-        }
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                if (filter === 'all') {
+                    displayTeachers(teachers);
+                } else {
+                    const filtered = teachers.filter(t => t.status === filter);
+                    displayTeachers(filtered);
+                }
+            });
+        });
 
         // ============================================
         // LOAD BOARDS AND CLASSES
@@ -1971,7 +2238,25 @@
         }
 
         // ============================================
-        // INITIALIZE
+        // LOGOUT
+        // ============================================
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('isAdmin');
+            localStorage.removeItem('savedUserid');
+            localStorage.removeItem('savedPassword');
+            localStorage.removeItem('rememberMe');
+            localStorage.removeItem('adminDraft');
+            
+            showToast('Logging out...', 'info');
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+
+        // ============================================
+        // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             verifyToken();
@@ -1979,33 +2264,126 @@
             fetchStudents();
             fetchTeachers();
             loadBoardsAndClasses();
-            
-            // Add event listeners
+
+            // Tab switching - Desktop
+            document.querySelectorAll('#desktopTabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+
+            // Tab switching - Mobile
+            document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                item.addEventListener('click', () => switchTab(item.dataset.tab));
+            });
+
+            // Logout
             document.getElementById('logoutBtn').addEventListener('click', logout);
+
+            // Refresh buttons
             document.getElementById('refreshAllBtn').addEventListener('click', () => {
                 fetchStudents();
                 fetchTeachers();
                 showToast('Data refreshed', 'success');
             });
+
             document.getElementById('refreshStudentsBtn').addEventListener('click', fetchStudents);
             document.getElementById('refreshTeachersBtn').addEventListener('click', fetchTeachers);
-            
-            // Auto-save listeners
+
+            // Add Slide Button
+            document.getElementById('addSlideBtn').addEventListener('click', () => addSlideField(''));
+
+            // Reset Form Button
+            document.getElementById('resetFormBtn').addEventListener('click', resetForm);
+
+            // Open Student Dashboard
+            document.getElementById('openStudentDashboardBtn').addEventListener('click', () => {
+                window.open('/student-dashboard.html', '_blank');
+            });
+
+            // Open Teacher Dashboard
+            document.getElementById('openTeacherDashboardBtn').addEventListener('click', () => {
+                window.open('/teacher-dashboard.html', '_blank');
+            });
+
+            // Password Toggle
+            document.querySelectorAll('.toggle-password').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        this.classList.remove('fa-eye');
+                        this.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        this.classList.remove('fa-eye-slash');
+                        this.classList.add('fa-eye');
+                    }
+                });
+            });
+
+            // Remove Slide (Event Delegation)
+            document.getElementById('slidesList').addEventListener('click', function(e) {
+                if (e.target.closest('.btn-remove-slide')) {
+                    const btn = e.target.closest('.btn-remove-slide');
+                    const slideId = btn.getAttribute('data-slide-id');
+                    if (slideId) {
+                        removeSlideField(slideId);
+                    }
+                }
+            });
+
+            // Student Table Actions (Event Delegation)
+            document.getElementById('studentsTableBody').addEventListener('click', function(e) {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                
+                if (btn.classList.contains('edit')) {
+                    const studentId = btn.getAttribute('data-student-id');
+                    window.open(`/student-dashboard.html?edit=${studentId}`, '_blank');
+                } else if (btn.classList.contains('view')) {
+                    const studentId = btn.getAttribute('data-student-id');
+                    window.open(`/student-dashboard.html?student=${studentId}`, '_blank');
+                }
+            });
+
+            // Teacher Table Actions (Event Delegation)
+            document.getElementById('teachersTableBody').addEventListener('click', function(e) {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                
+                if (btn.classList.contains('approve')) {
+                    const teacherId = btn.getAttribute('data-teacher-id');
+                    approveTeacher(teacherId);
+                } else if (btn.classList.contains('edit')) {
+                    const teacherId = btn.getAttribute('data-teacher-id');
+                    window.open(`/teacher-dashboard.html?edit=${teacherId}`, '_blank');
+                } else if (btn.classList.contains('view')) {
+                    const teacherId = btn.getAttribute('data-teacher-id');
+                    window.open(`/teacher-dashboard.html?teacher=${teacherId}`, '_blank');
+                }
+            });
+
+            // Auto-save draft
             const inputs = document.querySelectorAll('#updateForm input, #updateForm textarea');
             inputs.forEach(input => {
                 input.addEventListener('input', () => {
                     updateLivePreview();
-                    autoSaveDraft();
+                    const draft = {
+                        logoText: document.getElementById('edit-logo').value,
+                        title: document.getElementById('edit-title').value,
+                        subTitle: document.getElementById('edit-subtitle').value,
+                        aboutText: document.getElementById('edit-about').value,
+                        whatsapp: document.getElementById('edit-whatsapp').value,
+                        insta: document.getElementById('edit-insta').value,
+                        fb: document.getElementById('edit-fb').value,
+                        slides: getSlidesArray()
+                    };
+                    localStorage.setItem('adminDraft', JSON.stringify(draft));
                 });
             });
-            
-            document.getElementById('slidesList').addEventListener('input', function(e) {
-                if (e.target.classList.contains('slide-input')) {
-                    autoSaveDraft();
-                }
-            });
-            
-            // Board filter for students
+
+            // Board filter
             document.getElementById('studentBoardFilter').addEventListener('change', function() {
                 const board = this.value;
                 if (!board) {
@@ -2015,8 +2393,8 @@
                 const filtered = students.filter(s => s.education?.board === board);
                 displayStudents(filtered);
             });
-            
-            // Class filter for students
+
+            // Class filter
             document.getElementById('studentClassFilter').addEventListener('change', function() {
                 const className = this.value;
                 if (!className) {
