@@ -450,7 +450,7 @@
         .student-card.marked {
             border-color: #4CAF50;
             background: #f0f9ff;
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
         .student-photo {
@@ -475,6 +475,7 @@
         .student-class {
             font-size: 12px;
             color: #666;
+            margin-bottom: 5px;
         }
 
         .student-status {
@@ -482,7 +483,6 @@
             padding: 3px 8px;
             border-radius: 20px;
             display: inline-block;
-            margin-top: 5px;
         }
 
         .status-present {
@@ -518,7 +518,7 @@
         }
 
         .table-responsive {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             border-radius: 12px;
             background: white;
@@ -616,6 +616,18 @@
         .student-class-modal {
             color: #666;
             font-size: 13px;
+        }
+
+        .current-date-info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .warning-message {
@@ -1341,10 +1353,16 @@
                 </div>
             </div>
             
+            <!-- Current Date Info -->
+            <div class="current-date-info">
+                <i class="fas fa-calendar-day"></i>
+                <span>आज की तारीख: <strong id="modalCurrentDate"></strong></span>
+            </div>
+            
             <!-- Warning for already marked -->
             <div class="warning-message" id="alreadyMarkedWarning" style="display: none;">
                 <i class="fas fa-info-circle"></i>
-                <span>इस छात्र की उपस्थिति पहले ही दर्ज हो चुकी है। क्या आप बदलना चाहते हैं?</span>
+                <span id="warningMessage">इस छात्र की उपस्थिति पहले ही दर्ज हो चुकी है। क्या आप बदलना चाहते हैं?</span>
             </div>
 
             <div class="attendance-options">
@@ -1381,8 +1399,8 @@
         let currentBoard = '';
         let currentClass = '';
         let students = [];
-        let attendanceRecords = {};
-        let allAttendanceHistory = [];
+        let todayAttendance = {}; // Today's attendance records {studentId: status}
+        let allAttendanceHistory = []; // Complete history for all students
         let voiceGuidanceEnabled = true;
         let bgmPlaying = false;
         let speechSynthesis = window.speechSynthesis;
@@ -1772,15 +1790,17 @@
                 
                 if (data.success) {
                     students = data.data;
-                    attendanceRecords = {};
+                    await loadTodayAttendance(); // Load today's attendance first
                     displayStudents(students);
                     document.getElementById('studentsSection').style.display = 'block';
                     document.getElementById('completeSection').style.display = 'block';
                     
-                    speakText(`${className} कक्षा के ${students.length} छात्र मिले। कृपया प्रत्येक छात्र की उपस्थिति दर्ज करें।`);
-                    
-                    // Check today's attendance for all students
-                    await checkTodayAttendance();
+                    const markedCount = Object.keys(todayAttendance).length;
+                    if (markedCount > 0) {
+                        speakText(`${className} कक्षा के ${students.length} छात्र मिले। ${markedCount} छात्रों की उपस्थिति पहले से दर्ज है।`);
+                    } else {
+                        speakText(`${className} कक्षा के ${students.length} छात्र मिले। कृपया प्रत्येक छात्र की उपस्थिति दर्ज करें।`);
+                    }
                     
                     // Switch to mark tab
                     switchTab('mark');
@@ -1790,6 +1810,33 @@
                 showToast('छात्र लोड करने में त्रुटि', 'error');
             } finally {
                 showLoading(false);
+            }
+        }
+
+        // ============================================
+        // TODAY'S ATTENDANCE FUNCTIONS
+        // ============================================
+        async function loadTodayAttendance() {
+            const today = new Date().toISOString().split('T')[0];
+            todayAttendance = {};
+            
+            for (const student of students) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/students/${student.studentId}/attendance?date=${today}`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('teacherToken')}` }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.data.length > 0) {
+                        const record = data.data.find(a => a.date === today);
+                        if (record) {
+                            todayAttendance[student.studentId] = record.status;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error checking attendance:', err);
+                }
             }
         }
 
@@ -1805,7 +1852,7 @@
                 card.className = 'student-card';
                 card.setAttribute('data-student-id', student.studentId);
                 
-                const attendanceStatus = attendanceRecords[student.studentId];
+                const attendanceStatus = todayAttendance[student.studentId];
                 let statusHtml = '';
                 
                 if (attendanceStatus) {
@@ -1829,47 +1876,31 @@
             });
         }
 
-        // ============================================
-        // ATTENDANCE FUNCTIONS
-        // ============================================
-        async function checkTodayAttendance() {
-            const today = new Date().toISOString().split('T')[0];
-            
-            for (const student of students) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/students/${student.studentId}/attendance?date=${today}`, {
-                        headers: { 'Authorization': `Bearer ${localStorage.getItem('teacherToken')}` }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success && data.data.length > 0) {
-                        const record = data.data.find(a => a.date === today);
-                        if (record) {
-                            attendanceRecords[student.studentId] = record.status;
-                        }
-                    }
-                } catch (err) {
-                    console.error('Error checking attendance:', err);
-                }
-            }
-            
-            displayStudents(students);
-        }
-
         function openAttendanceModal(student) {
             const modal = document.getElementById('attendanceModal');
+            const today = new Date();
+            const formattedDate = today.toLocaleDateString('hi-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
             document.getElementById('modalStudentPhoto').src = student.photo || 'https://via.placeholder.com/80';
             document.getElementById('modalStudentName').textContent = `${student.studentName.first} ${student.studentName.last}`;
             document.getElementById('modalStudentClass').textContent = `${currentBoard} - ${currentClass}`;
+            document.getElementById('modalCurrentDate').textContent = formattedDate;
             
             modal.setAttribute('data-student-id', student.studentId);
             
-            const existingStatus = attendanceRecords[student.studentId];
+            const existingStatus = todayAttendance[student.studentId];
             const warningDiv = document.getElementById('alreadyMarkedWarning');
+            const warningMessage = document.getElementById('warningMessage');
             
             if (existingStatus) {
                 warningDiv.style.display = 'flex';
+                const statusText = existingStatus === 'present' ? 'उपस्थित' : 'अनुपस्थित';
+                warningMessage.textContent = `इस छात्र की आज की उपस्थिति पहले ही "${statusText}" दर्ज हो चुकी है। क्या आप बदलना चाहते हैं?`;
+                
                 if (existingStatus === 'present') {
                     document.getElementById('option-present').checked = true;
                 } else {
@@ -1884,9 +1915,10 @@
             modal.style.display = 'flex';
             
             if (existingStatus) {
-                speakText(`${student.studentName.first} ${student.studentName.last} की उपस्थिति पहले ही दर्ज है। क्या आप बदलना चाहते हैं?`);
+                const statusText = existingStatus === 'present' ? 'उपस्थित' : 'अनुपस्थित';
+                speakText(`${student.studentName.first} ${student.studentName.last} की आज की उपस्थिति "${statusText}" पहले से दर्ज है। क्या आप बदलना चाहते हैं?`);
             } else {
-                speakText(`${student.studentName.first} ${student.studentName.last} के लिए उपस्थिति दर्ज करें। उपस्थित या अनुपस्थित चुनें।`);
+                speakText(`${student.studentName.first} ${student.studentName.last} के लिए आज की उपस्थिति दर्ज करें। उपस्थित या अनुपस्थित चुनें।`);
             }
         }
 
@@ -1926,12 +1958,13 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    attendanceRecords[studentId] = status;
+                    // Update today's attendance
+                    todayAttendance[studentId] = status;
                     displayStudents(students);
                     closeModal();
                     
                     const statusText = status === 'present' ? 'उपस्थित' : 'अनुपस्थित';
-                    speakText(`${student.studentName.first} ${student.studentName.last} की उपस्थिति ${statusText} दर्ज कर दी गई है।`);
+                    speakText(`${student.studentName.first} ${student.studentName.last} की आज की उपस्थिति ${statusText} दर्ज कर दी गई है।`);
                     showToast(`${student.studentName.first} की उपस्थिति सफलतापूर्वक दर्ज हुई`, 'success');
                     
                     // Reload history if history tab is active
@@ -1951,7 +1984,7 @@
         }
 
         // ============================================
-        // HISTORY FUNCTIONS
+        // HISTORY FUNCTIONS (Complete Database History)
         // ============================================
         async function loadAllAttendanceHistory() {
             if (!students.length) return;
@@ -2035,7 +2068,10 @@
                 return;
             }
             
-            tbody.innerHTML = history.sort((a, b) => b.date.localeCompare(a.date)).map(record => {
+            // Sort by date (newest first)
+            history.sort((a, b) => b.date.localeCompare(a.date));
+            
+            tbody.innerHTML = history.map(record => {
                 const date = new Date(record.date);
                 const formattedDate = date.toLocaleDateString('hi-IN', {
                     year: 'numeric',
@@ -2046,9 +2082,13 @@
                 const statusClass = record.status === 'present' ? 'status-present' : 'status-absent';
                 const statusText = record.status === 'present' ? 'उपस्थित' : 'अनुपस्थित';
                 
+                // Highlight today's date
+                const today = new Date().toISOString().split('T')[0];
+                const rowClass = record.date === today ? 'table-info' : '';
+                
                 return `
-                    <tr>
-                        <td>${formattedDate}</td>
+                    <tr class="${rowClass}">
+                        <td>${formattedDate} ${record.date === today ? '<span class="badge bg-warning">आज</span>' : ''}</td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <img src="${record.studentPhoto || 'https://via.placeholder.com/30'}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
@@ -2071,12 +2111,9 @@
             let present = 0;
             let absent = 0;
             
-            students.forEach(student => {
-                if (attendanceRecords[student.studentId] === 'present') {
-                    present++;
-                } else if (attendanceRecords[student.studentId] === 'absent') {
-                    absent++;
-                }
+            Object.values(todayAttendance).forEach(status => {
+                if (status === 'present') present++;
+                else if (status === 'absent') absent++;
             });
             
             document.getElementById('totalStudents').textContent = total;
@@ -2084,7 +2121,7 @@
             document.getElementById('absentCount').textContent = absent;
             document.getElementById('summaryCard').style.display = 'block';
             
-            const message = `${currentClass} कक्षा का सारांश: कुल ${total} छात्रों में से ${present} उपस्थित और ${absent} अनुपस्थित हैं।`;
+            const message = `${currentClass} कक्षा का आज का सारांश: कुल ${total} छात्रों में से ${present} उपस्थित और ${absent} अनुपस्थित हैं।`;
             speakText(message);
             showToast(message, 'info');
         }
@@ -2096,7 +2133,7 @@
             localStorage.removeItem('attendanceTeacher');
             localStorage.removeItem('teacherToken');
             currentTeacher = null;
-            attendanceRecords = {};
+            todayAttendance = {};
             allAttendanceHistory = [];
             
             document.getElementById('loginSection').style.display = 'flex';
