@@ -2,6 +2,7 @@
 // SERVER.JS - COMPLETE FINAL VERSION
 // Bal Bharti Coaching Center Management System
 // Includes: Student, Teacher, Attendance, Salary, Fees
+// With Teacher Self Dashboard Support
 // ============================================
 
 const express = require('express');
@@ -30,7 +31,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Helmet configuration with CSP
+// Helmet configuration with CSP - UPDATED for Teacher Dashboard
 app.use(
     helmet({
         contentSecurityPolicy: {
@@ -38,7 +39,7 @@ app.use(
                 defaultSrc: ["'self'"],
                 scriptSrc: [
                     "'self'",
-                    "'unsafe-inline'",
+                    "'unsafe-inline'",      // Required for teacher dashboard
                     "'unsafe-eval'",
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
@@ -56,7 +57,7 @@ app.use(
                 imgSrc: [
                     "'self'",
                     "data:",
-                    "blob:",
+                    "blob:",               // For camera capture
                     "https://images.unsplash.com",
                     "https://*.unsplash.com",
                     "https://*.cloudinary.com",
@@ -77,7 +78,7 @@ app.use(
                     "https://*.mongodb.net"
                 ],
                 objectSrc: ["'none'"],
-                mediaSrc: ["'self'"],
+                mediaSrc: ["'self'", "blob:", "data:"],  // UPDATED: Added blob and data for camera
                 frameSrc: ["'none'"],
                 upgradeInsecureRequests: [],
             },
@@ -422,11 +423,12 @@ const TeacherSchema = new mongoose.Schema({
         remarks: { type: String, default: '' }
     }],
     
-    // Teacher Attendance
+    // Teacher Attendance - UPDATED with photo field
     attendance: [{
         date: { type: String, required: true }, // Format: YYYY-MM-DD
         status: { type: String, enum: ['present', 'absent', 'late', 'half-day', 'leave'], default: 'present' },
         remarks: { type: String, default: '' },
+        photo: { type: String, default: '' },  // ADDED: Photo for attendance verification
         markedBy: { type: String },
         markedAt: { type: Date, default: Date.now }
     }],
@@ -583,7 +585,8 @@ app.get('/api/health', (req, res) => {
         endpoints: {
             register: "/api/student-register",
             config: "/api/config",
-            login: "/api/admin-login"
+            login: "/api/admin-login",
+            teacherLogin: "/api/teacher-login"
         }
     });
 });
@@ -626,6 +629,10 @@ const loginLimiter = rateLimit({
         message: "Too many login attempts. Please try again after 15 minutes."
     }
 });
+
+// ============================================
+// ADMIN LOGIN API
+// ============================================
 
 // Admin login
 app.post('/api/admin-login', loginLimiter, async (req, res) => {
@@ -683,6 +690,112 @@ app.post('/api/admin-login', loginLimiter, async (req, res) => {
     }
 });
 
+// ============================================
+// TEACHER LOGIN API - ADDED FOR TEACHER DASHBOARD
+// ============================================
+
+// Teacher Login - Supports both Password and Aadhar+DOB login
+app.post('/api/teacher-login', loginLimiter, async (req, res) => {
+    const { teacherId, password, aadharNumber, dob } = req.body;
+    
+    try {
+        let teacher;
+        let loginMethod = '';
+        
+        // Case 1: Password Login (ID + Password)
+        if (teacherId && password) {
+            loginMethod = 'password';
+            teacher = await Teacher.findOne({ teacherId });
+            
+            if (!teacher) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Teacher ID not found" 
+                });
+            }
+            
+            // Compare password (plain text for now - should use bcrypt in production)
+            if (teacher.password !== password) {
+                return res.status(401).json({ 
+                    success: false, 
+                    message: "Invalid password" 
+                });
+            }
+        }
+        // Case 2: Aadhar Login (Aadhar + DOB)
+        else if (aadharNumber && dob) {
+            loginMethod = 'aadhar';
+            teacher = await Teacher.findOne({ aadharNumber });
+            
+            if (!teacher) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "Aadhar number not found" 
+                });
+            }
+            
+            // Compare DOB
+            const teacherDob = new Date(teacher.dob).toISOString().split('T')[0];
+            if (teacherDob !== dob) {
+                return res.status(401).json({ 
+                    success: false, 
+                    message: "Invalid date of birth" 
+                });
+            }
+        }
+        else {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Please provide either (Teacher ID + Password) OR (Aadhar + DOB)" 
+            });
+        }
+        
+        // Check if teacher is approved
+        if (teacher.status !== 'approved') {
+            return res.status(403).json({ 
+                success: false, 
+                message: `Your account is ${teacher.status}. Please contact admin.` 
+            });
+        }
+        
+        // Generate JWT token for teacher
+        const token = jwt.sign(
+            {
+                id: teacher._id,
+                teacherId: teacher.teacherId,
+                role: 'teacher',
+                name: `${teacher.teacherName.first} ${teacher.teacherName.last}`
+            },
+            process.env.JWT_SECRET || 'fallback_secret_change_this',
+            { expiresIn: '8h' } // 8 hours session
+        );
+        
+        // Don't send password in response
+        const teacherData = teacher.toObject();
+        delete teacherData.password;
+        
+        console.log(`✅ Teacher logged in: ${teacher.teacherId} (${loginMethod} login)`);
+        
+        res.json({
+            success: true,
+            message: "Login successful",
+            token: token,
+            data: teacherData
+        });
+        
+    } catch (err) {
+        console.error("❌ Teacher login error:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Login failed. Please try again." 
+        });
+    }
+});
+
+// ============================================
+// TOKEN VERIFICATION MIDDLEWARE
+// ============================================
+
 // Token verification middleware
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -708,15 +821,15 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// Verify token endpoint
+// Verify token endpoint - UPDATED for both admin and teacher
 app.get('/api/verify-token', verifyToken, (req, res) => {
     res.json({
         success: true,
         message: "Token is valid",
         user: {
             id: req.user.id,
-            adminID: req.user.adminID,
-            role: req.user.role
+            username: req.user.adminID || req.user.teacherId,
+            role: req.user.role || 'admin'
         }
     });
 });
@@ -1925,7 +2038,7 @@ app.get('/api/teachers/export/:format', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// TEACHER ATTENDANCE APIs
+// TEACHER ATTENDANCE APIs - UPDATED with photo support
 // ============================================
 
 // Get teacher attendance
@@ -1948,31 +2061,6 @@ app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
             attendance = attendance.filter(a => a.date.startsWith(`${year}-${monthStr}`));
         }
         
-        // If no attendance, generate sample for last 30 days
-        if (attendance.length === 0) {
-            const today = new Date();
-            for (let i = 30; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
-                
-                // Random status for demo
-                const rand = Math.random();
-                let status = 'present';
-                if (rand < 0.2) status = 'absent';
-                else if (rand < 0.3) status = 'half-day';
-                else if (rand < 0.35) status = 'leave';
-                
-                attendance.push({
-                    date: dateStr,
-                    status: status,
-                    remarks: '',
-                    markedBy: 'system',
-                    markedAt: date
-                });
-            }
-        }
-        
         res.json({
             success: true,
             data: attendance.sort((a, b) => b.date.localeCompare(a.date))
@@ -1984,11 +2072,11 @@ app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     }
 });
 
-// Mark teacher attendance
+// Mark teacher attendance - UPDATED with photo support
 app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
-        const { date, status, remarks } = req.body;
+        const { date, status, remarks, photo } = req.body;  // Added photo
         
         if (!date || !status) {
             return res.status(400).json({ 
@@ -2015,12 +2103,16 @@ app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
             date,
             status,
             remarks: remarks || '',
-            markedBy: req.user.adminID,
+            photo: photo || '',  // Save photo
+            markedBy: req.user.role === 'teacher' ? 'self' : req.user.adminID,
             markedAt: new Date()
         };
         
         if (existingIndex >= 0) {
-            // Update existing
+            // Update existing - keep old photo if new not provided
+            if (!photo && teacher.attendance[existingIndex].photo) {
+                attendanceRecord.photo = teacher.attendance[existingIndex].photo;
+            }
             teacher.attendance[existingIndex] = attendanceRecord;
         } else {
             // Add new
@@ -2028,6 +2120,8 @@ app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
         }
         
         await teacher.save();
+        
+        console.log(`✅ Attendance marked for ${teacherId}: ${status} on ${date}`);
         
         res.json({
             success: true,
@@ -2041,11 +2135,11 @@ app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     }
 });
 
-// Update teacher attendance (PUT)
+// Update teacher attendance (PUT) - UPDATED with photo support
 app.put('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
-        const { date, status, remarks } = req.body;
+        const { date, status, remarks, photo } = req.body;
         
         if (!date || !status) {
             return res.status(400).json({ 
@@ -2077,7 +2171,8 @@ app.put('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
             date,
             status,
             remarks: remarks || '',
-            markedBy: req.user.adminID,
+            photo: photo || teacher.attendance[existingIndex].photo || '',
+            markedBy: req.user.role === 'teacher' ? 'self' : req.user.adminID,
             markedAt: new Date()
         };
         
@@ -2263,6 +2358,11 @@ app.get('/teacher-dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'teacher-dashboard.html'));
 });
 
+// ADD THIS LINE for teacher-self-dashboard.html
+app.get('/teacher-self-dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'teacher-self-dashboard.html'));
+});
+
 // ============================================
 // ERROR HANDLERS
 // ============================================
@@ -2305,13 +2405,16 @@ app.listen(PORT, () => {
     console.log(`   - POST /api/student-register - Student Registration`);
     console.log(`   - POST /api/teacher-register - Teacher Registration`);
     console.log(`   - POST /api/admin-login - Admin Login`);
+    console.log(`   - POST /api/teacher-login - Teacher Login (NEW)`);
     console.log(`   - GET /api/config - Website Config`);
     console.log(`   - GET /api/students - Get All Students`);
     console.log(`   - GET /api/teachers - Get All Teachers`);
     console.log(`   - GET /api/teachers/stats/summary - Teacher Statistics`);
     console.log(`   - GET /api/students/:id/attendance - Student Attendance`);
     console.log(`   - GET /api/teachers/:id/attendance - Teacher Attendance`);
+    console.log(`   - POST /api/teachers/:id/attendance - Mark Attendance (with photo)`);
     console.log(`   - GET /api/health - Health Check`);
     console.log(`   - GET /student-dashboard.html - Student Dashboard`);
     console.log(`   - GET /teacher-dashboard.html - Teacher Dashboard`);
+    console.log(`   - GET /teacher-self-dashboard.html - Teacher Self Dashboard (NEW)`);
 });
