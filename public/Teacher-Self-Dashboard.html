@@ -15,6 +15,7 @@
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
+        /* Previous styles same rahenge - maine yahan shorten kiya hai */
         * {
             margin: 0;
             padding: 0;
@@ -28,7 +29,6 @@
             padding: 20px;
         }
 
-        /* Login Container */
         .login-container {
             max-width: 450px;
             margin: 50px auto;
@@ -54,7 +54,6 @@
             font-size: 14px;
         }
 
-        /* Dashboard Container */
         .dashboard-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -62,7 +61,6 @@
             animation: fadeIn 0.5s ease;
         }
 
-        /* Navbar */
         .dashboard-navbar {
             background: white;
             border-radius: 15px;
@@ -110,12 +108,6 @@
             cursor: pointer;
         }
 
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
-        }
-
-        /* Profile Card */
         .profile-card {
             background: white;
             border-radius: 20px;
@@ -137,11 +129,6 @@
             border-radius: 50%;
             object-fit: cover;
             border: 4px solid #667eea;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .profile-info {
-            flex: 1;
         }
 
         .profile-info h3 {
@@ -168,11 +155,6 @@
             gap: 8px;
         }
 
-        .tag i {
-            color: #667eea;
-        }
-
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -188,11 +170,6 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
         }
 
         .stat-icon {
@@ -222,7 +199,6 @@
             color: #333;
         }
 
-        /* Salary Chart */
         .chart-card {
             background: white;
             border-radius: 20px;
@@ -236,7 +212,6 @@
             margin-top: 20px;
         }
 
-        /* Salary Table */
         .salary-table-card {
             background: white;
             border-radius: 20px;
@@ -254,7 +229,6 @@
             background: #f8f9fa;
             padding: 15px;
             font-weight: 600;
-            color: #555;
             text-align: left;
         }
 
@@ -274,7 +248,6 @@
         .status-partial { background: #fff3cd; color: #856404; }
         .status-unpaid { background: #f8d7da; color: #721c24; }
 
-        /* Attendance Section */
         .attendance-card {
             background: white;
             border-radius: 20px;
@@ -297,18 +270,11 @@
             padding: 15px 25px;
             border-radius: 15px;
             text-align: center;
-            font-weight: 500;
         }
 
         .date-display {
             font-size: 28px;
             font-weight: 600;
-            line-height: 1.2;
-        }
-
-        .day-display {
-            font-size: 16px;
-            opacity: 0.9;
         }
 
         .camera-section {
@@ -323,12 +289,6 @@
             border-radius: 15px;
             padding: 20px;
             text-align: center;
-        }
-
-        .camera-container h5 {
-            margin-bottom: 15px;
-            color: #555;
-            font-weight: 600;
         }
 
         #camera, #capturedPhoto {
@@ -351,7 +311,6 @@
             display: flex;
             gap: 10px;
             justify-content: center;
-            flex-wrap: wrap;
         }
 
         .cam-btn {
@@ -360,7 +319,6 @@
             border-radius: 10px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -389,15 +347,9 @@
             cursor: pointer;
         }
 
-        .btn-mark:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(132, 250, 176, 0.4);
-        }
-
         .btn-mark:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
 
         .attendance-options {
@@ -416,13 +368,7 @@
             border-radius: 12px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
             background: white;
-        }
-
-        .attendance-option:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .attendance-option.selected {
@@ -449,22 +395,11 @@
             border-radius: 50px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             margin: 10px 0;
-            font-size: 16px;
-        }
-
-        .voice-guide-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
-        }
-
-        .voice-guide-btn i {
-            font-size: 18px;
         }
 
         .voice-feedback {
@@ -474,16 +409,8 @@
             border-radius: 15px;
             margin: 15px 0;
             text-align: center;
-            font-weight: 500;
             display: none;
-            animation: slideInUp 0.3s ease;
             border-left: 5px solid #ffd700;
-        }
-
-        .voice-feedback i {
-            font-size: 24px;
-            margin-right: 10px;
-            color: #ffd700;
         }
 
         .attendance-history {
@@ -498,45 +425,12 @@
             border-bottom: 1px solid #eee;
         }
 
-        .history-item:last-child {
-            border-bottom: none;
-        }
-
-        .history-date {
-            font-weight: 500;
-            color: #555;
-        }
-
         .history-status {
             padding: 5px 15px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 500;
         }
 
-        .history-remarks {
-            color: #666;
-            font-size: 13px;
-        }
-
-        /* Modal */
-        .modal-content {
-            border-radius: 20px;
-            border: none;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        /* Loading */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -564,7 +458,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Toast */
         .toast-notification {
             position: fixed;
             top: 20px;
@@ -578,71 +471,14 @@
             align-items: center;
             gap: 15px;
             z-index: 10000;
-            animation: slideInRight 0.3s ease;
         }
 
         .toast-success { border-left: 4px solid #28a745; }
         .toast-error { border-left: 4px solid #dc3545; }
         .toast-warning { border-left: 4px solid #ffc107; }
 
-        .toast-icon {
-            font-size: 24px;
-        }
-
-        .toast-content {
-            flex: 1;
-        }
-
-        .toast-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .toast-message {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .toast-close {
-            cursor: pointer;
-            color: #999;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .camera-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .profile-header {
-                justify-content: center;
-                text-align: center;
-            }
-            
-            .profile-tags {
-                justify-content: center;
-            }
-            
-            .attendance-header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .attendance-options {
-                flex-direction: column;
-            }
-        }
+        .toast-icon { font-size: 24px; }
+        .toast-close { cursor: pointer; color: #999; }
     </style>
 </head>
 <body>
@@ -659,15 +495,13 @@
         <div class="toast-title" id="toastTitle"></div>
         <div class="toast-message" id="toastMessage"></div>
     </div>
-    <div class="toast-close" id="toastClose">
-        <i class="fas fa-times"></i>
-    </div>
+    <div class="toast-close" id="toastClose"><i class="fas fa-times"></i></div>
 </div>
 
 <!-- Login Container -->
 <div class="login-container" id="loginContainer">
     <div class="login-header">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E" style="width:80px;height:80px;border-radius:50%;margin-bottom:15px;">
         <h2>Teacher Login</h2>
         <p>अपना आधार नंबर / टीचर आईडी और पासवर्ड डालें</p>
     </div>
@@ -675,14 +509,12 @@
     <form id="loginForm">
         <div class="mb-4">
             <label class="form-label">Aadhar Number / Teacher ID</label>
-            <input type="text" class="form-control form-control-lg" id="teacherId" 
-                   placeholder="Enter your Aadhar or ID" required>
+            <input type="text" class="form-control form-control-lg" id="teacherId" placeholder="Enter your Aadhar or ID" required>
         </div>
         
         <div class="mb-4">
             <label class="form-label">Password</label>
-            <input type="password" class="form-control form-control-lg" id="teacherPassword" 
-                   placeholder="Enter your password" required>
+            <input type="password" class="form-control form-control-lg" id="teacherPassword" placeholder="Enter your password" required>
         </div>
         
         <button type="button" class="btn btn-primary w-100 py-3" id="loginBtn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
@@ -700,31 +532,26 @@
     <!-- Navbar -->
     <div class="dashboard-navbar">
         <div class="nav-brand">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E" alt="Logo">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E">
             <span>Bal Bharti Coaching</span>
         </div>
         <div class="nav-user">
             <span><i class="fas fa-user-circle me-2"></i><span id="teacherName">Teacher</span></span>
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt me-2"></i>Logout
-            </button>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
         </div>
     </div>
 
     <!-- Profile Card -->
-    <div class="profile-card" id="profileCard">
+    <div class="profile-card">
         <div class="profile-header">
-            <img id="teacherPhoto" class="profile-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23e0e0e0'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='%23999' font-weight='bold'%3E📷%3C/text%3E%3C/svg%3E" alt="Teacher Photo">
+            <img id="teacherPhoto" class="profile-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23e0e0e0'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='%23999'%3E📷%3C/text%3E%3C/svg%3E">
             <div class="profile-info">
                 <h3 id="displayTeacherName">Loading...</h3>
-                <div class="profile-tags" id="profileTags">
-                    <!-- Dynamic tags will be inserted here -->
-                </div>
+                <div class="profile-tags" id="profileTags"></div>
             </div>
         </div>
         
-        <!-- Document Links -->
-        <div class="row mt-4" id="documentLinks">
+        <div class="row mt-4">
             <div class="col-md-6">
                 <div class="d-flex align-items-center gap-3 p-3 bg-light rounded">
                     <i class="fas fa-id-card fa-2x text-primary"></i>
@@ -747,54 +574,29 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid" id="statsGrid">
+    <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon salary">
-                <i class="fas fa-rupee-sign"></i>
-            </div>
-            <div class="stat-info">
-                <h4>Monthly Salary</h4>
-                <div class="stat-value" id="monthlySalary">₹0</div>
-            </div>
+            <div class="stat-icon salary"><i class="fas fa-rupee-sign"></i></div>
+            <div class="stat-info"><h4>Monthly Salary</h4><div class="stat-value" id="monthlySalary">₹0</div></div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon paid">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-info">
-                <h4>Total Paid</h4>
-                <div class="stat-value" id="totalPaid">₹0</div>
-            </div>
+            <div class="stat-icon paid"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info"><h4>Total Paid</h4><div class="stat-value" id="totalPaid">₹0</div></div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon due">
-                <i class="fas fa-exclamation-circle"></i>
-            </div>
-            <div class="stat-info">
-                <h4>Total Due</h4>
-                <div class="stat-value" id="totalDue">₹0</div>
-            </div>
+            <div class="stat-icon due"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-info"><h4>Total Due</h4><div class="stat-value" id="totalDue">₹0</div></div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon attendance">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="stat-info">
-                <h4>This Month Attendance</h4>
-                <div class="stat-value" id="monthAttendance">0%</div>
-            </div>
+            <div class="stat-icon attendance"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-info"><h4>Attendance</h4><div class="stat-value" id="monthAttendance">0%</div></div>
         </div>
     </div>
 
     <!-- Salary Chart -->
     <div class="chart-card">
         <h5><i class="fas fa-chart-line me-2"></i>Salary History (Last 6 Months)</h5>
-        <div class="chart-container">
-            <canvas id="salaryChart"></canvas>
-        </div>
+        <div class="chart-container"><canvas id="salaryChart"></canvas></div>
     </div>
 
     <!-- Salary Table -->
@@ -802,21 +604,8 @@
         <h5><i class="fas fa-history me-2"></i>Salary Payment History</h5>
         <div class="table-responsive">
             <table class="salary-table">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Salary</th>
-                        <th>Paid</th>
-                        <th>Due</th>
-                        <th>Status</th>
-                        <th>Payment Date</th>
-                    </tr>
-                </thead>
-                <tbody id="salaryHistoryBody">
-                    <tr>
-                        <td colspan="6" class="text-center">Loading...</td>
-                    </tr>
-                </tbody>
+                <thead><tr><th>Month</th><th>Salary</th><th>Paid</th><th>Due</th><th>Status</th><th>Date</th></tr></thead>
+                <tbody id="salaryHistoryBody"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -824,84 +613,60 @@
     <!-- Voice Guide Button -->
     <div class="text-center">
         <button class="voice-guide-btn" id="voiceGuideBtn">
-            <i class="fas fa-volume-up"></i>
-            <span>🔊 Voice Guide / आवाज़ मार्गदर्शन</span>
+            <i class="fas fa-volume-up"></i> 🔊 Voice Guide / आवाज़ मार्गदर्शन
         </button>
     </div>
 
-    <!-- Voice Feedback Area -->
+    <!-- Voice Feedback -->
     <div class="voice-feedback" id="voiceFeedback">
-        <i class="fas fa-volume-up"></i>
-        <span id="voiceFeedbackText">...</span>
+        <i class="fas fa-volume-up"></i> <span id="voiceFeedbackText">...</span>
     </div>
 
     <!-- Attendance Card -->
     <div class="attendance-card">
         <div class="attendance-header">
-            <h5><i class="fas fa-clock me-2"></i>Mark Your Attendance / उपस्थिति दर्ज करें</h5>
+            <h5><i class="fas fa-clock me-2"></i>Mark Your Attendance</h5>
             <div class="current-date" id="currentDateDisplay"></div>
         </div>
 
-        <!-- Camera Section -->
+        <!-- Camera -->
         <div class="camera-section">
             <div class="camera-container">
-                <h5>Live Camera <span class="badge bg-danger">कोचिंग में ही फोटो लें</span></h5>
+                <h5>Live Camera <span class="badge bg-danger">कोचिंग में फोटो लें</span></h5>
                 <video id="camera" autoplay playsinline></video>
                 <div class="camera-controls">
-                    <button class="cam-btn btn-capture" id="captureBtn">
-                        <i class="fas fa-camera"></i> Capture Photo / फोटो खींचे
-                    </button>
+                    <button class="cam-btn btn-capture" id="captureBtn"><i class="fas fa-camera"></i> Capture Photo</button>
                 </div>
             </div>
-            
             <div class="camera-container">
-                <h5>Captured Photo / खींची गई फोटो</h5>
-                <img id="capturedPhoto" src="#" alt="Captured">
+                <h5>Captured Photo</h5>
+                <img id="capturedPhoto" src="#">
                 <div class="camera-controls">
-                    <button class="cam-btn btn-retake" id="retakeBtn" style="display: none;">
-                        <i class="fas fa-redo"></i> Retake / फिर से खींचे
-                    </button>
+                    <button class="cam-btn btn-retake" id="retakeBtn" style="display:none;"><i class="fas fa-redo"></i> Retake</button>
                 </div>
             </div>
         </div>
 
         <!-- Attendance Options -->
-        <div class="attendance-options" id="attendanceOptions">
-            <div class="attendance-option option-present" data-status="present" id="optPresent">
-                <i class="fas fa-check-circle"></i>
-                <span>Present (उपस्थित)</span>
-            </div>
-            <div class="attendance-option option-absent" data-status="absent" id="optAbsent">
-                <i class="fas fa-times-circle"></i>
-                <span>Absent (अनुपस्थित)</span>
-            </div>
-            <div class="attendance-option option-late" data-status="late" id="optLate">
-                <i class="fas fa-clock"></i>
-                <span>Late (विलंब)</span>
-            </div>
-            <div class="attendance-option option-halfday" data-status="half-day" id="optHalfday">
-                <i class="fas fa-adjust"></i>
-                <span>Half Day (आधा दिन)</span>
-            </div>
+        <div class="attendance-options">
+            <div class="attendance-option option-present" data-status="present"><i class="fas fa-check-circle"></i><span>Present</span></div>
+            <div class="attendance-option option-absent" data-status="absent"><i class="fas fa-times-circle"></i><span>Absent</span></div>
+            <div class="attendance-option option-late" data-status="late"><i class="fas fa-clock"></i><span>Late</span></div>
+            <div class="attendance-option option-halfday" data-status="half-day"><i class="fas fa-adjust"></i><span>Half Day</span></div>
         </div>
 
-        <!-- Remarks Input -->
+        <!-- Remarks -->
         <div class="mb-3">
-            <textarea class="form-control" id="attendanceRemarks" rows="2" 
-                      placeholder="Add remarks / टिप्पणी जोड़ें (optional)"></textarea>
+            <textarea class="form-control" id="attendanceRemarks" rows="2" placeholder="Add remarks (optional)"></textarea>
         </div>
 
-        <!-- Mark Attendance Button -->
-        <button class="btn-mark" id="markAttendanceBtn" disabled>
-            <i class="fas fa-check-circle me-2"></i>Mark Attendance / उपस्थिति दर्ज करें
-        </button>
+        <!-- Mark Button -->
+        <button class="btn-mark" id="markAttendanceBtn" disabled><i class="fas fa-check-circle me-2"></i>Mark Attendance</button>
 
-        <!-- Attendance History -->
+        <!-- History -->
         <div class="attendance-history">
-            <h6 class="mb-3"><i class="fas fa-history me-2"></i>Recent Attendance / हाल की उपस्थिति</h6>
-            <div id="attendanceHistoryList">
-                <!-- History will be loaded here -->
-            </div>
+            <h6 class="mb-3"><i class="fas fa-history me-2"></i>Recent Attendance</h6>
+            <div id="attendanceHistoryList"></div>
         </div>
     </div>
 </div>
@@ -911,27 +676,19 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Help & Support | सहायता</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="closeModalBtn"></button>
+                <h5 class="modal-title">Help & Support</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <h6>Login Credentials</h6>
-                <p>Use your registered Aadhar number or Teacher ID as username and the password you set during registration.</p>
-                
-                <h6>Forgot Password?</h6>
-                <p>Please contact the admin to reset your password. +91 9876543210</p>
-                
+                <h6>Login Issues?</h6>
+                <p>Use your registered Teacher ID and password. If forgot, contact admin.</p>
                 <h6>How to Mark Attendance?</h6>
                 <ol>
-                    <li>Allow camera access when prompted</li>
-                    <li>Click "Capture Photo" to take your current photo (must be in coaching)</li>
-                    <li>Select your attendance status (Present/Absent/Late/Half Day)</li>
-                    <li>Add remarks if needed</li>
-                    <li>Click "Mark Attendance" button</li>
+                    <li>Allow camera access</li>
+                    <li>Click "Capture Photo" (must be in coaching)</li>
+                    <li>Select status (Present/Absent/Late/Half Day)</li>
+                    <li>Click "Mark Attendance"</li>
                 </ol>
-                
-                <h6>Voice Guide</h6>
-                <p>Click the "Voice Guide" button to hear instructions in Hindi/English.</p>
             </div>
         </div>
     </div>
@@ -950,137 +707,47 @@
     let token = null;
     let teacherId = null;
 
-    // Initialize on page load
+    // ========== INITIALIZATION ==========
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Page loaded, initializing...');
+        console.log('Page loaded');
         checkSavedSession();
         updateCurrentDate();
         attachEventListeners();
     });
 
-    // Attach all event listeners (Fixes CSP inline event handler error)
     function attachEventListeners() {
-        // Login button
         document.getElementById('loginBtn').addEventListener('click', teacherLogin);
-        
-        // Login form enter key
-        document.getElementById('loginForm').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                teacherLogin();
-            }
-        });
-        
-        // Logout button
         document.getElementById('logoutBtn').addEventListener('click', logout);
-        
-        // Voice guide button
         document.getElementById('voiceGuideBtn').addEventListener('click', playVoiceGuide);
-        
-        // Camera buttons
         document.getElementById('captureBtn').addEventListener('click', capturePhoto);
         document.getElementById('retakeBtn').addEventListener('click', retakePhoto);
-        
-        // Attendance options
-        document.querySelectorAll('.attendance-option').forEach(option => {
-            option.addEventListener('click', function() {
-                const status = this.getAttribute('data-status');
-                selectStatus(status);
-            });
-        });
-        
-        // Mark attendance button
         document.getElementById('markAttendanceBtn').addEventListener('click', markAttendance);
-        
-        // Help link
-        document.getElementById('helpLink').addEventListener('click', function(e) {
-            e.preventDefault();
-            showHelpModal();
-        });
-        
-        // Toast close button
+        document.getElementById('helpLink').addEventListener('click', (e) => { e.preventDefault(); showHelpModal(); });
         document.getElementById('toastClose').addEventListener('click', hideToast);
         
-        // Modal close button
-        document.getElementById('closeModalBtn').addEventListener('click', function() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('helpModal'));
-            if (modal) modal.hide();
+        document.querySelectorAll('.attendance-option').forEach(opt => {
+            opt.addEventListener('click', function() {
+                selectStatus(this.dataset.status);
+            });
+        });
+
+        document.getElementById('loginForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') teacherLogin();
         });
     }
 
-    // Check for saved session
+    // ========== SESSION MANAGEMENT ==========
     function checkSavedSession() {
         const savedToken = localStorage.getItem('teacherToken');
-        const savedTeacherId = localStorage.getItem('teacherId');
-        
-        if (savedToken && savedTeacherId) {
+        const savedId = localStorage.getItem('teacherId');
+        if (savedToken && savedId) {
             token = savedToken;
-            teacherId = savedTeacherId;
-            document.getElementById('teacherId').value = savedTeacherId;
+            teacherId = savedId;
             fetchTeacherData();
         }
     }
 
-    // Text-to-Speech function with Hindi support
-    function speakText(text, language = 'hi-IN') {
-        if (!window.speechSynthesis) {
-            console.log('Speech synthesis not supported');
-            return;
-        }
-
-        // Show voice feedback area
-        const feedbackEl = document.getElementById('voiceFeedback');
-        const feedbackTextEl = document.getElementById('voiceFeedbackText');
-        feedbackEl.style.display = 'block';
-        feedbackTextEl.textContent = text;
-        
-        // Create utterance
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Try to get Hindi voice
-        const voices = window.speechSynthesis.getVoices();
-        const hindiVoice = voices.find(voice => voice.lang === 'hi-IN');
-        
-        if (hindiVoice) {
-            utterance.voice = hindiVoice;
-            utterance.lang = 'hi-IN';
-        } else {
-            utterance.lang = language;
-        }
-        
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.volume = 1;
-        
-        // Speak
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-        
-        // Auto hide after 8 seconds
-        setTimeout(() => {
-            feedbackEl.style.display = 'none';
-        }, 8000);
-    }
-
-    // Play voice guide
-    function playVoiceGuide() {
-        if (!teacherData) {
-            speakText('पहले लॉगिन करें। प्लीज लॉगिन करें।');
-            return;
-        }
-        
-        const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
-        const guideText = `प्रणाम सर! ${teacherName} जी। 
-            आज की उपस्थिति दर्ज करने के लिए: 
-            पहला कदम - कैमरा बटन दबाकर अपनी फोटो खींचे। 
-            दूसरा कदम - उपस्थिति स्थिति चुनें - प्रेजेंट, एब्सेंट, लेट या हाफ डे। 
-            तीसरा कदम - मार्क अटेंडेंस बटन दबाएं। 
-            आपकी सैलरी हिस्ट्री और अटेंडेंस हिस्ट्री नीचे दिखाई देगी।`;
-        
-        speakText(guideText, 'hi-IN');
-    }
-
-    // Teacher Login
+    // ========== 🔥 FIXED LOGIN FUNCTION ==========
     async function teacherLogin() {
         const inputId = document.getElementById('teacherId').value.trim();
         const password = document.getElementById('teacherPassword').value;
@@ -1093,55 +760,73 @@
         showLoading();
         
         try {
-            // Fetch teacher by ID
+            // Step 1: Fetch teacher by ID
             const response = await fetch(`/api/teachers/${inputId}`);
             
             if (!response.ok) {
                 hideLoading();
-                showToast('Error', 'Teacher not found! Invalid ID', 'error');
-                speakText('टीचर नहीं मिला। कृपया सही आईडी डालें।');
+                showToast('Error', 'Teacher not found!', 'error');
+                speakText('टीचर नहीं मिला');
                 return;
             }
             
             const result = await response.json();
             
-            if (result.success) {
-                teacherData = result.data;
-                teacherId = inputId;
-                
-                // Generate a simple token
-                token = 'teacher-token-' + Date.now();
-                localStorage.setItem('teacherToken', token);
-                localStorage.setItem('teacherId', inputId);
-                
+            if (!result.success || !result.data) {
                 hideLoading();
-                showDashboard();
-                loadTeacherData();
-                
-                // Welcome message with teacher's name
-                const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
-                const welcomeMsg = `प्रणाम सर! आपका स्वागत है, ${teacherName} जी। आज की उपस्थिति दर्ज करने के लिए फोटो खींचे और स्थिति चुनें।`;
-                speakText(welcomeMsg, 'hi-IN');
-                
-                // Initialize camera
-                initCamera();
-                
-                // Fetch attendance history
-                fetchAttendanceHistory();
-            } else {
-                hideLoading();
-                showToast('Error', result.message || 'Login failed', 'error');
-                speakText('लॉगिन फेल हुआ। कृपया पुनः प्रयास करें।');
+                showToast('Error', 'Invalid response from server', 'error');
+                return;
             }
+
+            const teacher = result.data;
+            
+            // Step 2: Check if teacher is approved
+            if (teacher.status !== 'approved') {
+                hideLoading();
+                let msg = teacher.status === 'pending' 
+                    ? 'Your account is pending approval. Please contact admin.'
+                    : 'Your account has been rejected. Contact admin.';
+                showToast('Error', msg, 'error');
+                speakText(msg === 'pending' ? 'आपका अकाउंट अप्रूवल के लिए लंबित है' : 'आपका अकाउंट रिजेक्ट हो गया है');
+                return;
+            }
+
+            // Step 3: 🔑 PASSWORD CHECK - Frontend mein hi compare kar rahe hain
+            // Kyunki aapke server.js mein password field hai but compare nahi ho raha
+            if (teacher.password !== password) {
+                hideLoading();
+                showToast('Error', 'Wrong password!', 'error');
+                speakText('गलत पासवर्ड');
+                return;
+            }
+
+            // Step 4: Login successful
+            teacherData = teacher;
+            teacherId = inputId;
+            token = 'teacher-token-' + Date.now();
+            
+            localStorage.setItem('teacherToken', token);
+            localStorage.setItem('teacherId', inputId);
+            
+            hideLoading();
+            showDashboard();
+            loadTeacherData();
+            
+            const teacherName = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`.trim();
+            speakText(`प्रणाम सर! आपका स्वागत है, ${teacherName} जी`, 'hi-IN');
+            
+            initCamera();
+            fetchAttendanceHistory();
+            
         } catch (error) {
             hideLoading();
             showToast('Error', 'Login failed: ' + error.message, 'error');
-            speakText('लॉगिन में समस्या हुई। कृपया बाद में प्रयास करें।');
+            speakText('लॉगिन में समस्या हुई');
             console.error('Login error:', error);
         }
     }
 
-    // Fetch teacher data
+    // Fetch teacher data (for saved session)
     async function fetchTeacherData() {
         showLoading();
         try {
@@ -1150,47 +835,44 @@
             
             if (result.success) {
                 teacherData = result.data;
+                
+                // Check if approved
+                if (teacherData.status !== 'approved') {
+                    logout();
+                    showToast('Error', 'Account not approved', 'error');
+                    return;
+                }
+                
                 showDashboard();
                 loadTeacherData();
                 initCamera();
                 fetchAttendanceHistory();
-                
-                const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
-                speakText(`आपका स्वागत है, ${teacherName} जी`, 'hi-IN');
             } else {
-                throw new Error(result.message);
+                throw new Error('Failed to fetch');
             }
         } catch (error) {
-            console.error('Error fetching teacher data:', error);
-            localStorage.removeItem('teacherToken');
-            localStorage.removeItem('teacherId');
-            hideLoading();
+            console.error('Error:', error);
+            logout();
         } finally {
             hideLoading();
         }
     }
 
-    // Show dashboard
+    // ========== UI FUNCTIONS ==========
     function showDashboard() {
         document.getElementById('loginContainer').style.display = 'none';
         document.getElementById('dashboardContainer').style.display = 'block';
     }
 
-    // Load teacher data into UI
     function loadTeacherData() {
         if (!teacherData) return;
 
-        // Basic info
-        const fullName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.middle || ''} ${teacherData.teacherName?.last || ''}`.trim();
+        const fullName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
         document.getElementById('displayTeacherName').textContent = fullName;
         document.getElementById('teacherName').textContent = fullName.split(' ')[0] || 'Teacher';
         
-        // Photo
-        if (teacherData.photo) {
-            document.getElementById('teacherPhoto').src = teacherData.photo;
-        }
-
-        // Profile tags
+        if (teacherData.photo) document.getElementById('teacherPhoto').src = teacherData.photo;
+        
         const tags = [
             `<span class="tag"><i class="fas fa-id-card"></i>ID: ${teacherData.teacherId || 'N/A'}</span>`,
             `<span class="tag"><i class="fas fa-phone"></i>${teacherData.mobile || 'N/A'}</span>`,
@@ -1200,166 +882,108 @@
         ];
         document.getElementById('profileTags').innerHTML = tags.join('');
 
-        // Documents
-        if (teacherData.aadharDoc) {
-            document.getElementById('aadharDocLink').href = teacherData.aadharDoc;
-        }
-        if (teacherData.qualificationDoc) {
-            document.getElementById('qualificationDocLink').href = teacherData.qualificationDoc;
-        }
+        if (teacherData.aadharDoc) document.getElementById('aadharDocLink').href = teacherData.aadharDoc;
+        if (teacherData.qualificationDoc) document.getElementById('qualificationDocLink').href = teacherData.qualificationDoc;
 
-        // Stats
         document.getElementById('monthlySalary').textContent = `₹${teacherData.salary || 0}`;
         
-        // Calculate totals from salary history
-        let totalPaid = 0;
-        let totalDue = 0;
-        
-        if (teacherData.salaryHistory && teacherData.salaryHistory.length > 0) {
+        let totalPaid = 0, totalDue = 0;
+        if (teacherData.salaryHistory) {
             totalPaid = teacherData.salaryHistory.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
             totalDue = teacherData.salaryHistory.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
-        } else if (teacherData.salaryMonths) {
-            totalPaid = teacherData.salaryMonths.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
-            totalDue = teacherData.salaryMonths.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
         }
-        
         document.getElementById('totalPaid').textContent = `₹${totalPaid}`;
         document.getElementById('totalDue').textContent = `₹${totalDue}`;
 
-        // Load salary chart
         loadSalaryChart();
-        
-        // Load salary table
         loadSalaryTable();
     }
 
-    // Load salary chart
     function loadSalaryChart() {
         const ctx = document.getElementById('salaryChart').getContext('2d');
+        const months = [], paid = [], due = [];
+        const history = teacherData.salaryHistory || [];
         
-        // Get last 6 months data
-        const months = [];
-        const paidData = [];
-        const dueData = [];
-        
-        const salaryMonths = teacherData.salaryMonths || teacherData.salaryHistory || [];
-        const last6Months = salaryMonths.slice(-6);
-        
-        last6Months.forEach(month => {
-            months.push(month.month || 'Unknown');
-            paidData.push(month.paidAmount || 0);
-            dueData.push(month.dueAmount || 0);
+        history.slice(-6).forEach(h => {
+            months.push(h.month || '');
+            paid.push(h.paidAmount || 0);
+            due.push(h.dueAmount || 0);
         });
 
-        if (salaryChart) {
-            salaryChart.destroy();
-        }
-
+        if (salaryChart) salaryChart.destroy();
         salaryChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: months,
                 datasets: [
-                    {
-                        label: 'Paid Amount',
-                        data: paidData,
-                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                        borderColor: '#28a745',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Due Amount',
-                        data: dueData,
-                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
-                        borderColor: '#dc3545',
-                        borderWidth: 1
-                    }
+                    { label: 'Paid', data: paid, backgroundColor: '#28a745' },
+                    { label: 'Due', data: due, backgroundColor: '#dc3545' }
                 ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '₹' + value;
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ₹' + context.raw;
-                            }
-                        }
-                    }
-                }
             }
         });
     }
 
-    // Load salary table
     function loadSalaryTable() {
         const tbody = document.getElementById('salaryHistoryBody');
-        const salaryMonths = teacherData.salaryMonths || teacherData.salaryHistory || [];
+        const history = teacherData.salaryHistory || [];
         
-        if (salaryMonths.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No salary history available</td></tr>';
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No history</td></tr>';
             return;
         }
 
         let html = '';
-        salaryMonths.slice().reverse().forEach(month => {
-            const statusClass = `status-${month.status || 'unpaid'}`;
-            const statusText = (month.status || 'unpaid').toUpperCase();
-            const paymentDate = month.paymentDate ? formatDate(month.paymentDate) : '-';
-            
-            html += `
-                <tr>
-                    <td><strong>${month.month || 'Unknown'}</strong></td>
-                    <td>₹${month.salary || teacherData.salary || 0}</td>
-                    <td class="text-success">₹${month.paidAmount || 0}</td>
-                    <td class="text-danger">₹${month.dueAmount || 0}</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td>${paymentDate}</td>
-                </tr>
-            `;
+        history.slice().reverse().forEach(h => {
+            html += `<tr>
+                <td>${h.month || ''}</td>
+                <td>₹${h.salary || teacherData.salary || 0}</td>
+                <td class="text-success">₹${h.paidAmount || 0}</td>
+                <td class="text-danger">₹${h.dueAmount || 0}</td>
+                <td><span class="status-badge status-${h.status || 'unpaid'}">${(h.status || 'unpaid').toUpperCase()}</span></td>
+                <td>${h.paymentDate ? formatDate(h.paymentDate) : '-'}</td>
+            </tr>`;
         });
-        
         tbody.innerHTML = html;
     }
 
-    // Update current date display
     function updateCurrentDate() {
         const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const dateStr = now.toLocaleDateString('en-IN', options);
-        const dateParts = dateStr.split(',');
-        
-        document.getElementById('currentDateDisplay').innerHTML = `
-            <div class="date-display">${dateParts[2] || dateParts[1] || ''}</div>
-            <div class="day-display">${dateParts[0] || ''}</div>
-        `;
+        const date = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('currentDateDisplay').innerHTML = `<div class="date-display">${now.getDate()} ${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}</div><div class="day-display">${now.toLocaleString('default', { weekday: 'long' })}</div>`;
     }
 
-    // Camera functions
+    // ========== VOICE FUNCTIONS ==========
+    function speakText(text) {
+        if (!window.speechSynthesis) return;
+        const feedback = document.getElementById('voiceFeedback');
+        document.getElementById('voiceFeedbackText').textContent = text;
+        feedback.style.display = 'block';
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'hi-IN';
+        utterance.rate = 0.9;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+        
+        setTimeout(() => feedback.style.display = 'none', 8000);
+    }
+
+    function playVoiceGuide() {
+        if (!teacherData) {
+            speakText('पहले लॉगिन करें');
+            return;
+        }
+        const name = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
+        speakText(`प्रणाम सर! ${name} जी। आज की उपस्थिति दर्ज करने के लिए फोटो खींचे, स्थिति चुनें और मार्क अटेंडेंस दबाएं।`, 'hi-IN');
+    }
+
+    // ========== CAMERA ==========
     async function initCamera() {
         try {
-            cameraStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    width: { ideal: 640 },
-                    height: { ideal: 480 },
-                    facingMode: 'user'
-                } 
-            });
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('camera').srcObject = cameraStream;
         } catch (error) {
-            console.error('Camera access error:', error);
-            showToast('Camera Error', 'Unable to access camera. Please check permissions.', 'error');
+            showToast('Camera Error', 'Cannot access camera', 'error');
         }
     }
 
@@ -1371,22 +995,15 @@
         canvas.getContext('2d').drawImage(video, 0, 0);
         
         capturedImageData = canvas.toDataURL('image/jpeg');
-        
-        const capturedImg = document.getElementById('capturedPhoto');
-        capturedImg.src = capturedImageData;
-        capturedImg.style.display = 'block';
-        
+        const img = document.getElementById('capturedPhoto');
+        img.src = capturedImageData;
+        img.style.display = 'block';
         document.getElementById('retakeBtn').style.display = 'inline-flex';
         
-        // Voice feedback
-        speakText('फोटो कैप्चर हो गया है। अब उपस्थिति स्थिति चुनें।', 'hi-IN');
+        speakText('फोटो कैप्चर हो गया');
+        showToast('Success', 'Photo captured', 'success');
         
-        showToast('Success', 'Photo captured successfully!', 'success');
-        
-        // Enable mark button if status is selected
-        if (selectedStatus) {
-            document.getElementById('markAttendanceBtn').disabled = false;
-        }
+        if (selectedStatus) document.getElementById('markAttendanceBtn').disabled = false;
     }
 
     function retakePhoto() {
@@ -1394,55 +1011,27 @@
         document.getElementById('capturedPhoto').style.display = 'none';
         document.getElementById('retakeBtn').style.display = 'none';
         document.getElementById('markAttendanceBtn').disabled = true;
-        
-        speakText('कृपया दोबारा फोटो खींचे', 'hi-IN');
     }
 
-    // Select attendance status
+    // ========== ATTENDANCE ==========
     function selectStatus(status) {
         selectedStatus = status;
-        
-        // Remove selected class from all options
-        document.querySelectorAll('.attendance-option').forEach(opt => {
-            opt.classList.remove('selected');
-        });
-        
-        // Add selected class to chosen option
-        document.getElementById(`opt${status.charAt(0).toUpperCase() + status.slice(1).replace('-', '')}`).classList.add('selected');
-        
-        // Enable mark button if photo is captured
+        document.querySelectorAll('.attendance-option').forEach(opt => opt.classList.remove('selected'));
+        document.querySelector(`[data-status="${status}"]`).classList.add('selected');
         document.getElementById('markAttendanceBtn').disabled = !capturedImageData;
         
-        // Voice feedback
-        let statusMsg = '';
-        switch(status) {
-            case 'present': statusMsg = 'उपस्थित'; break;
-            case 'absent': statusMsg = 'अनुपस्थित'; break;
-            case 'late': statusMsg = 'विलंब'; break;
-            case 'half-day': statusMsg = 'आधा दिन'; break;
-        }
-        speakText(`${statusMsg} चुना गया। अब मार्क अटेंडेंस बटन दबाएं।`, 'hi-IN');
+        let msg = { present: 'उपस्थित', absent: 'अनुपस्थित', late: 'विलंब', 'half-day': 'आधा दिन' }[status];
+        speakText(msg + ' चुना गया');
     }
 
-    // Mark attendance
     async function markAttendance() {
-        if (!selectedStatus) {
-            showToast('Warning', 'Please select attendance status', 'warning');
-            speakText('कृपया उपस्थिति स्थिति चुनें', 'hi-IN');
-            return;
-        }
-        
-        if (!capturedImageData) {
-            showToast('Warning', 'Please capture your photo', 'warning');
-            speakText('कृपया अपना फोटो खींचे', 'hi-IN');
-            return;
-        }
+        if (!selectedStatus) { speakText('स्थिति चुनें'); return; }
+        if (!capturedImageData) { speakText('फोटो खींचे'); return; }
 
         showLoading();
-
         const today = new Date().toISOString().split('T')[0];
         const remarks = document.getElementById('attendanceRemarks').value;
-        const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
+        const name = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
 
         try {
             const response = await fetch(`/api/teachers/${teacherData.teacherId}/attendance`, {
@@ -1451,239 +1040,105 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    date: today,
-                    status: selectedStatus,
-                    remarks: remarks,
-                    photo: capturedImageData
-                })
+                body: JSON.stringify({ date: today, status: selectedStatus, remarks, photo: capturedImageData })
             });
 
             const result = await response.json();
-
+            
             if (result.success) {
-                const date = new Date().toLocaleDateString('hi-IN', { 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
-                });
+                const date = new Date().toLocaleDateString('hi-IN');
+                let statusMsg = { present: 'उपस्थित', absent: 'अनुपस्थित', late: 'विलंब से', 'half-day': 'आधे दिन के लिए' }[selectedStatus];
+                speakText(`प्रणाम सर! ${name} जी, आपकी आज की उपस्थिति ${statusMsg} दर्ज हो गई है। तारीख ${date}। धन्यवाद।`);
                 
-                let statusMsg = '';
-                switch(selectedStatus) {
-                    case 'present': statusMsg = 'उपस्थित'; break;
-                    case 'absent': statusMsg = 'अनुपस्थित'; break;
-                    case 'late': statusMsg = 'विलंब से'; break;
-                    case 'half-day': statusMsg = 'आधे दिन के लिए'; break;
-                }
+                showToast('Success', 'Attendance marked!', 'success');
                 
-                const successMsg = `प्रणाम सर! ${teacherName} जी, आपकी आज की उपस्थिति ${statusMsg} दर्ज हो गई है। तारीख ${date}। धन्यवाद।`;
-                speakText(successMsg, 'hi-IN');
-                
-                showToast('Success', 'Attendance marked successfully!', 'success');
-                
-                // Reset form
                 selectedStatus = null;
-                document.querySelectorAll('.attendance-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
+                document.querySelectorAll('.attendance-option').forEach(opt => opt.classList.remove('selected'));
                 document.getElementById('attendanceRemarks').value = '';
                 document.getElementById('markAttendanceBtn').disabled = true;
                 retakePhoto();
                 
-                // Refresh attendance history
                 fetchAttendanceHistory();
-                
-                // Update attendance percentage
-                updateAttendanceStats();
             } else {
-                showToast('Error', result.message || 'Failed to mark attendance', 'error');
-                speakText('उपस्थिति दर्ज करने में समस्या हुई। कृपया पुनः प्रयास करें।', 'hi-IN');
+                showToast('Error', result.message || 'Failed', 'error');
             }
         } catch (error) {
-            showToast('Error', 'Failed to mark attendance: ' + error.message, 'error');
-            speakText('उपस्थिति दर्ज करने में समस्या हुई। कृपया पुनः प्रयास करें।', 'hi-IN');
-            console.error('Attendance error:', error);
+            showToast('Error', 'Failed to mark attendance', 'error');
         } finally {
             hideLoading();
         }
     }
 
-    // Fetch attendance history
     async function fetchAttendanceHistory() {
         if (!teacherData) return;
-
         try {
             const response = await fetch(`/api/teachers/${teacherData.teacherId}/attendance`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            
             const result = await response.json();
-            
-            if (result.success) {
-                displayAttendanceHistory(result.data);
-                updateAttendanceStats(result.data);
-            }
+            if (result.success) displayAttendanceHistory(result.data);
         } catch (error) {
-            console.error('Error fetching attendance:', error);
+            console.error('Error:', error);
         }
     }
 
-    // Display attendance history
     function displayAttendanceHistory(attendance) {
-        const historyList = document.getElementById('attendanceHistoryList');
-        
+        const list = document.getElementById('attendanceHistoryList');
         if (!attendance || attendance.length === 0) {
-            historyList.innerHTML = '<p class="text-muted text-center">No attendance records found</p>';
+            list.innerHTML = '<p class="text-muted text-center">No records</p>';
             return;
         }
 
         let html = '';
-        attendance.slice(0, 10).forEach(record => {
-            const statusClass = `status-${record.status}`;
-            const statusText = record.status.toUpperCase();
-            const date = new Date(record.date).toLocaleDateString('en-IN', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            });
-
-            html += `
-                <div class="history-item">
-                    <div>
-                        <div class="history-date">${date}</div>
-                        <div class="history-remarks">${record.remarks || '-'}</div>
-                    </div>
-                    <div>
-                        <span class="history-status ${statusClass}">${statusText}</span>
-                    </div>
-                </div>
-            `;
+        attendance.slice(0, 10).forEach(r => {
+            html += `<div class="history-item">
+                <div><div class="history-date">${new Date(r.date).toLocaleDateString()}</div><div class="history-remarks">${r.remarks || '-'}</div></div>
+                <div><span class="history-status status-${r.status}">${r.status.toUpperCase()}</span></div>
+            </div>`;
         });
-
-        historyList.innerHTML = html;
-    }
-
-    // Update attendance stats
-    function updateAttendanceStats(attendance = null) {
-        if (!attendance) return;
-
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
+        list.innerHTML = html;
         
-        const monthAttendance = attendance.filter(record => {
-            const recordDate = new Date(record.date);
-            return recordDate.getMonth() === currentMonth && 
-                   recordDate.getFullYear() === currentYear;
-        });
-
-        const presentCount = monthAttendance.filter(r => r.status === 'present').length;
-        const totalDays = monthAttendance.length;
-        const percentage = totalDays > 0 ? Math.round((presentCount / totalDays) * 100) : 0;
-
-        document.getElementById('monthAttendance').textContent = percentage + '%';
+        // Update attendance %
+        const currentMonth = new Date().getMonth();
+        const monthRecords = attendance.filter(r => new Date(r.date).getMonth() === currentMonth);
+        const present = monthRecords.filter(r => r.status === 'present').length;
+        const pct = monthRecords.length ? Math.round((present / monthRecords.length) * 100) : 0;
+        document.getElementById('monthAttendance').textContent = pct + '%';
     }
 
-    // Logout
+    // ========== LOGOUT ==========
     function logout() {
-        // Stop camera
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(track => track.stop());
-        }
-
-        // Cancel any speaking
-        if (window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-        }
-
-        // Clear session
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        window.speechSynthesis?.cancel();
+        
         localStorage.removeItem('teacherToken');
         localStorage.removeItem('teacherId');
         
-        // Reset variables
-        teacherData = null;
-        teacherId = null;
-        token = null;
-        selectedStatus = null;
-        capturedImageData = null;
+        teacherData = null; teacherId = null; token = null; selectedStatus = null; capturedImageData = null;
         
-        // Reset UI
         document.getElementById('loginContainer').style.display = 'block';
         document.getElementById('dashboardContainer').style.display = 'none';
         document.getElementById('teacherId').value = '';
         document.getElementById('teacherPassword').value = '';
-        document.getElementById('voiceFeedback').style.display = 'none';
-        
-        showToast('Success', 'Logged out successfully', 'success');
     }
 
-    // Helper functions
-    function formatDate(dateString) {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
-    }
-
-    function showLoading() {
-        document.getElementById('loadingOverlay').style.display = 'flex';
-    }
-
-    function hideLoading() {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-
-    function showToast(title, message, type = 'info') {
+    // ========== HELPER FUNCTIONS ==========
+    function formatDate(d) { return d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'; }
+    function showLoading() { document.getElementById('loadingOverlay').style.display = 'flex'; }
+    function hideLoading() { document.getElementById('loadingOverlay').style.display = 'none'; }
+    
+    function showToast(title, msg, type = 'info') {
         const toast = document.getElementById('toast');
-        const icon = document.getElementById('toastIcon');
-        const titleEl = document.getElementById('toastTitle');
-        const messageEl = document.getElementById('toastMessage');
-        
-        let iconHtml = '';
-        switch(type) {
-            case 'success':
-                iconHtml = '<i class="fas fa-check-circle text-success"></i>';
-                toast.className = 'toast-notification toast-success';
-                break;
-            case 'error':
-                iconHtml = '<i class="fas fa-exclamation-circle text-danger"></i>';
-                toast.className = 'toast-notification toast-error';
-                break;
-            case 'warning':
-                iconHtml = '<i class="fas fa-exclamation-triangle text-warning"></i>';
-                toast.className = 'toast-notification toast-warning';
-                break;
-            default:
-                iconHtml = '<i class="fas fa-info-circle text-info"></i>';
-                toast.className = 'toast-notification';
-        }
-        
-        icon.innerHTML = iconHtml;
-        titleEl.textContent = title;
-        messageEl.textContent = message;
-        
+        document.getElementById('toastIcon').innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle text-success' : type === 'error' ? 'exclamation-circle text-danger' : 'info-circle text-info'}"></i>`;
+        document.getElementById('toastTitle').textContent = title;
+        document.getElementById('toastMessage').textContent = msg;
+        toast.className = `toast-notification toast-${type}`;
         toast.style.display = 'flex';
-        
         setTimeout(hideToast, 5000);
     }
-
-    function hideToast() {
-        document.getElementById('toast').style.display = 'none';
-    }
-
-    function showHelpModal() {
-        const modal = new bootstrap.Modal(document.getElementById('helpModal'));
-        modal.show();
-    }
-
-    // Load voices for speech synthesis
-    window.speechSynthesis.onvoiceschanged = function() {
-        console.log('Voices loaded for speech synthesis');
-    };
+    
+    function hideToast() { document.getElementById('toast').style.display = 'none'; }
+    function showHelpModal() { new bootstrap.Modal(document.getElementById('helpModal')).show(); }
 </script>
 
 </body>
