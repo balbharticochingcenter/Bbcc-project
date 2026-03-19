@@ -20,10 +20,18 @@
             padding: 12px;
         }
 
+        /* Responsive Container */
         .app-container {
-            max-width: 500px;
+            max-width: 1400px;
             margin: 0 auto;
             position: relative;
+        }
+
+        /* Mobile First Design */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
         }
 
         /* Login Screen */
@@ -34,6 +42,13 @@
             margin: 40px auto;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             animation: slideUp 0.4s ease;
+            max-width: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .login-screen {
+                margin: 80px auto;
+            }
         }
 
         .login-header {
@@ -98,6 +113,13 @@
             transform: scale(0.98);
         }
 
+        @media (min-width: 768px) {
+            .login-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(102,126,234,0.3);
+            }
+        }
+
         /* Dashboard */
         .dashboard {
             display: none;
@@ -119,11 +141,19 @@
         .header h1 {
             font-size: 20px;
             color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .header h1 i {
             color: #667eea;
-            margin-right: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
         }
 
         .logout-btn {
@@ -144,12 +174,19 @@
             background: #fecaca;
         }
 
-        /* Stats Cards */
+        /* Stats Cards - Responsive Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
         }
 
         .stat-card {
@@ -177,6 +214,15 @@
             color: #333;
             font-size: 24px;
             font-weight: 700;
+        }
+
+        @media (min-width: 768px) {
+            .stat-card {
+                padding: 20px;
+            }
+            .stat-card .value {
+                font-size: 28px;
+            }
         }
 
         /* Search Section */
@@ -207,6 +253,13 @@
             gap: 10px;
         }
 
+        @media (min-width: 768px) {
+            .search-row {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
         .search-select {
             width: 100%;
             padding: 14px 16px;
@@ -228,6 +281,14 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .search-actions {
+                display: flex;
+                gap: 10px;
+                margin-left: auto;
+            }
         }
 
         .search-btn {
@@ -254,29 +315,108 @@
             transform: scale(0.98);
         }
 
-        /* Students List */
-        .students-list {
+        @media (min-width: 768px) {
+            .search-btn:hover, .reset-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            }
+        }
+
+        /* Quick Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             margin-bottom: 16px;
         }
 
-        .student-item {
+        @media (min-width: 768px) {
+            .action-buttons {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+            }
+        }
+
+        .action-btn {
+            background: white;
+            border: none;
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn i {
+            font-size: 24px;
+            color: #667eea;
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        @media (min-width: 768px) {
+            .action-btn:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(102,126,234,0.2);
+            }
+        }
+
+        /* Students Grid - Responsive */
+        .students-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .students-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .students-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .student-card {
             background: white;
             border-radius: 20px;
             padding: 16px;
-            margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s;
             border: 2px solid transparent;
         }
 
-        .student-item.selected {
+        .student-card.selected {
             border-color: #667eea;
             background: #f5f3ff;
         }
 
-        .student-item:active {
+        .student-card:active {
             transform: scale(0.98);
+        }
+
+        @media (min-width: 768px) {
+            .student-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            }
         }
 
         .student-header {
@@ -352,42 +492,7 @@
         .status-partial { background: #f59e0b; }
         .status-unpaid { background: #ef4444; }
 
-        /* Quick Action Buttons */
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .action-btn {
-            background: white;
-            border: none;
-            border-radius: 20px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            cursor: pointer;
-        }
-
-        .action-btn i {
-            font-size: 24px;
-            color: #667eea;
-        }
-
-        .action-btn span {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .action-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Student Details */
+        /* Details Card */
         .details-card {
             background: white;
             border-radius: 20px;
@@ -398,40 +503,70 @@
 
         .profile-header {
             display: flex;
+            flex-direction: column;
             align-items: center;
             gap: 16px;
             margin-bottom: 20px;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .profile-header {
+                flex-direction: row;
+                text-align: left;
+            }
         }
 
         .profile-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 40px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50px;
             object-fit: cover;
-            border: 3px solid white;
+            border: 4px solid white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .profile-title h3 {
             color: #333;
-            font-size: 18px;
-            margin-bottom: 4px;
+            font-size: 20px;
+            margin-bottom: 8px;
         }
 
         .profile-title p {
             color: #666;
-            font-size: 13px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 2px;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        @media (min-width: 768px) {
+            .profile-title p {
+                justify-content: flex-start;
+            }
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        @media (min-width: 768px) {
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
         }
 
         .info-section {
             background: #f8fafc;
             border-radius: 16px;
             padding: 16px;
-            margin-bottom: 12px;
         }
 
         .info-title {
@@ -522,9 +657,17 @@
 
         .attendance-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 12px;
             margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .attendance-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
         }
 
         .attendance-header h3 {
@@ -633,10 +776,18 @@
 
         .attendance-item {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
             padding: 12px;
             border-bottom: 1px solid #e0e0e0;
+        }
+
+        @media (min-width: 768px) {
+            .attendance-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
         }
 
         .attendance-date {
@@ -649,6 +800,7 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            display: inline-block;
         }
 
         .status-present {
@@ -677,12 +829,12 @@
         }
 
         .edit-attendance, .delete-attendance {
-            width: 32px;
-            height: 32px;
-            border-radius: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
             border: none;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
         }
@@ -713,7 +865,7 @@
             margin-top: 16px;
         }
 
-        /* Chart */
+        /* Chart Container */
         .chart-container {
             background: white;
             border-radius: 20px;
@@ -729,6 +881,11 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        canvas {
+            max-height: 300px;
+            width: 100% !important;
         }
 
         /* Modal */
@@ -749,17 +906,24 @@
         .modal-content {
             background: white;
             border-radius: 28px;
-            padding: 24px;
+            padding: 20px;
             max-width: 500px;
-            margin: 40px auto;
+            margin: 20px auto;
             position: relative;
             animation: slideUp 0.3s ease;
         }
 
+        @media (min-width: 768px) {
+            .modal-content {
+                padding: 30px;
+                margin: 40px auto;
+            }
+        }
+
         .modal-close {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 12px;
+            right: 12px;
             font-size: 28px;
             color: #999;
             cursor: pointer;
@@ -769,6 +933,8 @@
             align-items: center;
             justify-content: center;
             border-radius: 20px;
+            background: none;
+            border: none;
         }
 
         .modal-close:active {
@@ -792,9 +958,14 @@
         }
 
         /* Fees Table */
+        .fees-table-container {
+            overflow-x: auto;
+        }
+
         .fees-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 500px;
         }
 
         .fees-table th {
@@ -835,13 +1006,7 @@
             cursor: pointer;
         }
 
-        /* Attendance Modal */
-        .attendance-form {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
+        /* Forms */
         .form-group {
             margin-bottom: 16px;
         }
@@ -882,10 +1047,25 @@
             background: #f5f3ff;
         }
 
-        .status-option.present { color: #10b981; }
-        .status-option.absent { color: #ef4444; }
-        .status-option.late { color: #f59e0b; }
-        .status-option.half-day { color: #8b5cf6; }
+        .file-upload {
+            border: 2px dashed #667eea;
+            padding: 20px;
+            text-align: center;
+            border-radius: 16px;
+            background: #f5f3ff;
+            cursor: pointer;
+        }
+
+        .preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .preview img, .preview iframe {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 12px;
+        }
 
         .form-actions {
             display: flex;
@@ -913,33 +1093,6 @@
             color: white;
             font-weight: 600;
             cursor: pointer;
-        }
-
-        /* Add Student Modal */
-        .add-form {
-            max-height: 70vh;
-            overflow-y: auto;
-            padding: 4px;
-        }
-
-        .file-upload {
-            border: 2px dashed #667eea;
-            padding: 20px;
-            text-align: center;
-            border-radius: 16px;
-            background: #f5f3ff;
-            cursor: pointer;
-        }
-
-        .preview {
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .preview img, .preview iframe {
-            max-width: 100%;
-            max-height: 150px;
-            border-radius: 12px;
         }
 
         /* Confirmation Dialog */
@@ -1141,8 +1294,8 @@
                 </button>
             </div>
 
-            <!-- Students List -->
-            <div id="studentsList" class="students-list"></div>
+            <!-- Students Grid -->
+            <div id="studentsGrid" class="students-grid"></div>
 
             <!-- Student Details -->
             <div id="studentDetails" style="display: none;"></div>
@@ -1155,7 +1308,7 @@
                 </button>
                 <button class="action-btn" id="viewAttendanceBtn">
                     <i class="fas fa-clock"></i>
-                    <span>Attendance</span>
+                    <span>View Attendance</span>
                 </button>
             </div>
 
@@ -1170,9 +1323,9 @@
     <!-- Fees Modal -->
     <div class="modal" id="feesModal">
         <div class="modal-content">
-            <span class="modal-close" id="closeFeesModal">&times;</span>
+            <button class="modal-close" id="closeFeesModal">&times;</button>
             <div class="modal-header" id="feesModalHeader"></div>
-            <div style="overflow-x: auto;">
+            <div class="fees-table-container">
                 <table class="fees-table">
                     <thead>
                         <tr>
@@ -1192,9 +1345,9 @@
     <!-- Attendance Modal -->
     <div class="modal" id="attendanceModal">
         <div class="modal-content">
-            <span class="modal-close" id="closeAttendanceModal">&times;</span>
+            <button class="modal-close" id="closeAttendanceModal">&times;</button>
             <h2 style="margin-bottom: 20px;"><i class="fas fa-calendar-check"></i> Mark Attendance</h2>
-            <div class="attendance-form" id="attendanceForm">
+            <div id="attendanceForm">
                 <div class="form-group">
                     <label>Student</label>
                     <select id="attendanceStudentSelect" class="search-select">
@@ -1207,17 +1360,17 @@
                 </div>
                 <div class="form-group">
                     <label>Status</label>
-                    <div class="status-options">
-                        <div class="status-option present" data-status="present" onclick="selectStatus('present')">
+                    <div class="status-options" id="statusOptions">
+                        <div class="status-option present" data-status="present">
                             <i class="fas fa-check-circle"></i> Present
                         </div>
-                        <div class="status-option absent" data-status="absent" onclick="selectStatus('absent')">
+                        <div class="status-option absent" data-status="absent">
                             <i class="fas fa-times-circle"></i> Absent
                         </div>
-                        <div class="status-option late" data-status="late" onclick="selectStatus('late')">
+                        <div class="status-option late" data-status="late">
                             <i class="fas fa-clock"></i> Late
                         </div>
-                        <div class="status-option half-day" data-status="half-day" onclick="selectStatus('half-day')">
+                        <div class="status-option half-day" data-status="half-day">
                             <i class="fas fa-adjust"></i> Half Day
                         </div>
                     </div>
@@ -1242,9 +1395,9 @@
     <!-- Edit Attendance Modal -->
     <div class="modal" id="editAttendanceModal">
         <div class="modal-content">
-            <span class="modal-close" id="closeEditAttendanceModal">&times;</span>
+            <button class="modal-close" id="closeEditAttendanceModal">&times;</button>
             <h2 style="margin-bottom: 20px;"><i class="fas fa-edit"></i> Edit Attendance</h2>
-            <div class="attendance-form">
+            <div id="editAttendanceForm">
                 <input type="hidden" id="editAttendanceStudentId">
                 <input type="hidden" id="editAttendanceOriginalDate">
                 <div class="form-group">
@@ -1253,17 +1406,17 @@
                 </div>
                 <div class="form-group">
                     <label>Status</label>
-                    <div class="status-options">
-                        <div class="status-option present" data-edit-status="present" onclick="selectEditStatus('present')">
+                    <div class="status-options" id="editStatusOptions">
+                        <div class="status-option present" data-edit-status="present">
                             <i class="fas fa-check-circle"></i> Present
                         </div>
-                        <div class="status-option absent" data-edit-status="absent" onclick="selectEditStatus('absent')">
+                        <div class="status-option absent" data-edit-status="absent">
                             <i class="fas fa-times-circle"></i> Absent
                         </div>
-                        <div class="status-option late" data-edit-status="late" onclick="selectEditStatus('late')">
+                        <div class="status-option late" data-edit-status="late">
                             <i class="fas fa-clock"></i> Late
                         </div>
-                        <div class="status-option half-day" data-edit-status="half-day" onclick="selectEditStatus('half-day')">
+                        <div class="status-option half-day" data-edit-status="half-day">
                             <i class="fas fa-adjust"></i> Half Day
                         </div>
                     </div>
@@ -1285,10 +1438,19 @@
         </div>
     </div>
 
+    <!-- View Attendance Modal -->
+    <div class="modal" id="viewAttendanceModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <button class="modal-close" id="closeViewAttendanceModal">&times;</button>
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-clock"></i> Attendance History</h2>
+            <div id="attendanceHistory"></div>
+        </div>
+    </div>
+
     <!-- Add Student Modal -->
     <div class="modal" id="addStudentModal">
-        <div class="modal-content">
-            <span class="modal-close" id="closeAddModal">&times;</span>
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" id="closeAddModal">&times;</button>
             <h2 style="margin-bottom: 20px;"><i class="fas fa-user-plus"></i> Add Student</h2>
             <form id="addStudentForm" class="add-form">
                 <div class="form-group">
@@ -1387,8 +1549,8 @@
 
     <!-- Edit Student Modal -->
     <div class="modal" id="editStudentModal">
-        <div class="modal-content">
-            <span class="modal-close" id="closeEditModal">&times;</span>
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" id="closeEditModal">&times;</button>
             <h2 style="margin-bottom: 20px;"><i class="fas fa-edit"></i> Edit Student</h2>
             <form id="editStudentForm" class="add-form">
                 <input type="hidden" id="editStudentId">
@@ -1474,19 +1636,10 @@
         </div>
     </div>
 
-    <!-- View Attendance Modal -->
-    <div class="modal" id="viewAttendanceModal">
-        <div class="modal-content">
-            <span class="modal-close" id="closeViewAttendanceModal">&times;</span>
-            <h2 style="margin-bottom: 20px;"><i class="fas fa-clock"></i> Attendance History</h2>
-            <div id="attendanceHistory"></div>
-        </div>
-    </div>
-
     <!-- Document Viewer Modal -->
     <div class="modal" id="documentModal">
-        <div class="modal-content">
-            <span class="modal-close" id="closeDocumentModal">&times;</span>
+        <div class="modal-content" style="max-width: 800px;">
+            <button class="modal-close" id="closeDocumentModal">&times;</button>
             <h3 id="documentTitle" style="margin-bottom: 16px;"></h3>
             <div id="documentContent"></div>
             <div class="form-actions" style="margin-top: 20px;">
@@ -1511,911 +1664,905 @@
     </div>
 
     <script>
-        // ===== STATE =====
-        let token = localStorage.getItem('token');
-        let selectedStudent = null;
-        let chart = null;
-        let allStudents = [];
-        let filteredStudents = [];
-        let currentDocUrl = '';
-        let deleteCallback = null;
-        let selectedStatus = 'present';
-        let selectedEditStatus = 'present';
+        (function() {
+            // ===== STATE =====
+            let token = localStorage.getItem('token');
+            let selectedStudent = null;
+            let chart = null;
+            let allStudents = [];
+            let filteredStudents = [];
+            let currentDocUrl = '';
+            let deleteCallback = null;
 
-        // ===== DOM ELEMENTS =====
-        const loginScreen = document.getElementById('loginScreen');
-        const dashboard = document.getElementById('dashboard');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const addStudentBtn = document.getElementById('addStudentBtn');
-        const markAttendanceBtn = document.getElementById('markAttendanceBtn');
-        const searchBtn = document.getElementById('searchBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const feesTrackerBtn = document.getElementById('feesTrackerBtn');
-        const viewAttendanceBtn = document.getElementById('viewAttendanceBtn');
-        
-        // Modals
-        const feesModal = document.getElementById('feesModal');
-        const attendanceModal = document.getElementById('attendanceModal');
-        const editAttendanceModal = document.getElementById('editAttendanceModal');
-        const viewAttendanceModal = document.getElementById('viewAttendanceModal');
-        const addModal = document.getElementById('addStudentModal');
-        const editModal = document.getElementById('editStudentModal');
-        const docModal = document.getElementById('documentModal');
-        const confirmDialog = document.getElementById('confirmDialog');
-
-        // Modal close buttons
-        document.getElementById('closeFeesModal').onclick = () => feesModal.style.display = 'none';
-        document.getElementById('closeAttendanceModal').onclick = () => attendanceModal.style.display = 'none';
-        document.getElementById('closeEditAttendanceModal').onclick = () => editAttendanceModal.style.display = 'none';
-        document.getElementById('closeViewAttendanceModal').onclick = () => viewAttendanceModal.style.display = 'none';
-        document.getElementById('closeAddModal').onclick = () => closeAddModal();
-        document.getElementById('closeEditModal').onclick = () => closeEditModal();
-        document.getElementById('closeDocumentModal').onclick = () => docModal.style.display = 'none';
-        document.getElementById('cancelAddBtn').onclick = () => closeAddModal();
-        document.getElementById('cancelEditBtn').onclick = () => closeEditModal();
-        document.getElementById('cancelAttendanceBtn').onclick = () => attendanceModal.style.display = 'none';
-        document.getElementById('cancelEditAttendanceBtn').onclick = () => editAttendanceModal.style.display = 'none';
-        document.getElementById('confirmNo').onclick = () => hideConfirmDialog();
-
-        // File upload triggers
-        document.getElementById('addPhotoUpload').onclick = () => document.getElementById('addPhotoFile').click();
-        document.getElementById('addAadharUpload').onclick = () => document.getElementById('addAadharFile').click();
-        document.getElementById('editPhotoUpload').onclick = () => document.getElementById('editPhotoFile').click();
-        document.getElementById('editAadharUpload').onclick = () => document.getElementById('editAadharFile').click();
-
-        // File inputs
-        document.getElementById('addPhotoFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addPhoto', 'addPhotoPreview'));
-        document.getElementById('addAadharFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addAadharDoc', 'addAadharPreview'));
-        document.getElementById('editPhotoFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editPhoto', 'editPhotoPreview'));
-        document.getElementById('editAadharFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editAadharDoc', 'editAadharPreview'));
-
-        // Set today's dates
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('addRegDate').value = today;
-        document.getElementById('addJoinDate').value = today;
-        document.getElementById('attendanceDate').value = today;
-
-        // Check token on load
-        if (token) verifyToken();
-
-        // ===== EVENT LISTENERS =====
-        loginBtn.addEventListener('click', login);
-        logoutBtn.addEventListener('click', logout);
-        addStudentBtn.addEventListener('click', openAddModal);
-        markAttendanceBtn.addEventListener('click', openAttendanceModal);
-        searchBtn.addEventListener('click', searchStudents);
-        resetBtn.addEventListener('click', resetFilters);
-        feesTrackerBtn.addEventListener('click', openFeesModal);
-        viewAttendanceBtn.addEventListener('click', openViewAttendanceModal);
-        document.getElementById('addStudentSubmitBtn').addEventListener('click', addStudent);
-        document.getElementById('saveChangesBtn').addEventListener('click', updateStudent);
-        document.getElementById('saveAttendanceBtn').addEventListener('click', saveAttendance);
-        document.getElementById('updateAttendanceBtn').addEventListener('click', updateAttendance);
-        document.getElementById('downloadDocumentBtn').addEventListener('click', downloadDocument);
-        document.getElementById('confirmYes').addEventListener('click', () => {
-            if (deleteCallback) deleteCallback();
-            hideConfirmDialog();
-        });
-
-        // Close modals on outside click
-        window.addEventListener('click', (e) => {
-            if (e.target === feesModal) feesModal.style.display = 'none';
-            if (e.target === attendanceModal) attendanceModal.style.display = 'none';
-            if (e.target === editAttendanceModal) editAttendanceModal.style.display = 'none';
-            if (e.target === viewAttendanceModal) viewAttendanceModal.style.display = 'none';
-            if (e.target === addModal) closeAddModal();
-            if (e.target === editModal) closeEditModal();
-            if (e.target === docModal) docModal.style.display = 'none';
-        });
-
-        // ===== UTILITY FUNCTIONS =====
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i> ${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function showConfirmDialog(message, callback) {
-            document.getElementById('confirmMessage').textContent = message;
-            confirmDialog.style.display = 'flex';
-            deleteCallback = callback;
-        }
-
-        function hideConfirmDialog() {
-            confirmDialog.style.display = 'none';
-            deleteCallback = null;
-        }
-
-        function handleFileUpload(file, inputId, previewId) {
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById(inputId).value = e.target.result;
-                const preview = document.getElementById(previewId);
-                if (file.type.startsWith('image/')) {
-                    preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:150px; border-radius:12px;">`;
-                } else if (file.type === 'application/pdf') {
-                    preview.innerHTML = `<iframe src="${e.target.result}" style="width:100%; height:150px; border:1px solid #ddd; border-radius:12px;"></iframe>`;
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function viewDocument(url, title) {
-            document.getElementById('documentTitle').textContent = title;
-            currentDocUrl = url;
-            const isPDF = url.includes('application/pdf') || url.startsWith('data:application/pdf');
-            document.getElementById('documentContent').innerHTML = isPDF ? 
-                `<iframe src="${url}" style="width:100%; height:60vh; border:none; border-radius:12px;"></iframe>` : 
-                `<img src="${url}" style="max-width:100%; max-height:60vh; display:block; margin:0 auto;">`;
-            docModal.style.display = 'block';
-        }
-
-        function downloadDocument() {
-            if (!currentDocUrl) return;
-            const a = document.createElement('a');
-            a.href = currentDocUrl;
-            a.download = 'document';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        function selectStatus(status) {
-            selectedStatus = status;
-            document.getElementById('attendanceStatus').value = status;
-            document.querySelectorAll('.status-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            document.querySelector(`.status-option[data-status="${status}"]`).classList.add('selected');
-        }
-
-        function selectEditStatus(status) {
-            selectedEditStatus = status;
-            document.getElementById('editAttendanceStatus').value = status;
-            document.querySelectorAll('[data-edit-status]').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            document.querySelector(`[data-edit-status="${status}"]`).classList.add('selected');
-        }
-
-        // ===== AUTH =====
-        async function login() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
+            // ===== DOM ELEMENTS =====
+            const loginScreen = document.getElementById('loginScreen');
+            const dashboard = document.getElementById('dashboard');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const addStudentBtn = document.getElementById('addStudentBtn');
+            const markAttendanceBtn = document.getElementById('markAttendanceBtn');
+            const searchBtn = document.getElementById('searchBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const feesTrackerBtn = document.getElementById('feesTrackerBtn');
+            const viewAttendanceBtn = document.getElementById('viewAttendanceBtn');
             
-            if (!username || !password) {
-                return showToast('Please enter username and password', 'warning');
+            // Modals
+            const feesModal = document.getElementById('feesModal');
+            const attendanceModal = document.getElementById('attendanceModal');
+            const editAttendanceModal = document.getElementById('editAttendanceModal');
+            const viewAttendanceModal = document.getElementById('viewAttendanceModal');
+            const addModal = document.getElementById('addStudentModal');
+            const editModal = document.getElementById('editStudentModal');
+            const docModal = document.getElementById('documentModal');
+            const confirmDialog = document.getElementById('confirmDialog');
+
+            // Modal close buttons
+            document.getElementById('closeFeesModal').addEventListener('click', () => feesModal.style.display = 'none');
+            document.getElementById('closeAttendanceModal').addEventListener('click', () => attendanceModal.style.display = 'none');
+            document.getElementById('closeEditAttendanceModal').addEventListener('click', () => editAttendanceModal.style.display = 'none');
+            document.getElementById('closeViewAttendanceModal').addEventListener('click', () => viewAttendanceModal.style.display = 'none');
+            document.getElementById('closeAddModal').addEventListener('click', closeAddModal);
+            document.getElementById('closeEditModal').addEventListener('click', closeEditModal);
+            document.getElementById('closeDocumentModal').addEventListener('click', () => docModal.style.display = 'none');
+            document.getElementById('cancelAddBtn').addEventListener('click', closeAddModal);
+            document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+            document.getElementById('cancelAttendanceBtn').addEventListener('click', () => attendanceModal.style.display = 'none');
+            document.getElementById('cancelEditAttendanceBtn').addEventListener('click', () => editAttendanceModal.style.display = 'none');
+            document.getElementById('confirmNo').addEventListener('click', hideConfirmDialog);
+
+            // File upload triggers
+            document.getElementById('addPhotoUpload').addEventListener('click', () => document.getElementById('addPhotoFile').click());
+            document.getElementById('addAadharUpload').addEventListener('click', () => document.getElementById('addAadharFile').click());
+            document.getElementById('editPhotoUpload').addEventListener('click', () => document.getElementById('editPhotoFile').click());
+            document.getElementById('editAadharUpload').addEventListener('click', () => document.getElementById('editAadharFile').click());
+
+            // File inputs
+            document.getElementById('addPhotoFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addPhoto', 'addPhotoPreview'));
+            document.getElementById('addAadharFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addAadharDoc', 'addAadharPreview'));
+            document.getElementById('editPhotoFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editPhoto', 'editPhotoPreview'));
+            document.getElementById('editAadharFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editAadharDoc', 'editAadharPreview'));
+
+            // Status option clicks
+            document.querySelectorAll('#statusOptions .status-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const status = this.dataset.status;
+                    document.getElementById('attendanceStatus').value = status;
+                    document.querySelectorAll('#statusOptions .status-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            document.querySelectorAll('#editStatusOptions .status-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const status = this.dataset.editStatus;
+                    document.getElementById('editAttendanceStatus').value = status;
+                    document.querySelectorAll('#editStatusOptions .status-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // Set today's dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('addRegDate').value = today;
+            document.getElementById('addJoinDate').value = today;
+            document.getElementById('attendanceDate').value = today;
+
+            // Check token on load
+            if (token) verifyToken();
+
+            // ===== EVENT LISTENERS =====
+            loginBtn.addEventListener('click', login);
+            logoutBtn.addEventListener('click', logout);
+            addStudentBtn.addEventListener('click', openAddModal);
+            markAttendanceBtn.addEventListener('click', openAttendanceModal);
+            searchBtn.addEventListener('click', searchStudents);
+            resetBtn.addEventListener('click', resetFilters);
+            feesTrackerBtn.addEventListener('click', openFeesModal);
+            viewAttendanceBtn.addEventListener('click', openViewAttendanceModal);
+            document.getElementById('addStudentSubmitBtn').addEventListener('click', addStudent);
+            document.getElementById('saveChangesBtn').addEventListener('click', updateStudent);
+            document.getElementById('saveAttendanceBtn').addEventListener('click', saveAttendance);
+            document.getElementById('updateAttendanceBtn').addEventListener('click', updateAttendance);
+            document.getElementById('downloadDocumentBtn').addEventListener('click', downloadDocument);
+            document.getElementById('confirmYes').addEventListener('click', () => {
+                if (deleteCallback) deleteCallback();
+                hideConfirmDialog();
+            });
+
+            // Board change
+            document.getElementById('boardSelect').addEventListener('change', loadClasses);
+
+            // Close modals on outside click
+            window.addEventListener('click', (e) => {
+                if (e.target === feesModal) feesModal.style.display = 'none';
+                if (e.target === attendanceModal) attendanceModal.style.display = 'none';
+                if (e.target === editAttendanceModal) editAttendanceModal.style.display = 'none';
+                if (e.target === viewAttendanceModal) viewAttendanceModal.style.display = 'none';
+                if (e.target === addModal) closeAddModal();
+                if (e.target === editModal) closeEditModal();
+                if (e.target === docModal) docModal.style.display = 'none';
+            });
+
+            // ===== UTILITY FUNCTIONS =====
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i> ${message}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
             }
 
-            try {
-                const res = await fetch('/api/admin-login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userid: username, password })
-                });
-                const data = await res.json();
+            function showConfirmDialog(message, callback) {
+                document.getElementById('confirmMessage').textContent = message;
+                confirmDialog.style.display = 'flex';
+                deleteCallback = callback;
+            }
+
+            function hideConfirmDialog() {
+                confirmDialog.style.display = 'none';
+                deleteCallback = null;
+            }
+
+            function handleFileUpload(file, inputId, previewId) {
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById(inputId).value = e.target.result;
+                    const preview = document.getElementById(previewId);
+                    if (file.type.startsWith('image/')) {
+                        preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:150px; border-radius:12px;">`;
+                    } else if (file.type === 'application/pdf') {
+                        preview.innerHTML = `<iframe src="${e.target.result}" style="width:100%; height:150px; border:1px solid #ddd; border-radius:12px;"></iframe>`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function viewDocument(url, title) {
+                document.getElementById('documentTitle').textContent = title;
+                currentDocUrl = url;
+                const isPDF = url.includes('application/pdf') || url.startsWith('data:application/pdf');
+                document.getElementById('documentContent').innerHTML = isPDF ? 
+                    `<iframe src="${url}" style="width:100%; height:60vh; border:none; border-radius:12px;"></iframe>` : 
+                    `<img src="${url}" style="max-width:100%; max-height:60vh; display:block; margin:0 auto;">`;
+                docModal.style.display = 'block';
+            }
+
+            function downloadDocument() {
+                if (!currentDocUrl) return;
+                const a = document.createElement('a');
+                a.href = currentDocUrl;
+                a.download = 'document';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            // ===== AUTH =====
+            async function login() {
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
                 
-                if (data.success) {
-                    token = data.token;
-                    localStorage.setItem('token', token);
-                    loginScreen.style.display = 'none';
-                    dashboard.style.display = 'block';
-                    loadAllStudents();
-                    loadBoards();
-                    loadAttendanceStats();
-                    showToast('Login successful!');
-                } else {
-                    showToast('Invalid username or password', 'error');
+                if (!username || !password) {
+                    return showToast('Please enter username and password', 'warning');
                 }
-            } catch (error) {
-                showToast('Login failed. Check connection.', 'error');
-            }
-        }
 
-        async function verifyToken() {
-            try {
-                const res = await fetch('/api/verify-token', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    loginScreen.style.display = 'none';
-                    dashboard.style.display = 'block';
-                    loadAllStudents();
-                    loadBoards();
-                    loadAttendanceStats();
-                } else {
-                    localStorage.removeItem('token');
-                    token = null;
-                }
-            } catch (error) {
-                localStorage.removeItem('token');
-                token = null;
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            token = null;
-            loginScreen.style.display = 'block';
-            dashboard.style.display = 'none';
-            showToast('Logged out');
-        }
-
-        // ===== DATA LOADING =====
-        async function loadAllStudents() {
-            try {
-                const res = await fetch('/api/students', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    allStudents = data.data;
-                    filteredStudents = allStudents;
-                    displayStudents(filteredStudents);
-                    updateStats();
-                    updateAttendanceSelect();
-                }
-            } catch (error) {
-                if (error.status === 401) logout();
-                showToast('Failed to load students', 'error');
-            }
-        }
-
-        async function loadBoards() {
-            try {
-                const res = await fetch('/api/boards', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    const select = document.getElementById('boardSelect');
-                    select.innerHTML = '<option value="all">All Boards</option>';
-                    data.data.forEach(board => {
-                        select.innerHTML += `<option value="${board}">${board}</option>`;
+                try {
+                    const res = await fetch('/api/admin-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userid: username, password })
                     });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        token = data.token;
+                        localStorage.setItem('token', token);
+                        loginScreen.style.display = 'none';
+                        dashboard.style.display = 'block';
+                        loadAllStudents();
+                        loadBoards();
+                        loadAttendanceStats();
+                        showToast('Login successful!');
+                    } else {
+                        showToast('Invalid username or password', 'error');
+                    }
+                } catch (error) {
+                    showToast('Login failed. Check connection.', 'error');
                 }
-            } catch (error) {
-                console.error('Load boards error:', error);
             }
-        }
 
-        async function loadClasses() {
-            const board = document.getElementById('boardSelect').value;
-            if (board === 'all') {
-                document.getElementById('classSelect').innerHTML = '<option value="all">All Classes</option>';
-                return;
-            }
-            
-            try {
-                const res = await fetch(`/api/classes/${encodeURIComponent(board)}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    const select = document.getElementById('classSelect');
-                    select.innerHTML = '<option value="all">All Classes</option>';
-                    data.data.forEach(cls => {
-                        select.innerHTML += `<option value="${cls}">${cls}</option>`;
-                    });
-                }
-            } catch (error) {
-                console.error('Load classes error:', error);
-            }
-        }
-
-        document.getElementById('boardSelect').addEventListener('change', loadClasses);
-
-        async function loadAttendanceStats() {
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                let present = 0;
-                
-                const students = await Promise.all(allStudents.map(async (s) => {
-                    const res = await fetch(`/api/students/${s.studentId}/attendance`, {
+            async function verifyToken() {
+                try {
+                    const res = await fetch('/api/verify-token', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await res.json();
+                    
                     if (data.success) {
-                        const todayAttendance = data.data.find(a => a.date === today);
-                        if (todayAttendance && todayAttendance.status === 'present') present++;
+                        loginScreen.style.display = 'none';
+                        dashboard.style.display = 'block';
+                        loadAllStudents();
+                        loadBoards();
+                        loadAttendanceStats();
+                    } else {
+                        localStorage.removeItem('token');
+                        token = null;
                     }
-                }));
-                
-                document.getElementById('presentToday').textContent = present;
-            } catch (error) {
-                console.error('Load attendance stats error:', error);
-            }
-        }
-
-        async function searchStudents() {
-            const board = document.getElementById('boardSelect').value;
-            const className = document.getElementById('classSelect').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-            try {
-                let url = '/api/students';
-                if (board !== 'all' && className !== 'all') {
-                    url = `/api/students/${encodeURIComponent(board)}/${encodeURIComponent(className)}`;
+                } catch (error) {
+                    localStorage.removeItem('token');
+                    token = null;
                 }
-                
-                const res = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    let students = data.data;
-                    if (searchTerm) {
-                        students = students.filter(s => {
-                            const name = `${s.studentName.first} ${s.studentName.last}`.toLowerCase();
-                            return name.includes(searchTerm) || s.studentId.toLowerCase().includes(searchTerm);
+            }
+
+            function logout() {
+                localStorage.removeItem('token');
+                token = null;
+                loginScreen.style.display = 'block';
+                dashboard.style.display = 'none';
+                showToast('Logged out');
+            }
+
+            // ===== DATA LOADING =====
+            async function loadAllStudents() {
+                try {
+                    const res = await fetch('/api/students', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        allStudents = data.data;
+                        filteredStudents = allStudents;
+                        displayStudents(filteredStudents);
+                        updateStats();
+                        updateAttendanceSelect();
+                    }
+                } catch (error) {
+                    if (error.status === 401) logout();
+                    showToast('Failed to load students', 'error');
+                }
+            }
+
+            async function loadBoards() {
+                try {
+                    const res = await fetch('/api/boards', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        const select = document.getElementById('boardSelect');
+                        select.innerHTML = '<option value="all">All Boards</option>';
+                        data.data.forEach(board => {
+                            select.innerHTML += `<option value="${board}">${board}</option>`;
                         });
                     }
-                    filteredStudents = students;
-                    displayStudents(filteredStudents);
-                    updateStats();
+                } catch (error) {
+                    console.error('Load boards error:', error);
                 }
-            } catch (error) {
-                showToast('Search failed', 'error');
-            }
-        }
-
-        function resetFilters() {
-            document.getElementById('boardSelect').value = 'all';
-            document.getElementById('classSelect').innerHTML = '<option value="all">All Classes</option>';
-            document.getElementById('searchInput').value = '';
-            loadAllStudents();
-        }
-
-        function updateAttendanceSelect() {
-            const select = document.getElementById('attendanceStudentSelect');
-            select.innerHTML = '<option value="">Select Student</option>';
-            allStudents.forEach(s => {
-                const name = `${s.studentName.first} ${s.studentName.last}`.trim();
-                select.innerHTML += `<option value="${s.studentId}">${name} (${s.studentId})</option>`;
-            });
-        }
-
-        // ===== UI RENDERING =====
-        function displayStudents(students) {
-            const list = document.getElementById('studentsList');
-            
-            if (!students || students.length === 0) {
-                list.innerHTML = '<div class="no-data"><i class="fas fa-users-slash"></i><p>No students found</p></div>';
-                return;
             }
 
-            list.innerHTML = '';
-            students.forEach(student => {
-                const fullName = `${student.studentName.first} ${student.studentName.middle || ''} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
-                
-                let status = 'unpaid';
-                if (student.feesHistory && student.feesHistory.length) {
-                    const lastFee = student.feesHistory[student.feesHistory.length - 1];
-                    status = lastFee.status || 'unpaid';
+            async function loadClasses() {
+                const board = document.getElementById('boardSelect').value;
+                if (board === 'all') {
+                    document.getElementById('classSelect').innerHTML = '<option value="all">All Classes</option>';
+                    return;
                 }
-
-                const statusClass = status === 'paid' ? 'status-paid' : status === 'partial' ? 'status-partial' : 'status-unpaid';
-
-                const item = document.createElement('div');
-                item.className = `student-item ${selectedStudent?.studentId === student.studentId ? 'selected' : ''}`;
-                item.onclick = () => selectStudent(student.studentId);
                 
-                item.innerHTML = `
-                    <div class="student-header">
-                        <img src="${student.photo || 'https://via.placeholder.com/60'}" class="student-avatar" onerror="this.src='https://via.placeholder.com/60'">
-                        <div class="student-info">
-                            <div class="student-name">${fullName}</div>
-                            <div class="student-id"><i class="fas fa-id-card"></i> ${student.studentId}</div>
-                            <div class="student-class"><i class="fas fa-graduation-cap"></i> ${student.education?.board || 'N/A'} - ${student.education?.class || 'N/A'}</div>
-                        </div>
-                    </div>
-                    <div class="student-footer">
-                        <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ₹${student.classMonthlyFees}/mo</span>
-                        <span class="status-dot ${statusClass}" title="Fees Status: ${status}"></span>
-                    </div>
-                `;
-                
-                list.appendChild(item);
-            });
-        }
-
-        function updateStats() {
-            let total = filteredStudents.length;
-            let collected = 0, pending = 0, paid = 0;
-            
-            filteredStudents.forEach(s => {
-                if (s.feesHistory?.length) {
-                    const totalPaid = s.feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
-                    const totalDue = s.feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
-                    collected += totalPaid;
-                    pending += totalDue;
-                    if (s.feesHistory.every(f => f.status === 'paid')) paid++;
-                }
-            });
-            
-            document.getElementById('totalStudents').textContent = total;
-            document.getElementById('totalFees').textContent = `₹${collected}`;
-            document.getElementById('pendingFees').textContent = `₹${pending}`;
-        }
-
-        async function selectStudent(id) {
-            try {
-                const res = await fetch(`/api/student-dashboard/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    selectedStudent = data.data;
-                    displayStudentDetails(selectedStudent);
-                    displayStudents(filteredStudents);
-                    document.getElementById('actionButtons').style.display = 'grid';
+                try {
+                    const res = await fetch(`/api/classes/${encodeURIComponent(board)}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
                     
-                    if (selectedStudent.feesHistory?.length) {
-                        updateChart(selectedStudent);
-                        document.getElementById('chartContainer').style.display = 'block';
-                    } else {
-                        document.getElementById('chartContainer').style.display = 'none';
+                    if (data.success) {
+                        const select = document.getElementById('classSelect');
+                        select.innerHTML = '<option value="all">All Classes</option>';
+                        data.data.forEach(cls => {
+                            select.innerHTML += `<option value="${cls}">${cls}</option>`;
+                        });
                     }
+                } catch (error) {
+                    console.error('Load classes error:', error);
                 }
-            } catch (error) {
-                showToast('Failed to load student details', 'error');
-            }
-        }
-
-        function displayStudentDetails(s) {
-            const fullName = `${s.studentName.first} ${s.studentName.middle || ''} ${s.studentName.last}`.replace(/\s+/g, ' ').trim();
-            const father = `${s.fatherName.first} ${s.fatherName.middle || ''} ${s.fatherName.last}`.trim();
-            const mother = `${s.motherName.first || ''} ${s.motherName.middle || ''} ${s.motherName.last || ''}`.trim() || 'Not Provided';
-            
-            const joinDate = new Date(s.joiningDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-
-            const isPDF = s.aadharDocument?.includes('application/pdf') || s.aadharDocument?.startsWith('data:application/pdf');
-            const docPreview = isPDF ? 
-                `<iframe src="${s.aadharDocument}" style="width:100%; height:150px; border:1px solid #ddd; border-radius:12px;"></iframe>` : 
-                `<img src="${s.aadharDocument}" onclick="viewDocument('${s.aadharDocument}', 'Aadhar - ${fullName}')" style="width:100%; max-height:150px; object-fit:cover; border-radius:12px; cursor:pointer;">`;
-
-            document.getElementById('studentDetails').innerHTML = `
-                <div class="details-card">
-                    <div class="profile-header">
-                        <img src="${s.photo}" class="profile-img" onerror="this.src='https://via.placeholder.com/80'">
-                        <div class="profile-title">
-                            <h3>${fullName}</h3>
-                            <p><i class="fas fa-id-card"></i> ${s.studentId}</p>
-                            <p><i class="fas fa-phone"></i> ${s.mobile}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="info-section">
-                        <div class="info-title"><i class="fas fa-graduation-cap"></i> Education</div>
-                        <div class="info-row"><i class="fas fa-school"></i> Board: ${s.education.board}</div>
-                        <div class="info-row"><i class="fas fa-layer-group"></i> Class: ${s.education.class}</div>
-                        <div class="info-row"><i class="fas fa-calendar"></i> Joined: ${joinDate}</div>
-                    </div>
-
-                    <div class="info-section">
-                        <div class="info-title"><i class="fas fa-rupee-sign"></i> Fees</div>
-                        <div class="info-row"><i class="fas fa-tag"></i> Monthly: ₹${s.classMonthlyFees}</div>
-                    </div>
-
-                    <div class="info-section">
-                        <div class="info-title"><i class="fas fa-users"></i> Family</div>
-                        <div class="info-row"><i class="fas fa-user-tie"></i> Father: ${father}</div>
-                        <div class="info-row"><i class="fas fa-phone"></i> Father's Mobile: ${s.fatherMobile}</div>
-                        <div class="info-row"><i class="fas fa-user"></i> Mother: ${mother}</div>
-                    </div>
-
-                    <div class="info-section">
-                        <div class="info-title"><i class="fas fa-map-marker-alt"></i> Address</div>
-                        <div class="info-row"><i class="fas fa-home"></i> Current: ${s.address.current}</div>
-                        <div class="info-row"><i class="fas fa-home"></i> Permanent: ${s.address.permanent}</div>
-                    </div>
-
-                    <div class="doc-preview">
-                        <div class="info-title"><i class="fas fa-id-card"></i> Aadhar Document</div>
-                        ${docPreview}
-                        <div class="doc-actions">
-                            <button class="doc-btn doc-view" onclick="viewDocument('${s.aadharDocument}', 'Aadhar - ${fullName}')">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button class="doc-btn doc-download" onclick="downloadDoc('${s.aadharDocument}', '${s.studentId}_Aadhar')">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="doc-actions" style="margin-top: 16px;">
-                        <button class="doc-btn doc-view" onclick="openEditModal('${s.studentId}')">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="doc-btn doc-download" style="background:#ef4444;" onclick="showConfirmDialog('Delete ${fullName}?', () => deleteStudent('${s.studentId}'))">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('studentDetails').style.display = 'block';
-        }
-
-        function downloadDoc(url, filename) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename || 'document';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        function updateChart(student) {
-            if (!student.feesHistory?.length) return;
-            
-            const ctx = document.getElementById('feesChart').getContext('2d');
-            const months = student.feesHistory.map(f => f.month.split(' ')[0]);
-            const paid = student.feesHistory.map(f => f.paidAmount);
-            const due = student.feesHistory.map(f => f.dueAmount);
-
-            if (chart) chart.destroy();
-            
-            chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: months,
-                    datasets: [
-                        { label: 'Paid', data: paid, backgroundColor: '#10b981' },
-                        { label: 'Due', data: due, backgroundColor: '#ef4444' }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        // ===== FEES MANAGEMENT =====
-        function openFeesModal() {
-            if (!selectedStudent) return showToast('Select a student first', 'warning');
-            
-            const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.last}`.trim();
-            document.getElementById('feesModalHeader').innerHTML = `
-                <img src="${selectedStudent.photo}">
-                <div>
-                    <h3 style="margin-bottom:4px;">${fullName}</h3>
-                    <p style="color:#666;"><i class="fas fa-id-card"></i> ${selectedStudent.studentId}</p>
-                </div>
-            `;
-
-            const tbody = document.getElementById('feesTableBody');
-            tbody.innerHTML = '';
-
-            const joining = new Date(selectedStudent.joiningDate);
-            const now = new Date();
-            let current = new Date(joining);
-            
-            const historyMap = {};
-            (selectedStudent.feesHistory || []).forEach(f => historyMap[f.month] = f);
-
-            while (current <= now) {
-                const monthName = current.toLocaleString('default', { month: 'short' });
-                const year = current.getFullYear();
-                const monthKey = `${monthName} ${year}`;
-                const fee = historyMap[monthKey] || { paidAmount: 0, dueAmount: selectedStudent.classMonthlyFees, status: 'unpaid' };
-                
-                const statusClass = fee.status === 'paid' ? 'status-paid' : fee.status === 'partial' ? 'status-partial' : 'status-unpaid';
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${monthName} ${year}</strong></td>
-                    <td><input type="number" class="fees-input" id="paid-${monthKey}" value="${fee.paidAmount}" min="0" max="${selectedStudent.classMonthlyFees}"></td>
-                    <td>₹${fee.dueAmount}</td>
-                    <td><span class="status-badge" style="background:${fee.status === 'paid' ? '#d1fae5' : fee.status === 'partial' ? '#fed7aa' : '#fee2e2'}">${fee.status}</span></td>
-                    <td><button class="save-fees" data-month="${monthKey}"><i class="fas fa-save"></i></button></td>
-                `;
-                tbody.appendChild(row);
-                current.setMonth(current.getMonth() + 1);
             }
 
-            tbody.querySelectorAll('.save-fees').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const month = btn.dataset.month;
-                    const paid = parseFloat(document.getElementById(`paid-${month}`).value) || 0;
-                    saveFees(month, paid);
-                });
-            });
-
-            feesModal.style.display = 'block';
-        }
-
-        async function saveFees(month, paidAmount) {
-            if (paidAmount > selectedStudent.classMonthlyFees) {
-                return showToast(`Max ₹${selectedStudent.classMonthlyFees}`, 'warning');
-            }
-
-            try {
-                const res = await fetch(`/api/update-fees/${selectedStudent.studentId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ month, paidAmount })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    selectedStudent.feesHistory = data.data.feesHistory;
-                    updateChart(selectedStudent);
-                    updateStats();
-                    showToast('Fees updated!');
-                    openFeesModal(); // Refresh modal
-                } else {
-                    showToast(data.message || 'Update failed', 'error');
-                }
-            } catch (error) {
-                showToast('Update failed', 'error');
-            }
-        }
-
-        // ===== ATTENDANCE MANAGEMENT =====
-        function openAttendanceModal() {
-            attendanceModal.style.display = 'block';
-            selectedStatus = 'present';
-            document.getElementById('attendanceStatus').value = 'present';
-            document.querySelectorAll('.status-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            document.querySelector('.status-option.present').classList.add('selected');
-        }
-
-        async function saveAttendance() {
-            const studentId = document.getElementById('attendanceStudentSelect').value;
-            const date = document.getElementById('attendanceDate').value;
-            const status = document.getElementById('attendanceStatus').value;
-            const remarks = document.getElementById('attendanceRemarks').value;
-
-            if (!studentId) return showToast('Select a student', 'warning');
-            if (!date) return showToast('Select date', 'warning');
-
-            try {
-                const res = await fetch(`/api/students/${studentId}/attendance`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ date, status, remarks })
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    showToast('Attendance marked!');
-                    attendanceModal.style.display = 'none';
-                    document.getElementById('attendanceRemarks').value = '';
-                    loadAttendanceStats();
+            async function loadAttendanceStats() {
+                try {
+                    const today = new Date().toISOString().split('T')[0];
+                    let present = 0;
                     
-                    if (selectedStudent?.studentId === studentId) {
-                        selectStudent(studentId);
-                    }
-                } else {
-                    showToast(data.message || 'Failed', 'error');
-                }
-            } catch (error) {
-                showToast('Failed to mark attendance', 'error');
-            }
-        }
-
-        async function openViewAttendanceModal() {
-            if (!selectedStudent) return showToast('Select a student first', 'warning');
-            
-            try {
-                const res = await fetch(`/api/students/${selectedStudent.studentId}/attendance`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    const attendance = data.data;
-                    const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.last}`.trim();
-                    
-                    // Calculate stats
-                    const present = attendance.filter(a => a.status === 'present').length;
-                    const absent = attendance.filter(a => a.status === 'absent').length;
-                    const late = attendance.filter(a => a.status === 'late').length;
-                    const halfDay = attendance.filter(a => a.status === 'half-day').length;
-                    
-                    // Generate calendar for current month
-                    const today = new Date();
-                    const year = today.getFullYear();
-                    const month = today.getMonth();
-                    const firstDay = new Date(year, month, 1);
-                    const lastDay = new Date(year, month + 1, 0);
-                    
-                    let calendarHTML = '<div class="attendance-calendar">';
-                    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-                    days.forEach(d => { calendarHTML += `<div class="calendar-day" style="background:#667eea; color:white;">${d}</div>`; });
-                    
-                    for (let i = 0; i < firstDay.getDay(); i++) {
-                        calendarHTML += '<div class="calendar-day"></div>';
+                    for (const student of allStudents) {
+                        try {
+                            const res = await fetch(`/api/students/${student.studentId}/attendance`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                const todayAttendance = data.data.find(a => a.date === today);
+                                if (todayAttendance && todayAttendance.status === 'present') present++;
+                            }
+                        } catch (e) {
+                            console.error('Error loading attendance for', student.studentId);
+                        }
                     }
                     
-                    for (let d = 1; d <= lastDay.getDate(); d++) {
-                        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                        const att = attendance.find(a => a.date === dateStr);
-                        let className = 'calendar-day';
-                        if (att) className += ` ${att.status}`;
-                        calendarHTML += `<div class="${className}">${d}</div>`;
+                    document.getElementById('presentToday').textContent = present;
+                } catch (error) {
+                    console.error('Load attendance stats error:', error);
+                }
+            }
+
+            async function searchStudents() {
+                const board = document.getElementById('boardSelect').value;
+                const className = document.getElementById('classSelect').value;
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+                try {
+                    let url = '/api/students';
+                    if (board !== 'all' && className !== 'all') {
+                        url = `/api/students/${encodeURIComponent(board)}/${encodeURIComponent(className)}`;
                     }
-                    calendarHTML += '</div>';
                     
-                    let historyHTML = `
-                        <div class="attendance-section">
-                            <div class="attendance-header">
-                                <h3><i class="fas fa-clock"></i> ${fullName}'s Attendance</h3>
+                    const res = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        let students = data.data;
+                        if (searchTerm) {
+                            students = students.filter(s => {
+                                const name = `${s.studentName.first} ${s.studentName.last}`.toLowerCase();
+                                return name.includes(searchTerm) || s.studentId.toLowerCase().includes(searchTerm);
+                            });
+                        }
+                        filteredStudents = students;
+                        displayStudents(filteredStudents);
+                        updateStats();
+                    }
+                } catch (error) {
+                    showToast('Search failed', 'error');
+                }
+            }
+
+            function resetFilters() {
+                document.getElementById('boardSelect').value = 'all';
+                document.getElementById('classSelect').innerHTML = '<option value="all">All Classes</option>';
+                document.getElementById('searchInput').value = '';
+                loadAllStudents();
+            }
+
+            function updateAttendanceSelect() {
+                const select = document.getElementById('attendanceStudentSelect');
+                select.innerHTML = '<option value="">Select Student</option>';
+                allStudents.forEach(s => {
+                    const name = `${s.studentName.first} ${s.studentName.last}`.trim();
+                    select.innerHTML += `<option value="${s.studentId}">${name} (${s.studentId})</option>`;
+                });
+            }
+
+            // ===== UI RENDERING =====
+            function displayStudents(students) {
+                const grid = document.getElementById('studentsGrid');
+                
+                if (!students || students.length === 0) {
+                    grid.innerHTML = '<div class="no-data"><i class="fas fa-users-slash"></i><p>No students found</p></div>';
+                    return;
+                }
+
+                grid.innerHTML = '';
+                students.forEach(student => {
+                    const fullName = `${student.studentName.first} ${student.studentName.middle || ''} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
+                    
+                    let status = 'unpaid';
+                    if (student.feesHistory && student.feesHistory.length) {
+                        const lastFee = student.feesHistory[student.feesHistory.length - 1];
+                        status = lastFee.status || 'unpaid';
+                    }
+
+                    const statusClass = status === 'paid' ? 'status-paid' : status === 'partial' ? 'status-partial' : 'status-unpaid';
+
+                    const card = document.createElement('div');
+                    card.className = `student-card ${selectedStudent?.studentId === student.studentId ? 'selected' : ''}`;
+                    card.addEventListener('click', () => selectStudent(student.studentId));
+                    
+                    card.innerHTML = `
+                        <div class="student-header">
+                            <img src="${student.photo || 'https://via.placeholder.com/60'}" class="student-avatar" onerror="this.src='https://via.placeholder.com/60'">
+                            <div class="student-info">
+                                <div class="student-name">${fullName}</div>
+                                <div class="student-id"><i class="fas fa-id-card"></i> ${student.studentId}</div>
+                                <div class="student-class"><i class="fas fa-graduation-cap"></i> ${student.education?.board || 'N/A'} - ${student.education?.class || 'N/A'}</div>
                             </div>
-                            
-                            <div class="attendance-stats">
-                                <div class="attendance-stat present">
-                                    <div class="count">${present}</div>
-                                    <div class="label">Present</div>
-                                </div>
-                                <div class="attendance-stat absent">
-                                    <div class="count">${absent}</div>
-                                    <div class="label">Absent</div>
-                                </div>
-                                <div class="attendance-stat late">
-                                    <div class="count">${late}</div>
-                                    <div class="label">Late</div>
-                                </div>
-                            </div>
-                            
-                            <div class="attendance-legend">
-                                <div class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Present</div>
-                                <div class="legend-item"><span class="legend-color" style="background:#ef4444;"></span> Absent</div>
-                                <div class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span> Late</div>
-                                <div class="legend-item"><span class="legend-color" style="background:#8b5cf6;"></span> Half Day</div>
-                            </div>
-                            
-                            ${calendarHTML}
-                            
-                            <h4 style="margin:16px 0 8px;">History</h4>
-                            <div class="attendance-list">
+                        </div>
+                        <div class="student-footer">
+                            <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ₹${student.classMonthlyFees}/mo</span>
+                            <span class="status-dot ${statusClass}" title="Fees Status: ${status}"></span>
+                        </div>
                     `;
                     
-                    attendance.sort((a, b) => b.date.localeCompare(a.date)).forEach(att => {
-                        const date = new Date(att.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                        const statusClass = `status-${att.status}`;
-                        historyHTML += `
-                            <div class="attendance-item">
-                                <div>
-                                    <div class="attendance-date">${date}</div>
-                                    ${att.remarks ? `<small style="color:#666;">${att.remarks}</small>` : ''}
-                                </div>
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <span class="attendance-status ${statusClass}">${att.status}</span>
-                                    <div class="attendance-actions">
-                                        <button class="edit-attendance" onclick="openEditAttendanceModal('${selectedStudent.studentId}', '${att.date}', '${att.status}', '${att.remarks || ''}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="delete-attendance" onclick="deleteAttendance('${selectedStudent.studentId}', '${att.date}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    historyHTML += '</div></div>';
-                    
-                    document.getElementById('attendanceHistory').innerHTML = historyHTML;
-                    viewAttendanceModal.style.display = 'block';
-                }
-            } catch (error) {
-                showToast('Failed to load attendance', 'error');
-            }
-        }
-
-        function openEditAttendanceModal(studentId, date, status, remarks) {
-            document.getElementById('editAttendanceStudentId').value = studentId;
-            document.getElementById('editAttendanceOriginalDate').value = date;
-            document.getElementById('editAttendanceDate').value = date;
-            document.getElementById('editAttendanceRemarks').value = remarks;
-            
-            selectedEditStatus = status;
-            document.getElementById('editAttendanceStatus').value = status;
-            
-            document.querySelectorAll('[data-edit-status]').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            document.querySelector(`[data-edit-status="${status}"]`).classList.add('selected');
-            
-            editAttendanceModal.style.display = 'block';
-        }
-
-        async function updateAttendance() {
-            const studentId = document.getElementById('editAttendanceStudentId').value;
-            const originalDate = document.getElementById('editAttendanceOriginalDate').value;
-            const newDate = document.getElementById('editAttendanceDate').value;
-            const status = document.getElementById('editAttendanceStatus').value;
-            const remarks = document.getElementById('editAttendanceRemarks').value;
-
-            if (!studentId || !newDate || !status) {
-                return showToast('All fields required', 'warning');
+                    grid.appendChild(card);
+                });
             }
 
-            try {
-                // First delete the old record if date changed
-                if (originalDate !== newDate) {
-                    await fetch(`/api/students/${studentId}/attendance`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ date: originalDate })
-                    });
-                }
-
-                // Save new record
-                const res = await fetch(`/api/students/${studentId}/attendance`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ date: newDate, status, remarks })
+            function updateStats() {
+                let total = filteredStudents.length;
+                let collected = 0, pending = 0, paid = 0;
+                
+                filteredStudents.forEach(s => {
+                    if (s.feesHistory?.length) {
+                        const totalPaid = s.feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
+                        const totalDue = s.feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
+                        collected += totalPaid;
+                        pending += totalDue;
+                        if (s.feesHistory.every(f => f.status === 'paid')) paid++;
+                    }
                 });
                 
-                const data = await res.json();
-                
-                if (data.success) {
-                    showToast('Attendance updated!');
-                    editAttendanceModal.style.display = 'none';
-                    loadAttendanceStats();
-                    
-                    if (selectedStudent?.studentId === studentId) {
-                        selectStudent(studentId);
-                        openViewAttendanceModal();
-                    }
-                } else {
-                    showToast(data.message || 'Update failed', 'error');
-                }
-            } catch (error) {
-                showToast('Update failed', 'error');
+                document.getElementById('totalStudents').textContent = total;
+                document.getElementById('totalFees').textContent = `₹${collected}`;
+                document.getElementById('pendingFees').textContent = `₹${pending}`;
             }
-        }
 
-        async function deleteAttendance(studentId, date) {
-            showConfirmDialog('Delete this attendance record?', async () => {
+            async function selectStudent(id) {
                 try {
-                    const res = await fetch(`/api/students/${studentId}/attendance`, {
-                        method: 'DELETE',
+                    const res = await fetch(`/api/student-dashboard/${id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        selectedStudent = data.data;
+                        displayStudentDetails(selectedStudent);
+                        displayStudents(filteredStudents);
+                        document.getElementById('actionButtons').style.display = 'grid';
+                        
+                        if (selectedStudent.feesHistory?.length) {
+                            updateChart(selectedStudent);
+                            document.getElementById('chartContainer').style.display = 'block';
+                        } else {
+                            document.getElementById('chartContainer').style.display = 'none';
+                        }
+                    }
+                } catch (error) {
+                    showToast('Failed to load student details', 'error');
+                }
+            }
+
+            function displayStudentDetails(s) {
+                const fullName = `${s.studentName.first} ${s.studentName.middle || ''} ${s.studentName.last}`.replace(/\s+/g, ' ').trim();
+                const father = `${s.fatherName.first} ${s.fatherName.middle || ''} ${s.fatherName.last}`.trim();
+                const mother = `${s.motherName.first || ''} ${s.motherName.middle || ''} ${s.motherName.last || ''}`.trim() || 'Not Provided';
+                
+                const joinDate = new Date(s.joiningDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                const isPDF = s.aadharDocument?.includes('application/pdf') || s.aadharDocument?.startsWith('data:application/pdf');
+                const docPreview = isPDF ? 
+                    `<iframe src="${s.aadharDocument}" style="width:100%; height:150px; border:1px solid #ddd; border-radius:12px;"></iframe>` : 
+                    `<img src="${s.aadharDocument}" style="width:100%; max-height:150px; object-fit:cover; border-radius:12px; cursor:pointer;">`;
+
+                document.getElementById('studentDetails').innerHTML = `
+                    <div class="details-card">
+                        <div class="profile-header">
+                            <img src="${s.photo}" class="profile-img" onerror="this.src='https://via.placeholder.com/80'">
+                            <div class="profile-title">
+                                <h3>${fullName}</h3>
+                                <p><i class="fas fa-id-card"></i> ${s.studentId}</p>
+                                <p><i class="fas fa-phone"></i> ${s.mobile}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-grid">
+                            <div class="info-section">
+                                <div class="info-title"><i class="fas fa-graduation-cap"></i> Education</div>
+                                <div class="info-row"><i class="fas fa-school"></i> Board: ${s.education.board}</div>
+                                <div class="info-row"><i class="fas fa-layer-group"></i> Class: ${s.education.class}</div>
+                                <div class="info-row"><i class="fas fa-calendar"></i> Joined: ${joinDate}</div>
+                            </div>
+
+                            <div class="info-section">
+                                <div class="info-title"><i class="fas fa-rupee-sign"></i> Fees</div>
+                                <div class="info-row"><i class="fas fa-tag"></i> Monthly: ₹${s.classMonthlyFees}</div>
+                            </div>
+
+                            <div class="info-section">
+                                <div class="info-title"><i class="fas fa-users"></i> Family</div>
+                                <div class="info-row"><i class="fas fa-user-tie"></i> Father: ${father}</div>
+                                <div class="info-row"><i class="fas fa-phone"></i> Father's Mobile: ${s.fatherMobile}</div>
+                                <div class="info-row"><i class="fas fa-user"></i> Mother: ${mother}</div>
+                            </div>
+
+                            <div class="info-section">
+                                <div class="info-title"><i class="fas fa-map-marker-alt"></i> Address</div>
+                                <div class="info-row"><i class="fas fa-home"></i> Current: ${s.address.current}</div>
+                                <div class="info-row"><i class="fas fa-home"></i> Permanent: ${s.address.permanent}</div>
+                            </div>
+                        </div>
+
+                        <div class="doc-preview">
+                            <div class="info-title"><i class="fas fa-id-card"></i> Aadhar Document</div>
+                            ${docPreview}
+                            <div class="doc-actions">
+                                <button class="doc-btn doc-view" id="viewDocBtn">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="doc-btn doc-download" id="downloadDocBtn">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="doc-actions" style="margin-top: 16px;">
+                            <button class="doc-btn doc-view" id="editStudentBtn">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="doc-btn doc-download" style="background:#ef4444;" id="deleteStudentBtn">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('viewDocBtn').addEventListener('click', () => viewDocument(s.aadharDocument, `Aadhar - ${fullName}`));
+                document.getElementById('downloadDocBtn').addEventListener('click', () => downloadDoc(s.aadharDocument, `${s.studentId}_Aadhar`));
+                document.getElementById('editStudentBtn').addEventListener('click', () => openEditModal(s.studentId));
+                document.getElementById('deleteStudentBtn').addEventListener('click', () => showConfirmDialog(`Delete ${fullName}?`, () => deleteStudent(s.studentId)));
+
+                document.getElementById('studentDetails').style.display = 'block';
+            }
+
+            function downloadDoc(url, filename) {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || 'document';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            function updateChart(student) {
+                if (!student.feesHistory?.length) return;
+                
+                const ctx = document.getElementById('feesChart').getContext('2d');
+                const months = student.feesHistory.map(f => f.month.split(' ')[0]);
+                const paid = student.feesHistory.map(f => f.paidAmount);
+                const due = student.feesHistory.map(f => f.dueAmount);
+
+                if (chart) chart.destroy();
+                
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            { label: 'Paid', data: paid, backgroundColor: '#10b981' },
+                            { label: 'Due', data: due, backgroundColor: '#ef4444' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            // ===== FEES MANAGEMENT =====
+            function openFeesModal() {
+                if (!selectedStudent) return showToast('Select a student first', 'warning');
+                
+                const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.last}`.trim();
+                document.getElementById('feesModalHeader').innerHTML = `
+                    <img src="${selectedStudent.photo}">
+                    <div>
+                        <h3 style="margin-bottom:4px;">${fullName}</h3>
+                        <p style="color:#666;"><i class="fas fa-id-card"></i> ${selectedStudent.studentId}</p>
+                    </div>
+                `;
+
+                const tbody = document.getElementById('feesTableBody');
+                tbody.innerHTML = '';
+
+                const joining = new Date(selectedStudent.joiningDate);
+                const now = new Date();
+                let current = new Date(joining);
+                
+                const historyMap = {};
+                (selectedStudent.feesHistory || []).forEach(f => historyMap[f.month] = f);
+
+                while (current <= now) {
+                    const monthName = current.toLocaleString('default', { month: 'short' });
+                    const year = current.getFullYear();
+                    const monthKey = `${monthName} ${year}`;
+                    const fee = historyMap[monthKey] || { paidAmount: 0, dueAmount: selectedStudent.classMonthlyFees, status: 'unpaid' };
+                    
+                    const statusClass = fee.status === 'paid' ? 'status-paid' : fee.status === 'partial' ? 'status-partial' : 'status-unpaid';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${monthName} ${year}</strong></td>
+                        <td><input type="number" class="fees-input" id="paid-${monthKey}" value="${fee.paidAmount}" min="0" max="${selectedStudent.classMonthlyFees}"></td>
+                        <td>₹${fee.dueAmount}</td>
+                        <td><span class="status-badge" style="background:${fee.status === 'paid' ? '#d1fae5' : fee.status === 'partial' ? '#fed7aa' : '#fee2e2'}">${fee.status}</span></td>
+                        <td><button class="save-fees" data-month="${monthKey}"><i class="fas fa-save"></i></button></td>
+                    `;
+                    tbody.appendChild(row);
+                    current.setMonth(current.getMonth() + 1);
+                }
+
+                tbody.querySelectorAll('.save-fees').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const month = btn.dataset.month;
+                        const paid = parseFloat(document.getElementById(`paid-${month}`).value) || 0;
+                        saveFees(month, paid);
+                    });
+                });
+
+                feesModal.style.display = 'block';
+            }
+
+            async function saveFees(month, paidAmount) {
+                if (paidAmount > selectedStudent.classMonthlyFees) {
+                    return showToast(`Max ₹${selectedStudent.classMonthlyFees}`, 'warning');
+                }
+
+                try {
+                    const res = await fetch(`/api/update-fees/${selectedStudent.studentId}`, {
+                        method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ date })
+                        body: JSON.stringify({ month, paidAmount })
                     });
                     
                     const data = await res.json();
                     
                     if (data.success) {
-                        showToast('Attendance deleted');
+                        selectedStudent.feesHistory = data.data.feesHistory;
+                        updateChart(selectedStudent);
+                        updateStats();
+                        showToast('Fees updated!');
+                        openFeesModal(); // Refresh modal
+                    } else {
+                        showToast(data.message || 'Update failed', 'error');
+                    }
+                } catch (error) {
+                    showToast('Update failed', 'error');
+                }
+            }
+
+            // ===== ATTENDANCE MANAGEMENT =====
+            function openAttendanceModal() {
+                attendanceModal.style.display = 'block';
+                document.querySelector('#statusOptions .status-option.present').classList.add('selected');
+            }
+
+            async function saveAttendance() {
+                const studentId = document.getElementById('attendanceStudentSelect').value;
+                const date = document.getElementById('attendanceDate').value;
+                const status = document.getElementById('attendanceStatus').value;
+                const remarks = document.getElementById('attendanceRemarks').value;
+
+                if (!studentId) return showToast('Select a student', 'warning');
+                if (!date) return showToast('Select date', 'warning');
+
+                try {
+                    const res = await fetch(`/api/students/${studentId}/attendance`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ date, status, remarks })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('Attendance marked!');
+                        attendanceModal.style.display = 'none';
+                        document.getElementById('attendanceRemarks').value = '';
+                        loadAttendanceStats();
+                        
+                        if (selectedStudent?.studentId === studentId) {
+                            selectStudent(studentId);
+                        }
+                    } else {
+                        showToast(data.message || 'Failed', 'error');
+                    }
+                } catch (error) {
+                    showToast('Failed to mark attendance', 'error');
+                }
+            }
+
+            async function openViewAttendanceModal() {
+                if (!selectedStudent) return showToast('Select a student first', 'warning');
+                
+                try {
+                    const res = await fetch(`/api/students/${selectedStudent.studentId}/attendance`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        const attendance = data.data;
+                        const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.last}`.trim();
+                        
+                        // Calculate stats
+                        const present = attendance.filter(a => a.status === 'present').length;
+                        const absent = attendance.filter(a => a.status === 'absent').length;
+                        const late = attendance.filter(a => a.status === 'late').length;
+                        const halfDay = attendance.filter(a => a.status === 'half-day').length;
+                        
+                        // Generate calendar for current month
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = today.getMonth();
+                        const firstDay = new Date(year, month, 1);
+                        const lastDay = new Date(year, month + 1, 0);
+                        
+                        let calendarHTML = '<div class="attendance-calendar">';
+                        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                        days.forEach(d => { calendarHTML += `<div class="calendar-day" style="background:#667eea; color:white;">${d}</div>`; });
+                        
+                        for (let i = 0; i < firstDay.getDay(); i++) {
+                            calendarHTML += '<div class="calendar-day"></div>';
+                        }
+                        
+                        for (let d = 1; d <= lastDay.getDate(); d++) {
+                            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                            const att = attendance.find(a => a.date === dateStr);
+                            let className = 'calendar-day';
+                            if (att) className += ` ${att.status}`;
+                            calendarHTML += `<div class="${className}">${d}</div>`;
+                        }
+                        calendarHTML += '</div>';
+                        
+                        let historyHTML = `
+                            <div class="attendance-section">
+                                <div class="attendance-header">
+                                    <h3><i class="fas fa-clock"></i> ${fullName}'s Attendance</h3>
+                                </div>
+                                
+                                <div class="attendance-stats">
+                                    <div class="attendance-stat present">
+                                        <div class="count">${present}</div>
+                                        <div class="label">Present</div>
+                                    </div>
+                                    <div class="attendance-stat absent">
+                                        <div class="count">${absent}</div>
+                                        <div class="label">Absent</div>
+                                    </div>
+                                    <div class="attendance-stat late">
+                                        <div class="count">${late}</div>
+                                        <div class="label">Late</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="attendance-legend">
+                                    <div class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Present</div>
+                                    <div class="legend-item"><span class="legend-color" style="background:#ef4444;"></span> Absent</div>
+                                    <div class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span> Late</div>
+                                    <div class="legend-item"><span class="legend-color" style="background:#8b5cf6;"></span> Half Day</div>
+                                </div>
+                                
+                                ${calendarHTML}
+                                
+                                <h4 style="margin:16px 0 8px;">History</h4>
+                                <div class="attendance-list">
+                        `;
+                        
+                        attendance.sort((a, b) => b.date.localeCompare(a.date)).forEach(att => {
+                            const date = new Date(att.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                            const statusClass = `status-${att.status}`;
+                            historyHTML += `
+                                <div class="attendance-item">
+                                    <div>
+                                        <div class="attendance-date">${date}</div>
+                                        ${att.remarks ? `<small style="color:#666;">${att.remarks}</small>` : ''}
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span class="attendance-status ${statusClass}">${att.status}</span>
+                                        <div class="attendance-actions">
+                                            <button class="edit-attendance" data-student="${selectedStudent.studentId}" data-date="${att.date}" data-status="${att.status}" data-remarks="${att.remarks || ''}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="delete-attendance" data-student="${selectedStudent.studentId}" data-date="${att.date}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        historyHTML += '</div></div>';
+                        
+                        document.getElementById('attendanceHistory').innerHTML = historyHTML;
+                        
+                        // Add event listeners to edit buttons
+                        document.querySelectorAll('.edit-attendance').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                const student = btn.dataset.student;
+                                const date = btn.dataset.date;
+                                const status = btn.dataset.status;
+                                const remarks = btn.dataset.remarks;
+                                openEditAttendanceModal(student, date, status, remarks);
+                            });
+                        });
+
+                        document.querySelectorAll('.delete-attendance').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                const student = btn.dataset.student;
+                                const date = btn.dataset.date;
+                                deleteAttendance(student, date);
+                            });
+                        });
+
+                        viewAttendanceModal.style.display = 'block';
+                    }
+                } catch (error) {
+                    showToast('Failed to load attendance', 'error');
+                }
+            }
+
+            function openEditAttendanceModal(studentId, date, status, remarks) {
+                document.getElementById('editAttendanceStudentId').value = studentId;
+                document.getElementById('editAttendanceOriginalDate').value = date;
+                document.getElementById('editAttendanceDate').value = date;
+                document.getElementById('editAttendanceRemarks').value = remarks;
+                
+                document.getElementById('editAttendanceStatus').value = status;
+                
+                document.querySelectorAll('#editStatusOptions .status-option').forEach(o => o.classList.remove('selected'));
+                document.querySelector(`#editStatusOptions .status-option[data-edit-status="${status}"]`).classList.add('selected');
+                
+                editAttendanceModal.style.display = 'block';
+            }
+
+            async function updateAttendance() {
+                const studentId = document.getElementById('editAttendanceStudentId').value;
+                const originalDate = document.getElementById('editAttendanceOriginalDate').value;
+                const newDate = document.getElementById('editAttendanceDate').value;
+                const status = document.getElementById('editAttendanceStatus').value;
+                const remarks = document.getElementById('editAttendanceRemarks').value;
+
+                if (!studentId || !newDate || !status) {
+                    return showToast('All fields required', 'warning');
+                }
+
+                try {
+                    // First delete the old record if date changed
+                    if (originalDate !== newDate) {
+                        await fetch(`/api/students/${studentId}/attendance`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ date: originalDate })
+                        });
+                    }
+
+                    // Save new record
+                    const res = await fetch(`/api/students/${studentId}/attendance`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ date: newDate, status, remarks })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('Attendance updated!');
+                        editAttendanceModal.style.display = 'none';
                         loadAttendanceStats();
                         
                         if (selectedStudent?.studentId === studentId) {
@@ -2423,286 +2570,311 @@
                             viewAttendanceModal.style.display = 'none';
                         }
                     } else {
+                        showToast(data.message || 'Update failed', 'error');
+                    }
+                } catch (error) {
+                    showToast('Update failed', 'error');
+                }
+            }
+
+            async function deleteAttendance(studentId, date) {
+                showConfirmDialog('Delete this attendance record?', async () => {
+                    try {
+                        const res = await fetch(`/api/students/${studentId}/attendance`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ date })
+                        });
+                        
+                        const data = await res.json();
+                        
+                        if (data.success) {
+                            showToast('Attendance deleted');
+                            loadAttendanceStats();
+                            
+                            if (selectedStudent?.studentId === studentId) {
+                                selectStudent(studentId);
+                                viewAttendanceModal.style.display = 'none';
+                            }
+                        } else {
+                            showToast(data.message || 'Delete failed', 'error');
+                        }
+                    } catch (error) {
+                        showToast('Delete failed', 'error');
+                    }
+                });
+            }
+
+            // ===== ADD STUDENT =====
+            function openAddModal() {
+                addModal.style.display = 'block';
+            }
+
+            function closeAddModal() {
+                addModal.style.display = 'none';
+                document.getElementById('addStudentForm').reset();
+                document.getElementById('addPhotoPreview').innerHTML = '';
+                document.getElementById('addAadharPreview').innerHTML = '';
+                document.getElementById('addRegDate').value = today;
+                document.getElementById('addJoinDate').value = today;
+            }
+
+            async function addStudent() {
+                const required = [
+                    'addStudentId', 'addPassword', 'addFirstName', 'addLastName',
+                    'addMobile', 'addAadhar', 'addPhoto', 'addAadharDoc',
+                    'addFees', 'addFatherName', 'addFatherMobile',
+                    'addCurrentAddress', 'addPermanentAddress', 'addBoard', 'addClass'
+                ];
+                
+                for (const id of required) {
+                    if (!document.getElementById(id).value) {
+                        return showToast('Fill all required fields', 'warning');
+                    }
+                }
+
+                const nameParts = document.getElementById('addFatherName').value.trim().split(' ');
+                const father = {
+                    firstName: nameParts[0] || '',
+                    middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '',
+                    lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
+                };
+
+                const motherName = document.getElementById('addMotherName').value.trim();
+                const motherParts = motherName ? motherName.split(' ') : [];
+                const mother = {
+                    firstName: motherParts[0] || '',
+                    middleName: motherParts.length > 2 ? motherParts.slice(1, -1).join(' ') : '',
+                    lastName: motherParts.length > 1 ? motherParts[motherParts.length - 1] : ''
+                };
+
+                const data = {
+                    studentId: document.getElementById('addStudentId').value,
+                    password: document.getElementById('addPassword').value,
+                    classMonthlyFees: parseInt(document.getElementById('addFees').value),
+                    photo: document.getElementById('addPhoto').value,
+                    student: {
+                        firstName: document.getElementById('addFirstName').value,
+                        middleName: '',
+                        lastName: document.getElementById('addLastName').value,
+                        mobile: document.getElementById('addMobile').value
+                    },
+                    aadhar: document.getElementById('addAadhar').value,
+                    aadharDocument: document.getElementById('addAadharDoc').value,
+                    dates: {
+                        reg: document.getElementById('addRegDate').value,
+                        join: document.getElementById('addJoinDate').value
+                    },
+                    father: {
+                        firstName: father.firstName,
+                        middleName: father.middleName,
+                        lastName: father.lastName,
+                        mobile: document.getElementById('addFatherMobile').value
+                    },
+                    mother: mother,
+                    address: {
+                        current: document.getElementById('addCurrentAddress').value,
+                        permanent: document.getElementById('addPermanentAddress').value
+                    },
+                    education: {
+                        board: document.getElementById('addBoard').value,
+                        class: document.getElementById('addClass').value
+                    }
+                };
+
+                try {
+                    const res = await fetch('/api/student-register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await res.json();
+                    
+                    if (result.success) {
+                        showToast('Student added successfully!');
+                        closeAddModal();
+                        loadAllStudents();
+                    } else {
+                        showToast(result.message || 'Failed to add student', 'error');
+                    }
+                } catch (error) {
+                    showToast('Network error', 'error');
+                }
+            }
+
+            // ===== EDIT STUDENT =====
+            async function openEditModal(id) {
+                try {
+                    const res = await fetch(`/api/student-dashboard/${id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        const s = data.data;
+                        
+                        document.getElementById('editStudentId').value = s.studentId;
+                        document.getElementById('editPassword').value = s.password;
+                        document.getElementById('editFirstName').value = s.studentName.first;
+                        document.getElementById('editLastName').value = s.studentName.last;
+                        document.getElementById('editMobile').value = s.mobile;
+                        document.getElementById('editAadhar').value = s.aadharNumber;
+                        document.getElementById('editPhoto').value = s.photo;
+                        document.getElementById('editAadharDoc').value = s.aadharDocument;
+                        document.getElementById('editFees').value = s.classMonthlyFees;
+                        
+                        const fatherName = `${s.fatherName.first} ${s.fatherName.middle} ${s.fatherName.last}`.trim();
+                        document.getElementById('editFatherName').value = fatherName;
+                        document.getElementById('editFatherMobile').value = s.fatherMobile;
+                        
+                        const motherName = `${s.motherName.first} ${s.motherName.middle} ${s.motherName.last}`.trim();
+                        document.getElementById('editMotherName').value = motherName === '  ' ? '' : motherName;
+                        
+                        document.getElementById('editCurrentAddress').value = s.address.current;
+                        document.getElementById('editPermanentAddress').value = s.address.permanent;
+                        document.getElementById('editBoard').value = s.education.board;
+                        document.getElementById('editClass').value = s.education.class;
+
+                        if (s.photo) {
+                            document.getElementById('editPhotoPreview').innerHTML = `<img src="${s.photo}" style="max-width:100%; max-height:150px;">`;
+                        }
+                        if (s.aadharDocument) {
+                            const type = s.aadharDocument.includes('pdf') ? 'application/pdf' : 'image/jpeg';
+                            if (type === 'application/pdf') {
+                                document.getElementById('editAadharPreview').innerHTML = `<iframe src="${s.aadharDocument}" style="width:100%; height:150px;"></iframe>`;
+                            } else {
+                                document.getElementById('editAadharPreview').innerHTML = `<img src="${s.aadharDocument}" style="max-width:100%; max-height:150px;">`;
+                            }
+                        }
+
+                        editModal.style.display = 'block';
+                    }
+                } catch (error) {
+                    showToast('Failed to load student', 'error');
+                }
+            }
+
+            function closeEditModal() {
+                editModal.style.display = 'none';
+                document.getElementById('editPhotoFile').value = '';
+                document.getElementById('editAadharFile').value = '';
+            }
+
+            async function updateStudent() {
+                const id = document.getElementById('editStudentId').value;
+
+                const nameParts = document.getElementById('editFatherName').value.trim().split(' ');
+                const father = {
+                    firstName: nameParts[0] || '',
+                    middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '',
+                    lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
+                };
+
+                const motherName = document.getElementById('editMotherName').value.trim();
+                const motherParts = motherName ? motherName.split(' ') : [];
+                const mother = {
+                    firstName: motherParts[0] || '',
+                    middleName: motherParts.length > 2 ? motherParts.slice(1, -1).join(' ') : '',
+                    lastName: motherParts.length > 1 ? motherParts[motherParts.length - 1] : ''
+                };
+
+                const data = {
+                    studentId: id,
+                    password: document.getElementById('editPassword').value,
+                    classMonthlyFees: parseInt(document.getElementById('editFees').value),
+                    photo: document.getElementById('editPhoto').value,
+                    student: {
+                        firstName: document.getElementById('editFirstName').value,
+                        middleName: '',
+                        lastName: document.getElementById('editLastName').value,
+                        mobile: document.getElementById('editMobile').value
+                    },
+                    aadhar: document.getElementById('editAadhar').value,
+                    aadharDocument: document.getElementById('editAadharDoc').value,
+                    dates: {
+                        reg: new Date().toISOString().split('T')[0],
+                        join: new Date().toISOString().split('T')[0]
+                    },
+                    father: {
+                        firstName: father.firstName,
+                        middleName: father.middleName,
+                        lastName: father.lastName,
+                        mobile: document.getElementById('editFatherMobile').value
+                    },
+                    mother: mother,
+                    address: {
+                        current: document.getElementById('editCurrentAddress').value,
+                        permanent: document.getElementById('editPermanentAddress').value
+                    },
+                    education: {
+                        board: document.getElementById('editBoard').value,
+                        class: document.getElementById('editClass').value
+                    }
+                };
+
+                try {
+                    const res = await fetch(`/api/students/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await res.json();
+                    
+                    if (result.success) {
+                        showToast('Student updated!');
+                        closeEditModal();
+                        loadAllStudents();
+                        if (selectedStudent?.studentId === id) selectStudent(id);
+                    } else {
+                        showToast(result.message || 'Update failed', 'error');
+                    }
+                } catch (error) {
+                    showToast('Update failed', 'error');
+                }
+            }
+
+            // ===== DELETE STUDENT =====
+            async function deleteStudent(id) {
+                try {
+                    const res = await fetch(`/api/students/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('Student deleted');
+                        if (selectedStudent?.studentId === id) {
+                            selectedStudent = null;
+                            document.getElementById('studentDetails').style.display = 'none';
+                            document.getElementById('actionButtons').style.display = 'none';
+                            document.getElementById('chartContainer').style.display = 'none';
+                        }
+                        loadAllStudents();
+                    } else {
                         showToast(data.message || 'Delete failed', 'error');
                     }
                 } catch (error) {
                     showToast('Delete failed', 'error');
                 }
-            });
-        }
-
-        // ===== ADD STUDENT =====
-        function openAddModal() {
-            addModal.style.display = 'block';
-        }
-
-        function closeAddModal() {
-            addModal.style.display = 'none';
-            document.getElementById('addStudentForm').reset();
-            document.getElementById('addPhotoPreview').innerHTML = '';
-            document.getElementById('addAadharPreview').innerHTML = '';
-            document.getElementById('addRegDate').value = today;
-            document.getElementById('addJoinDate').value = today;
-        }
-
-        async function addStudent() {
-            const required = [
-                'addStudentId', 'addPassword', 'addFirstName', 'addLastName',
-                'addMobile', 'addAadhar', 'addPhoto', 'addAadharDoc',
-                'addFees', 'addFatherName', 'addFatherMobile',
-                'addCurrentAddress', 'addPermanentAddress', 'addBoard', 'addClass'
-            ];
-            
-            for (const id of required) {
-                if (!document.getElementById(id).value) {
-                    return showToast('Fill all required fields', 'warning');
-                }
             }
 
-            const nameParts = document.getElementById('addFatherName').value.trim().split(' ');
-            const father = {
-                firstName: nameParts[0] || '',
-                middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '',
-                lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
-            };
-
-            const motherName = document.getElementById('addMotherName').value.trim();
-            const motherParts = motherName ? motherName.split(' ') : [];
-            const mother = {
-                firstName: motherParts[0] || '',
-                middleName: motherParts.length > 2 ? motherParts.slice(1, -1).join(' ') : '',
-                lastName: motherParts.length > 1 ? motherParts[motherParts.length - 1] : ''
-            };
-
-            const data = {
-                studentId: document.getElementById('addStudentId').value,
-                password: document.getElementById('addPassword').value,
-                classMonthlyFees: parseInt(document.getElementById('addFees').value),
-                photo: document.getElementById('addPhoto').value,
-                student: {
-                    firstName: document.getElementById('addFirstName').value,
-                    middleName: '',
-                    lastName: document.getElementById('addLastName').value,
-                    mobile: document.getElementById('addMobile').value
-                },
-                aadhar: document.getElementById('addAadhar').value,
-                aadharDocument: document.getElementById('addAadharDoc').value,
-                dates: {
-                    reg: document.getElementById('addRegDate').value,
-                    join: document.getElementById('addJoinDate').value
-                },
-                father: {
-                    firstName: father.firstName,
-                    middleName: father.middleName,
-                    lastName: father.lastName,
-                    mobile: document.getElementById('addFatherMobile').value
-                },
-                mother: mother,
-                address: {
-                    current: document.getElementById('addCurrentAddress').value,
-                    permanent: document.getElementById('addPermanentAddress').value
-                },
-                education: {
-                    board: document.getElementById('addBoard').value,
-                    class: document.getElementById('addClass').value
-                }
-            };
-
-            try {
-                const res = await fetch('/api/student-register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await res.json();
-                
-                if (result.success) {
-                    showToast('Student added successfully!');
-                    closeAddModal();
-                    loadAllStudents();
-                } else {
-                    showToast(result.message || 'Failed to add student', 'error');
-                }
-            } catch (error) {
-                showToast('Network error', 'error');
-            }
-        }
-
-        // ===== EDIT STUDENT =====
-        async function openEditModal(id) {
-            try {
-                const res = await fetch(`/api/student-dashboard/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                
-                if (data.success) {
-                    const s = data.data;
-                    
-                    document.getElementById('editStudentId').value = s.studentId;
-                    document.getElementById('editPassword').value = s.password;
-                    document.getElementById('editFirstName').value = s.studentName.first;
-                    document.getElementById('editLastName').value = s.studentName.last;
-                    document.getElementById('editMobile').value = s.mobile;
-                    document.getElementById('editAadhar').value = s.aadharNumber;
-                    document.getElementById('editPhoto').value = s.photo;
-                    document.getElementById('editAadharDoc').value = s.aadharDocument;
-                    document.getElementById('editFees').value = s.classMonthlyFees;
-                    
-                    const fatherName = `${s.fatherName.first} ${s.fatherName.middle} ${s.fatherName.last}`.trim();
-                    document.getElementById('editFatherName').value = fatherName;
-                    document.getElementById('editFatherMobile').value = s.fatherMobile;
-                    
-                    const motherName = `${s.motherName.first} ${s.motherName.middle} ${s.motherName.last}`.trim();
-                    document.getElementById('editMotherName').value = motherName === '  ' ? '' : motherName;
-                    
-                    document.getElementById('editCurrentAddress').value = s.address.current;
-                    document.getElementById('editPermanentAddress').value = s.address.permanent;
-                    document.getElementById('editBoard').value = s.education.board;
-                    document.getElementById('editClass').value = s.education.class;
-
-                    if (s.photo) {
-                        document.getElementById('editPhotoPreview').innerHTML = `<img src="${s.photo}" style="max-width:100%; max-height:150px;">`;
-                    }
-                    if (s.aadharDocument) {
-                        const type = s.aadharDocument.includes('pdf') ? 'application/pdf' : 'image/jpeg';
-                        if (type === 'application/pdf') {
-                            document.getElementById('editAadharPreview').innerHTML = `<iframe src="${s.aadharDocument}" style="width:100%; height:150px;"></iframe>`;
-                        } else {
-                            document.getElementById('editAadharPreview').innerHTML = `<img src="${s.aadharDocument}" style="max-width:100%; max-height:150px;">`;
-                        }
-                    }
-
-                    editModal.style.display = 'block';
-                }
-            } catch (error) {
-                showToast('Failed to load student', 'error');
-            }
-        }
-
-        function closeEditModal() {
-            editModal.style.display = 'none';
-            document.getElementById('editPhotoFile').value = '';
-            document.getElementById('editAadharFile').value = '';
-        }
-
-        async function updateStudent() {
-            const id = document.getElementById('editStudentId').value;
-
-            const nameParts = document.getElementById('editFatherName').value.trim().split(' ');
-            const father = {
-                firstName: nameParts[0] || '',
-                middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '',
-                lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
-            };
-
-            const motherName = document.getElementById('editMotherName').value.trim();
-            const motherParts = motherName ? motherName.split(' ') : [];
-            const mother = {
-                firstName: motherParts[0] || '',
-                middleName: motherParts.length > 2 ? motherParts.slice(1, -1).join(' ') : '',
-                lastName: motherParts.length > 1 ? motherParts[motherParts.length - 1] : ''
-            };
-
-            const data = {
-                studentId: id,
-                password: document.getElementById('editPassword').value,
-                classMonthlyFees: parseInt(document.getElementById('editFees').value),
-                photo: document.getElementById('editPhoto').value,
-                student: {
-                    firstName: document.getElementById('editFirstName').value,
-                    middleName: '',
-                    lastName: document.getElementById('editLastName').value,
-                    mobile: document.getElementById('editMobile').value
-                },
-                aadhar: document.getElementById('editAadhar').value,
-                aadharDocument: document.getElementById('editAadharDoc').value,
-                dates: {
-                    reg: new Date().toISOString().split('T')[0],
-                    join: new Date().toISOString().split('T')[0]
-                },
-                father: {
-                    firstName: father.firstName,
-                    middleName: father.middleName,
-                    lastName: father.lastName,
-                    mobile: document.getElementById('editFatherMobile').value
-                },
-                mother: mother,
-                address: {
-                    current: document.getElementById('editCurrentAddress').value,
-                    permanent: document.getElementById('editPermanentAddress').value
-                },
-                education: {
-                    board: document.getElementById('editBoard').value,
-                    class: document.getElementById('editClass').value
-                }
-            };
-
-            try {
-                const res = await fetch(`/api/students/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await res.json();
-                
-                if (result.success) {
-                    showToast('Student updated!');
-                    closeEditModal();
-                    loadAllStudents();
-                    if (selectedStudent?.studentId === id) selectStudent(id);
-                } else {
-                    showToast(result.message || 'Update failed', 'error');
-                }
-            } catch (error) {
-                showToast('Update failed', 'error');
-            }
-        }
-
-        // ===== DELETE STUDENT =====
-        async function deleteStudent(id) {
-            try {
-                const res = await fetch(`/api/students/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                const data = await res.json();
-                
-                if (data.success) {
-                    showToast('Student deleted');
-                    if (selectedStudent?.studentId === id) {
-                        selectedStudent = null;
-                        document.getElementById('studentDetails').style.display = 'none';
-                        document.getElementById('actionButtons').style.display = 'none';
-                        document.getElementById('chartContainer').style.display = 'none';
-                    }
-                    loadAllStudents();
-                } else {
-                    showToast(data.message || 'Delete failed', 'error');
-                }
-            } catch (error) {
-                showToast('Delete failed', 'error');
-            }
-        }
-
-        // Make functions global for onclick handlers
-        window.viewDocument = viewDocument;
-        window.downloadDoc = downloadDoc;
-        window.openEditModal = openEditModal;
-        window.showConfirmDialog = showConfirmDialog;
-        window.selectStatus = selectStatus;
-        window.selectEditStatus = selectEditStatus;
-        window.openEditAttendanceModal = openEditAttendanceModal;
-        window.deleteAttendance = deleteAttendance;
+            // Make functions available globally for onclick handlers
+            window.viewDocument = viewDocument;
+            window.downloadDoc = downloadDoc;
+        })();
     </script>
 </body>
 </html>
