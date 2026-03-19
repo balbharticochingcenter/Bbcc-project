@@ -659,7 +659,7 @@
         <div class="toast-title" id="toastTitle"></div>
         <div class="toast-message" id="toastMessage"></div>
     </div>
-    <div class="toast-close" onclick="hideToast()">
+    <div class="toast-close" id="toastClose">
         <i class="fas fa-times"></i>
     </div>
 </div>
@@ -667,7 +667,7 @@
 <!-- Login Container -->
 <div class="login-container" id="loginContainer">
     <div class="login-header">
-        <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=100" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
         <h2>Teacher Login</h2>
         <p>अपना आधार नंबर / टीचर आईडी और पासवर्ड डालें</p>
     </div>
@@ -685,13 +685,13 @@
                    placeholder="Enter your password" required>
         </div>
         
-        <button type="button" class="btn btn-primary w-100 py-3" onclick="teacherLogin()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+        <button type="button" class="btn btn-primary w-100 py-3" id="loginBtn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
             <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
         </button>
     </form>
     
     <div class="text-center mt-4">
-        <a href="#" onclick="showHelpModal()">Forgot Password? / पासवर्ड भूल गए?</a>
+        <a href="#" id="helpLink">Forgot Password? / पासवर्ड भूल गए?</a>
     </div>
 </div>
 
@@ -700,12 +700,12 @@
     <!-- Navbar -->
     <div class="dashboard-navbar">
         <div class="nav-brand">
-            <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=50" alt="Logo">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23667eea'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='white' font-weight='bold'%3EB%3C/text%3E%3C/svg%3E" alt="Logo">
             <span>Bal Bharti Coaching</span>
         </div>
         <div class="nav-user">
             <span><i class="fas fa-user-circle me-2"></i><span id="teacherName">Teacher</span></span>
-            <button class="logout-btn" onclick="logout()">
+            <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt me-2"></i>Logout
             </button>
         </div>
@@ -714,7 +714,7 @@
     <!-- Profile Card -->
     <div class="profile-card" id="profileCard">
         <div class="profile-header">
-            <img id="teacherPhoto" class="profile-photo" src="https://via.placeholder.com/120" alt="Teacher Photo">
+            <img id="teacherPhoto" class="profile-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23e0e0e0'/%3E%3Ctext x='50' y='70' font-size='40' text-anchor='middle' fill='%23999' font-weight='bold'%3E📷%3C/text%3E%3C/svg%3E" alt="Teacher Photo">
             <div class="profile-info">
                 <h3 id="displayTeacherName">Loading...</h3>
                 <div class="profile-tags" id="profileTags">
@@ -823,7 +823,7 @@
 
     <!-- Voice Guide Button -->
     <div class="text-center">
-        <button class="voice-guide-btn" onclick="playVoiceGuide()">
+        <button class="voice-guide-btn" id="voiceGuideBtn">
             <i class="fas fa-volume-up"></i>
             <span>🔊 Voice Guide / आवाज़ मार्गदर्शन</span>
         </button>
@@ -848,7 +848,7 @@
                 <h5>Live Camera <span class="badge bg-danger">कोचिंग में ही फोटो लें</span></h5>
                 <video id="camera" autoplay playsinline></video>
                 <div class="camera-controls">
-                    <button class="cam-btn btn-capture" onclick="capturePhoto()">
+                    <button class="cam-btn btn-capture" id="captureBtn">
                         <i class="fas fa-camera"></i> Capture Photo / फोटो खींचे
                     </button>
                 </div>
@@ -858,7 +858,7 @@
                 <h5>Captured Photo / खींची गई फोटो</h5>
                 <img id="capturedPhoto" src="#" alt="Captured">
                 <div class="camera-controls">
-                    <button class="cam-btn btn-retake" onclick="retakePhoto()" style="display: none;">
+                    <button class="cam-btn btn-retake" id="retakeBtn" style="display: none;">
                         <i class="fas fa-redo"></i> Retake / फिर से खींचे
                     </button>
                 </div>
@@ -867,19 +867,19 @@
 
         <!-- Attendance Options -->
         <div class="attendance-options" id="attendanceOptions">
-            <div class="attendance-option option-present" onclick="selectStatus('present')" id="optPresent">
+            <div class="attendance-option option-present" data-status="present" id="optPresent">
                 <i class="fas fa-check-circle"></i>
                 <span>Present (उपस्थित)</span>
             </div>
-            <div class="attendance-option option-absent" onclick="selectStatus('absent')" id="optAbsent">
+            <div class="attendance-option option-absent" data-status="absent" id="optAbsent">
                 <i class="fas fa-times-circle"></i>
                 <span>Absent (अनुपस्थित)</span>
             </div>
-            <div class="attendance-option option-late" onclick="selectStatus('late')" id="optLate">
+            <div class="attendance-option option-late" data-status="late" id="optLate">
                 <i class="fas fa-clock"></i>
                 <span>Late (विलंब)</span>
             </div>
-            <div class="attendance-option option-halfday" onclick="selectStatus('half-day')" id="optHalfday">
+            <div class="attendance-option option-halfday" data-status="half-day" id="optHalfday">
                 <i class="fas fa-adjust"></i>
                 <span>Half Day (आधा दिन)</span>
             </div>
@@ -892,7 +892,7 @@
         </div>
 
         <!-- Mark Attendance Button -->
-        <button class="btn-mark" onclick="markAttendance()" id="markAttendanceBtn" disabled>
+        <button class="btn-mark" id="markAttendanceBtn" disabled>
             <i class="fas fa-check-circle me-2"></i>Mark Attendance / उपस्थिति दर्ज करें
         </button>
 
@@ -912,7 +912,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Help & Support | सहायता</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="closeModalBtn"></button>
             </div>
             <div class="modal-body">
                 <h6>Login Credentials</h6>
@@ -952,9 +952,61 @@
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded, initializing...');
         checkSavedSession();
         updateCurrentDate();
+        attachEventListeners();
     });
+
+    // Attach all event listeners (Fixes CSP inline event handler error)
+    function attachEventListeners() {
+        // Login button
+        document.getElementById('loginBtn').addEventListener('click', teacherLogin);
+        
+        // Login form enter key
+        document.getElementById('loginForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                teacherLogin();
+            }
+        });
+        
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        
+        // Voice guide button
+        document.getElementById('voiceGuideBtn').addEventListener('click', playVoiceGuide);
+        
+        // Camera buttons
+        document.getElementById('captureBtn').addEventListener('click', capturePhoto);
+        document.getElementById('retakeBtn').addEventListener('click', retakePhoto);
+        
+        // Attendance options
+        document.querySelectorAll('.attendance-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const status = this.getAttribute('data-status');
+                selectStatus(status);
+            });
+        });
+        
+        // Mark attendance button
+        document.getElementById('markAttendanceBtn').addEventListener('click', markAttendance);
+        
+        // Help link
+        document.getElementById('helpLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            showHelpModal();
+        });
+        
+        // Toast close button
+        document.getElementById('toastClose').addEventListener('click', hideToast);
+        
+        // Modal close button
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('helpModal'));
+            if (modal) modal.hide();
+        });
+    }
 
     // Check for saved session
     function checkSavedSession() {
@@ -1028,7 +1080,7 @@
         speakText(guideText, 'hi-IN');
     }
 
-    // Teacher Login - FIXED VERSION
+    // Teacher Login
     async function teacherLogin() {
         const inputId = document.getElementById('teacherId').value.trim();
         const password = document.getElementById('teacherPassword').value;
@@ -1041,7 +1093,7 @@
         showLoading();
         
         try {
-            // First, fetch teacher by ID
+            // Fetch teacher by ID
             const response = await fetch(`/api/teachers/${inputId}`);
             
             if (!response.ok) {
@@ -1054,10 +1106,6 @@
             const result = await response.json();
             
             if (result.success) {
-                // Check if password matches (in real app, this would be server-side)
-                // For demo, we'll accept any password if teacher exists
-                // In production, you should have a proper login endpoint
-                
                 teacherData = result.data;
                 teacherId = inputId;
                 
@@ -1328,7 +1376,7 @@
         capturedImg.src = capturedImageData;
         capturedImg.style.display = 'block';
         
-        document.querySelector('.btn-retake').style.display = 'inline-flex';
+        document.getElementById('retakeBtn').style.display = 'inline-flex';
         
         // Voice feedback
         speakText('फोटो कैप्चर हो गया है। अब उपस्थिति स्थिति चुनें।', 'hi-IN');
@@ -1344,7 +1392,7 @@
     function retakePhoto() {
         capturedImageData = null;
         document.getElementById('capturedPhoto').style.display = 'none';
-        document.querySelector('.btn-retake').style.display = 'none';
+        document.getElementById('retakeBtn').style.display = 'none';
         document.getElementById('markAttendanceBtn').disabled = true;
         
         speakText('कृपया दोबारा फोटो खींचे', 'hi-IN');
