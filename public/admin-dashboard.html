@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | VIP Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Admin Dashboard | Bal Bharti Coaching</title>
     
     <!-- ============================================
          TOKEN BASED AUTHENTICATION CHECK
@@ -20,8 +20,24 @@
         })();
     </script>
 
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <style>
         :root { 
@@ -30,13 +46,23 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --info: #3b82f6;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body { 
             background: #f8fafc;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
         
+        /* Admin Header */
         .admin-header { 
             background: var(--primary); 
             color: white; 
@@ -48,8 +74,27 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 12px;
+            }
+            
+            .admin-header div:first-child {
+                width: 100%;
+            }
+            
+            .admin-header .text-center {
+                width: 100%;
+            }
+        }
+        
+        /* Sidebar Card */
         .sidebar-card { 
             background: white; 
             border-radius: 15px; 
@@ -65,7 +110,8 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
-        .btn-save { 
+        /* Buttons */
+        .btn-save, .btn-primary-custom { 
             background: var(--primary); 
             color: white; 
             border-radius: 10px; 
@@ -75,9 +121,12 @@
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .btn-save:hover { 
+        .btn-save:hover, .btn-primary-custom:hover { 
             background: #1e293b; 
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
@@ -121,6 +170,9 @@
             font-weight: 500;
             transition: all 0.3s;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .logout-btn:hover {
@@ -129,6 +181,47 @@
             box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
         }
         
+        .btn-approve {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .btn-reject {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .btn-edit {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .btn-delete {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        /* Form Controls */
         .form-control, .form-select {
             border-radius: 8px;
             border: 2px solid #e2e8f0;
@@ -142,6 +235,7 @@
             outline: none;
         }
         
+        /* Toast Notifications */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -183,6 +277,14 @@
             }
         }
         
+        @media (max-width: 768px) {
+            .toast-container {
+                left: 20px;
+                right: 20px;
+            }
+        }
+        
+        /* Preview Card */
         .preview-card {
             background: #f8fafc;
             border-radius: 10px;
@@ -216,6 +318,7 @@
             object-fit: cover;
         }
         
+        /* Slides Container */
         .slides-container {
             margin-top: 20px;
             padding: 15px;
@@ -243,6 +346,9 @@
             font-size: 0.9rem;
             margin-top: 10px;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .btn-add-slide:hover {
@@ -266,9 +372,11 @@
             background: #dc2626;
         }
         
+        /* Navigation Tabs */
         .nav-tabs .nav-link {
             color: var(--primary);
             font-weight: 500;
+            padding: 12px 20px;
         }
         
         .nav-tabs .nav-link.active {
@@ -277,23 +385,11 @@
             font-weight: bold;
         }
         
-        @media (max-width: 768px) {
-            .admin-header {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-            
-            .toast-container {
-                left: 20px;
-                right: 20px;
-            }
-            
-            .btn-save {
-                width: 100%;
-            }
+        .nav-tabs .nav-link i {
+            margin-right: 8px;
         }
-
+        
+        /* Password Wrapper */
         .password-wrapper {
             position: relative;
         }
@@ -311,34 +407,337 @@
         .toggle-password:hover {
             color: var(--accent);
         }
+        
+        /* Tables */
+        .table-responsive {
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+        
+        .table {
+            margin-bottom: 0;
+            min-width: 800px;
+        }
+        
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+        
+        @media (max-width: 768px) {
+            .table {
+                min-width: 100%;
+            }
+            .table td, .table th {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+            }
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-badge.paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.unpaid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Cards */
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: white;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        /* Action Buttons Group */
+        .action-group {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .action-btn.approve { background: var(--success); }
+        .action-btn.reject { background: var(--danger); }
+        .action-btn.edit { background: var(--info); }
+        .action-btn.delete { background: #6c757d; }
+        .action-btn.view { background: var(--primary); }
+        
+        /* Loading Spinner */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Filter Buttons */
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            background: white;
+            color: #666;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Search Box */
+        .search-box {
+            position: relative;
+            max-width: 300px;
+        }
+        
+        .search-box input {
+            padding-left: 35px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        /* Footer */
+        footer {
+            background: white;
+            padding: 20px;
+            margin-top: 40px;
+            color: #666;
+            border-top: 1px solid #e2e8f0;
+        }
     </style>
-   
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">लोड हो रहा है...</div>
+    </div>
 
+    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Admin Header -->
     <header class="admin-header">
         <div class="fw-bold fs-4">
             <i class="fas fa-crown text-warning me-2"></i>ADMIN PANEL
         </div>
         <div class="text-center">
             <h5 class="m-0 text-warning">
-                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                <i class="fas fa-tachometer-alt me-2"></i>Complete Management System
             </h5>
-            <small>Update Your Website in Real-time</small>
+            <small>Website | Students | Teachers | Attendance | Fees | Salary</small>
         </div>
-        <button class="logout-btn" id="logoutBtn">
-            <i class="fas fa-sign-out-alt me-2"></i>Logout
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-light" id="refreshAllBtn">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </button>
+        </div>
     </header>
 
-    <div class="container my-5">
+    <!-- Main Container -->
+    <div class="container my-4">
+        <!-- Quick Stats Row -->
+        <div class="stats-grid" id="quickStats">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <div class="stat-value" id="totalStudentsStat">0</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #d4edda; color: var(--success);">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div>
+                    <div class="stat-value" id="totalTeachersStat">0</div>
+                    <div class="stat-label">Total Teachers</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fff3cd; color: var(--warning);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <div class="stat-value" id="pendingTeachersStat">0</div>
+                    <div class="stat-label">Pending Approval</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #f8d7da; color: var(--danger);">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div>
+                    <div class="stat-value" id="totalFeesStat">₹0</div>
+                    <div class="stat-label">Monthly Fees</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Navigation Tabs -->
         <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="website-tab" data-bs-toggle="tab" data-bs-target="#website" type="button" role="tab">
                     <i class="fas fa-globe me-2"></i>Website Settings
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">
+                    <i class="fas fa-users me-2"></i>Student Management
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="teachers-tab" data-bs-toggle="tab" data-bs-target="#teachers" type="button" role="tab">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Management
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -348,8 +747,11 @@
             </li>
         </ul>
         
+        <!-- Tab Content -->
         <div class="tab-content" id="myTabContent">
-            <!-- Website Settings Tab -->
+            <!-- ============================================
+                 TAB 1: WEBSITE SETTINGS
+                 ============================================ -->
             <div class="tab-pane fade show active" id="website" role="tabpanel">
                 <div class="row">
                     <div class="col-md-4 mb-4">
@@ -400,162 +802,401 @@
                     </div>
 
                     <div class="col-md-8">
-                        <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
-                            <h4 class="mb-4 fw-bold">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header">
                                 <i class="fas fa-edit me-2"></i>Update Website Content
-                            </h4>
-                            
-                            <form id="updateForm">
-                                <!-- Logo Upload Section -->
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">
-                                        <i class="fas fa-image me-2"></i>Website Logo
-                                    </label>
+                            </div>
+                            <div class="card-body">
+                                <form id="updateForm">
+                                    <!-- Logo Upload Section -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold">
+                                            <i class="fas fa-image me-2"></i>Website Logo
+                                        </label>
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <input type="file" id="logoUpload" class="form-control" accept="image/*">
+                                                <small class="text-muted">Max size: 5KB (Auto-compress hoga)</small>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <input type="text" id="edit-logo" class="form-control" 
+                                                       placeholder="Logo URL" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="row">
-                                        <div class="col-md-8">
-                                            <input type="file" id="logoUpload" class="form-control" accept="image/*">
-                                            <small class="text-muted">Max size: 5KB (Auto-compress hoga)</small>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-heading me-2"></i>Main Title
+                                            </label>
+                                            <input type="text" id="edit-title" class="form-control" 
+                                                   placeholder="Enter website title" required>
                                         </div>
-                                        <div class="col-md-4">
-                                            <input type="text" id="edit-logo" class="form-control" 
-                                                   placeholder="Logo URL" readonly>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-subscript me-2"></i>Sub-Title
+                                            </label>
+                                            <input type="text" id="edit-subtitle" class="form-control" 
+                                                   placeholder="Enter subtitle">
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
+
+                                    <div class="mb-3">
                                         <label class="form-label">
-                                            <i class="fas fa-heading me-2"></i>Main Title
+                                            <i class="fas fa-align-left me-2"></i>About Text
                                         </label>
-                                        <input type="text" id="edit-title" class="form-control" 
-                                               placeholder="Enter website title" required>
+                                        <textarea id="edit-about" class="form-control" rows="4" 
+                                                  placeholder="Enter about description"></textarea>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-subscript me-2"></i>Sub-Title
-                                        </label>
-                                        <input type="text" id="edit-subtitle" class="form-control" 
-                                               placeholder="Enter subtitle">
-                                    </div>
-                                </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-align-left me-2"></i>About Text
-                                    </label>
-                                    <textarea id="edit-about" class="form-control" rows="4" 
-                                              placeholder="Enter about description"></textarea>
-                                </div>
-
-                                <div class="slides-container">
-                                    <h6 class="mb-3">
-                                        <i class="fas fa-images me-2"></i>Slider Images
-                                        <small class="text-muted ms-2">(Add/Remove Images)</small>
-                                    </h6>
-                                    <div id="slidesList"></div>
-                                    <button type="button" class="btn-add-slide" onclick="addSlideField()">
-                                        <i class="fas fa-plus-circle me-2"></i>Add New Slide
-                                    </button>
-                                </div>
-
-                                <hr>
-                                <h5 class="mb-3">
-                                    <i class="fas fa-share-alt me-2"></i>Social Media Links
-                                </h5>
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-success">
-                                            <i class="fab fa-whatsapp me-2"></i>WhatsApp URL
-                                        </label>
-                                        <input type="url" id="edit-whatsapp" class="form-control" 
-                                               placeholder="https://wa.me/...">
+                                    <div class="slides-container">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-images me-2"></i>Slider Images
+                                            <small class="text-muted ms-2">(Add/Remove Images)</small>
+                                        </h6>
+                                        <div id="slidesList"></div>
+                                        <button type="button" class="btn-add-slide" onclick="addSlideField()">
+                                            <i class="fas fa-plus-circle me-2"></i>Add New Slide
+                                        </button>
                                     </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-danger">
-                                            <i class="fab fa-instagram me-2"></i>Instagram URL
-                                        </label>
-                                        <input type="url" id="edit-insta" class="form-control" 
-                                               placeholder="https://instagram.com/...">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label text-primary">
-                                            <i class="fab fa-facebook me-2"></i>Facebook URL
-                                        </label>
-                                        <input type="url" id="edit-fb" class="form-control" 
-                                               placeholder="https://facebook.com/...">
-                                    </div>
-                                </div>
 
-                                <div class="d-flex gap-2 justify-content-end mt-4">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
-                                        <i class="fas fa-undo me-2"></i>Reset
-                                    </button>
-                                    <button type="submit" class="btn-save" id="saveBtn">
-                                        <i class="fas fa-save me-2"></i>Update Website
-                                    </button>
-                                </div>
-                            </form>
+                                    <hr>
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-share-alt me-2"></i>Social Media Links
+                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label text-success">
+                                                <i class="fab fa-whatsapp me-2"></i>WhatsApp URL
+                                            </label>
+                                            <input type="url" id="edit-whatsapp" class="form-control" 
+                                                   placeholder="https://wa.me/...">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label text-danger">
+                                                <i class="fab fa-instagram me-2"></i>Instagram URL
+                                            </label>
+                                            <input type="url" id="edit-insta" class="form-control" 
+                                                   placeholder="https://instagram.com/...">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label text-primary">
+                                                <i class="fab fa-facebook me-2"></i>Facebook URL
+                                            </label>
+                                            <input type="url" id="edit-fb" class="form-control" 
+                                                   placeholder="https://facebook.com/...">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex gap-2 justify-content-end mt-4">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                            <i class="fas fa-undo me-2"></i>Reset
+                                        </button>
+                                        <button type="submit" class="btn-save" id="saveBtn">
+                                            <i class="fas fa-save me-2"></i>Update Website
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Admin Settings Tab -->
+            <!-- ============================================
+                 TAB 2: STUDENT MANAGEMENT (FULL DASHBOARD)
+                 ============================================ -->
+            <div class="tab-pane fade" id="students" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-users me-2"></i>Student Management Dashboard
+                                <div class="float-end">
+                                    <button class="btn btn-sm btn-light" id="refreshStudentsBtn">
+                                        <i class="fas fa-sync-alt"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Student Stats -->
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="studentTotal">0</div>
+                                                <div class="stat-label">Total Students</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #d4edda; color: var(--success);">
+                                                <i class="fas fa-rupee-sign"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="studentFeesTotal">₹0</div>
+                                                <div class="stat-label">Total Fees</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #fff3cd; color: var(--warning);">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="studentPresent">0</div>
+                                                <div class="stat-label">Present Today</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #f8d7da; color: var(--danger);">
+                                                <i class="fas fa-times-circle"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="studentAbsent">0</div>
+                                                <div class="stat-label">Absent Today</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filter Row -->
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <select class="form-select" id="studentBoardFilter">
+                                            <option value="">All Boards</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select" id="studentClassFilter">
+                                            <option value="">All Classes</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control" id="studentSearch" placeholder="Search students...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Students Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="studentsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Photo</th>
+                                                <th>Student ID</th>
+                                                <th>Name</th>
+                                                <th>Board</th>
+                                                <th>Class</th>
+                                                <th>Mobile</th>
+                                                <th>Monthly Fees</th>
+                                                <th>Attendance</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="studentsTableBody">
+                                            <tr>
+                                                <td colspan="9" class="text-center">Loading...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="mt-3 d-flex gap-2 justify-content-end">
+                                    <button class="btn btn-success" onclick="window.open('/student-dashboard.html', '_blank')">
+                                        <i class="fas fa-external-link-alt me-2"></i>Open Full Dashboard
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ============================================
+                 TAB 3: TEACHER MANAGEMENT (FULL DASHBOARD)
+                 ============================================ -->
+            <div class="tab-pane fade" id="teachers" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Management Dashboard
+                                <div class="float-end">
+                                    <button class="btn btn-sm btn-light" id="refreshTeachersBtn">
+                                        <i class="fas fa-sync-alt"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Teacher Stats -->
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="teacherTotal">0</div>
+                                                <div class="stat-label">Total Teachers</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #fff3cd; color: var(--warning);">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="teacherPending">0</div>
+                                                <div class="stat-label">Pending</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #d4edda; color: var(--success);">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="teacherApproved">0</div>
+                                                <div class="stat-label">Approved</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-card">
+                                            <div class="stat-icon" style="background: #f8d7da; color: var(--danger);">
+                                                <i class="fas fa-rupee-sign"></i>
+                                            </div>
+                                            <div>
+                                                <div class="stat-value" id="teacherSalary">₹0</div>
+                                                <div class="stat-label">Monthly Salary</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Filter Buttons -->
+                                <div class="mb-3 d-flex gap-2 flex-wrap">
+                                    <button class="filter-btn active" data-filter="all">All</button>
+                                    <button class="filter-btn" data-filter="pending">Pending</button>
+                                    <button class="filter-btn" data-filter="approved">Approved</button>
+                                    <button class="filter-btn" data-filter="rejected">Rejected</button>
+                                </div>
+
+                                <!-- Search -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" class="form-control" id="teacherSearch" placeholder="Search teachers...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <button class="btn btn-primary btn-sm" onclick="window.open('/teacher-dashboard.html', '_blank')">
+                                            <i class="fas fa-external-link-alt me-2"></i>Open Teacher Dashboard
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Teachers Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-hover" id="teachersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Photo</th>
+                                                <th>Teacher ID</th>
+                                                <th>Name</th>
+                                                <th>Subject</th>
+                                                <th>Mobile</th>
+                                                <th>Salary</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="teachersTableBody">
+                                            <tr>
+                                                <td colspan="8" class="text-center">Loading...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ============================================
+                 TAB 4: ADMIN SETTINGS
+                 ============================================ -->
             <div class="tab-pane fade" id="admin" role="tabpanel">
                 <div class="row">
                     <div class="col-md-6 mx-auto">
-                        <div class="card shadow-sm border-0 p-4" style="border-radius: 15px;">
-                            <h4 class="mb-4 fw-bold text-center">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header">
                                 <i class="fas fa-user-cog me-2"></i>Admin Settings
-                            </h4>
-                            
-                            <form id="adminSettingsForm">
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-id-card me-2"></i>Current Admin ID
-                                    </label>
-                                    <input type="text" class="form-control" id="currentAdminId" readonly>
-                                </div>
-                                
-                                <hr>
-                                <h5 class="mb-3">Change Password</h5>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-lock me-2"></i>Current Password
-                                    </label>
-                                    <div class="password-wrapper">
-                                        <input type="password" class="form-control" id="oldPassword" required>
-                                        <i class="fas fa-eye toggle-password" onclick="togglePassword('oldPassword')"></i>
+                            </div>
+                            <div class="card-body">
+                                <form id="adminSettingsForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-id-card me-2"></i>Current Admin ID
+                                        </label>
+                                        <input type="text" class="form-control" id="currentAdminId" readonly>
                                     </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-key me-2"></i>New Password
-                                    </label>
-                                    <div class="password-wrapper">
-                                        <input type="password" class="form-control" id="newPassword" required>
-                                        <i class="fas fa-eye toggle-password" onclick="togglePassword('newPassword')"></i>
+                                    
+                                    <hr>
+                                    <h5 class="mb-3">Change Password</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-lock me-2"></i>Current Password
+                                        </label>
+                                        <div class="password-wrapper">
+                                            <input type="password" class="form-control" id="oldPassword" required>
+                                            <i class="fas fa-eye toggle-password" onclick="togglePassword('oldPassword')"></i>
+                                        </div>
                                     </div>
-                                    <small class="text-muted">Minimum 6 characters</small>
-                                </div>
-                                
-                                <div class="mb-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-check-circle me-2"></i>Confirm New Password
-                                    </label>
-                                    <div class="password-wrapper">
-                                        <input type="password" class="form-control" id="confirmPassword" required>
-                                        <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmPassword')"></i>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-key me-2"></i>New Password
+                                        </label>
+                                        <div class="password-wrapper">
+                                            <input type="password" class="form-control" id="newPassword" required>
+                                            <i class="fas fa-eye toggle-password" onclick="togglePassword('newPassword')"></i>
+                                        </div>
+                                        <small class="text-muted">Minimum 6 characters</small>
                                     </div>
-                                </div>
-                                
-                                <button type="submit" class="btn-save w-100" id="changePasswordBtn">
-                                    <i class="fas fa-sync-alt me-2"></i>Change Password
-                                </button>
-                            </form>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-check-circle me-2"></i>Confirm New Password
+                                        </label>
+                                        <div class="password-wrapper">
+                                            <input type="password" class="form-control" id="confirmPassword" required>
+                                            <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmPassword')"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn-save w-100" id="changePasswordBtn">
+                                        <i class="fas fa-sync-alt me-2"></i>Change Password
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -563,16 +1204,20 @@
         </div>
     </div>
 
-    <footer class="text-center py-4 text-muted border-top bg-white">
+    <!-- Footer -->
+    <footer class="text-center">
         <small>
-            <i class="far fa-copyright me-1"></i>2026 VIP Coaching Admin Panel | 
-            <i class="fas fa-shield-alt me-1"></i>High Security Enabled
+            <i class="far fa-copyright me-1"></i>2026 Bal Bharti Coaching Admin Panel | 
+            <i class="fas fa-shield-alt me-1"></i>Complete Management System
         </small>
     </footer>
 
-    <!-- Bootstrap JS - IMPORTANT for tabs to work -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- ============================================
+         MAIN SCRIPT - ADMIN DASHBOARD
+         ============================================ -->
     <script>
         // ============================================
         // GLOBAL VARIABLES
@@ -582,13 +1227,14 @@
         const token = localStorage.getItem('token');
         const toastContainer = document.getElementById('toastContainer');
         const saveBtn = document.getElementById('saveBtn');
+        let students = [];
+        let teachers = [];
 
         // ============================================
         // TOGGLE PASSWORD VISIBILITY
         // ============================================
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
-            // Fix for event parameter
             const icon = window.event ? window.event.target : document.querySelector(`[onclick="togglePassword('${inputId}')"]`);
             
             if (input.type === 'password') {
@@ -624,6 +1270,13 @@
                     toast.remove();
                 }, 300);
             }, duration);
+        }
+
+        // ============================================
+        // SHOW/HIDE LOADING
+        // ============================================
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
         }
 
         // ============================================
@@ -690,6 +1343,7 @@
             
             try {
                 showToast('Compressing image...', 'info');
+                showLoading(true);
                 
                 const compressedImage = await compressImage(file);
                 
@@ -710,6 +1364,8 @@
             } catch (err) {
                 console.error('Compression error:', err);
                 showToast('Error compressing image', 'error');
+            } finally {
+                showLoading(false);
             }
         });
 
@@ -730,6 +1386,7 @@
                 } else {
                     document.getElementById('securityBadge').innerHTML = 
                         '<i class="fas fa-check-circle me-1"></i>Token Active';
+                    document.getElementById('currentAdminId').value = data.user.adminID || 'admin';
                 }
             } catch (err) {
                 console.log('Token verification failed:', err);
@@ -842,24 +1499,6 @@
         }
 
         // ============================================
-        // FETCH ADMIN DATA
-        // ============================================
-        async function fetchAdminData() {
-            try {
-                const response = await fetch('/api/verify-token', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('currentAdminId').value = data.user.adminID;
-                }
-            } catch (err) {
-                console.error('Fetch admin error:', err);
-            }
-        }
-
-        // ============================================
         // RESET FORM
         // ============================================
         function resetForm() {
@@ -912,6 +1551,7 @@
 
             saveBtn.classList.add('loading');
             saveBtn.disabled = true;
+            showLoading(true);
 
             try {
                 const response = await fetch('/api/update-config', {
@@ -939,6 +1579,7 @@
             } finally {
                 saveBtn.classList.remove('loading');
                 saveBtn.disabled = false;
+                showLoading(false);
             }
         });
 
@@ -970,6 +1611,7 @@
             const changeBtn = document.getElementById('changePasswordBtn');
             changeBtn.classList.add('loading');
             changeBtn.disabled = true;
+            showLoading(true);
             
             try {
                 const response = await fetch('/api/change-password', {
@@ -1003,27 +1645,266 @@
             } finally {
                 changeBtn.classList.remove('loading');
                 changeBtn.disabled = false;
+                showLoading(false);
             }
         });
 
         // ============================================
-        // LOGOUT FUNCTION - REDIRECTS TO INDEX.HTML
+        // FETCH STUDENTS
         // ============================================
-        function logout() {
-            // Clear all auth data
-            localStorage.removeItem('token');
-            localStorage.removeItem('isAdmin');
-            localStorage.removeItem('savedUserid');
-            localStorage.removeItem('savedPassword');
-            localStorage.removeItem('rememberMe');
-            localStorage.removeItem('adminDraft');
-            
-            showToast('Logging out...', 'info');
-            
-            setTimeout(() => {
-                window.location.href = 'index.html'; // Redirect to index page
-            }, 1000);
+        async function fetchStudents() {
+            try {
+                const response = await fetch('/api/students', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    students = data.data;
+                    displayStudents(students);
+                    updateStudentStats();
+                }
+            } catch (err) {
+                console.error('Error fetching students:', err);
+                showToast('Error loading students', 'error');
+            }
         }
+
+        function displayStudents(studentList) {
+            const tbody = document.getElementById('studentsTableBody');
+            
+            if (!studentList || studentList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No students found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = studentList.map(student => {
+                const name = `${student.studentName?.first || ''} ${student.studentName?.last || ''}`;
+                const today = new Date().toISOString().split('T')[0];
+                const attendanceToday = student.attendance?.find(a => a.date === today);
+                const attendanceStatus = attendanceToday ? (attendanceToday.status === 'present' ? '✅ Present' : '❌ Absent') : '⏳ Not Marked';
+                
+                return `
+                    <tr>
+                        <td><img src="${student.photo || 'https://via.placeholder.com/40'}" class="rounded-circle" width="40" height="40"></td>
+                        <td>${student.studentId || '-'}</td>
+                        <td>${name || '-'}</td>
+                        <td>${student.education?.board || '-'}</td>
+                        <td>${student.education?.class || '-'}</td>
+                        <td>${student.mobile || '-'}</td>
+                        <td>₹${student.classMonthlyFees || 0}</td>
+                        <td><span class="badge ${attendanceToday ? (attendanceToday.status === 'present' ? 'bg-success' : 'bg-danger') : 'bg-secondary'}">${attendanceStatus}</span></td>
+                        <td>
+                            <div class="action-group">
+                                <button class="action-btn edit" onclick="editStudent('${student.studentId}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn view" onclick="window.open('/student-dashboard.html?student=${student.studentId}', '_blank')"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStudentStats() {
+            const total = students.length;
+            let totalFees = 0;
+            let present = 0;
+            let absent = 0;
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            students.forEach(student => {
+                totalFees += student.classMonthlyFees || 0;
+                const attendanceToday = student.attendance?.find(a => a.date === today);
+                if (attendanceToday) {
+                    if (attendanceToday.status === 'present') present++;
+                    else if (attendanceToday.status === 'absent') absent++;
+                }
+            });
+            
+            document.getElementById('studentTotal').textContent = total;
+            document.getElementById('studentFeesTotal').textContent = `₹${totalFees}`;
+            document.getElementById('studentPresent').textContent = present;
+            document.getElementById('studentAbsent').textContent = absent;
+            document.getElementById('totalStudentsStat').textContent = total;
+            document.getElementById('totalFeesStat').textContent = `₹${totalFees}`;
+        }
+
+        function editStudent(studentId) {
+            window.open(`/student-dashboard.html?edit=${studentId}`, '_blank');
+        }
+
+        // ============================================
+        // FETCH TEACHERS
+        // ============================================
+        async function fetchTeachers() {
+            try {
+                const response = await fetch('/api/teachers', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    teachers = data.data;
+                    displayTeachers(teachers);
+                    updateTeacherStats();
+                }
+            } catch (err) {
+                console.error('Error fetching teachers:', err);
+                showToast('Error loading teachers', 'error');
+            }
+        }
+
+        function displayTeachers(teacherList) {
+            const tbody = document.getElementById('teachersTableBody');
+            
+            if (!teacherList || teacherList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No teachers found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = teacherList.map(teacher => {
+                const name = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
+                const statusClass = teacher.status === 'approved' ? 'approved' : 
+                                   teacher.status === 'pending' ? 'pending' : 'rejected';
+                
+                return `
+                    <tr>
+                        <td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="rounded-circle" width="40" height="40"></td>
+                        <td>${teacher.teacherId || '-'}</td>
+                        <td>${name || '-'}</td>
+                        <td>${teacher.subject || '-'}</td>
+                        <td>${teacher.mobile || '-'}</td>
+                        <td>₹${teacher.salary || 0}</td>
+                        <td><span class="status-badge ${statusClass}">${teacher.status || 'pending'}</span></td>
+                        <td>
+                            <div class="action-group">
+                                <button class="action-btn approve" onclick="approveTeacher('${teacher.teacherId}')"><i class="fas fa-check"></i></button>
+                                <button class="action-btn edit" onclick="editTeacher('${teacher.teacherId}')"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn view" onclick="window.open('/teacher-dashboard.html?teacher=${teacher.teacherId}', '_blank')"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateTeacherStats() {
+            const total = teachers.length;
+            const pending = teachers.filter(t => t.status === 'pending').length;
+            const approved = teachers.filter(t => t.status === 'approved').length;
+            const totalSalary = teachers.reduce((sum, t) => sum + (t.salary || 0), 0);
+            
+            document.getElementById('teacherTotal').textContent = total;
+            document.getElementById('teacherPending').textContent = pending;
+            document.getElementById('teacherApproved').textContent = approved;
+            document.getElementById('teacherSalary').textContent = `₹${totalSalary}`;
+            document.getElementById('totalTeachersStat').textContent = total;
+            document.getElementById('pendingTeachersStat').textContent = pending;
+        }
+
+        function approveTeacher(teacherId) {
+            const subject = prompt('Enter subject for teacher:');
+            if (!subject) return;
+            
+            const salary = prompt('Enter monthly salary:');
+            if (!salary) return;
+            
+            const joiningDate = prompt('Enter joining date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            
+            showLoading(true);
+            
+            fetch(`/api/teachers/${teacherId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    status: 'approved',
+                    subject: subject,
+                    salary: parseInt(salary),
+                    joiningDate: joiningDate
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Teacher approved successfully', 'success');
+                    fetchTeachers();
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                showToast('Server error', 'error');
+            })
+            .finally(() => showLoading(false));
+        }
+
+        function editTeacher(teacherId) {
+            window.open(`/teacher-dashboard.html?edit=${teacherId}`, '_blank');
+        }
+
+        // ============================================
+        // FILTER TEACHERS
+        // ============================================
+        document.querySelectorAll('[data-filter]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                if (filter === 'all') {
+                    displayTeachers(teachers);
+                } else {
+                    const filtered = teachers.filter(t => t.status === filter);
+                    displayTeachers(filtered);
+                }
+            });
+        });
+
+        // ============================================
+        // SEARCH STUDENTS
+        // ============================================
+        document.getElementById('studentSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            if (!searchTerm) {
+                displayStudents(students);
+                return;
+            }
+            
+            const filtered = students.filter(s => {
+                const name = `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase();
+                return name.includes(searchTerm) || 
+                       (s.studentId && s.studentId.toLowerCase().includes(searchTerm)) ||
+                       (s.mobile && s.mobile.includes(searchTerm));
+            });
+            displayStudents(filtered);
+        });
+
+        // ============================================
+        // SEARCH TEACHERS
+        // ============================================
+        document.getElementById('teacherSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            if (!searchTerm) {
+                displayTeachers(teachers);
+                return;
+            }
+            
+            const filtered = teachers.filter(t => {
+                const name = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`.toLowerCase();
+                return name.includes(searchTerm) || 
+                       (t.teacherId && t.teacherId.toLowerCase().includes(searchTerm)) ||
+                       (t.mobile && t.mobile.includes(searchTerm)) ||
+                       (t.subject && t.subject.toLowerCase().includes(searchTerm));
+            });
+            displayTeachers(filtered);
+        });
 
         // ============================================
         // AUTO-SAVE DRAFT
@@ -1044,16 +1925,72 @@
         }
 
         // ============================================
+        // LOGOUT FUNCTION
+        // ============================================
+        function logout() {
+            // Clear all auth data
+            localStorage.removeItem('token');
+            localStorage.removeItem('isAdmin');
+            localStorage.removeItem('savedUserid');
+            localStorage.removeItem('savedPassword');
+            localStorage.removeItem('rememberMe');
+            localStorage.removeItem('adminDraft');
+            
+            showToast('Logging out...', 'info');
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+
+        // ============================================
+        // LOAD BOARDS AND CLASSES
+        // ============================================
+        async function loadBoardsAndClasses() {
+            try {
+                const response = await fetch('/api/boards', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const boardSelect = document.getElementById('studentBoardFilter');
+                    boardSelect.innerHTML = '<option value="">All Boards</option>';
+                    
+                    data.data.forEach(board => {
+                        const option = document.createElement('option');
+                        option.value = board;
+                        option.textContent = board;
+                        boardSelect.appendChild(option);
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading boards:', err);
+            }
+        }
+
+        // ============================================
         // INITIALIZE
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             verifyToken();
             fetchCurrentData();
-            fetchAdminData();
+            fetchStudents();
+            fetchTeachers();
+            loadBoardsAndClasses();
             
-            // Add logout button event listener
+            // Add event listeners
             document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('refreshAllBtn').addEventListener('click', () => {
+                fetchStudents();
+                fetchTeachers();
+                showToast('Data refreshed', 'success');
+            });
+            document.getElementById('refreshStudentsBtn').addEventListener('click', fetchStudents);
+            document.getElementById('refreshTeachersBtn').addEventListener('click', fetchTeachers);
             
+            // Auto-save listeners
             const inputs = document.querySelectorAll('#updateForm input, #updateForm textarea');
             inputs.forEach(input => {
                 input.addEventListener('input', () => {
@@ -1067,13 +2004,29 @@
                     autoSaveDraft();
                 }
             });
+            
+            // Board filter for students
+            document.getElementById('studentBoardFilter').addEventListener('change', function() {
+                const board = this.value;
+                if (!board) {
+                    displayStudents(students);
+                    return;
+                }
+                const filtered = students.filter(s => s.education?.board === board);
+                displayStudents(filtered);
+            });
+            
+            // Class filter for students
+            document.getElementById('studentClassFilter').addEventListener('change', function() {
+                const className = this.value;
+                if (!className) {
+                    displayStudents(students);
+                    return;
+                }
+                const filtered = students.filter(s => s.education?.class === className);
+                displayStudents(filtered);
+            });
         });
     </script>
-     <!-- Chart.js ke liye (optional, agar nahi add kiya to bhi kaam karega) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<!-- Student Management JS -->
-<script src="studentsetting.js"></script>
-    <script src="teachersetting.js"></script>
 </body>
 </html>
