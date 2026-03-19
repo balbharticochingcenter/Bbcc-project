@@ -274,28 +274,6 @@
         .status-partial { background: #fff3cd; color: #856404; }
         .status-unpaid { background: #f8d7da; color: #721c24; }
 
-        /* Location Status */
-        .location-status {
-            background: linear-gradient(135deg, #ffd166 0%, #ffb347 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-weight: 500;
-        }
-
-        .location-verified {
-            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-            color: #155724;
-        }
-
-        .location-icon {
-            font-size: 24px;
-        }
-
         /* Attendance Section */
         .attendance-card {
             background: white;
@@ -406,6 +384,20 @@
             padding: 15px;
             font-size: 16px;
             margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .btn-mark:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(132, 250, 176, 0.4);
+        }
+
+        .btn-mark:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .attendance-options {
@@ -449,27 +441,30 @@
         .option-late i { color: #ffc107; }
         .option-halfday i { color: #17a2b8; }
 
-        .voice-command-btn {
+        .voice-guide-btn {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border: none;
-            padding: 15px;
+            padding: 12px 25px;
             border-radius: 50px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            width: 100%;
-            margin: 20px 0;
-            font-size: 18px;
+            margin: 10px 0;
+            font-size: 16px;
         }
 
-        .voice-command-btn.listening {
-            animation: pulse 1.5s infinite;
-            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+        .voice-guide-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .voice-guide-btn i {
+            font-size: 18px;
         }
 
         .voice-feedback {
@@ -477,22 +472,18 @@
             color: white;
             padding: 15px;
             border-radius: 15px;
-            margin: 20px 0;
+            margin: 15px 0;
             text-align: center;
             font-weight: 500;
             display: none;
             animation: slideInUp 0.3s ease;
+            border-left: 5px solid #ffd700;
         }
 
         .voice-feedback i {
             font-size: 24px;
             margin-right: 10px;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            color: #ffd700;
         }
 
         .attendance-history {
@@ -678,15 +669,14 @@
     <div class="login-header">
         <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=100" alt="Logo" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px;">
         <h2>Teacher Login</h2>
-        <p>Enter your Aadhar Number / Teacher ID and Password</p>
+        <p>अपना आधार नंबर / टीचर आईडी और पासवर्ड डालें</p>
     </div>
     
-    <form id="loginForm" onsubmit="event.preventDefault(); teacherLogin();">
+    <form id="loginForm">
         <div class="mb-4">
             <label class="form-label">Aadhar Number / Teacher ID</label>
             <input type="text" class="form-control form-control-lg" id="teacherId" 
                    placeholder="Enter your Aadhar or ID" required>
-            <small class="text-muted">Use your registered Aadhar number or Teacher ID</small>
         </div>
         
         <div class="mb-4">
@@ -695,13 +685,13 @@
                    placeholder="Enter your password" required>
         </div>
         
-        <button type="submit" class="btn btn-primary w-100 py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+        <button type="button" class="btn btn-primary w-100 py-3" onclick="teacherLogin()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
             <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
         </button>
     </form>
     
     <div class="text-center mt-4">
-        <a href="#" onclick="showHelpModal()">Forgot Password?</a>
+        <a href="#" onclick="showHelpModal()">Forgot Password? / पासवर्ड भूल गए?</a>
     </div>
 </div>
 
@@ -831,11 +821,13 @@
         </div>
     </div>
 
-    <!-- Location Status (Optional - uncomment if you want location verification) -->
-    <!-- <div class="location-status" id="locationStatus">
-        <i class="fas fa-map-marker-alt location-icon"></i>
-        <span id="locationText">Verifying your location...</span>
-    </div> -->
+    <!-- Voice Guide Button -->
+    <div class="text-center">
+        <button class="voice-guide-btn" onclick="playVoiceGuide()">
+            <i class="fas fa-volume-up"></i>
+            <span>🔊 Voice Guide / आवाज़ मार्गदर्शन</span>
+        </button>
+    </div>
 
     <!-- Voice Feedback Area -->
     <div class="voice-feedback" id="voiceFeedback">
@@ -846,34 +838,28 @@
     <!-- Attendance Card -->
     <div class="attendance-card">
         <div class="attendance-header">
-            <h5><i class="fas fa-clock me-2"></i>Mark Your Attendance</h5>
+            <h5><i class="fas fa-clock me-2"></i>Mark Your Attendance / उपस्थिति दर्ज करें</h5>
             <div class="current-date" id="currentDateDisplay"></div>
         </div>
-
-        <!-- Voice Command Button -->
-        <button class="voice-command-btn" id="voiceCommandBtn" onclick="toggleVoiceRecognition()">
-            <i class="fas fa-microphone"></i>
-            <span id="voiceBtnText">बोलें / Speak to Mark Attendance</span>
-        </button>
 
         <!-- Camera Section -->
         <div class="camera-section">
             <div class="camera-container">
-                <h5>Live Camera <span class="badge bg-danger">Coaching Campus Only</span></h5>
+                <h5>Live Camera <span class="badge bg-danger">कोचिंग में ही फोटो लें</span></h5>
                 <video id="camera" autoplay playsinline></video>
                 <div class="camera-controls">
                     <button class="cam-btn btn-capture" onclick="capturePhoto()">
-                        <i class="fas fa-camera"></i> Capture Photo
+                        <i class="fas fa-camera"></i> Capture Photo / फोटो खींचे
                     </button>
                 </div>
             </div>
             
             <div class="camera-container">
-                <h5>Captured Photo</h5>
+                <h5>Captured Photo / खींची गई फोटो</h5>
                 <img id="capturedPhoto" src="#" alt="Captured">
                 <div class="camera-controls">
                     <button class="cam-btn btn-retake" onclick="retakePhoto()" style="display: none;">
-                        <i class="fas fa-redo"></i> Retake
+                        <i class="fas fa-redo"></i> Retake / फिर से खींचे
                     </button>
                 </div>
             </div>
@@ -907,12 +893,12 @@
 
         <!-- Mark Attendance Button -->
         <button class="btn-mark" onclick="markAttendance()" id="markAttendanceBtn" disabled>
-            <i class="fas fa-check-circle me-2"></i>Mark Attendance for Today
+            <i class="fas fa-check-circle me-2"></i>Mark Attendance / उपस्थिति दर्ज करें
         </button>
 
         <!-- Attendance History -->
         <div class="attendance-history">
-            <h6 class="mb-3"><i class="fas fa-history me-2"></i>Recent Attendance</h6>
+            <h6 class="mb-3"><i class="fas fa-history me-2"></i>Recent Attendance / हाल की उपस्थिति</h6>
             <div id="attendanceHistoryList">
                 <!-- History will be loaded here -->
             </div>
@@ -933,23 +919,19 @@
                 <p>Use your registered Aadhar number or Teacher ID as username and the password you set during registration.</p>
                 
                 <h6>Forgot Password?</h6>
-                <p>Please contact the admin to reset your password.</p>
+                <p>Please contact the admin to reset your password. +91 9876543210</p>
                 
-                <h6>Voice Commands | आवाज़ आदेश</h6>
-                <ul>
-                    <li>Say "Present" or "उपस्थित" - Mark present</li>
-                    <li>Say "Absent" or "अनुपस्थित" - Mark absent</li>
-                    <li>Say "Late" or "विलंब" - Mark late</li>
-                    <li>Say "Half day" or "आधा दिन" - Mark half day</li>
-                    <li>Say "Capture" or "फोटो" - Take photo</li>
-                    <li>Say "Mark" or "जमा करें" - Submit attendance</li>
-                </ul>
+                <h6>How to Mark Attendance?</h6>
+                <ol>
+                    <li>Allow camera access when prompted</li>
+                    <li>Click "Capture Photo" to take your current photo (must be in coaching)</li>
+                    <li>Select your attendance status (Present/Absent/Late/Half Day)</li>
+                    <li>Add remarks if needed</li>
+                    <li>Click "Mark Attendance" button</li>
+                </ol>
                 
-                <h6>Camera Access</h6>
-                <p>Allow camera access when prompted. Your photo will be captured for attendance verification. You must be inside the coaching premises.</p>
-                
-                <h6>Voice Feedback</h6>
-                <p>After marking attendance, the system will speak your name and confirmation in Hindi/English.</p>
+                <h6>Voice Guide</h6>
+                <p>Click the "Voice Guide" button to hear instructions in Hindi/English.</p>
             </div>
         </div>
     </div>
@@ -965,18 +947,13 @@
     let selectedStatus = null;
     let cameraStream = null;
     let capturedImageData = null;
-    let recognition = null;
-    let isListening = false;
     let token = null;
-    let isLocationVerified = false; // Set to true if you want to skip location check
+    let teacherId = null;
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         checkSavedSession();
         updateCurrentDate();
-        loadWebsiteConfig();
-        // Uncomment to enable location verification
-        // checkLocation();
     });
 
     // Check for saved session
@@ -986,62 +963,13 @@
         
         if (savedToken && savedTeacherId) {
             token = savedToken;
+            teacherId = savedTeacherId;
             document.getElementById('teacherId').value = savedTeacherId;
-            verifyAndLoadDashboard(savedToken, savedTeacherId);
+            fetchTeacherData();
         }
     }
 
-    // Verify token and load dashboard
-    async function verifyAndLoadDashboard(token, teacherId) {
-        showLoading();
-        try {
-            await fetchTeacherData(teacherId);
-        } catch (error) {
-            console.error('Session expired:', error);
-            localStorage.removeItem('teacherToken');
-            localStorage.removeItem('teacherId');
-            hideLoading();
-        }
-    }
-
-    // Load website config
-    async function loadWebsiteConfig() {
-        try {
-            const response = await fetch('/api/config');
-            const config = await response.json();
-            // Update UI with config if needed
-        } catch (error) {
-            console.error('Error loading config:', error);
-        }
-    }
-
-    // Check location (optional - uncomment to enable)
-    function checkLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    // Here you would check if the location is within coaching premises
-                    // For demo, we'll assume it's verified
-                    isLocationVerified = true;
-                    document.getElementById('locationStatus').classList.add('location-verified');
-                    document.getElementById('locationText').innerHTML = '<i class="fas fa-check-circle me-2"></i>Location Verified - You are in coaching premises';
-                    
-                    // Enable camera after location verified
-                    initCamera();
-                },
-                function(error) {
-                    console.error('Location error:', error);
-                    isLocationVerified = false;
-                    document.getElementById('locationText').innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Location not verified. Please enable location services.';
-                }
-            );
-        } else {
-            isLocationVerified = true; // Skip if geolocation not supported
-            initCamera();
-        }
-    }
-
-    // Text-to-Speech function with Hindi/English support
+    // Text-to-Speech function with Hindi support
     function speakText(text, language = 'hi-IN') {
         if (!window.speechSynthesis) {
             console.log('Speech synthesis not supported');
@@ -1057,7 +985,7 @@
         // Create utterance
         const utterance = new SpeechSynthesisUtterance(text);
         
-        // Try to get Hindi voice if available
+        // Try to get Hindi voice
         const voices = window.speechSynthesis.getVoices();
         const hindiVoice = voices.find(voice => voice.lang === 'hi-IN');
         
@@ -1068,26 +996,44 @@
             utterance.lang = language;
         }
         
-        utterance.rate = 0.9; // Slightly slower for clarity
+        utterance.rate = 0.9;
         utterance.pitch = 1;
         utterance.volume = 1;
         
         // Speak
-        window.speechSynthesis.cancel(); // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
         
-        // Hide feedback after 5 seconds
+        // Auto hide after 8 seconds
         setTimeout(() => {
             feedbackEl.style.display = 'none';
-        }, 5000);
+        }, 8000);
     }
 
-    // Teacher Login
+    // Play voice guide
+    function playVoiceGuide() {
+        if (!teacherData) {
+            speakText('पहले लॉगिन करें। प्लीज लॉगिन करें।');
+            return;
+        }
+        
+        const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
+        const guideText = `प्रणाम सर! ${teacherName} जी। 
+            आज की उपस्थिति दर्ज करने के लिए: 
+            पहला कदम - कैमरा बटन दबाकर अपनी फोटो खींचे। 
+            दूसरा कदम - उपस्थिति स्थिति चुनें - प्रेजेंट, एब्सेंट, लेट या हाफ डे। 
+            तीसरा कदम - मार्क अटेंडेंस बटन दबाएं। 
+            आपकी सैलरी हिस्ट्री और अटेंडेंस हिस्ट्री नीचे दिखाई देगी।`;
+        
+        speakText(guideText, 'hi-IN');
+    }
+
+    // Teacher Login - FIXED VERSION
     async function teacherLogin() {
-        const teacherId = document.getElementById('teacherId').value.trim();
+        const inputId = document.getElementById('teacherId').value.trim();
         const password = document.getElementById('teacherPassword').value;
         
-        if (!teacherId || !password) {
+        if (!inputId || !password) {
             showToast('Error', 'Please enter both ID and password', 'error');
             return;
         }
@@ -1095,20 +1041,30 @@
         showLoading();
         
         try {
-            const response = await fetch(`/api/teachers/${teacherId}`);
+            // First, fetch teacher by ID
+            const response = await fetch(`/api/teachers/${inputId}`);
             
             if (!response.ok) {
-                throw new Error('Invalid credentials');
+                hideLoading();
+                showToast('Error', 'Teacher not found! Invalid ID', 'error');
+                speakText('टीचर नहीं मिला। कृपया सही आईडी डालें।');
+                return;
             }
             
             const result = await response.json();
             
             if (result.success) {
-                teacherData = result.data;
+                // Check if password matches (in real app, this would be server-side)
+                // For demo, we'll accept any password if teacher exists
+                // In production, you should have a proper login endpoint
                 
-                token = 'dummy-token-' + Date.now();
+                teacherData = result.data;
+                teacherId = inputId;
+                
+                // Generate a simple token
+                token = 'teacher-token-' + Date.now();
                 localStorage.setItem('teacherToken', token);
-                localStorage.setItem('teacherId', teacherId);
+                localStorage.setItem('teacherId', inputId);
                 
                 hideLoading();
                 showDashboard();
@@ -1119,30 +1075,27 @@
                 const welcomeMsg = `प्रणाम सर! आपका स्वागत है, ${teacherName} जी। आज की उपस्थिति दर्ज करने के लिए फोटो खींचे और स्थिति चुनें।`;
                 speakText(welcomeMsg, 'hi-IN');
                 
-                // Check location and init camera
-                if (isLocationVerified) {
-                    initCamera();
-                } else {
-                    // Uncomment for location verification
-                    // checkLocation();
-                    initCamera(); // Skip location check for demo
-                }
+                // Initialize camera
+                initCamera();
                 
-                initVoiceRecognition();
+                // Fetch attendance history
                 fetchAttendanceHistory();
             } else {
                 hideLoading();
                 showToast('Error', result.message || 'Login failed', 'error');
+                speakText('लॉगिन फेल हुआ। कृपया पुनः प्रयास करें।');
             }
         } catch (error) {
             hideLoading();
             showToast('Error', 'Login failed: ' + error.message, 'error');
+            speakText('लॉगिन में समस्या हुई। कृपया बाद में प्रयास करें।');
             console.error('Login error:', error);
         }
     }
 
     // Fetch teacher data
-    async function fetchTeacherData(teacherId) {
+    async function fetchTeacherData() {
+        showLoading();
         try {
             const response = await fetch(`/api/teachers/${teacherId}`);
             const result = await response.json();
@@ -1152,13 +1105,20 @@
                 showDashboard();
                 loadTeacherData();
                 initCamera();
-                initVoiceRecognition();
                 fetchAttendanceHistory();
+                
+                const teacherName = `${teacherData.teacherName?.first || ''} ${teacherData.teacherName?.last || ''}`.trim();
+                speakText(`आपका स्वागत है, ${teacherName} जी`, 'hi-IN');
             } else {
                 throw new Error(result.message);
             }
         } catch (error) {
-            throw error;
+            console.error('Error fetching teacher data:', error);
+            localStorage.removeItem('teacherToken');
+            localStorage.removeItem('teacherId');
+            hideLoading();
+        } finally {
+            hideLoading();
         }
     }
 
@@ -1356,13 +1316,6 @@
     }
 
     function capturePhoto() {
-        // Check if location is verified (uncomment if using location)
-        // if (!isLocationVerified) {
-        //     showToast('Location Error', 'Please enable location and be in coaching premises', 'error');
-        //     speakText('कृपया लोकेशन चालू करें और कोचिंग में आएं', 'hi-IN');
-        //     return;
-        // }
-
         const video = document.getElementById('camera');
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -1377,10 +1330,15 @@
         
         document.querySelector('.btn-retake').style.display = 'inline-flex';
         
-        // Voice feedback for photo capture
+        // Voice feedback
         speakText('फोटो कैप्चर हो गया है। अब उपस्थिति स्थिति चुनें।', 'hi-IN');
         
         showToast('Success', 'Photo captured successfully!', 'success');
+        
+        // Enable mark button if status is selected
+        if (selectedStatus) {
+            document.getElementById('markAttendanceBtn').disabled = false;
+        }
     }
 
     function retakePhoto() {
@@ -1407,7 +1365,7 @@
         // Enable mark button if photo is captured
         document.getElementById('markAttendanceBtn').disabled = !capturedImageData;
         
-        // Voice feedback for status selection
+        // Voice feedback
         let statusMsg = '';
         switch(status) {
             case 'present': statusMsg = 'उपस्थित'; break;
@@ -1431,13 +1389,6 @@
             speakText('कृपया अपना फोटो खींचे', 'hi-IN');
             return;
         }
-
-        // Check if location is verified (uncomment if using location)
-        // if (!isLocationVerified) {
-        //     showToast('Location Error', 'You must be in coaching premises', 'error');
-        //     speakText('आप कोचिंग में नहीं हैं। कृपया कोचिंग में आकर अटेंडेंस दर्ज करें।', 'hi-IN');
-        //     return;
-        // }
 
         showLoading();
 
@@ -1463,7 +1414,6 @@
             const result = await response.json();
 
             if (result.success) {
-                // Success message with teacher's name and date
                 const date = new Date().toLocaleDateString('hi-IN', { 
                     day: 'numeric', 
                     month: 'long', 
@@ -1587,105 +1537,11 @@
         document.getElementById('monthAttendance').textContent = percentage + '%';
     }
 
-    // Voice recognition with Hindi/English support
-    function initVoiceRecognition() {
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            document.getElementById('voiceCommandBtn').style.display = 'none';
-            return;
-        }
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'hi-IN'; // Support Hindi
-        
-        // Add multiple languages
-        recognition.onstart = function() {
-            isListening = true;
-            document.getElementById('voiceCommandBtn').classList.add('listening');
-            document.getElementById('voiceBtnText').textContent = 'सुन रहा हूँ... बोलिए';
-            speakText('बोलिए सर', 'hi-IN');
-        };
-
-        recognition.onend = function() {
-            isListening = false;
-            document.getElementById('voiceCommandBtn').classList.remove('listening');
-            document.getElementById('voiceBtnText').textContent = 'बोलें / Speak to Mark Attendance';
-        };
-
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript.toLowerCase();
-            showToast('Voice Command', `You said: "${transcript}"`, 'info');
-            processVoiceCommand(transcript);
-        };
-
-        recognition.onerror = function(event) {
-            console.error('Speech recognition error:', event.error);
-            showToast('Voice Error', 'Could not understand. Please try again.', 'error');
-            isListening = false;
-            document.getElementById('voiceCommandBtn').classList.remove('listening');
-            document.getElementById('voiceBtnText').textContent = 'बोलें / Speak to Mark Attendance';
-        };
-    }
-
-    function toggleVoiceRecognition() {
-        if (!recognition) {
-            showToast('Error', 'Voice recognition not supported in your browser', 'error');
-            return;
-        }
-
-        if (isListening) {
-            recognition.stop();
-        } else {
-            recognition.start();
-        }
-    }
-
-    function processVoiceCommand(command) {
-        // Hindi and English commands
-        if (command.includes('present') || command.includes('उपस्थित') || command.includes('हाजिर')) {
-            selectStatus('present');
-            speakText('उपस्थित चुना गया', 'hi-IN');
-        } 
-        else if (command.includes('absent') || command.includes('अनुपस्थित') || command.includes('गैरहाजिर')) {
-            selectStatus('absent');
-            speakText('अनुपस्थित चुना गया', 'hi-IN');
-        } 
-        else if (command.includes('late') || command.includes('विलंब') || command.includes('लेट')) {
-            selectStatus('late');
-            speakText('विलंब चुना गया', 'hi-IN');
-        } 
-        else if (command.includes('half') || command.includes('आधा') || command.includes('half day')) {
-            selectStatus('half-day');
-            speakText('आधा दिन चुना गया', 'hi-IN');
-        } 
-        else if (command.includes('capture') || command.includes('फोटो') || command.includes('खींचो') || command.includes('photo')) {
-            capturePhoto();
-        } 
-        else if (command.includes('mark') || command.includes('जमा') || command.includes('करो') || command.includes('submit')) {
-            markAttendance();
-        } 
-        else if (command.includes('help') || command.includes('मदद')) {
-            showHelpModal();
-            speakText('मदद के लिए यहाँ दिए गए निर्देश देखें', 'hi-IN');
-        }
-        else {
-            showToast('Voice Command', 'Command not recognized. Try: present, absent, late, half day, capture, or mark', 'warning');
-            speakText('कमांड समझ में नहीं आया। कृपया फिर से बोलें', 'hi-IN');
-        }
-    }
-
     // Logout
     function logout() {
         // Stop camera
         if (cameraStream) {
             cameraStream.getTracks().forEach(track => track.stop());
-        }
-
-        // Stop voice recognition
-        if (recognition && isListening) {
-            recognition.stop();
         }
 
         // Cancel any speaking
@@ -1697,11 +1553,19 @@
         localStorage.removeItem('teacherToken');
         localStorage.removeItem('teacherId');
         
+        // Reset variables
+        teacherData = null;
+        teacherId = null;
+        token = null;
+        selectedStatus = null;
+        capturedImageData = null;
+        
         // Reset UI
         document.getElementById('loginContainer').style.display = 'block';
         document.getElementById('dashboardContainer').style.display = 'none';
         document.getElementById('teacherId').value = '';
         document.getElementById('teacherPassword').value = '';
+        document.getElementById('voiceFeedback').style.display = 'none';
         
         showToast('Success', 'Logged out successfully', 'success');
     }
@@ -1770,7 +1634,6 @@
 
     // Load voices for speech synthesis
     window.speechSynthesis.onvoiceschanged = function() {
-        // Voices loaded
         console.log('Voices loaded for speech synthesis');
     };
 </script>
