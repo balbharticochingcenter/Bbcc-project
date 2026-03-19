@@ -2,86 +2,1044 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - BBCC Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Student Dashboard - Bal Bharti Coaching</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ===== PREMIUM THEME VARIABLES ===== */
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --secondary: #ec4899;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --gradient-1: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-            --gradient-2: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
-            --gradient-3: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-            --border-radius: 1rem;
-            --border-radius-sm: 0.5rem;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
-            position: relative;
-            overflow-x: hidden;
+            padding: 12px;
         }
 
-        /* Animated Background */
-        body::before {
-            content: '';
+        .app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            background: white;
+            border-radius: 28px;
+            padding: 32px 24px;
+            margin: 40px auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.4s ease;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header i {
+            font-size: 64px;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .login-header h2 {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .login-input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .header h1 i {
+            color: #667eea;
+            margin-right: 8px;
+        }
+
+        .logout-btn {
+            background: #fee2e2;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 30px;
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logout-btn:active {
+            background: #fecaca;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-card i {
+            font-size: 24px;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .value {
+            color: #333;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .search-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .search-title i {
+            color: #667eea;
+        }
+
+        .search-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 15px;
+        }
+
+        .search-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .search-btn {
+            padding: 14px;
+            background: #667eea;
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .reset-btn {
+            padding: 14px;
+            background: #9ca3af;
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .search-btn:active, .reset-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Students List */
+        .students-list {
+            margin-bottom: 16px;
+        }
+
+        .student-item {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .student-item.selected {
+            border-color: #667eea;
+            background: #f5f3ff;
+        }
+
+        .student-item:active {
+            transform: scale(0.98);
+        }
+
+        .student-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .student-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .student-id {
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .student-class {
+            color: #666;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .student-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .fees-badge {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 6px;
+        }
+
+        .status-paid { background: #10b981; }
+        .status-partial { background: #f59e0b; }
+        .status-unpaid { background: #ef4444; }
+
+        /* Quick Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .action-btn {
+            background: white;
+            border: none;
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .action-btn i {
+            font-size: 24px;
+            color: #667eea;
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Student Details */
+        .details-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .profile-title h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .profile-title p {
+            color: #666;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .info-section {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4b5563;
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row i {
+            color: #667eea;
+            width: 20px;
+        }
+
+        /* Document Preview */
+        .doc-preview {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .doc-preview img, .doc-preview iframe {
+            width: 100%;
+            border-radius: 12px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        .doc-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .doc-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .doc-view {
+            background: #667eea;
+            color: white;
+        }
+
+        .doc-download {
+            background: #10b981;
+            color: white;
+        }
+
+        .doc-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Attendance Section */
+        .attendance-section {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .attendance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .attendance-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #333;
+        }
+
+        .attendance-header h3 i {
+            color: #667eea;
+        }
+
+        .attendance-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .attendance-stat {
+            text-align: center;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 16px;
+        }
+
+        .attendance-stat .count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .attendance-stat .label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .attendance-stat.present .count { color: #10b981; }
+        .attendance-stat.absent .count { color: #ef4444; }
+        .attendance-stat.late .count { color: #f59e0b; }
+
+        .attendance-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .calendar-day.present {
+            background: #10b981;
+            color: white;
+        }
+
+        .calendar-day.absent {
+            background: #ef4444;
+            color: white;
+        }
+
+        .calendar-day.late {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .calendar-day.half-day {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .attendance-legend {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .attendance-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .attendance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .attendance-date {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .attendance-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-present {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .status-absent {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .status-late {
+            background: #fed7aa;
+            color: #f59e0b;
+        }
+
+        .status-half-day {
+            background: #e0e7ff;
+            color: #8b5cf6;
+        }
+
+        .attendance-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-attendance, .delete-attendance {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-attendance {
+            background: #667eea;
+            color: white;
+        }
+
+        .delete-attendance {
+            background: #ef4444;
+            color: white;
+        }
+
+        .add-attendance-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        /* Chart */
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="40" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="50" r="20" fill="rgba(255,255,255,0.03)"/><circle cx="150" cy="150" r="60" fill="rgba(255,255,255,0.02)"/></svg>');
-            pointer-events: none;
-            z-index: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            padding: 12px;
+            overflow-y: auto;
         }
 
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            max-width: 500px;
+            margin: 40px auto;
             position: relative;
-            z-index: 1;
+            animation: slideUp 0.3s ease;
         }
 
-        /* ===== PREMIUM LOGIN SECTION ===== */
-        .login-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 3rem;
-            box-shadow: var(--shadow-xl);
-            max-width: 450px;
-            margin: 100px auto;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transform: translateY(0);
-            transition: transform 0.3s ease;
-            animation: fadeInUp 0.6s ease;
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
         }
 
-        @keyframes fadeInUp {
+        .modal-close:active {
+            background: #f0f0f0;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header img {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            object-fit: cover;
+        }
+
+        /* Fees Table */
+        .fees-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .fees-table th {
+            text-align: left;
+            padding: 12px 8px;
+            color: #667eea;
+            font-size: 13px;
+        }
+
+        .fees-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .fees-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .save-fees {
+            padding: 8px 16px;
+            background: #10b981;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Attendance Modal */
+        .attendance-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            font-size: 15px;
+        }
+
+        .status-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .status-option {
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .status-option.selected {
+            border-color: #667eea;
+            background: #f5f3ff;
+        }
+
+        .status-option.present { color: #10b981; }
+        .status-option.absent { color: #ef4444; }
+        .status-option.late { color: #f59e0b; }
+        .status-option.half-day { color: #8b5cf6; }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .save-btn {
+            flex: 1;
+            padding: 16px;
+            background: #10b981;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 16px;
+            background: #9ca3af;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Add Student Modal */
+        .add-form {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            padding: 20px;
+            text-align: center;
+            border-radius: 16px;
+            background: #f5f3ff;
+            cursor: pointer;
+        }
+
+        .preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .preview img, .preview iframe {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 12px;
+        }
+
+        /* Confirmation Dialog */
+        .confirm-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .confirm-box {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .confirm-box i {
+            font-size: 48px;
+            color: #f59e0b;
+            margin-bottom: 16px;
+        }
+
+        .confirm-box h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .confirm-box p {
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .confirm-yes {
+            flex: 1;
+            padding: 14px;
+            background: #ef4444;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .confirm-no {
+            flex: 1;
+            padding: 14px;
+            background: #9ca3af;
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 16px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 3000;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+        }
+
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 20px;
+            color: #999;
+        }
+
+        @keyframes slideUp {
             from {
                 opacity: 0;
                 transform: translateY(30px);
@@ -92,1520 +1050,137 @@
             }
         }
 
-        .login-section:hover {
-            transform: translateY(-5px);
-        }
-
-        .login-section h2 {
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 2rem;
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .login-section h2 i {
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-right: 10px;
-        }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-        }
-
-        .login-form input {
-            padding: 1rem 1.5rem;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--border-radius-sm);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .login-form input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-            outline: none;
-        }
-
-        .login-form button {
-            padding: 1rem;
-            background: var(--gradient-1);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius-sm);
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-form button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .login-form button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .login-form button:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-colored);
-        }
-
-        /* ===== PREMIUM DASHBOARD HEADER ===== */
-        .dashboard-section {
-            display: none;
-        }
-
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 1.5rem 2rem;
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: slideDown 0.5s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header h1 {
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .header h1 i {
-            margin-right: 10px;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .add-student-btn, .logout-btn {
-            padding: 0.8rem 1.8rem;
-            border: none;
-            border-radius: var(--border-radius-sm);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .add-student-btn {
-            background: var(--gradient-2);
-            color: white;
-        }
-
-        .logout-btn {
-            background: var(--gradient-3);
-            color: white;
-        }
-
-        .add-student-btn:hover, .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* ===== PREMIUM SEARCH AREA ===== */
-        .search-area {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: slideUp 0.5s ease 0.1s both;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .search-area h3 {
-            color: var(--dark);
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .search-area h3 i {
-            color: var(--primary);
-        }
-
-        .search-row {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .search-row select, .search-row input {
-            flex: 1;
-            min-width: 200px;
-            padding: 1rem 1.5rem;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--border-radius-sm);
-            font-size: 1rem;
-            background: white;
-            transition: all 0.3s ease;
-        }
-
-        .search-row select:focus, .search-row input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-            outline: none;
-        }
-
-        .search-btn, .reset-btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: var(--border-radius-sm);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 140px;
-            justify-content: center;
-        }
-
-        .search-btn {
-            background: var(--primary);
-            color: white;
-        }
-
-        .reset-btn {
-            background: var(--gray);
-            color: white;
-        }
-
-        .search-btn:hover, .reset-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* ===== PREMIUM STATS CARDS ===== */
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            text-align: center;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            animation: scaleIn 0.5s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-1);
-        }
-
-        .stat-card:nth-child(2)::before {
-            background: var(--gradient-2);
-        }
-
-        .stat-card:nth-child(3)::before {
-            background: var(--gradient-3);
-        }
-
-        .stat-card:nth-child(4)::before {
-            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .stat-card i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-card:nth-child(2) i {
-            background: var(--gradient-2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-card:nth-child(3) i {
-            background: var(--gradient-3);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-card h4 {
-            color: var(--gray);
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .stat-card p {
-            color: var(--dark);
-            font-size: 2.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-        }
-
-        /* ===== PREMIUM STUDENTS GRID ===== */
-        .students-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .student-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-            animation: fadeIn 0.5s ease;
-        }
-
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        .student-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-1);
-        }
-
-        .student-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .student-card.selected {
-            border: 3px solid var(--primary);
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
-        }
-
-        .student-card img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 0 auto 1rem;
-            display: block;
-            border: 4px solid white;
-            box-shadow: var(--shadow-md);
-            transition: transform 0.3s ease;
-        }
-
-        .student-card:hover img {
-            transform: scale(1.1);
-        }
-
-        .student-card h4 {
-            color: var(--dark);
-            font-size: 1.2rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .student-card .student-id {
-            color: var(--gray);
-            font-size: 0.9rem;
-            text-align: center;
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .student-card .student-class {
-            color: var(--primary);
-            font-size: 0.9rem;
-            text-align: center;
-            margin-bottom: 1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .student-card .fees-badge {
-            display: block;
-            padding: 0.6rem;
-            background: var(--gradient-1);
-            color: white;
-            border-radius: 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            text-align: center;
-            margin-top: 1rem;
-            box-shadow: var(--shadow);
-        }
-
-        .student-card .status-indicator {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: var(--shadow);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255,255,255,0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(255,255,255,0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(255,255,255,0);
-            }
-        }
-
-        .status-paid {
-            background: var(--success);
-        }
-
-        .status-partial {
-            background: var(--warning);
-        }
-
-        .status-unpaid {
-            background: var(--danger);
-        }
-
-        .student-card-actions {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 1.2rem;
-            justify-content: center;
-        }
-
-        .edit-card-btn, .delete-card-btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 2rem;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .edit-card-btn {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
-        }
-
-        .delete-card-btn {
-            background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
-            color: white;
-        }
-
-        .edit-card-btn:hover, .delete-card-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* ===== PREMIUM STUDENT DETAILS ===== */
-        .student-details {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: slideUp 0.5s ease;
-        }
-
-        .details-header {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-            padding-bottom: 2rem;
-            border-bottom: 2px solid rgba(99, 102, 241, 0.2);
-        }
-
-        .details-header img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid white;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .basic-info {
-            flex: 1;
-        }
-
-        .basic-info h2 {
-            color: var(--dark);
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .basic-info p {
-            color: var(--gray);
-            margin: 0.5rem 0;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .basic-info i {
-            color: var(--primary);
-            width: 20px;
-        }
-
-        .details-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .edit-details-btn, .delete-details-btn {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 2rem;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .edit-details-btn {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
-        }
-
-        .delete-details-btn {
-            background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%);
-            color: white;
-        }
-
-        .edit-details-btn:hover, .delete-details-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .info-card {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
-            padding: 1.5rem;
-            border-radius: var(--border-radius-sm);
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s ease;
-        }
-
-        .info-card:hover {
-            transform: translateX(5px);
-            box-shadow: var(--shadow);
-        }
-
-        .info-card h3 {
-            color: var(--dark);
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-card h3 i {
-            color: var(--primary);
-        }
-
-        .info-card p {
-            color: var(--gray);
-            margin: 0.8rem 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-card i {
-            color: var(--primary);
-            width: 20px;
-        }
-
-        /* ===== PREMIUM DOCUMENT PREVIEW ===== */
-        .document-preview {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
-            border-radius: var(--border-radius);
-            border: 2px dashed var(--primary);
-        }
-
-        .document-preview h4 {
-            color: var(--dark);
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .document-preview img {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: var(--border-radius-sm);
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .document-preview img:hover {
-            transform: scale(1.02);
-        }
-
-        .document-preview iframe {
-            width: 100%;
-            height: 400px;
-            border: none;
-            border-radius: var(--border-radius-sm);
-            box-shadow: var(--shadow);
-        }
-
-        .document-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .view-document, .download-document {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 2rem;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .view-document {
-            background: var(--primary);
-            color: white;
-        }
-
-        .download-document {
-            background: var(--success);
-            color: white;
-        }
-
-        .view-document:hover, .download-document:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .view-aadhar {
-            width: 100%;
-            padding: 1rem;
-            background: var(--gradient-1);
-            color: white;
-            border: none;
-            border-radius: 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 1.5rem;
-        }
-
-        .view-aadhar:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-colored);
-        }
-
-        /* ===== PREMIUM CHART ===== */
-        .chart-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .chart-container h3 {
-            color: var(--dark);
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .chart-container h3 i {
-            color: var(--primary);
-        }
-
-        canvas {
-            max-height: 400px;
-            width: 100% !important;
-        }
-
-        .fees-tracker-btn {
-            width: 100%;
-            padding: 1.2rem;
-            background: var(--gradient-1);
-            color: white;
-            border: none;
-            border-radius: 2rem;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .fees-tracker-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .fees-tracker-btn:hover::before {
-            width: 500px;
-            height: 500px;
-        }
-
-        .fees-tracker-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-colored);
-        }
-
-        /* ===== PREMIUM MODALS ===== */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            overflow-y: auto;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            background: rgba(255, 255, 255, 0.98);
-            margin: 50px auto;
-            padding: 2.5rem;
-            border-radius: var(--border-radius);
-            max-width: 1000px;
-            width: 95%;
-            position: relative;
-            animation: modalSlideDown 0.4s ease;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        @keyframes modalSlideDown {
-            from {
-                transform: translateY(-100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .close {
-            position: absolute;
-            right: 25px;
-            top: 20px;
-            font-size: 2.5rem;
-            cursor: pointer;
-            color: var(--gray);
-            transition: all 0.3s ease;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .close:hover {
-            color: var(--danger);
-            background: rgba(239, 68, 68, 0.1);
-            transform: rotate(90deg);
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            padding-bottom: 2rem;
-            border-bottom: 2px solid rgba(99, 102, 241, 0.2);
-        }
-
-        .modal-header img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid white;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .modal-header-info h3 {
-            color: var(--dark);
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .modal-header-info p {
-            color: var(--gray);
-            margin: 0.5rem 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-header-info i {
-            color: var(--primary);
-            width: 20px;
-        }
-
-        /* ===== PREMIUM FEES TABLE ===== */
-        .fees-table-container {
-            overflow-x: auto;
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            background: white;
-        }
-
-        .fees-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
-
-        .fees-table th {
-            background: var(--gradient-1);
-            color: white;
-            padding: 1.2rem;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .fees-table td {
-            padding: 1.2rem;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-        }
-
-        .fees-table tr:hover {
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .month-name {
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .fees-input {
-            width: 120px;
-            padding: 0.6rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 2rem;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
-
-        .fees-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-            outline: none;
-        }
-
-        .due-amount {
-            font-weight: 700;
-            color: var(--danger);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.4rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: capitalize;
-            letter-spacing: 0.5px;
-        }
-
-        .status-paid {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-
-        .status-partial {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-            border: 1px solid var(--warning);
-        }
-
-        .status-unpaid {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        .save-fees {
-            padding: 0.6rem 1.2rem;
-            background: var(--success);
-            color: white;
-            border: none;
-            border-radius: 2rem;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .save-fees:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-            background: #0d9488;
-        }
-
-        /* ===== PREMIUM FILE UPLOAD ===== */
-        .file-upload {
-            margin-bottom: 1rem;
-        }
-
-        .file-upload label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-weight: 600;
-        }
-
-        .file-upload input[type="file"] {
-            width: 100%;
-            padding: 1rem;
-            border: 2px dashed var(--primary);
-            border-radius: var(--border-radius-sm);
-            background: rgba(99, 102, 241, 0.05);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-upload input[type="file"]:hover {
-            border-color: var(--secondary);
-            background: rgba(236, 72, 153, 0.05);
-        }
-
-        .file-upload small {
-            display: block;
-            color: var(--gray);
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-        }
-
-        .preview-container {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(99, 102, 241, 0.05);
-            border-radius: var(--border-radius-sm);
-            text-align: center;
-        }
-
-        .preview-container img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: var(--border-radius-sm);
-            box-shadow: var(--shadow);
-        }
-
-        .preview-container iframe {
-            width: 100%;
-            height: 300px;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius-sm);
-        }
-
-        /* ===== PREMIUM FORMS ===== */
-        .edit-form {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            max-height: 70vh;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-weight: 600;
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: var(--border-radius-sm);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-            outline: none;
-        }
-
-        .form-group.full-width {
-            grid-column: span 2;
-        }
-
-        .form-actions {
-            grid-column: span 2;
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 2px solid rgba(99, 102, 241, 0.2);
-        }
-
-        .save-changes-btn, .cancel-btn {
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .save-changes-btn {
-            background: var(--success);
-            color: white;
-        }
-
-        .cancel-btn {
-            background: var(--gray);
-            color: white;
-        }
-
-        .save-changes-btn:hover, .cancel-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* ===== TOAST NOTIFICATIONS ===== */
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 2rem;
-            background: white;
-            border-radius: var(--border-radius-sm);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 2000;
-            animation: slideInRight 0.3s ease;
-            border-left: 4px solid var(--success);
-        }
-
-        .toast.error {
-            border-left-color: var(--danger);
-        }
-
-        .toast.warning {
-            border-left-color: var(--warning);
-        }
-
-        .toast i {
-            font-size: 1.2rem;
-        }
-
-        .toast.success i {
-            color: var(--success);
-        }
-
-        .toast.error i {
-            color: var(--danger);
-        }
-
-        .toast.warning i {
-            color: var(--warning);
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* ===== CONFIRM DIALOG ===== */
-        .confirm-dialog {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .confirm-content {
-            background: white;
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            animation: scaleIn 0.3s ease;
-        }
-
-        .confirm-content i {
-            font-size: 4rem;
-            color: var(--warning);
-            margin-bottom: 1rem;
-        }
-
-        .confirm-content h3 {
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-            font-size: 1.5rem;
-        }
-
-        .confirm-content p {
-            color: var(--gray);
-            margin-bottom: 2rem;
-        }
-
-        .confirm-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .confirm-yes, .confirm-no {
-            padding: 0.8rem 2rem;
-            border: none;
-            border-radius: 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .confirm-yes {
-            background: var(--danger);
-            color: white;
-        }
-
-        .confirm-no {
-            background: var(--gray);
-            color: white;
-        }
-
-        .confirm-yes:hover, .confirm-no:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* ===== NO DATA ===== */
-        .no-data {
-            text-align: center;
-            padding: 4rem;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            grid-column: 1 / -1;
-        }
-
-        .no-data i {
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .no-data p {
-            color: var(--gray);
-            font-size: 1.2rem;
-        }
-
-        /* ===== LOADING ===== */
-        .loading {
-            text-align: center;
-            padding: 4rem;
-            color: white;
-        }
-
-        .loading i {
-            font-size: 3rem;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .details-header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .details-actions {
-                margin-left: 0;
-                width: 100%;
-                justify-content: center;
-            }
-
-            .modal-header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .edit-form {
-                grid-template-columns: 1fr;
-            }
-
-            .form-group.full-width {
-                grid-column: span 1;
-            }
-
-            .form-actions {
-                grid-column: span 1;
-                flex-direction: column;
-            }
-
-            .form-actions button {
-                width: 100%;
-            }
-
-            .document-actions {
-                flex-direction: column;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Login Section -->
-        <div class="login-section" id="loginSection">
-            <h2><i class="fas fa-graduation-cap"></i> Admin Login</h2>
-            <div class="login-form">
-                <input type="text" id="username" placeholder="Username">
-                <input type="password" id="password" placeholder="Password">
-                <button id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+    <div class="app-container">
+        <!-- Login Screen -->
+        <div class="login-screen" id="loginScreen">
+            <div class="login-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Bal Bharti Coaching</h2>
+                <p>Student Dashboard Login</p>
             </div>
+            <input type="text" class="login-input" id="username" placeholder="Username" autocomplete="off">
+            <input type="password" class="login-input" id="password" placeholder="Password">
+            <button class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
         </div>
 
-        <!-- Dashboard Section -->
-        <div class="dashboard-section" id="dashboardSection">
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
             <div class="header">
-                <h1><i class="fas fa-chart-line"></i> Student Dashboard - Fees Tracker</h1>
-                <div class="header-actions">
-                    <button class="add-student-btn" id="addStudentBtn">
-                        <i class="fas fa-plus"></i> Add Student
-                    </button>
-                    <button class="logout-btn" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
+                <h1><i class="fas fa-chart-line"></i> Student Dashboard</h1>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
 
-            <!-- Search Area -->
-            <div class="search-area">
-                <h3><i class="fas fa-search"></i> Search Students</h3>
-                <div class="search-row">
-                    <select id="boardSelect">
-                        <option value="all">All Boards</option>
-                    </select>
-                    <select id="classSelect">
-                        <option value="all">All Classes</option>
-                    </select>
-                    <input type="text" id="searchInput" placeholder="Search by Name or ID...">
-                    <button class="search-btn" id="searchBtn">
-                        <i class="fas fa-search"></i> Search
-                    </button>
-                    <button class="reset-btn" id="resetBtn">
-                        <i class="fas fa-redo"></i> Reset
-                    </button>
-                </div>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="stats-container">
+            <!-- Stats -->
+            <div class="stats-grid">
                 <div class="stat-card">
                     <i class="fas fa-users"></i>
-                    <h4>Total Students</h4>
-                    <p id="totalStudents">0</p>
+                    <div class="label">Total Students</div>
+                    <div class="value" id="totalStudents">0</div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-rupee-sign"></i>
-                    <h4>Total Collected</h4>
-                    <p id="totalFees">₹0</p>
+                    <div class="label">Collected</div>
+                    <div class="value" id="totalFees">₹0</div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-clock"></i>
-                    <h4>Pending Fees</h4>
-                    <p id="pendingFees">₹0</p>
+                    <div class="label">Pending</div>
+                    <div class="value" id="pendingFees">₹0</div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-check-circle"></i>
-                    <h4>Fully Paid</h4>
-                    <p id="fullyPaid">0</p>
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="label">Present Today</div>
+                    <div class="value" id="presentToday">0</div>
                 </div>
             </div>
 
-            <!-- Students Grid -->
-            <div id="studentsGrid" class="students-grid"></div>
+            <!-- Search -->
+            <div class="search-section">
+                <div class="search-title">
+                    <i class="fas fa-search"></i> Search Students
+                </div>
+                <div class="search-row">
+                    <select class="search-select" id="boardSelect">
+                        <option value="all">All Boards</option>
+                    </select>
+                    <select class="search-select" id="classSelect">
+                        <option value="all">All Classes</option>
+                    </select>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search name or ID...">
+                    <div class="search-actions">
+                        <button class="search-btn" id="searchBtn">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <button class="reset-btn" id="resetBtn">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="action-buttons">
+                <button class="action-btn" id="addStudentBtn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Add Student</span>
+                </button>
+                <button class="action-btn" id="markAttendanceBtn">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Mark Attendance</span>
+                </button>
+            </div>
+
+            <!-- Students List -->
+            <div id="studentsList" class="students-list"></div>
 
             <!-- Student Details -->
-            <div id="studentDetails" style="display: none;">
-                <div class="student-details" id="studentInfo"></div>
-                
-                <!-- Fees Tracker Button -->
-                <button class="fees-tracker-btn" id="feesTrackerBtn">
-                    <i class="fas fa-rupee-sign"></i> Open Fees Tracker
-                </button>
+            <div id="studentDetails" style="display: none;"></div>
 
-                <!-- Chart -->
-                <div class="chart-container">
-                    <h3><i class="fas fa-chart-bar"></i> Fees Payment History</h3>
-                    <canvas id="feesChart"></canvas>
-                </div>
+            <!-- Action Buttons -->
+            <div class="action-buttons" id="actionButtons" style="display: none;">
+                <button class="action-btn" id="feesTrackerBtn">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span>Manage Fees</span>
+                </button>
+                <button class="action-btn" id="viewAttendanceBtn">
+                    <i class="fas fa-clock"></i>
+                    <span>Attendance</span>
+                </button>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-container" id="chartContainer" style="display: none;">
+                <h3><i class="fas fa-chart-bar"></i> Fees History</h3>
+                <canvas id="feesChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Fees Tracker Modal -->
-    <div id="feesModal" class="modal">
+    <!-- Fees Modal -->
+    <div class="modal" id="feesModal">
         <div class="modal-content">
-            <span class="close" id="closeModal">&times;</span>
-            <div class="modal-header" id="modalHeader"></div>
-            <div class="fees-table-container">
+            <span class="modal-close" id="closeFeesModal">&times;</span>
+            <div class="modal-header" id="feesModalHeader"></div>
+            <div style="overflow-x: auto;">
                 <table class="fees-table">
                     <thead>
                         <tr>
                             <th>Month</th>
-                            <th>Year</th>
-                            <th>Class Fees</th>
                             <th>Paid (₹)</th>
-                            <th>Due (₹)</th>
+                            <th>Due</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="feesTableBody"></tbody>
@@ -1614,130 +1189,108 @@
         </div>
     </div>
 
-    <!-- Edit Student Modal -->
-    <div id="editStudentModal" class="modal">
+    <!-- Attendance Modal -->
+    <div class="modal" id="attendanceModal">
         <div class="modal-content">
-            <span class="close" id="closeEditModal">&times;</span>
-            <h2><i class="fas fa-edit"></i> Edit Student</h2>
-            <form id="editStudentForm" class="edit-form">
+            <span class="modal-close" id="closeAttendanceModal">&times;</span>
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-calendar-check"></i> Mark Attendance</h2>
+            <div class="attendance-form" id="attendanceForm">
                 <div class="form-group">
-                    <label>Student ID</label>
-                    <input type="text" id="editStudentId" readonly>
+                    <label>Student</label>
+                    <select id="attendanceStudentSelect" class="search-select">
+                        <option value="">Select Student</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="text" id="editPassword" required>
+                    <label>Date</label>
+                    <input type="date" id="attendanceDate" class="search-input">
                 </div>
                 <div class="form-group">
-                    <label>First Name</label>
-                    <input type="text" id="editFirstName" required>
-                </div>
-                <div class="form-group">
-                    <label>Middle Name</label>
-                    <input type="text" id="editMiddleName">
-                </div>
-                <div class="form-group">
-                    <label>Last Name</label>
-                    <input type="text" id="editLastName" required>
-                </div>
-                <div class="form-group">
-                    <label>Mobile</label>
-                    <input type="text" id="editMobile" maxlength="10" required>
-                </div>
-                <div class="form-group">
-                    <label>Aadhar Number</label>
-                    <input type="text" id="editAadhar" maxlength="12" required>
-                </div>
-                <div class="form-group full-width">
-                    <label>Photo</label>
-                    <div class="file-upload">
-                        <input type="file" id="editPhotoFile" accept="image/*">
+                    <label>Status</label>
+                    <div class="status-options">
+                        <div class="status-option present" data-status="present" onclick="selectStatus('present')">
+                            <i class="fas fa-check-circle"></i> Present
+                        </div>
+                        <div class="status-option absent" data-status="absent" onclick="selectStatus('absent')">
+                            <i class="fas fa-times-circle"></i> Absent
+                        </div>
+                        <div class="status-option late" data-status="late" onclick="selectStatus('late')">
+                            <i class="fas fa-clock"></i> Late
+                        </div>
+                        <div class="status-option half-day" data-status="half-day" onclick="selectStatus('half-day')">
+                            <i class="fas fa-adjust"></i> Half Day
+                        </div>
                     </div>
-                    <input type="hidden" id="editPhoto">
-                    <div class="preview-container" id="editPhotoPreview"></div>
-                </div>
-                <div class="form-group full-width">
-                    <label>Aadhar Document</label>
-                    <div class="file-upload">
-                        <input type="file" id="editAadharFile" accept="image/*,.pdf">
-                    </div>
-                    <input type="hidden" id="editAadharDoc">
-                    <div class="preview-container" id="editAadharPreview"></div>
+                    <input type="hidden" id="attendanceStatus" value="present">
                 </div>
                 <div class="form-group">
-                    <label>Registration Date</label>
-                    <input type="date" id="editRegDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Joining Date</label>
-                    <input type="date" id="editJoinDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Monthly Fees</label>
-                    <input type="number" id="editFees" required>
-                </div>
-                <div class="form-group">
-                    <label>Father First Name</label>
-                    <input type="text" id="editFatherFirstName" required>
-                </div>
-                <div class="form-group">
-                    <label>Father Middle Name</label>
-                    <input type="text" id="editFatherMiddleName">
-                </div>
-                <div class="form-group">
-                    <label>Father Last Name</label>
-                    <input type="text" id="editFatherLastName" required>
-                </div>
-                <div class="form-group">
-                    <label>Father Mobile</label>
-                    <input type="text" id="editFatherMobile" maxlength="10" required>
-                </div>
-                <div class="form-group">
-                    <label>Mother First Name</label>
-                    <input type="text" id="editMotherFirstName">
-                </div>
-                <div class="form-group">
-                    <label>Mother Middle Name</label>
-                    <input type="text" id="editMotherMiddleName">
-                </div>
-                <div class="form-group">
-                    <label>Mother Last Name</label>
-                    <input type="text" id="editMotherLastName">
-                </div>
-                <div class="form-group full-width">
-                    <label>Current Address</label>
-                    <textarea id="editCurrentAddress" rows="2" required></textarea>
-                </div>
-                <div class="form-group full-width">
-                    <label>Permanent Address</label>
-                    <textarea id="editPermanentAddress" rows="2" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Board</label>
-                    <input type="text" id="editBoard" required>
-                </div>
-                <div class="form-group">
-                    <label>Class</label>
-                    <input type="text" id="editClass" required>
+                    <label>Remarks (Optional)</label>
+                    <textarea id="attendanceRemarks" rows="2" placeholder="Any remarks..."></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="save-changes-btn" id="saveChangesBtn">
-                        <i class="fas fa-save"></i> Save Changes
+                    <button class="save-btn" id="saveAttendanceBtn">
+                        <i class="fas fa-save"></i> Save
                     </button>
-                    <button type="button" class="cancel-btn" id="cancelEditBtn">
+                    <button class="cancel-btn" id="cancelAttendanceBtn">
                         <i class="fas fa-times"></i> Cancel
                     </button>
                 </div>
-            </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Attendance Modal -->
+    <div class="modal" id="editAttendanceModal">
+        <div class="modal-content">
+            <span class="modal-close" id="closeEditAttendanceModal">&times;</span>
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-edit"></i> Edit Attendance</h2>
+            <div class="attendance-form">
+                <input type="hidden" id="editAttendanceStudentId">
+                <input type="hidden" id="editAttendanceOriginalDate">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="editAttendanceDate" class="search-input">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <div class="status-options">
+                        <div class="status-option present" data-edit-status="present" onclick="selectEditStatus('present')">
+                            <i class="fas fa-check-circle"></i> Present
+                        </div>
+                        <div class="status-option absent" data-edit-status="absent" onclick="selectEditStatus('absent')">
+                            <i class="fas fa-times-circle"></i> Absent
+                        </div>
+                        <div class="status-option late" data-edit-status="late" onclick="selectEditStatus('late')">
+                            <i class="fas fa-clock"></i> Late
+                        </div>
+                        <div class="status-option half-day" data-edit-status="half-day" onclick="selectEditStatus('half-day')">
+                            <i class="fas fa-adjust"></i> Half Day
+                        </div>
+                    </div>
+                    <input type="hidden" id="editAttendanceStatus" value="present">
+                </div>
+                <div class="form-group">
+                    <label>Remarks</label>
+                    <textarea id="editAttendanceRemarks" rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="save-btn" id="updateAttendanceBtn">
+                        <i class="fas fa-save"></i> Update
+                    </button>
+                    <button class="cancel-btn" id="cancelEditAttendanceBtn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Add Student Modal -->
-    <div id="addStudentModal" class="modal">
+    <div class="modal" id="addStudentModal">
         <div class="modal-content">
-            <span class="close" id="closeAddModal">&times;</span>
-            <h2><i class="fas fa-plus"></i> Add New Student</h2>
-            <form id="addStudentForm" class="edit-form">
+            <span class="modal-close" id="closeAddModal">&times;</span>
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-user-plus"></i> Add Student</h2>
+            <form id="addStudentForm" class="add-form">
                 <div class="form-group">
                     <label>Student ID *</label>
                     <input type="text" id="addStudentId" required>
@@ -1751,10 +1304,6 @@
                     <input type="text" id="addFirstName" required>
                 </div>
                 <div class="form-group">
-                    <label>Middle Name</label>
-                    <input type="text" id="addMiddleName">
-                </div>
-                <div class="form-group">
                     <label>Last Name *</label>
                     <input type="text" id="addLastName" required>
                 </div>
@@ -1766,67 +1315,53 @@
                     <label>Aadhar Number *</label>
                     <input type="text" id="addAadhar" maxlength="12" required>
                 </div>
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label>Photo *</label>
-                    <div class="file-upload">
-                        <input type="file" id="addPhotoFile" accept="image/*" required>
+                    <div class="file-upload" id="addPhotoUpload">
+                        <i class="fas fa-camera"></i> Tap to upload photo
                     </div>
+                    <input type="file" id="addPhotoFile" accept="image/*" style="display: none;">
                     <input type="hidden" id="addPhoto">
-                    <div class="preview-container" id="addPhotoPreview"></div>
+                    <div class="preview" id="addPhotoPreview"></div>
                 </div>
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label>Aadhar Document *</label>
-                    <div class="file-upload">
-                        <input type="file" id="addAadharFile" accept="image/*,.pdf" required>
+                    <div class="file-upload" id="addAadharUpload">
+                        <i class="fas fa-file"></i> Tap to upload document
                     </div>
+                    <input type="file" id="addAadharFile" accept="image/*,.pdf" style="display: none;">
                     <input type="hidden" id="addAadharDoc">
-                    <div class="preview-container" id="addAadharPreview"></div>
+                    <div class="preview" id="addAadharPreview"></div>
                 </div>
                 <div class="form-group">
-                    <label>Registration Date *</label>
-                    <input type="date" id="addRegDate" required>
+                    <label>Registration Date</label>
+                    <input type="date" id="addRegDate">
                 </div>
                 <div class="form-group">
-                    <label>Joining Date *</label>
-                    <input type="date" id="addJoinDate" required>
+                    <label>Joining Date</label>
+                    <input type="date" id="addJoinDate">
                 </div>
                 <div class="form-group">
-                    <label>Monthly Fees *</label>
+                    <label>Monthly Fees (₹) *</label>
                     <input type="number" id="addFees" required>
                 </div>
                 <div class="form-group">
-                    <label>Father First Name *</label>
-                    <input type="text" id="addFatherFirstName" required>
+                    <label>Father's Name *</label>
+                    <input type="text" id="addFatherName" placeholder="Full name" required>
                 </div>
                 <div class="form-group">
-                    <label>Father Middle Name</label>
-                    <input type="text" id="addFatherMiddleName">
-                </div>
-                <div class="form-group">
-                    <label>Father Last Name *</label>
-                    <input type="text" id="addFatherLastName" required>
-                </div>
-                <div class="form-group">
-                    <label>Father Mobile *</label>
+                    <label>Father's Mobile *</label>
                     <input type="text" id="addFatherMobile" maxlength="10" required>
                 </div>
                 <div class="form-group">
-                    <label>Mother First Name</label>
-                    <input type="text" id="addMotherFirstName">
+                    <label>Mother's Name</label>
+                    <input type="text" id="addMotherName">
                 </div>
                 <div class="form-group">
-                    <label>Mother Middle Name</label>
-                    <input type="text" id="addMotherMiddleName">
-                </div>
-                <div class="form-group">
-                    <label>Mother Last Name</label>
-                    <input type="text" id="addMotherLastName">
-                </div>
-                <div class="form-group full-width">
                     <label>Current Address *</label>
                     <textarea id="addCurrentAddress" rows="2" required></textarea>
                 </div>
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label>Permanent Address *</label>
                     <textarea id="addPermanentAddress" rows="2" required></textarea>
                 </div>
@@ -1839,8 +1374,8 @@
                     <input type="text" id="addClass" required>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="save-changes-btn" id="addStudentSubmitBtn">
-                        <i class="fas fa-plus"></i> Add Student
+                    <button type="button" class="save-btn" id="addStudentSubmitBtn">
+                        <i class="fas fa-save"></i> Save
                     </button>
                     <button type="button" class="cancel-btn" id="cancelAddBtn">
                         <i class="fas fa-times"></i> Cancel
@@ -1850,14 +1385,112 @@
         </div>
     </div>
 
-    <!-- Document Viewer Modal -->
-    <div id="documentViewerModal" class="modal">
+    <!-- Edit Student Modal -->
+    <div class="modal" id="editStudentModal">
         <div class="modal-content">
-            <span class="close" id="closeDocumentModal">&times;</span>
-            <h3 id="documentTitle"></h3>
+            <span class="modal-close" id="closeEditModal">&times;</span>
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-edit"></i> Edit Student</h2>
+            <form id="editStudentForm" class="add-form">
+                <input type="hidden" id="editStudentId">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="text" id="editPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="editFirstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="editLastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Mobile</label>
+                    <input type="text" id="editMobile" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Aadhar Number</label>
+                    <input type="text" id="editAadhar" maxlength="12" required>
+                </div>
+                <div class="form-group">
+                    <label>Photo</label>
+                    <div class="file-upload" id="editPhotoUpload">
+                        <i class="fas fa-camera"></i> Tap to change photo
+                    </div>
+                    <input type="file" id="editPhotoFile" accept="image/*" style="display: none;">
+                    <input type="hidden" id="editPhoto">
+                    <div class="preview" id="editPhotoPreview"></div>
+                </div>
+                <div class="form-group">
+                    <label>Aadhar Document</label>
+                    <div class="file-upload" id="editAadharUpload">
+                        <i class="fas fa-file"></i> Tap to change document
+                    </div>
+                    <input type="file" id="editAadharFile" accept="image/*,.pdf" style="display: none;">
+                    <input type="hidden" id="editAadharDoc">
+                    <div class="preview" id="editAadharPreview"></div>
+                </div>
+                <div class="form-group">
+                    <label>Monthly Fees (₹)</label>
+                    <input type="number" id="editFees" required>
+                </div>
+                <div class="form-group">
+                    <label>Father's Name</label>
+                    <input type="text" id="editFatherName" required>
+                </div>
+                <div class="form-group">
+                    <label>Father's Mobile</label>
+                    <input type="text" id="editFatherMobile" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Mother's Name</label>
+                    <input type="text" id="editMotherName">
+                </div>
+                <div class="form-group">
+                    <label>Current Address</label>
+                    <textarea id="editCurrentAddress" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Permanent Address</label>
+                    <textarea id="editPermanentAddress" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Board</label>
+                    <input type="text" id="editBoard" required>
+                </div>
+                <div class="form-group">
+                    <label>Class</label>
+                    <input type="text" id="editClass" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="save-btn" id="saveChangesBtn">
+                        <i class="fas fa-save"></i> Update
+                    </button>
+                    <button type="button" class="cancel-btn" id="cancelEditBtn">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Attendance Modal -->
+    <div class="modal" id="viewAttendanceModal">
+        <div class="modal-content">
+            <span class="modal-close" id="closeViewAttendanceModal">&times;</span>
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-clock"></i> Attendance History</h2>
+            <div id="attendanceHistory"></div>
+        </div>
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div class="modal" id="documentModal">
+        <div class="modal-content">
+            <span class="modal-close" id="closeDocumentModal">&times;</span>
+            <h3 id="documentTitle" style="margin-bottom: 16px;"></h3>
             <div id="documentContent"></div>
-            <div class="document-actions">
-                <button class="download-document" id="downloadDocumentBtn">
+            <div class="form-actions" style="margin-top: 20px;">
+                <button class="save-btn" id="downloadDocumentBtn">
                     <i class="fas fa-download"></i> Download
                 </button>
             </div>
@@ -1866,160 +1499,197 @@
 
     <!-- Confirmation Dialog -->
     <div class="confirm-dialog" id="confirmDialog">
-        <div class="confirm-content">
+        <div class="confirm-box">
             <i class="fas fa-exclamation-triangle"></i>
-            <h3>Are you sure?</h3>
-            <p id="confirmMessage">This action cannot be undone.</p>
+            <h3>Confirm Action</h3>
+            <p id="confirmMessage">Are you sure?</p>
             <div class="confirm-actions">
-                <button class="confirm-yes" id="confirmYes">Yes, Delete</button>
-                <button class="confirm-no" id="confirmNo">Cancel</button>
+                <button class="confirm-yes" id="confirmYes">Yes</button>
+                <button class="confirm-no" id="confirmNo">No</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ===== GLOBAL VARIABLES =====
+        // ===== STATE =====
         let token = localStorage.getItem('token');
         let selectedStudent = null;
         let chart = null;
         let allStudents = [];
         let filteredStudents = [];
+        let currentDocUrl = '';
         let deleteCallback = null;
+        let selectedStatus = 'present';
+        let selectedEditStatus = 'present';
 
         // ===== DOM ELEMENTS =====
-        const loginSection = document.getElementById('loginSection');
-        const dashboardSection = document.getElementById('dashboardSection');
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const addStudentBtn = document.getElementById('addStudentBtn');
+        const markAttendanceBtn = document.getElementById('markAttendanceBtn');
         const searchBtn = document.getElementById('searchBtn');
         const resetBtn = document.getElementById('resetBtn');
         const feesTrackerBtn = document.getElementById('feesTrackerBtn');
-        const closeModal = document.getElementById('closeModal');
-        const closeEditModal = document.getElementById('closeEditModal');
-        const closeAddModal = document.getElementById('closeAddModal');
-        const closeDocumentModal = document.getElementById('closeDocumentModal');
-        const cancelEditBtn = document.getElementById('cancelEditBtn');
-        const cancelAddBtn = document.getElementById('cancelAddBtn');
-        const saveChangesBtn = document.getElementById('saveChangesBtn');
-        const addStudentSubmitBtn = document.getElementById('addStudentSubmitBtn');
-        const downloadDocumentBtn = document.getElementById('downloadDocumentBtn');
-        const confirmYes = document.getElementById('confirmYes');
-        const confirmNo = document.getElementById('confirmNo');
-        const boardSelect = document.getElementById('boardSelect');
-        const classSelect = document.getElementById('classSelect');
-        const searchInput = document.getElementById('searchInput');
+        const viewAttendanceBtn = document.getElementById('viewAttendanceBtn');
+        
+        // Modals
+        const feesModal = document.getElementById('feesModal');
+        const attendanceModal = document.getElementById('attendanceModal');
+        const editAttendanceModal = document.getElementById('editAttendanceModal');
+        const viewAttendanceModal = document.getElementById('viewAttendanceModal');
+        const addModal = document.getElementById('addStudentModal');
+        const editModal = document.getElementById('editStudentModal');
+        const docModal = document.getElementById('documentModal');
+        const confirmDialog = document.getElementById('confirmDialog');
 
-        // File upload elements
-        const addPhotoFile = document.getElementById('addPhotoFile');
-        const addAadharFile = document.getElementById('addAadharFile');
-        const editPhotoFile = document.getElementById('editPhotoFile');
-        const editAadharFile = document.getElementById('editAadharFile');
+        // Modal close buttons
+        document.getElementById('closeFeesModal').onclick = () => feesModal.style.display = 'none';
+        document.getElementById('closeAttendanceModal').onclick = () => attendanceModal.style.display = 'none';
+        document.getElementById('closeEditAttendanceModal').onclick = () => editAttendanceModal.style.display = 'none';
+        document.getElementById('closeViewAttendanceModal').onclick = () => viewAttendanceModal.style.display = 'none';
+        document.getElementById('closeAddModal').onclick = () => closeAddModal();
+        document.getElementById('closeEditModal').onclick = () => closeEditModal();
+        document.getElementById('closeDocumentModal').onclick = () => docModal.style.display = 'none';
+        document.getElementById('cancelAddBtn').onclick = () => closeAddModal();
+        document.getElementById('cancelEditBtn').onclick = () => closeEditModal();
+        document.getElementById('cancelAttendanceBtn').onclick = () => attendanceModal.style.display = 'none';
+        document.getElementById('cancelEditAttendanceBtn').onclick = () => editAttendanceModal.style.display = 'none';
+        document.getElementById('confirmNo').onclick = () => hideConfirmDialog();
 
-        // ===== EVENT LISTENERS =====
-        loginBtn.addEventListener('click', login);
-        logoutBtn.addEventListener('click', logout);
-        addStudentBtn.addEventListener('click', openAddStudentModal);
-        searchBtn.addEventListener('click', searchStudents);
-        resetBtn.addEventListener('click', resetFilters);
-        feesTrackerBtn.addEventListener('click', openFeesModal);
-        closeModal.addEventListener('click', closeFeesModal);
-        closeEditModal.addEventListener('click', closeEditStudentModal);
-        closeAddModal.addEventListener('click', closeAddStudentModal);
-        closeDocumentModal.addEventListener('click', closeDocumentViewer);
-        cancelEditBtn.addEventListener('click', closeEditStudentModal);
-        cancelAddBtn.addEventListener('click', closeAddStudentModal);
-        saveChangesBtn.addEventListener('click', saveStudentChanges);
-        addStudentSubmitBtn.addEventListener('click', addNewStudent);
-        downloadDocumentBtn.addEventListener('click', downloadDocument);
-        confirmNo.addEventListener('click', hideConfirmDialog);
-        boardSelect.addEventListener('change', loadClasses);
-        classSelect.addEventListener('change', searchStudents);
-        searchInput.addEventListener('keyup', (e) => e.key === 'Enter' && searchStudents());
+        // File upload triggers
+        document.getElementById('addPhotoUpload').onclick = () => document.getElementById('addPhotoFile').click();
+        document.getElementById('addAadharUpload').onclick = () => document.getElementById('addAadharFile').click();
+        document.getElementById('editPhotoUpload').onclick = () => document.getElementById('editPhotoFile').click();
+        document.getElementById('editAadharUpload').onclick = () => document.getElementById('editAadharFile').click();
 
-        // File upload handlers
-        addPhotoFile.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addPhoto', 'addPhotoPreview'));
-        addAadharFile.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addAadharDoc', 'addAadharPreview'));
-        editPhotoFile.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editPhoto', 'editPhotoPreview'));
-        editAadharFile.addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editAadharDoc', 'editAadharPreview'));
+        // File inputs
+        document.getElementById('addPhotoFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addPhoto', 'addPhotoPreview'));
+        document.getElementById('addAadharFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'addAadharDoc', 'addAadharPreview'));
+        document.getElementById('editPhotoFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editPhoto', 'editPhotoPreview'));
+        document.getElementById('editAadharFile').addEventListener('change', (e) => handleFileUpload(e.target.files[0], 'editAadharDoc', 'editAadharPreview'));
 
-        // Close modals on outside click
-        window.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('feesModal')) closeFeesModal();
-            if (e.target === document.getElementById('editStudentModal')) closeEditStudentModal();
-            if (e.target === document.getElementById('addStudentModal')) closeAddStudentModal();
-            if (e.target === document.getElementById('documentViewerModal')) closeDocumentViewer();
-        });
+        // Set today's dates
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('addRegDate').value = today;
+        document.getElementById('addJoinDate').value = today;
+        document.getElementById('attendanceDate').value = today;
 
         // Check token on load
         if (token) verifyToken();
 
-        // ===== UTILITY FUNCTIONS =====
+        // ===== EVENT LISTENERS =====
+        loginBtn.addEventListener('click', login);
+        logoutBtn.addEventListener('click', logout);
+        addStudentBtn.addEventListener('click', openAddModal);
+        markAttendanceBtn.addEventListener('click', openAttendanceModal);
+        searchBtn.addEventListener('click', searchStudents);
+        resetBtn.addEventListener('click', resetFilters);
+        feesTrackerBtn.addEventListener('click', openFeesModal);
+        viewAttendanceBtn.addEventListener('click', openViewAttendanceModal);
+        document.getElementById('addStudentSubmitBtn').addEventListener('click', addStudent);
+        document.getElementById('saveChangesBtn').addEventListener('click', updateStudent);
+        document.getElementById('saveAttendanceBtn').addEventListener('click', saveAttendance);
+        document.getElementById('updateAttendanceBtn').addEventListener('click', updateAttendance);
+        document.getElementById('downloadDocumentBtn').addEventListener('click', downloadDocument);
+        document.getElementById('confirmYes').addEventListener('click', () => {
+            if (deleteCallback) deleteCallback();
+            hideConfirmDialog();
+        });
 
-        // Handle file upload and convert to Base64
+        // Close modals on outside click
+        window.addEventListener('click', (e) => {
+            if (e.target === feesModal) feesModal.style.display = 'none';
+            if (e.target === attendanceModal) attendanceModal.style.display = 'none';
+            if (e.target === editAttendanceModal) editAttendanceModal.style.display = 'none';
+            if (e.target === viewAttendanceModal) viewAttendanceModal.style.display = 'none';
+            if (e.target === addModal) closeAddModal();
+            if (e.target === editModal) closeEditModal();
+            if (e.target === docModal) docModal.style.display = 'none';
+        });
+
+        // ===== UTILITY FUNCTIONS =====
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showConfirmDialog(message, callback) {
+            document.getElementById('confirmMessage').textContent = message;
+            confirmDialog.style.display = 'flex';
+            deleteCallback = callback;
+        }
+
+        function hideConfirmDialog() {
+            confirmDialog.style.display = 'none';
+            deleteCallback = null;
+        }
+
         function handleFileUpload(file, inputId, previewId) {
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById(inputId).value = e.target.result;
-                showPreview(e.target.result, previewId, file.type);
+                const preview = document.getElementById(previewId);
+                if (file.type.startsWith('image/')) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:150px; border-radius:12px;">`;
+                } else if (file.type === 'application/pdf') {
+                    preview.innerHTML = `<iframe src="${e.target.result}" style="width:100%; height:150px; border:1px solid #ddd; border-radius:12px;"></iframe>`;
+                }
             };
             reader.readAsDataURL(file);
         }
 
-        // Show preview of uploaded file
-        function showPreview(data, previewId, fileType) {
-            const preview = document.getElementById(previewId);
-            if (fileType.startsWith('image/')) {
-                preview.innerHTML = `<img src="${data}" alt="Preview">`;
-            } else if (fileType === 'application/pdf') {
-                preview.innerHTML = `<iframe src="${data}" style="width:100%; height:300px; border:1px solid #ddd; border-radius:5px;"></iframe>`;
-            }
+        function viewDocument(url, title) {
+            document.getElementById('documentTitle').textContent = title;
+            currentDocUrl = url;
+            const isPDF = url.includes('application/pdf') || url.startsWith('data:application/pdf');
+            document.getElementById('documentContent').innerHTML = isPDF ? 
+                `<iframe src="${url}" style="width:100%; height:60vh; border:none; border-radius:12px;"></iframe>` : 
+                `<img src="${url}" style="max-width:100%; max-height:60vh; display:block; margin:0 auto;">`;
+            docModal.style.display = 'block';
         }
 
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i><span>${message}</span>`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // Show confirmation dialog
-        function showConfirmDialog(message, callback) {
-            document.getElementById('confirmMessage').textContent = message;
-            document.getElementById('confirmDialog').style.display = 'flex';
-            deleteCallback = callback;
-        }
-
-        function hideConfirmDialog() {
-            document.getElementById('confirmDialog').style.display = 'none';
-            deleteCallback = null;
-        }
-
-        confirmYes.addEventListener('click', () => {
-            if (deleteCallback) deleteCallback();
-            hideConfirmDialog();
-        });
-
-        // Download document function
-        function downloadDoc(url, filename) {
+        function downloadDocument() {
+            if (!currentDocUrl) return;
             const a = document.createElement('a');
-            a.href = url;
-            a.download = filename || 'document';
+            a.href = currentDocUrl;
+            a.download = 'document';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
         }
 
-        // ===== AUTHENTICATION FUNCTIONS =====
+        function selectStatus(status) {
+            selectedStatus = status;
+            document.getElementById('attendanceStatus').value = status;
+            document.querySelectorAll('.status-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`.status-option[data-status="${status}"]`).classList.add('selected');
+        }
 
-        // Login
+        function selectEditStatus(status) {
+            selectedEditStatus = status;
+            document.getElementById('editAttendanceStatus').value = status;
+            document.querySelectorAll('[data-edit-status]').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-edit-status="${status}"]`).classList.add('selected');
+        }
+
+        // ===== AUTH =====
         async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            if (!username || !password) return showToast('Please enter username and password', 'warning');
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                return showToast('Please enter username and password', 'warning');
+            }
 
             try {
                 const res = await fetch('/api/admin-login', {
@@ -2028,35 +1698,37 @@
                     body: JSON.stringify({ userid: username, password })
                 });
                 const data = await res.json();
+                
                 if (data.success) {
                     token = data.token;
                     localStorage.setItem('token', token);
-                    loginSection.style.display = 'none';
-                    dashboardSection.style.display = 'block';
+                    loginScreen.style.display = 'none';
+                    dashboard.style.display = 'block';
                     loadAllStudents();
                     loadBoards();
+                    loadAttendanceStats();
                     showToast('Login successful!');
                 } else {
-                    showToast('Wrong username or password!', 'error');
-                    localStorage.removeItem('token');
+                    showToast('Invalid username or password', 'error');
                 }
             } catch (error) {
-                showToast('Login failed', 'error');
+                showToast('Login failed. Check connection.', 'error');
             }
         }
 
-        // Verify token
         async function verifyToken() {
             try {
                 const res = await fetch('/api/verify-token', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                
                 if (data.success) {
-                    loginSection.style.display = 'none';
-                    dashboardSection.style.display = 'block';
+                    loginScreen.style.display = 'none';
+                    dashboard.style.display = 'block';
                     loadAllStudents();
                     loadBoards();
+                    loadAttendanceStats();
                 } else {
                     localStorage.removeItem('token');
                     token = null;
@@ -2067,46 +1739,47 @@
             }
         }
 
-        // Logout
         function logout() {
             localStorage.removeItem('token');
             token = null;
-            loginSection.style.display = 'block';
-            dashboardSection.style.display = 'none';
-            showToast('Logged out successfully');
+            loginScreen.style.display = 'block';
+            dashboard.style.display = 'none';
+            showToast('Logged out');
         }
 
-        // ===== DATA LOADING FUNCTIONS =====
-
-        // Load all students
+        // ===== DATA LOADING =====
         async function loadAllStudents() {
             try {
                 const res = await fetch('/api/students', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                
                 if (data.success) {
                     allStudents = data.data;
                     filteredStudents = allStudents;
                     displayStudents(filteredStudents);
                     updateStats();
+                    updateAttendanceSelect();
                 }
             } catch (error) {
                 if (error.status === 401) logout();
+                showToast('Failed to load students', 'error');
             }
         }
 
-        // Load boards
         async function loadBoards() {
             try {
                 const res = await fetch('/api/boards', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                
                 if (data.success) {
-                    boardSelect.innerHTML = '<option value="all">All Boards</option>';
+                    const select = document.getElementById('boardSelect');
+                    select.innerHTML = '<option value="all">All Boards</option>';
                     data.data.forEach(board => {
-                        boardSelect.innerHTML += `<option value="${board}">${board}</option>`;
+                        select.innerHTML += `<option value="${board}">${board}</option>`;
                     });
                 }
             } catch (error) {
@@ -2114,22 +1787,24 @@
             }
         }
 
-        // Load classes
         async function loadClasses() {
-            const board = boardSelect.value;
+            const board = document.getElementById('boardSelect').value;
             if (board === 'all') {
-                classSelect.innerHTML = '<option value="all">All Classes</option>';
+                document.getElementById('classSelect').innerHTML = '<option value="all">All Classes</option>';
                 return;
             }
+            
             try {
                 const res = await fetch(`/api/classes/${encodeURIComponent(board)}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                
                 if (data.success) {
-                    classSelect.innerHTML = '<option value="all">All Classes</option>';
+                    const select = document.getElementById('classSelect');
+                    select.innerHTML = '<option value="all">All Classes</option>';
                     data.data.forEach(cls => {
-                        classSelect.innerHTML += `<option value="${cls}">${cls}</option>`;
+                        select.innerHTML += `<option value="${cls}">${cls}</option>`;
                     });
                 }
             } catch (error) {
@@ -2137,26 +1812,51 @@
             }
         }
 
-        // Search students
+        document.getElementById('boardSelect').addEventListener('change', loadClasses);
+
+        async function loadAttendanceStats() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                let present = 0;
+                
+                const students = await Promise.all(allStudents.map(async (s) => {
+                    const res = await fetch(`/api/students/${s.studentId}/attendance`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        const todayAttendance = data.data.find(a => a.date === today);
+                        if (todayAttendance && todayAttendance.status === 'present') present++;
+                    }
+                }));
+                
+                document.getElementById('presentToday').textContent = present;
+            } catch (error) {
+                console.error('Load attendance stats error:', error);
+            }
+        }
+
         async function searchStudents() {
-            const board = boardSelect.value;
-            const className = classSelect.value;
-            const searchTerm = searchInput.value.toLowerCase();
+            const board = document.getElementById('boardSelect').value;
+            const className = document.getElementById('classSelect').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
             try {
                 let url = '/api/students';
                 if (board !== 'all' && className !== 'all') {
                     url = `/api/students/${encodeURIComponent(board)}/${encodeURIComponent(className)}`;
                 }
+                
                 const res = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                
                 if (data.success) {
                     let students = data.data;
                     if (searchTerm) {
                         students = students.filter(s => {
-                            const name = `${s.studentName.first} ${s.studentName.middle} ${s.studentName.last}`.toLowerCase();
+                            const name = `${s.studentName.first} ${s.studentName.last}`.toLowerCase();
                             return name.includes(searchTerm) || s.studentId.toLowerCase().includes(searchTerm);
                         });
                     }
@@ -2165,281 +1865,269 @@
                     updateStats();
                 }
             } catch (error) {
-                console.error('Search error:', error);
+                showToast('Search failed', 'error');
             }
         }
 
-        // Reset filters
         function resetFilters() {
-            boardSelect.value = 'all';
-            classSelect.innerHTML = '<option value="all">All Classes</option>';
-            searchInput.value = '';
+            document.getElementById('boardSelect').value = 'all';
+            document.getElementById('classSelect').innerHTML = '<option value="all">All Classes</option>';
+            document.getElementById('searchInput').value = '';
             loadAllStudents();
-            showToast('Filters reset');
         }
 
-        // ===== UI DISPLAY FUNCTIONS =====
-
-        // Display students in grid
-        function displayStudents(students) {
-            const grid = document.getElementById('studentsGrid');
-            if (students.length === 0) {
-                grid.innerHTML = '<div class="no-data"><i class="fas fa-users-slash"></i><p>No students found</p></div>';
-                return;
-            }
-
-            grid.innerHTML = '';
-            students.forEach(student => {
-                const fullName = `${student.studentName.first} ${student.studentName.middle} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
-                let status = 'unpaid';
-                if (student.feesHistory?.length) {
-                    const latest = student.feesHistory[student.feesHistory.length - 1];
-                    status = latest.status;
-                }
-                const statusClass = status === 'paid' ? 'status-paid' : status === 'partial' ? 'status-partial' : 'status-unpaid';
-
-                const card = document.createElement('div');
-                card.className = `student-card ${selectedStudent?.studentId === student.studentId ? 'selected' : ''}`;
-                card.innerHTML = `
-                    <div class="status-indicator ${statusClass}" title="Status: ${status}"></div>
-                    <img src="${student.photo}" alt="${fullName}" onerror="this.src='https://via.placeholder.com/100'">
-                    <h4>${fullName}</h4>
-                    <div class="student-id"><i class="fas fa-id-card"></i> ${student.studentId}</div>
-                    <div class="student-class"><i class="fas fa-graduation-cap"></i> ${student.education.board} - ${student.education.class}</div>
-                    <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ₹${student.classMonthlyFees}/month</span>
-                    <div class="student-card-actions">
-                        <button class="edit-card-btn" data-id="${student.studentId}"><i class="fas fa-edit"></i> Edit</button>
-                        <button class="delete-card-btn" data-id="${student.studentId}"><i class="fas fa-trash"></i> Delete</button>
-                    </div>
-                `;
-
-                card.addEventListener('click', (e) => !e.target.closest('button') && selectStudent(student.studentId));
-                card.querySelector('.edit-card-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditStudentModal(student.studentId);
-                });
-                card.querySelector('.delete-card-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showConfirmDialog(`Delete student ${fullName}?`, () => deleteStudent(student.studentId));
-                });
-
-                grid.appendChild(card);
+        function updateAttendanceSelect() {
+            const select = document.getElementById('attendanceStudentSelect');
+            select.innerHTML = '<option value="">Select Student</option>';
+            allStudents.forEach(s => {
+                const name = `${s.studentName.first} ${s.studentName.last}`.trim();
+                select.innerHTML += `<option value="${s.studentId}">${name} (${s.studentId})</option>`;
             });
         }
 
-        // Update statistics
+        // ===== UI RENDERING =====
+        function displayStudents(students) {
+            const list = document.getElementById('studentsList');
+            
+            if (!students || students.length === 0) {
+                list.innerHTML = '<div class="no-data"><i class="fas fa-users-slash"></i><p>No students found</p></div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            students.forEach(student => {
+                const fullName = `${student.studentName.first} ${student.studentName.middle || ''} ${student.studentName.last}`.replace(/\s+/g, ' ').trim();
+                
+                let status = 'unpaid';
+                if (student.feesHistory && student.feesHistory.length) {
+                    const lastFee = student.feesHistory[student.feesHistory.length - 1];
+                    status = lastFee.status || 'unpaid';
+                }
+
+                const statusClass = status === 'paid' ? 'status-paid' : status === 'partial' ? 'status-partial' : 'status-unpaid';
+
+                const item = document.createElement('div');
+                item.className = `student-item ${selectedStudent?.studentId === student.studentId ? 'selected' : ''}`;
+                item.onclick = () => selectStudent(student.studentId);
+                
+                item.innerHTML = `
+                    <div class="student-header">
+                        <img src="${student.photo || 'https://via.placeholder.com/60'}" class="student-avatar" onerror="this.src='https://via.placeholder.com/60'">
+                        <div class="student-info">
+                            <div class="student-name">${fullName}</div>
+                            <div class="student-id"><i class="fas fa-id-card"></i> ${student.studentId}</div>
+                            <div class="student-class"><i class="fas fa-graduation-cap"></i> ${student.education?.board || 'N/A'} - ${student.education?.class || 'N/A'}</div>
+                        </div>
+                    </div>
+                    <div class="student-footer">
+                        <span class="fees-badge"><i class="fas fa-rupee-sign"></i> ₹${student.classMonthlyFees}/mo</span>
+                        <span class="status-dot ${statusClass}" title="Fees Status: ${status}"></span>
+                    </div>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+
         function updateStats() {
             let total = filteredStudents.length;
             let collected = 0, pending = 0, paid = 0;
+            
             filteredStudents.forEach(s => {
                 if (s.feesHistory?.length) {
-                    const totalPaid = s.feesHistory.reduce((sum, f) => sum + f.paidAmount, 0);
-                    const totalDue = s.feesHistory.reduce((sum, f) => sum + f.dueAmount, 0);
+                    const totalPaid = s.feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
+                    const totalDue = s.feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
                     collected += totalPaid;
                     pending += totalDue;
                     if (s.feesHistory.every(f => f.status === 'paid')) paid++;
                 }
             });
+            
             document.getElementById('totalStudents').textContent = total;
             document.getElementById('totalFees').textContent = `₹${collected}`;
             document.getElementById('pendingFees').textContent = `₹${pending}`;
-            document.getElementById('fullyPaid').textContent = paid;
         }
 
-        // Select student
         async function selectStudent(id) {
             try {
                 const res = await fetch(`/api/student-dashboard/${id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                
                 if (data.success) {
                     selectedStudent = data.data;
                     displayStudentDetails(selectedStudent);
                     displayStudents(filteredStudents);
-                    document.getElementById('studentDetails').style.display = 'block';
-                    updateChart(selectedStudent);
-                    document.getElementById('studentDetails').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('actionButtons').style.display = 'grid';
+                    
+                    if (selectedStudent.feesHistory?.length) {
+                        updateChart(selectedStudent);
+                        document.getElementById('chartContainer').style.display = 'block';
+                    } else {
+                        document.getElementById('chartContainer').style.display = 'none';
+                    }
                 }
             } catch (error) {
-                if (error.status === 401) logout();
+                showToast('Failed to load student details', 'error');
             }
         }
 
-        // Display student details
         function displayStudentDetails(s) {
-            const fullName = `${s.studentName.first} ${s.studentName.middle} ${s.studentName.last}`.replace(/\s+/g, ' ').trim();
-            const father = `${s.fatherName.first} ${s.fatherName.middle} ${s.fatherName.last}`.trim();
-            const mother = `${s.motherName.first} ${s.motherName.middle} ${s.motherName.last}`.trim() || 'Not Provided';
-            const reg = new Date(s.registrationDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-            const join = new Date(s.joiningDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+            const fullName = `${s.studentName.first} ${s.studentName.middle || ''} ${s.studentName.last}`.replace(/\s+/g, ' ').trim();
+            const father = `${s.fatherName.first} ${s.fatherName.middle || ''} ${s.fatherName.last}`.trim();
+            const mother = `${s.motherName.first || ''} ${s.motherName.middle || ''} ${s.motherName.last || ''}`.trim() || 'Not Provided';
+            
+            const joinDate = new Date(s.joiningDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
             const isPDF = s.aadharDocument?.includes('application/pdf') || s.aadharDocument?.startsWith('data:application/pdf');
-            const preview = isPDF ? 
-                `<iframe src="${s.aadharDocument}" style="width:100%; height:300px; border:1px solid #ddd; border-radius:5px;"></iframe>` : 
-                `<img src="${s.aadharDocument}" onclick="viewDocument('${s.aadharDocument}', 'Aadhar - ${fullName}')" style="cursor:pointer;">`;
+            const docPreview = isPDF ? 
+                `<iframe src="${s.aadharDocument}" style="width:100%; height:150px; border:1px solid #ddd; border-radius:12px;"></iframe>` : 
+                `<img src="${s.aadharDocument}" onclick="viewDocument('${s.aadharDocument}', 'Aadhar - ${fullName}')" style="width:100%; max-height:150px; object-fit:cover; border-radius:12px; cursor:pointer;">`;
 
-            document.getElementById('studentInfo').innerHTML = `
-                <div class="details-header">
-                    <img src="${s.photo}" onerror="this.src='https://via.placeholder.com/150'">
-                    <div class="basic-info">
-                        <h2>${fullName}</h2>
-                        <p><i class="fas fa-id-card"></i> ID: ${s.studentId}</p>
-                        <p><i class="fas fa-id-card"></i> Aadhar: ${s.aadharNumber}</p>
-                        <p><i class="fas fa-calendar"></i> Registration: ${reg}</p>
-                        <p><i class="fas fa-calendar-check"></i> Joining: ${join}</p>
+            document.getElementById('studentDetails').innerHTML = `
+                <div class="details-card">
+                    <div class="profile-header">
+                        <img src="${s.photo}" class="profile-img" onerror="this.src='https://via.placeholder.com/80'">
+                        <div class="profile-title">
+                            <h3>${fullName}</h3>
+                            <p><i class="fas fa-id-card"></i> ${s.studentId}</p>
+                            <p><i class="fas fa-phone"></i> ${s.mobile}</p>
+                        </div>
                     </div>
-                    <div class="details-actions">
-                        <button class="edit-details-btn" id="editDetailsBtn"><i class="fas fa-edit"></i> Edit</button>
-                        <button class="delete-details-btn" id="deleteDetailsBtn"><i class="fas fa-trash"></i> Delete</button>
+                    
+                    <div class="info-section">
+                        <div class="info-title"><i class="fas fa-graduation-cap"></i> Education</div>
+                        <div class="info-row"><i class="fas fa-school"></i> Board: ${s.education.board}</div>
+                        <div class="info-row"><i class="fas fa-layer-group"></i> Class: ${s.education.class}</div>
+                        <div class="info-row"><i class="fas fa-calendar"></i> Joined: ${joinDate}</div>
                     </div>
-                </div>
-                <div class="info-grid">
-                    <div class="info-card">
-                        <h3><i class="fas fa-user-graduate"></i> Student</h3>
-                        <p><i class="fas fa-phone"></i> ${s.mobile}</p>
-                        <p><i class="fas fa-graduation-cap"></i> ${s.education.board} - ${s.education.class}</p>
-                        <p><i class="fas fa-rupee-sign"></i> ₹${s.classMonthlyFees}</p>
+
+                    <div class="info-section">
+                        <div class="info-title"><i class="fas fa-rupee-sign"></i> Fees</div>
+                        <div class="info-row"><i class="fas fa-tag"></i> Monthly: ₹${s.classMonthlyFees}</div>
                     </div>
-                    <div class="info-card">
-                        <h3><i class="fas fa-user-tie"></i> Father</h3>
-                        <p><i class="fas fa-user"></i> ${father}</p>
-                        <p><i class="fas fa-phone"></i> ${s.fatherMobile}</p>
+
+                    <div class="info-section">
+                        <div class="info-title"><i class="fas fa-users"></i> Family</div>
+                        <div class="info-row"><i class="fas fa-user-tie"></i> Father: ${father}</div>
+                        <div class="info-row"><i class="fas fa-phone"></i> Father's Mobile: ${s.fatherMobile}</div>
+                        <div class="info-row"><i class="fas fa-user"></i> Mother: ${mother}</div>
                     </div>
-                    <div class="info-card">
-                        <h3><i class="fas fa-user"></i> Mother</h3>
-                        <p><i class="fas fa-user"></i> ${mother}</p>
+
+                    <div class="info-section">
+                        <div class="info-title"><i class="fas fa-map-marker-alt"></i> Address</div>
+                        <div class="info-row"><i class="fas fa-home"></i> Current: ${s.address.current}</div>
+                        <div class="info-row"><i class="fas fa-home"></i> Permanent: ${s.address.permanent}</div>
                     </div>
-                    <div class="info-card">
-                        <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
-                        <p><i class="fas fa-home"></i> Current: ${s.address.current}</p>
-                        <p><i class="fas fa-home"></i> Permanent: ${s.address.permanent}</p>
+
+                    <div class="doc-preview">
+                        <div class="info-title"><i class="fas fa-id-card"></i> Aadhar Document</div>
+                        ${docPreview}
+                        <div class="doc-actions">
+                            <button class="doc-btn doc-view" onclick="viewDocument('${s.aadharDocument}', 'Aadhar - ${fullName}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="doc-btn doc-download" onclick="downloadDoc('${s.aadharDocument}', '${s.studentId}_Aadhar')">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="document-preview">
-                    <h4><i class="fas fa-id-card"></i> Aadhar Document</h4>
-                    ${preview}
-                    <div class="document-actions">
-                        <button class="view-document" onclick="viewDocument('${s.aadharDocument}', 'Aadhar - ${fullName}')"><i class="fas fa-eye"></i> View</button>
-                        <button class="download-document" onclick="downloadDoc('${s.aadharDocument}', '${s.studentId}_Aadhar')"><i class="fas fa-download"></i> Download</button>
+
+                    <div class="doc-actions" style="margin-top: 16px;">
+                        <button class="doc-btn doc-view" onclick="openEditModal('${s.studentId}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="doc-btn doc-download" style="background:#ef4444;" onclick="showConfirmDialog('Delete ${fullName}?', () => deleteStudent('${s.studentId}'))">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                     </div>
                 </div>
             `;
-            document.getElementById('editDetailsBtn').addEventListener('click', () => openEditStudentModal(s.studentId));
-            document.getElementById('deleteDetailsBtn').addEventListener('click', () => showConfirmDialog(`Delete ${fullName}?`, () => deleteStudent(s.studentId)));
+            
+            document.getElementById('studentDetails').style.display = 'block';
         }
 
-        // View document in modal
-        function viewDocument(url, title) {
-            document.getElementById('documentTitle').textContent = title;
-            const isPDF = url.includes('application/pdf') || url.startsWith('data:application/pdf');
-            document.getElementById('documentContent').innerHTML = isPDF ? 
-                `<iframe src="${url}" style="width:100%; height:70vh; border:none;"></iframe>` : 
-                `<img src="${url}" style="max-width:100%; max-height:70vh; display:block; margin:0 auto;">`;
-            window.currentDoc = url;
-            document.getElementById('documentViewerModal').style.display = 'block';
+        function downloadDoc(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'document';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
-        function closeDocumentViewer() {
-            document.getElementById('documentViewerModal').style.display = 'none';
-        }
-
-        function downloadDocument() {
-            if (window.currentDoc) downloadDoc(window.currentDoc, 'document');
-        }
-
-        // Update chart
         function updateChart(student) {
-            if (!student.feesHistory?.length) {
-                document.getElementById('feesChart').style.display = 'none';
-                return;
-            }
-            document.getElementById('feesChart').style.display = 'block';
-            const months = student.feesHistory.map(f => f.month);
+            if (!student.feesHistory?.length) return;
+            
+            const ctx = document.getElementById('feesChart').getContext('2d');
+            const months = student.feesHistory.map(f => f.month.split(' ')[0]);
             const paid = student.feesHistory.map(f => f.paidAmount);
             const due = student.feesHistory.map(f => f.dueAmount);
+
             if (chart) chart.destroy();
-            chart = new Chart(document.getElementById('feesChart'), {
+            
+            chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: months,
                     datasets: [
-                        { label: 'Paid (₹)', data: paid, backgroundColor: '#10b981' },
-                        { label: 'Due (₹)', data: due, backgroundColor: '#ef4444' }
+                        { label: 'Paid', data: paid, backgroundColor: '#10b981' },
+                        { label: 'Due', data: due, backgroundColor: '#ef4444' }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { 
-                        y: { 
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.05)' }
-                        },
-                        x: { grid: { display: false } }
-                    },
-                    plugins: {
-                        legend: { 
-                            position: 'top',
-                            labels: { usePointStyle: true, padding: 20 }
-                        }
-                    }
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
                 }
             });
         }
 
-        // ===== FEES TRACKER FUNCTIONS =====
-
-        // Open fees modal
+        // ===== FEES MANAGEMENT =====
         function openFeesModal() {
             if (!selectedStudent) return showToast('Select a student first', 'warning');
-            const modal = document.getElementById('feesModal');
-            const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.middle} ${selectedStudent.studentName.last}`.trim();
-            document.getElementById('modalHeader').innerHTML = `
-                <img src="${selectedStudent.photo}" onerror="this.src='https://via.placeholder.com/80'">
-                <div class="modal-header-info">
-                    <h3>${fullName}</h3>
-                    <p><i class="fas fa-id-card"></i> ID: ${selectedStudent.studentId}</p>
-                    <p><i class="fas fa-phone"></i> ${selectedStudent.mobile}</p>
-                    <p><i class="fas fa-graduation-cap"></i> ${selectedStudent.education.board} - ${selectedStudent.education.class}</p>
-                    <p><i class="fas fa-rupee-sign"></i> ₹${selectedStudent.classMonthlyFees}/month</p>
+            
+            const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.last}`.trim();
+            document.getElementById('feesModalHeader').innerHTML = `
+                <img src="${selectedStudent.photo}">
+                <div>
+                    <h3 style="margin-bottom:4px;">${fullName}</h3>
+                    <p style="color:#666;"><i class="fas fa-id-card"></i> ${selectedStudent.studentId}</p>
                 </div>
             `;
+
             const tbody = document.getElementById('feesTableBody');
             tbody.innerHTML = '';
-            
-            // Generate all months from joining date to current date
+
             const joining = new Date(selectedStudent.joiningDate);
             const now = new Date();
             let current = new Date(joining);
             
-            // Create map of existing fees history
-            const history = selectedStudent.feesHistory || [];
             const historyMap = {};
-            history.forEach(f => historyMap[f.month] = f);
+            (selectedStudent.feesHistory || []).forEach(f => historyMap[f.month] = f);
 
             while (current <= now) {
-                const monthName = current.toLocaleString('default', { month: 'long' });
+                const monthName = current.toLocaleString('default', { month: 'short' });
                 const year = current.getFullYear();
                 const monthKey = `${monthName} ${year}`;
                 const fee = historyMap[monthKey] || { paidAmount: 0, dueAmount: selectedStudent.classMonthlyFees, status: 'unpaid' };
                 
                 const statusClass = fee.status === 'paid' ? 'status-paid' : fee.status === 'partial' ? 'status-partial' : 'status-unpaid';
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="month-name">${monthName}</td>
-                    <td>${year}</td>
-                    <td>₹${selectedStudent.classMonthlyFees}</td>
-                    <td><input type="number" class="fees-input" id="paid-${monthKey}" value="${fee.paidAmount}" min="0" max="${selectedStudent.classMonthlyFees}" step="1"></td>
-                    <td class="due-amount" id="due-${monthKey}">₹${fee.dueAmount}</td>
-                    <td><span class="status-badge ${statusClass}">${fee.status}</span></td>
-                    <td><button class="save-fees" data-month="${monthKey}"><i class="fas fa-save"></i> Save</button></td>
+                    <td><strong>${monthName} ${year}</strong></td>
+                    <td><input type="number" class="fees-input" id="paid-${monthKey}" value="${fee.paidAmount}" min="0" max="${selectedStudent.classMonthlyFees}"></td>
+                    <td>₹${fee.dueAmount}</td>
+                    <td><span class="status-badge" style="background:${fee.status === 'paid' ? '#d1fae5' : fee.status === 'partial' ? '#fed7aa' : '#fee2e2'}">${fee.status}</span></td>
+                    <td><button class="save-fees" data-month="${monthKey}"><i class="fas fa-save"></i></button></td>
                 `;
                 tbody.appendChild(row);
                 current.setMonth(current.getMonth() + 1);
             }
 
-            // Add event listeners to save buttons
             tbody.querySelectorAll('.save-fees').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const month = btn.dataset.month;
@@ -2448,14 +2136,14 @@
                 });
             });
 
-            modal.style.display = 'block';
+            feesModal.style.display = 'block';
         }
 
-        // Save fees
-        async function saveFees(month, paid) {
-            if (paid > selectedStudent.classMonthlyFees) {
+        async function saveFees(month, paidAmount) {
+            if (paidAmount > selectedStudent.classMonthlyFees) {
                 return showToast(`Max ₹${selectedStudent.classMonthlyFees}`, 'warning');
             }
+
             try {
                 const res = await fetch(`/api/update-fees/${selectedStudent.studentId}`, {
                     method: 'POST',
@@ -2463,18 +2151,246 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ month, paidAmount: paid })
+                    body: JSON.stringify({ month, paidAmount })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    selectedStudent.feesHistory = data.data.feesHistory;
+                    updateChart(selectedStudent);
+                    updateStats();
+                    showToast('Fees updated!');
+                    openFeesModal(); // Refresh modal
+                } else {
+                    showToast(data.message || 'Update failed', 'error');
+                }
+            } catch (error) {
+                showToast('Update failed', 'error');
+            }
+        }
+
+        // ===== ATTENDANCE MANAGEMENT =====
+        function openAttendanceModal() {
+            attendanceModal.style.display = 'block';
+            selectedStatus = 'present';
+            document.getElementById('attendanceStatus').value = 'present';
+            document.querySelectorAll('.status-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector('.status-option.present').classList.add('selected');
+        }
+
+        async function saveAttendance() {
+            const studentId = document.getElementById('attendanceStudentSelect').value;
+            const date = document.getElementById('attendanceDate').value;
+            const status = document.getElementById('attendanceStatus').value;
+            const remarks = document.getElementById('attendanceRemarks').value;
+
+            if (!studentId) return showToast('Select a student', 'warning');
+            if (!date) return showToast('Select date', 'warning');
+
+            try {
+                const res = await fetch(`/api/students/${studentId}/attendance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ date, status, remarks })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('Attendance marked!');
+                    attendanceModal.style.display = 'none';
+                    document.getElementById('attendanceRemarks').value = '';
+                    loadAttendanceStats();
+                    
+                    if (selectedStudent?.studentId === studentId) {
+                        selectStudent(studentId);
+                    }
+                } else {
+                    showToast(data.message || 'Failed', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to mark attendance', 'error');
+            }
+        }
+
+        async function openViewAttendanceModal() {
+            if (!selectedStudent) return showToast('Select a student first', 'warning');
+            
+            try {
+                const res = await fetch(`/api/students/${selectedStudent.studentId}/attendance`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
+                
                 if (data.success) {
-                    if (data.data && data.data.feesHistory) {
-                        selectedStudent.feesHistory = data.data.feesHistory;
-                        document.getElementById(`due-${month}`).innerHTML = `₹${selectedStudent.classMonthlyFees - paid}`;
-                        updateChart(selectedStudent);
-                        updateStats();
-                        showToast('Fees updated successfully!');
-                    } else {
-                        showToast('Fees updated but data mismatch', 'warning');
+                    const attendance = data.data;
+                    const fullName = `${selectedStudent.studentName.first} ${selectedStudent.studentName.last}`.trim();
+                    
+                    // Calculate stats
+                    const present = attendance.filter(a => a.status === 'present').length;
+                    const absent = attendance.filter(a => a.status === 'absent').length;
+                    const late = attendance.filter(a => a.status === 'late').length;
+                    const halfDay = attendance.filter(a => a.status === 'half-day').length;
+                    
+                    // Generate calendar for current month
+                    const today = new Date();
+                    const year = today.getFullYear();
+                    const month = today.getMonth();
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    
+                    let calendarHTML = '<div class="attendance-calendar">';
+                    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                    days.forEach(d => { calendarHTML += `<div class="calendar-day" style="background:#667eea; color:white;">${d}</div>`; });
+                    
+                    for (let i = 0; i < firstDay.getDay(); i++) {
+                        calendarHTML += '<div class="calendar-day"></div>';
+                    }
+                    
+                    for (let d = 1; d <= lastDay.getDate(); d++) {
+                        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                        const att = attendance.find(a => a.date === dateStr);
+                        let className = 'calendar-day';
+                        if (att) className += ` ${att.status}`;
+                        calendarHTML += `<div class="${className}">${d}</div>`;
+                    }
+                    calendarHTML += '</div>';
+                    
+                    let historyHTML = `
+                        <div class="attendance-section">
+                            <div class="attendance-header">
+                                <h3><i class="fas fa-clock"></i> ${fullName}'s Attendance</h3>
+                            </div>
+                            
+                            <div class="attendance-stats">
+                                <div class="attendance-stat present">
+                                    <div class="count">${present}</div>
+                                    <div class="label">Present</div>
+                                </div>
+                                <div class="attendance-stat absent">
+                                    <div class="count">${absent}</div>
+                                    <div class="label">Absent</div>
+                                </div>
+                                <div class="attendance-stat late">
+                                    <div class="count">${late}</div>
+                                    <div class="label">Late</div>
+                                </div>
+                            </div>
+                            
+                            <div class="attendance-legend">
+                                <div class="legend-item"><span class="legend-color" style="background:#10b981;"></span> Present</div>
+                                <div class="legend-item"><span class="legend-color" style="background:#ef4444;"></span> Absent</div>
+                                <div class="legend-item"><span class="legend-color" style="background:#f59e0b;"></span> Late</div>
+                                <div class="legend-item"><span class="legend-color" style="background:#8b5cf6;"></span> Half Day</div>
+                            </div>
+                            
+                            ${calendarHTML}
+                            
+                            <h4 style="margin:16px 0 8px;">History</h4>
+                            <div class="attendance-list">
+                    `;
+                    
+                    attendance.sort((a, b) => b.date.localeCompare(a.date)).forEach(att => {
+                        const date = new Date(att.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                        const statusClass = `status-${att.status}`;
+                        historyHTML += `
+                            <div class="attendance-item">
+                                <div>
+                                    <div class="attendance-date">${date}</div>
+                                    ${att.remarks ? `<small style="color:#666;">${att.remarks}</small>` : ''}
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span class="attendance-status ${statusClass}">${att.status}</span>
+                                    <div class="attendance-actions">
+                                        <button class="edit-attendance" onclick="openEditAttendanceModal('${selectedStudent.studentId}', '${att.date}', '${att.status}', '${att.remarks || ''}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="delete-attendance" onclick="deleteAttendance('${selectedStudent.studentId}', '${att.date}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    historyHTML += '</div></div>';
+                    
+                    document.getElementById('attendanceHistory').innerHTML = historyHTML;
+                    viewAttendanceModal.style.display = 'block';
+                }
+            } catch (error) {
+                showToast('Failed to load attendance', 'error');
+            }
+        }
+
+        function openEditAttendanceModal(studentId, date, status, remarks) {
+            document.getElementById('editAttendanceStudentId').value = studentId;
+            document.getElementById('editAttendanceOriginalDate').value = date;
+            document.getElementById('editAttendanceDate').value = date;
+            document.getElementById('editAttendanceRemarks').value = remarks;
+            
+            selectedEditStatus = status;
+            document.getElementById('editAttendanceStatus').value = status;
+            
+            document.querySelectorAll('[data-edit-status]').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelector(`[data-edit-status="${status}"]`).classList.add('selected');
+            
+            editAttendanceModal.style.display = 'block';
+        }
+
+        async function updateAttendance() {
+            const studentId = document.getElementById('editAttendanceStudentId').value;
+            const originalDate = document.getElementById('editAttendanceOriginalDate').value;
+            const newDate = document.getElementById('editAttendanceDate').value;
+            const status = document.getElementById('editAttendanceStatus').value;
+            const remarks = document.getElementById('editAttendanceRemarks').value;
+
+            if (!studentId || !newDate || !status) {
+                return showToast('All fields required', 'warning');
+            }
+
+            try {
+                // First delete the old record if date changed
+                if (originalDate !== newDate) {
+                    await fetch(`/api/students/${studentId}/attendance`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ date: originalDate })
+                    });
+                }
+
+                // Save new record
+                const res = await fetch(`/api/students/${studentId}/attendance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ date: newDate, status, remarks })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('Attendance updated!');
+                    editAttendanceModal.style.display = 'none';
+                    loadAttendanceStats();
+                    
+                    if (selectedStudent?.studentId === studentId) {
+                        selectStudent(studentId);
+                        openViewAttendanceModal();
                     }
                 } else {
                     showToast(data.message || 'Update failed', 'error');
@@ -2484,154 +2400,80 @@
             }
         }
 
-        function closeFeesModal() {
-            document.getElementById('feesModal').style.display = 'none';
-        }
-
-        // ===== EDIT STUDENT FUNCTIONS =====
-
-        // Open edit student modal
-        async function openEditStudentModal(id) {
-            try {
-                const res = await fetch(`/api/student-dashboard/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    const s = data.data;
-                    document.getElementById('editStudentId').value = s.studentId;
-                    document.getElementById('editPassword').value = s.password;
-                    document.getElementById('editFirstName').value = s.studentName.first;
-                    document.getElementById('editMiddleName').value = s.studentName.middle || '';
-                    document.getElementById('editLastName').value = s.studentName.last;
-                    document.getElementById('editMobile').value = s.mobile;
-                    document.getElementById('editAadhar').value = s.aadharNumber;
-                    document.getElementById('editPhoto').value = s.photo;
-                    document.getElementById('editAadharDoc').value = s.aadharDocument;
+        async function deleteAttendance(studentId, date) {
+            showConfirmDialog('Delete this attendance record?', async () => {
+                try {
+                    const res = await fetch(`/api/students/${studentId}/attendance`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ date })
+                    });
                     
-                    // Show existing previews
-                    if (s.photo) showPreview(s.photo, 'editPhotoPreview', 'image/jpeg');
-                    if (s.aadharDocument) {
-                        const type = s.aadharDocument.includes('pdf') ? 'application/pdf' : 'image/jpeg';
-                        showPreview(s.aadharDocument, 'editAadharPreview', type);
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        showToast('Attendance deleted');
+                        loadAttendanceStats();
+                        
+                        if (selectedStudent?.studentId === studentId) {
+                            selectStudent(studentId);
+                            viewAttendanceModal.style.display = 'none';
+                        }
+                    } else {
+                        showToast(data.message || 'Delete failed', 'error');
                     }
-                    
-                    document.getElementById('editRegDate').value = new Date(s.registrationDate).toISOString().split('T')[0];
-                    document.getElementById('editJoinDate').value = new Date(s.joiningDate).toISOString().split('T')[0];
-                    document.getElementById('editFees').value = s.classMonthlyFees;
-                    document.getElementById('editFatherFirstName').value = s.fatherName.first;
-                    document.getElementById('editFatherMiddleName').value = s.fatherName.middle || '';
-                    document.getElementById('editFatherLastName').value = s.fatherName.last;
-                    document.getElementById('editFatherMobile').value = s.fatherMobile;
-                    document.getElementById('editMotherFirstName').value = s.motherName.first || '';
-                    document.getElementById('editMotherMiddleName').value = s.motherName.middle || '';
-                    document.getElementById('editMotherLastName').value = s.motherName.last || '';
-                    document.getElementById('editCurrentAddress').value = s.address.current;
-                    document.getElementById('editPermanentAddress').value = s.address.permanent;
-                    document.getElementById('editBoard').value = s.education.board;
-                    document.getElementById('editClass').value = s.education.class;
-                    document.getElementById('editStudentModal').style.display = 'block';
+                } catch (error) {
+                    showToast('Delete failed', 'error');
                 }
-            } catch (error) {
-                showToast('Failed to load student', 'error');
-            }
+            });
         }
 
-        function closeEditStudentModal() {
-            document.getElementById('editStudentModal').style.display = 'none';
-            // Clear file inputs
-            document.getElementById('editPhotoFile').value = '';
-            document.getElementById('editAadharFile').value = '';
+        // ===== ADD STUDENT =====
+        function openAddModal() {
+            addModal.style.display = 'block';
         }
 
-        // Save student changes
-        async function saveStudentChanges() {
-            const id = document.getElementById('editStudentId').value;
-            const data = {
-                studentId: id,
-                password: document.getElementById('editPassword').value,
-                classMonthlyFees: parseInt(document.getElementById('editFees').value),
-                photo: document.getElementById('editPhoto').value,
-                student: {
-                    firstName: document.getElementById('editFirstName').value,
-                    middleName: document.getElementById('editMiddleName').value,
-                    lastName: document.getElementById('editLastName').value,
-                    mobile: document.getElementById('editMobile').value
-                },
-                aadhar: document.getElementById('editAadhar').value,
-                aadharDocument: document.getElementById('editAadharDoc').value,
-                dates: {
-                    reg: document.getElementById('editRegDate').value,
-                    join: document.getElementById('editJoinDate').value
-                },
-                father: {
-                    firstName: document.getElementById('editFatherFirstName').value,
-                    middleName: document.getElementById('editFatherMiddleName').value,
-                    lastName: document.getElementById('editFatherLastName').value,
-                    mobile: document.getElementById('editFatherMobile').value
-                },
-                mother: {
-                    firstName: document.getElementById('editMotherFirstName').value,
-                    middleName: document.getElementById('editMotherMiddleName').value,
-                    lastName: document.getElementById('editMotherLastName').value
-                },
-                address: {
-                    current: document.getElementById('editCurrentAddress').value,
-                    permanent: document.getElementById('editPermanentAddress').value
-                },
-                education: {
-                    board: document.getElementById('editBoard').value,
-                    class: document.getElementById('editClass').value
-                }
-            };
-            try {
-                const res = await fetch(`/api/students/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                const resData = await res.json();
-                if (resData.success) {
-                    showToast('Student updated successfully!');
-                    closeEditStudentModal();
-                    loadAllStudents();
-                    if (selectedStudent?.studentId === id) selectStudent(id);
-                } else {
-                    showToast(resData.message || 'Update failed', 'error');
-                }
-            } catch (error) {
-                showToast('Update failed', 'error');
-            }
-        }
-
-        // ===== ADD STUDENT FUNCTIONS =====
-
-        // Open add student modal
-        function openAddStudentModal() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('addRegDate').value = today;
-            document.getElementById('addJoinDate').value = today;
-            document.getElementById('addPhotoPreview').innerHTML = '';
-            document.getElementById('addAadharPreview').innerHTML = '';
-            document.getElementById('addStudentModal').style.display = 'block';
-        }
-
-        function closeAddStudentModal() {
-            document.getElementById('addStudentModal').style.display = 'none';
+        function closeAddModal() {
+            addModal.style.display = 'none';
             document.getElementById('addStudentForm').reset();
             document.getElementById('addPhotoPreview').innerHTML = '';
             document.getElementById('addAadharPreview').innerHTML = '';
+            document.getElementById('addRegDate').value = today;
+            document.getElementById('addJoinDate').value = today;
         }
 
-        // Add new student
-        async function addNewStudent() {
-            const required = ['addStudentId', 'addPassword', 'addFirstName', 'addLastName', 'addMobile', 'addAadhar', 'addPhoto', 'addAadharDoc', 'addRegDate', 'addJoinDate', 'addFees', 'addFatherFirstName', 'addFatherLastName', 'addFatherMobile', 'addCurrentAddress', 'addPermanentAddress', 'addBoard', 'addClass'];
-            for (const f of required) {
-                if (!document.getElementById(f).value) return showToast('Fill all required fields', 'warning');
+        async function addStudent() {
+            const required = [
+                'addStudentId', 'addPassword', 'addFirstName', 'addLastName',
+                'addMobile', 'addAadhar', 'addPhoto', 'addAadharDoc',
+                'addFees', 'addFatherName', 'addFatherMobile',
+                'addCurrentAddress', 'addPermanentAddress', 'addBoard', 'addClass'
+            ];
+            
+            for (const id of required) {
+                if (!document.getElementById(id).value) {
+                    return showToast('Fill all required fields', 'warning');
+                }
             }
+
+            const nameParts = document.getElementById('addFatherName').value.trim().split(' ');
+            const father = {
+                firstName: nameParts[0] || '',
+                middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '',
+                lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
+            };
+
+            const motherName = document.getElementById('addMotherName').value.trim();
+            const motherParts = motherName ? motherName.split(' ') : [];
+            const mother = {
+                firstName: motherParts[0] || '',
+                middleName: motherParts.length > 2 ? motherParts.slice(1, -1).join(' ') : '',
+                lastName: motherParts.length > 1 ? motherParts[motherParts.length - 1] : ''
+            };
+
             const data = {
                 studentId: document.getElementById('addStudentId').value,
                 password: document.getElementById('addPassword').value,
@@ -2639,7 +2481,7 @@
                 photo: document.getElementById('addPhoto').value,
                 student: {
                     firstName: document.getElementById('addFirstName').value,
-                    middleName: document.getElementById('addMiddleName').value,
+                    middleName: '',
                     lastName: document.getElementById('addLastName').value,
                     mobile: document.getElementById('addMobile').value
                 },
@@ -2650,16 +2492,12 @@
                     join: document.getElementById('addJoinDate').value
                 },
                 father: {
-                    firstName: document.getElementById('addFatherFirstName').value,
-                    middleName: document.getElementById('addFatherMiddleName').value,
-                    lastName: document.getElementById('addFatherLastName').value,
+                    firstName: father.firstName,
+                    middleName: father.middleName,
+                    lastName: father.lastName,
                     mobile: document.getElementById('addFatherMobile').value
                 },
-                mother: {
-                    firstName: document.getElementById('addMotherFirstName').value,
-                    middleName: document.getElementById('addMotherMiddleName').value,
-                    lastName: document.getElementById('addMotherLastName').value
-                },
+                mother: mother,
                 address: {
                     current: document.getElementById('addCurrentAddress').value,
                     permanent: document.getElementById('addPermanentAddress').value
@@ -2669,6 +2507,7 @@
                     class: document.getElementById('addClass').value
                 }
             };
+
             try {
                 const res = await fetch('/api/student-register', {
                     method: 'POST',
@@ -2678,34 +2517,173 @@
                     },
                     body: JSON.stringify(data)
                 });
-                const resData = await res.json();
-                if (resData.success) {
+                
+                const result = await res.json();
+                
+                if (result.success) {
                     showToast('Student added successfully!');
-                    closeAddStudentModal();
+                    closeAddModal();
                     loadAllStudents();
                 } else {
-                    showToast(resData.message || 'Registration failed', 'error');
+                    showToast(result.message || 'Failed to add student', 'error');
                 }
             } catch (error) {
-                showToast('Add failed', 'error');
+                showToast('Network error', 'error');
             }
         }
 
-        // ===== DELETE STUDENT FUNCTION =====
+        // ===== EDIT STUDENT =====
+        async function openEditModal(id) {
+            try {
+                const res = await fetch(`/api/student-dashboard/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const s = data.data;
+                    
+                    document.getElementById('editStudentId').value = s.studentId;
+                    document.getElementById('editPassword').value = s.password;
+                    document.getElementById('editFirstName').value = s.studentName.first;
+                    document.getElementById('editLastName').value = s.studentName.last;
+                    document.getElementById('editMobile').value = s.mobile;
+                    document.getElementById('editAadhar').value = s.aadharNumber;
+                    document.getElementById('editPhoto').value = s.photo;
+                    document.getElementById('editAadharDoc').value = s.aadharDocument;
+                    document.getElementById('editFees').value = s.classMonthlyFees;
+                    
+                    const fatherName = `${s.fatherName.first} ${s.fatherName.middle} ${s.fatherName.last}`.trim();
+                    document.getElementById('editFatherName').value = fatherName;
+                    document.getElementById('editFatherMobile').value = s.fatherMobile;
+                    
+                    const motherName = `${s.motherName.first} ${s.motherName.middle} ${s.motherName.last}`.trim();
+                    document.getElementById('editMotherName').value = motherName === '  ' ? '' : motherName;
+                    
+                    document.getElementById('editCurrentAddress').value = s.address.current;
+                    document.getElementById('editPermanentAddress').value = s.address.permanent;
+                    document.getElementById('editBoard').value = s.education.board;
+                    document.getElementById('editClass').value = s.education.class;
 
-        // Delete student
+                    if (s.photo) {
+                        document.getElementById('editPhotoPreview').innerHTML = `<img src="${s.photo}" style="max-width:100%; max-height:150px;">`;
+                    }
+                    if (s.aadharDocument) {
+                        const type = s.aadharDocument.includes('pdf') ? 'application/pdf' : 'image/jpeg';
+                        if (type === 'application/pdf') {
+                            document.getElementById('editAadharPreview').innerHTML = `<iframe src="${s.aadharDocument}" style="width:100%; height:150px;"></iframe>`;
+                        } else {
+                            document.getElementById('editAadharPreview').innerHTML = `<img src="${s.aadharDocument}" style="max-width:100%; max-height:150px;">`;
+                        }
+                    }
+
+                    editModal.style.display = 'block';
+                }
+            } catch (error) {
+                showToast('Failed to load student', 'error');
+            }
+        }
+
+        function closeEditModal() {
+            editModal.style.display = 'none';
+            document.getElementById('editPhotoFile').value = '';
+            document.getElementById('editAadharFile').value = '';
+        }
+
+        async function updateStudent() {
+            const id = document.getElementById('editStudentId').value;
+
+            const nameParts = document.getElementById('editFatherName').value.trim().split(' ');
+            const father = {
+                firstName: nameParts[0] || '',
+                middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '',
+                lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
+            };
+
+            const motherName = document.getElementById('editMotherName').value.trim();
+            const motherParts = motherName ? motherName.split(' ') : [];
+            const mother = {
+                firstName: motherParts[0] || '',
+                middleName: motherParts.length > 2 ? motherParts.slice(1, -1).join(' ') : '',
+                lastName: motherParts.length > 1 ? motherParts[motherParts.length - 1] : ''
+            };
+
+            const data = {
+                studentId: id,
+                password: document.getElementById('editPassword').value,
+                classMonthlyFees: parseInt(document.getElementById('editFees').value),
+                photo: document.getElementById('editPhoto').value,
+                student: {
+                    firstName: document.getElementById('editFirstName').value,
+                    middleName: '',
+                    lastName: document.getElementById('editLastName').value,
+                    mobile: document.getElementById('editMobile').value
+                },
+                aadhar: document.getElementById('editAadhar').value,
+                aadharDocument: document.getElementById('editAadharDoc').value,
+                dates: {
+                    reg: new Date().toISOString().split('T')[0],
+                    join: new Date().toISOString().split('T')[0]
+                },
+                father: {
+                    firstName: father.firstName,
+                    middleName: father.middleName,
+                    lastName: father.lastName,
+                    mobile: document.getElementById('editFatherMobile').value
+                },
+                mother: mother,
+                address: {
+                    current: document.getElementById('editCurrentAddress').value,
+                    permanent: document.getElementById('editPermanentAddress').value
+                },
+                education: {
+                    board: document.getElementById('editBoard').value,
+                    class: document.getElementById('editClass').value
+                }
+            };
+
+            try {
+                const res = await fetch(`/api/students/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (result.success) {
+                    showToast('Student updated!');
+                    closeEditModal();
+                    loadAllStudents();
+                    if (selectedStudent?.studentId === id) selectStudent(id);
+                } else {
+                    showToast(result.message || 'Update failed', 'error');
+                }
+            } catch (error) {
+                showToast('Update failed', 'error');
+            }
+        }
+
+        // ===== DELETE STUDENT =====
         async function deleteStudent(id) {
             try {
                 const res = await fetch(`/api/students/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                
                 const data = await res.json();
+                
                 if (data.success) {
-                    showToast('Student deleted successfully!');
+                    showToast('Student deleted');
                     if (selectedStudent?.studentId === id) {
                         selectedStudent = null;
                         document.getElementById('studentDetails').style.display = 'none';
+                        document.getElementById('actionButtons').style.display = 'none';
+                        document.getElementById('chartContainer').style.display = 'none';
                     }
                     loadAllStudents();
                 } else {
@@ -2715,6 +2693,16 @@
                 showToast('Delete failed', 'error');
             }
         }
+
+        // Make functions global for onclick handlers
+        window.viewDocument = viewDocument;
+        window.downloadDoc = downloadDoc;
+        window.openEditModal = openEditModal;
+        window.showConfirmDialog = showConfirmDialog;
+        window.selectStatus = selectStatus;
+        window.selectEditStatus = selectEditStatus;
+        window.openEditAttendanceModal = openEditAttendanceModal;
+        window.deleteAttendance = deleteAttendance;
     </script>
 </body>
 </html>
