@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     
     <style>
-        /* Same CSS as before - no changes needed */
         * {
             margin: 0;
             padding: 0;
@@ -827,6 +826,12 @@
             animation: spin 1s linear infinite;
         }
 
+        .loading-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
         /* Toast Notifications */
         .toast-container {
             position: fixed;
@@ -1024,7 +1029,7 @@
         </button>
     </div>
 
-    <!-- Audio Elements - Using data URI instead of external source to avoid CSP -->
+    <!-- Audio Elements -->
     <audio id="bgmAudio" loop style="display:none;"></audio>
 
     <!-- Login Page -->
@@ -1036,16 +1041,16 @@
             </div>
             <div class="login-body">
                 <div class="login-option">
-                    <button class="login-option-btn active" id="loginAadharOption"> <!-- Removed onclick -->
+                    <button class="login-option-btn active" id="loginAadharOption">
                         <i class="fas fa-id-card"></i> Aadhar Login
                     </button>
-                    <button class="login-option-btn" id="loginPasswordOption"> <!-- Removed onclick -->
+                    <button class="login-option-btn" id="loginPasswordOption">
                         <i class="fas fa-key"></i> Password Login
                     </button>
                 </div>
 
                 <!-- Aadhar Login Form -->
-                <form id="aadharLoginForm"> <!-- Removed onsubmit -->
+                <form id="aadharLoginForm">
                     <div class="form-group">
                         <i class="fas fa-id-card"></i>
                         <input type="text" class="form-control" id="aadharNumber" 
@@ -1062,7 +1067,7 @@
                 </form>
 
                 <!-- Password Login Form -->
-                <form id="passwordLoginForm" style="display: none;"> <!-- Removed onsubmit -->
+                <form id="passwordLoginForm" style="display: none;">
                     <div class="form-group">
                         <i class="fas fa-user"></i>
                         <input type="text" class="form-control" id="teacherId" 
@@ -1105,7 +1110,7 @@
                         <i class="far fa-clock"></i>
                         <span id="currentDateTime"></span>
                     </div>
-                    <button class="btn-logout" id="logoutBtn"> <!-- Changed from onclick -->
+                    <button class="btn-logout" id="logoutBtn">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>
@@ -1118,10 +1123,10 @@
                     <span id="voiceMessage">Welcome to your dashboard. Please mark your attendance for today.</span>
                 </div>
                 <div class="voice-controls">
-                    <button id="repeatVoiceBtn" title="Repeat"> <!-- Changed from onclick -->
+                    <button id="repeatVoiceBtn" title="Repeat">
                         <i class="fas fa-volume-up"></i>
                     </button>
-                    <button id="toggleVoiceBtn" title="Toggle Voice"> <!-- Changed from onclick -->
+                    <button id="toggleVoiceBtn" title="Toggle Voice">
                         <i class="fas fa-microphone"></i>
                     </button>
                 </div>
@@ -1328,7 +1333,7 @@
             <div class="history-card">
                 <div class="history-filters">
                     <div class="filter-group">
-                        <select id="monthFilter"> <!-- Removed onchange -->
+                        <select id="monthFilter">
                             <option value="">Select Month</option>
                             <option value="01">January</option>
                             <option value="02">February</option>
@@ -1345,12 +1350,12 @@
                         </select>
                     </div>
                     <div class="filter-group">
-                        <select id="yearFilter"> <!-- Removed onchange -->
+                        <select id="yearFilter">
                             <option value="">Select Year</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <select id="statusFilter"> <!-- Removed onchange -->
+                        <select id="statusFilter">
                             <option value="">All Status</option>
                             <option value="present">Present</option>
                             <option value="absent">Absent</option>
@@ -1396,39 +1401,35 @@
         let speechSynthesis = window.speechSynthesis;
         let currentSpeech = null;
 
-        // Initialize
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
         document.addEventListener('DOMContentLoaded', function() {
             updateDateTime();
             setInterval(updateDateTime, 1000);
             populateYearFilter();
-            checkExistingSession();
-            
-            // Initialize BGM with silent audio to avoid CSP
-            initBGM();
-            
-            // Add all event listeners here instead of inline
-            attachEventListeners();
             
             // Check if already logged in
             const savedTeacher = localStorage.getItem('currentTeacher');
-            if (savedTeacher) {
+            const savedToken = localStorage.getItem('teacherToken');
+            
+            if (savedTeacher && savedToken) {
                 currentTeacher = JSON.parse(savedTeacher);
                 showDashboard();
                 loadTeacherData();
                 loadAttendanceHistory();
+                document.getElementById('startCameraBtn').disabled = false;
             }
+            
+            initBGM();
+            attachEventListeners();
         });
 
-        // Attach all event listeners
         function attachEventListeners() {
             // Login options
-            document.getElementById('loginAadharOption').addEventListener('click', function() {
-                switchLoginMethod('aadhar');
-            });
-            
-            document.getElementById('loginPasswordOption').addEventListener('click', function() {
-                switchLoginMethod('password');
-            });
+            document.getElementById('loginAadharOption').addEventListener('click', () => switchLoginMethod('aadhar'));
+            document.getElementById('loginPasswordOption').addEventListener('click', () => switchLoginMethod('password'));
             
             // Login forms
             document.getElementById('aadharLoginForm').addEventListener('submit', handleAadharLogin);
@@ -1438,10 +1439,8 @@
             document.getElementById('logoutBtn').addEventListener('click', logout);
             
             // Voice controls
-            document.getElementById('repeatVoiceBtn').addEventListener('click', function() {
-                if (document.getElementById('voiceMessage').textContent) {
-                    speakText(document.getElementById('voiceMessage').textContent);
-                }
+            document.getElementById('repeatVoiceBtn').addEventListener('click', () => {
+                speakText(document.getElementById('voiceMessage').textContent);
             });
             
             document.getElementById('toggleVoiceBtn').addEventListener('click', toggleVoiceGuidance);
@@ -1463,7 +1462,63 @@
             document.getElementById('bgmToggle').addEventListener('click', toggleBGM);
         }
 
-        // Update Date & Time
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'block';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            const titles = {
+                success: 'Success',
+                error: 'Error',
+                warning: 'Warning',
+                info: 'Information'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.id = toastId;
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${icons[type]}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${titles[type]}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <div class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                const toastElement = document.getElementById(toastId);
+                if (toastElement) {
+                    toastElement.remove();
+                }
+            }, 5000);
+        }
+
         function updateDateTime() {
             const now = new Date();
             const options = {
@@ -1477,7 +1532,6 @@
             };
             document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-IN', options);
             
-            // Update attendance date
             const dateOptions = {
                 weekday: 'long',
                 year: 'numeric',
@@ -1487,7 +1541,6 @@
             document.getElementById('attendanceDate').textContent = now.toLocaleDateString('en-IN', dateOptions);
         }
 
-        // Populate Year Filter
         function populateYearFilter() {
             const yearFilter = document.getElementById('yearFilter');
             const currentYear = new Date().getFullYear();
@@ -1499,34 +1552,10 @@
             }
         }
 
-        // Check Existing Session
-        function checkExistingSession() {
-            const token = localStorage.getItem('teacherToken');
-            if (token) {
-                // Verify token with server
-                verifyToken(token);
-            }
-        }
+        // ============================================
+        // LOGIN FUNCTIONS
+        // ============================================
 
-        // Verify Token
-        async function verifyToken(token) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                if (!data.success) {
-                    localStorage.removeItem('teacherToken');
-                    localStorage.removeItem('currentTeacher');
-                }
-            } catch (err) {
-                console.error('Token verification failed:', err);
-            }
-        }
-
-        // Switch Login Method
         function switchLoginMethod(method) {
             document.getElementById('loginAadharOption').classList.remove('active');
             document.getElementById('loginPasswordOption').classList.remove('active');
@@ -1544,232 +1573,195 @@
             }
         }
 
-        // Handle Aadhar Login
-      // ============================================
-// FIXED AADHAR LOGIN FUNCTION
-// ============================================
-
-async function handleAadharLogin(event) {
-    event.preventDefault();
-    
-    const aadharNumber = document.getElementById('aadharNumber').value.trim();
-    const dob = document.getElementById('dob').value;
-    
-    if (!aadharNumber || !dob) {
-        showToast('Please enter Aadhar number and date of birth', 'error');
-        speakText('Please enter Aadhar number and date of birth');
-        return;
-    }
-    
-    showLoading(true);
-    
-    try {
-        // USE TEACHER LOGIN API - NOT DIRECT TEACHER FETCH
-        const response = await fetch(`${API_BASE_URL}/api/teacher-login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                aadharNumber: aadharNumber, 
-                dob: dob 
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Login successful
-            currentTeacher = data.data;
-            localStorage.setItem('currentTeacher', JSON.stringify(data.data));
-            localStorage.setItem('teacherToken', data.token);
+        async function handleAadharLogin(event) {
+            event.preventDefault();
             
-            showToast('Login successful!', 'success');
-            speakText(`Welcome ${data.data.teacherName.first} ${data.data.teacherName.last}`);
+            const aadharNumber = document.getElementById('aadharNumber').value.trim();
+            const dob = document.getElementById('dob').value;
             
-            showDashboard();
-            loadTeacherData();
-            loadAttendanceHistory();
-            document.getElementById('startCameraBtn').disabled = false;
-        } else {
-            showToast(data.message || 'Login failed', 'error');
-            speakText(data.message || 'Login failed');
-        }
-    } catch (err) {
-        console.error('Login error:', err);
-        showToast('Login failed: ' + err.message, 'error');
-        speakText('Login failed. Please try again.');
-    } finally {
-        showLoading(false);
-    }
-}
-
-// ============================================
-// FIXED PASSWORD LOGIN FUNCTION
-// ============================================
-
-async function handlePasswordLogin(event) {
-    event.preventDefault();
-    
-    const teacherId = document.getElementById('teacherId').value.trim();
-    const password = document.getElementById('password').value;
-    
-    if (!teacherId || !password) {
-        showToast('Please enter Teacher ID and password', 'error');
-        speakText('Please enter Teacher ID and password');
-        return;
-    }
-    
-    showLoading(true);
-    
-    try {
-        // USE TEACHER LOGIN API
-        const response = await fetch(`${API_BASE_URL}/api/teacher-login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                teacherId: teacherId, 
-                password: password 
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // Login successful
-            currentTeacher = data.data;
-            localStorage.setItem('currentTeacher', JSON.stringify(data.data));
-            localStorage.setItem('teacherToken', data.token);
-            
-            showToast('Login successful!', 'success');
-            speakText(`Welcome ${data.data.teacherName.first} ${data.data.teacherName.last}`);
-            
-            showDashboard();
-            loadTeacherData();
-            loadAttendanceHistory();
-            document.getElementById('startCameraBtn').disabled = false;
-        } else {
-            showToast(data.message || 'Login failed', 'error');
-            speakText(data.message || 'Login failed');
-        }
-    } catch (err) {
-        console.error('Login error:', err);
-        showToast('Login failed: ' + err.message, 'error');
-        speakText('Login failed. Please try again.');
-    } finally {
-        showLoading(false);
-    }
-}
-
-// ============================================
-// FIXED LOAD TEACHER DATA FUNCTION
-// ============================================
-
-function loadTeacherData() {
-    if (!currentTeacher) return;
-    
-    const teacher = currentTeacher;
-    
-    // Basic info
-    document.getElementById('teacherName').textContent = 
-        `${teacher.teacherName.first} ${teacher.teacherName.last}`;
-    document.getElementById('teacherFullName').textContent = 
-        `${teacher.teacherName.first} ${teacher.teacherName.middle || ''} ${teacher.teacherName.last}`;
-    document.getElementById('teacherSubject').textContent = 
-        teacher.subject || 'Not Assigned';
-    document.getElementById('teacherIdDisplay').textContent = teacher.teacherId;
-    
-    // Father's name
-    document.getElementById('teacherFatherName').textContent = 
-        `${teacher.fatherName.first} ${teacher.fatherName.last}`;
-    
-    // Mobile
-    document.getElementById('teacherMobile').textContent = teacher.mobile;
-    if (teacher.altMobile) {
-        document.getElementById('teacherAltMobile').textContent = `Alt: ${teacher.altMobile}`;
-    } else {
-        document.getElementById('teacherAltMobile').textContent = '';
-    }
-    
-    // Subject
-    document.getElementById('teacherSubjectDetail').textContent = 
-        teacher.subject || 'Not Assigned';
-    
-    // Salary
-    document.getElementById('teacherSalary').textContent = teacher.salary || 0;
-    
-    // Photo
-    if (teacher.photo) {
-        document.getElementById('teacherPhoto').src = teacher.photo;
-    } else {
-        document.getElementById('teacherPhoto').src = 'https://via.placeholder.com/120';
-    }
-    
-    // Aadhar document
-    if (teacher.aadharDoc) {
-        document.getElementById('aadharDocLink').href = teacher.aadharDoc;
-    } else {
-        document.getElementById('aadharDocLink').href = '#';
-    }
-    
-    // Check today's attendance
-    checkTodayAttendance();
-}
-
-// ============================================
-// FIXED CHECK TODAY ATTENDANCE FUNCTION
-// ============================================
-
-async function checkTodayAttendance() {
-    if (!currentTeacher) return;
-    
-    const today = new Date().toISOString().split('T')[0];
-    
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance?date=${today}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
-                }
+            if (!aadharNumber || !dob) {
+                showToast('Please enter Aadhar number and date of birth', 'error');
+                speakText('Please enter Aadhar number and date of birth');
+                return;
             }
-        );
-        
-        const data = await response.json();
-        
-        if (data.success && data.data) {
-            const todayAttendance = data.data.find(a => a.date === today);
             
-            if (todayAttendance) {
-                document.getElementById('todayStatus').innerHTML = `
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        Today's attendance already marked as: 
-                        <strong class="status-${todayAttendance.status}">${todayAttendance.status}</strong>
-                        ${todayAttendance.remarks ? `<br><small>Remarks: ${todayAttendance.remarks}</small>` : ''}
-                    </div>
-                `;
-                document.getElementById('markAttendanceBtn').disabled = true;
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher-login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ aadharNumber, dob })
+                });
                 
-                // Pre-select status
-                const radio = document.getElementById(`status-${todayAttendance.status}`);
-                if (radio) radio.checked = true;
-                if (todayAttendance.remarks) {
-                    document.getElementById('attendanceRemarks').value = todayAttendance.remarks;
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentTeacher = data.data;
+                    localStorage.setItem('currentTeacher', JSON.stringify(data.data));
+                    localStorage.setItem('teacherToken', data.token);
+                    
+                    showToast('Login successful!', 'success');
+                    speakText(`Welcome ${data.data.teacherName.first} ${data.data.teacherName.last}`);
+                    
+                    showDashboard();
+                    loadTeacherData();
+                    loadAttendanceHistory();
+                    document.getElementById('startCameraBtn').disabled = false;
+                } else {
+                    showToast(data.message || 'Login failed', 'error');
+                    speakText(data.message || 'Login failed');
                 }
-            } else {
-                document.getElementById('todayStatus').innerHTML = '';
-                document.getElementById('markAttendanceBtn').disabled = false;
+            } catch (err) {
+                console.error('Login error:', err);
+                showToast('Login failed: ' + err.message, 'error');
+                speakText('Login failed. Please try again.');
+            } finally {
+                showLoading(false);
             }
         }
-    } catch (err) {
-        console.error('Error checking today\'s attendance:', err);
-    }
-}
-//////////////////////////////////////////////////////////////////////////////////////////
-        // Start Camera
+
+        async function handlePasswordLogin(event) {
+            event.preventDefault();
+            
+            const teacherId = document.getElementById('teacherId').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!teacherId || !password) {
+                showToast('Please enter Teacher ID and password', 'error');
+                speakText('Please enter Teacher ID and password');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/teacher-login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teacherId, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentTeacher = data.data;
+                    localStorage.setItem('currentTeacher', JSON.stringify(data.data));
+                    localStorage.setItem('teacherToken', data.token);
+                    
+                    showToast('Login successful!', 'success');
+                    speakText(`Welcome ${data.data.teacherName.first} ${data.data.teacherName.last}`);
+                    
+                    showDashboard();
+                    loadTeacherData();
+                    loadAttendanceHistory();
+                    document.getElementById('startCameraBtn').disabled = false;
+                } else {
+                    showToast(data.message || 'Login failed', 'error');
+                    speakText(data.message || 'Login failed');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                showToast('Login failed: ' + err.message, 'error');
+                speakText('Login failed. Please try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ============================================
+        // TEACHER DATA FUNCTIONS
+        // ============================================
+
+        function loadTeacherData() {
+            if (!currentTeacher) return;
+            
+            const teacher = currentTeacher;
+            
+            document.getElementById('teacherName').textContent = 
+                `${teacher.teacherName.first} ${teacher.teacherName.last}`;
+            document.getElementById('teacherFullName').textContent = 
+                `${teacher.teacherName.first} ${teacher.teacherName.middle || ''} ${teacher.teacherName.last}`;
+            document.getElementById('teacherSubject').textContent = 
+                teacher.subject || 'Not Assigned';
+            document.getElementById('teacherIdDisplay').textContent = teacher.teacherId;
+            document.getElementById('teacherFatherName').textContent = 
+                `${teacher.fatherName.first} ${teacher.fatherName.last}`;
+            document.getElementById('teacherMobile').textContent = teacher.mobile;
+            
+            if (teacher.altMobile) {
+                document.getElementById('teacherAltMobile').textContent = `Alt: ${teacher.altMobile}`;
+            } else {
+                document.getElementById('teacherAltMobile').textContent = '';
+            }
+            
+            document.getElementById('teacherSubjectDetail').textContent = 
+                teacher.subject || 'Not Assigned';
+            document.getElementById('teacherSalary').textContent = teacher.salary || 0;
+            
+            if (teacher.photo) {
+                document.getElementById('teacherPhoto').src = teacher.photo;
+            } else {
+                document.getElementById('teacherPhoto').src = 'https://via.placeholder.com/120';
+            }
+            
+            if (teacher.aadharDoc) {
+                document.getElementById('aadharDocLink').href = teacher.aadharDoc;
+            }
+            
+            checkTodayAttendance();
+        }
+
+        async function checkTodayAttendance() {
+            if (!currentTeacher) return;
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                const response = await fetch(
+                    `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance?date=${today}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('teacherToken')}`
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const todayAttendance = data.data.find(a => a.date === today);
+                    
+                    if (todayAttendance) {
+                        document.getElementById('todayStatus').innerHTML = `
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Today's attendance already marked as: 
+                                <strong class="status-${todayAttendance.status}">${todayAttendance.status}</strong>
+                                ${todayAttendance.remarks ? `<br><small>Remarks: ${todayAttendance.remarks}</small>` : ''}
+                            </div>
+                        `;
+                        document.getElementById('markAttendanceBtn').disabled = true;
+                        
+                        const radio = document.getElementById(`status-${todayAttendance.status}`);
+                        if (radio) radio.checked = true;
+                        if (todayAttendance.remarks) {
+                            document.getElementById('attendanceRemarks').value = todayAttendance.remarks;
+                        }
+                    } else {
+                        document.getElementById('todayStatus').innerHTML = '';
+                        document.getElementById('markAttendanceBtn').disabled = false;
+                    }
+                }
+            } catch (err) {
+                console.error('Error checking today\'s attendance:', err);
+            }
+        }
+
+        // ============================================
+        // CAMERA FUNCTIONS
+        // ============================================
+
         async function startCamera() {
             try {
                 cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -1794,7 +1786,6 @@ async function checkTodayAttendance() {
             }
         }
 
-        // Capture Photo
         function capturePhoto() {
             const video = document.getElementById('cameraFeed');
             const canvas = document.createElement('canvas');
@@ -1817,7 +1808,6 @@ async function checkTodayAttendance() {
             speakText('Photo captured successfully');
         }
 
-        // Retake Photo
         function retakePhoto() {
             capturedImage = null;
             
@@ -1832,7 +1822,10 @@ async function checkTodayAttendance() {
             speakText('Please capture your photo again');
         }
 
-        // Mark Attendance
+        // ============================================
+        // ATTENDANCE FUNCTIONS
+        // ============================================
+
         async function markAttendance() {
             if (!currentTeacher) {
                 showToast('Please login first', 'error');
@@ -1858,17 +1851,14 @@ async function checkTodayAttendance() {
             showLoading(true);
             
             try {
-                // First, verify it's before 8 PM
                 const now = new Date();
                 if (now.getHours() >= 20) {
-                    // Auto-mark as absent after 8 PM
                     if (!confirm('It\'s after 8:00 PM. Attendance will be marked as ABSENT. Continue?')) {
                         showLoading(false);
                         return;
                     }
                 }
                 
-                // Save attendance with photo
                 const attendanceData = {
                     date: today,
                     status: status.value,
@@ -1895,11 +1885,9 @@ async function checkTodayAttendance() {
                     showToast('Attendance marked successfully!', 'success');
                     speakText(`Your attendance has been marked as ${status.value}`);
                     
-                    // Reload history and update UI
                     loadAttendanceHistory();
                     checkTodayAttendance();
                     
-                    // Reset camera
                     if (cameraStream) {
                         cameraStream.getTracks().forEach(track => track.stop());
                         cameraStream = null;
@@ -1918,7 +1906,6 @@ async function checkTodayAttendance() {
             }
         }
 
-        // Load Attendance History
         async function loadAttendanceHistory() {
             if (!currentTeacher) return;
             
@@ -1950,7 +1937,6 @@ async function checkTodayAttendance() {
             }
         }
 
-        // Display Attendance History
         function displayAttendanceHistory(attendance) {
             const tbody = document.getElementById('attendanceHistoryBody');
             
@@ -1997,32 +1983,10 @@ async function checkTodayAttendance() {
             }).join('');
         }
 
-        // Logout
-        function logout() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
-            
-            localStorage.removeItem('teacherToken');
-            localStorage.removeItem('currentTeacher');
-            currentTeacher = null;
-            
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('dashboardPage').style.display = 'none';
-            
-            // Reset forms
-            document.getElementById('aadharLoginForm').reset();
-            document.getElementById('passwordLoginForm').reset();
-            
-            // Reset camera buttons
-            document.getElementById('startCameraBtn').disabled = true;
-            document.getElementById('captureBtn').disabled = true;
-            
-            speakText('You have been logged out');
-        }
+        // ============================================
+        // VOICE GUIDANCE FUNCTIONS
+        // ============================================
 
-        // Voice Guidance Functions
         function speakText(text) {
             if (!voiceGuidanceEnabled) return;
             
@@ -2037,7 +2001,6 @@ async function checkTodayAttendance() {
             
             speechSynthesis.speak(currentSpeech);
             
-            // Update voice message
             document.getElementById('voiceMessage').textContent = text;
         }
 
@@ -2056,25 +2019,22 @@ async function checkTodayAttendance() {
             }
         }
 
-        // BGM Functions - Modified to work with CSP
+        // ============================================
+        // BGM FUNCTIONS
+        // ============================================
+
         function initBGM() {
-            const bgm = document.getElementById('bgmAudio');
-            // Create a silent audio context instead of using external MP3
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 const audioCtx = new AudioContext();
-                
-                // Create a silent oscillator (this doesn't violate CSP)
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-                gainNode.gain.value = 0; // Silent
+                gainNode.gain.value = 0;
                 oscillator.connect(gainNode).connect(audioCtx.destination);
-                
-                // Store for later use
                 window.audioCtx = audioCtx;
                 window.oscillator = oscillator;
             } catch (e) {
-                console.log('Web Audio API not supported or CSP blocked');
+                console.log('Web Audio API not supported');
             }
         }
 
@@ -2082,7 +2042,6 @@ async function checkTodayAttendance() {
             const btn = document.getElementById('bgmToggle');
             
             if (bgmPlaying) {
-                // Stop BGM
                 if (window.oscillator) {
                     window.oscillator.stop();
                 }
@@ -2090,7 +2049,6 @@ async function checkTodayAttendance() {
                 btn.classList.add('muted');
                 showToast('Background music paused', 'info');
             } else {
-                // Start BGM (silent - just for UI feedback)
                 if (window.audioCtx && window.audioCtx.state === 'suspended') {
                     window.audioCtx.resume();
                 }
@@ -2102,58 +2060,36 @@ async function checkTodayAttendance() {
             bgmPlaying = !bgmPlaying;
         }
 
-        // Toast Notifications
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toastId = 'toast-' + Date.now();
+        // ============================================
+        // LOGOUT FUNCTION
+        // ============================================
+
+        function logout() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
             
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                warning: 'fa-exclamation-triangle',
-                info: 'fa-info-circle'
-            };
+            localStorage.removeItem('teacherToken');
+            localStorage.removeItem('currentTeacher');
+            currentTeacher = null;
             
-            const titles = {
-                success: 'Success',
-                error: 'Error',
-                warning: 'Warning',
-                info: 'Information'
-            };
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboardPage').style.display = 'none';
             
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.id = toastId;
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fas ${icons[type]}"></i>
-                </div>
-                <div class="toast-content">
-                    <div class="toast-title">${titles[type]}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <div class="toast-close" onclick="this.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </div>
-            `;
+            document.getElementById('aadharLoginForm').reset();
+            document.getElementById('passwordLoginForm').reset();
             
-            container.appendChild(toast);
+            document.getElementById('startCameraBtn').disabled = true;
+            document.getElementById('captureBtn').disabled = true;
             
-            setTimeout(() => {
-                const toastElement = document.getElementById(toastId);
-                if (toastElement) {
-                    toastElement.style.animation = 'slideOutRight 0.3s ease';
-                    setTimeout(() => toastElement.remove(), 300);
-                }
-            }, 5000);
+            speakText('You have been logged out');
         }
 
-        // Loading Overlay
-        function showLoading(show) {
-            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-        }
+        // ============================================
+        // AUTO-MARK ABSENT AFTER 8 PM
+        // ============================================
 
-        // Auto-mark absent after 8 PM
         setInterval(async () => {
             const now = new Date();
             if (now.getHours() >= 20 && currentTeacher) {
@@ -2172,7 +2108,6 @@ async function checkTodayAttendance() {
                     const data = await response.json();
                     
                     if (data.success && !data.data.find(a => a.date === today)) {
-                        // Auto-mark absent
                         await fetch(
                             `${API_BASE_URL}/api/teachers/${currentTeacher.teacherId}/attendance`,
                             {
@@ -2197,7 +2132,7 @@ async function checkTodayAttendance() {
                     console.error('Auto-mark absent error:', err);
                 }
             }
-        }, 60000); // Check every minute
+        }, 60000);
     </script>
 </body>
 </html>
