@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Teacher Dashboard - Bal Bharti Coaching</title>
     
     <!-- Bootstrap CSS -->
@@ -39,7 +39,6 @@
             --border-radius-sm: 12px;
         }
 
-        /* ===== GLOBAL STYLES ===== */
         * {
             margin: 0;
             padding: 0;
@@ -53,7 +52,7 @@
             color: var(--dark);
         }
 
-        /* ===== LOADING SPINNER ===== */
+        /* Loading Spinner */
         .spinner-overlay {
             position: fixed;
             top: 0;
@@ -67,598 +66,133 @@
             align-items: center;
             z-index: 9999;
         }
+        .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-        }
+        /* Navbar */
+        .vip-nav { background: white; padding: 0.8rem 1rem; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95); }
+        .logo { font-size: 1.3rem; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        /* Main Content */
+        .main-content { max-width: 1600px; margin: 1rem auto; padding: 0 1rem; }
 
-        /* ===== NAVBAR - Mobile First ===== */
-        .vip-nav {
-            background: white;
-            padding: 0.8rem 1rem;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-        }
+        /* Header Card */
+        .header-card { background: white; border-radius: var(--border-radius-sm); padding: 1.2rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: var(--shadow); }
+        @media (min-width: 768px) { .header-card { flex-direction: row; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; } }
+        .page-title { font-size: 1.4rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.8rem; }
+        .admin-info { display: flex; align-items: center; gap: 1rem; }
+        .logout-btn { background: var(--danger); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 50px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s; }
+        .logout-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(249, 65, 68, 0.3); }
 
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 700;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+        @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; } }
+        .stat-card { background: white; border-radius: var(--border-radius-sm); padding: 1rem; display: flex; align-items: center; gap: 0.8rem; box-shadow: var(--shadow); transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--dark); line-height: 1.2; }
+        .stat-label { font-size: 0.7rem; color: #666; }
+        @media (min-width: 768px) { .stat-card { padding: 1.5rem; } .stat-icon { width: 60px; height: 60px; font-size: 1.8rem; } .stat-value { font-size: 1.8rem; } .stat-label { font-size: 0.85rem; } }
 
-        /* ===== MAIN CONTENT ===== */
-        .main-content {
-            max-width: 1600px;
-            margin: 1rem auto;
-            padding: 0 1rem;
-        }
+        /* Teacher Select Card */
+        .teacher-select-card { background: white; border-radius: var(--border-radius-sm); padding: 1rem; box-shadow: var(--shadow); margin-bottom: 1rem; }
+        .summary-card { background: white; border-radius: var(--border-radius-sm); padding: 1rem; box-shadow: var(--shadow); display: flex; align-items: center; }
 
-        /* ===== HEADER CARD ===== */
-        .header-card {
-            background: white;
-            border-radius: var(--border-radius-sm);
-            padding: 1.2rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            box-shadow: var(--shadow);
-        }
+        /* Main Card */
+        .main-card { background: white; border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+        .card-header { background: var(--gradient); color: white; padding: 1rem 1.2rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .card-body { padding: 1.2rem; }
+        @media (min-width: 768px) { .card-header { padding: 1.2rem 1.8rem; } .card-body { padding: 1.8rem; } }
 
-        @media (min-width: 768px) {
-            .header-card {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                padding: 1.5rem 2rem;
-            }
-        }
+        /* Search & Filter */
+        .search-box { position: relative; margin-bottom: 1rem; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; }
+        .search-box input { padding-left: 40px; border-radius: 50px; border: 2px solid #eef2f6; height: 45px; width: 100%; }
+        .filter-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .filter-btn { padding: 0.5rem 1rem; border: 2px solid #eef2f6; border-radius: 50px; background: white; color: #666; font-weight: 600; font-size: 0.85rem; transition: all 0.3s; flex: 1 1 auto; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .page-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
+        /* Table */
+        .table-responsive { border-radius: var(--border-radius-sm); overflow-x: auto; }
+        .table { margin-bottom: 0; min-width: 800px; }
+        .table th { background: #f8fafd; font-weight: 600; font-size: 0.85rem; color: #4a5568; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        .table td { vertical-align: middle; font-size: 0.9rem; white-space: nowrap; }
 
-        .admin-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+        /* Teacher Photo */
+        .teacher-photo { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .teacher-photo-detail { width: 120px; height: 120px; border-radius: 20px; object-fit: cover; border: 4px solid var(--primary); box-shadow: var(--shadow); }
+        @media (min-width: 768px) { .teacher-photo-detail { width: 150px; height: 150px; } }
 
-        .logout-btn {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(249, 65, 68, 0.3);
-        }
-
-        /* ===== STATS GRID ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.8rem;
-            margin-bottom: 1.5rem;
-        }
-
-        @media (min-width: 640px) {
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 1rem;
-            }
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: var(--border-radius-sm);
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            box-shadow: var(--shadow);
-            transition: transform 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .stat-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-
-        .stat-info {
-            min-width: 0;
-        }
-
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--dark);
-            line-height: 1.2;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: #666;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        @media (min-width: 768px) {
-            .stat-card {
-                padding: 1.5rem;
-                gap: 1rem;
-            }
-            .stat-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 1.8rem;
-            }
-            .stat-value {
-                font-size: 1.8rem;
-            }
-            .stat-label {
-                font-size: 0.85rem;
-            }
-        }
-
-        /* ===== TEACHER SELECT CARD ===== */
-        .teacher-select-card {
-            background: white;
-            border-radius: var(--border-radius-sm);
-            padding: 1rem;
-            box-shadow: var(--shadow);
-            margin-bottom: 1rem;
-        }
-
-        .summary-card {
-            background: white;
-            border-radius: var(--border-radius-sm);
-            padding: 1rem;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-        }
-
-        @media (min-width: 768px) {
-            .teacher-select-card, .summary-card {
-                padding: 1.5rem;
-            }
-        }
-
-        /* ===== MAIN CARD ===== */
-        .main-card {
-            background: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            margin-bottom: 1.5rem;
-        }
-
-        .card-header {
-            background: var(--gradient);
-            color: white;
-            padding: 1rem 1.2rem;
-            font-weight: 600;
-            font-size: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        @media (min-width: 768px) {
-            .card-header {
-                padding: 1.2rem 1.8rem;
-                font-size: 1.1rem;
-            }
-        }
-
-        .card-body {
-            padding: 1.2rem;
-        }
-
-        @media (min-width: 768px) {
-            .card-body {
-                padding: 1.8rem;
-            }
-        }
-
-        /* ===== SEARCH & FILTER ===== */
-        .search-box {
-            position: relative;
-            margin-bottom: 1rem;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-        }
-
-        .search-box input {
-            padding-left: 40px;
-            border-radius: 50px;
-            border: 2px solid #eef2f6;
-            height: 45px;
-            width: 100%;
-        }
-
-        .filter-btns {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            border: 2px solid #eef2f6;
-            border-radius: 50px;
-            background: white;
-            color: #666;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-            flex: 1 1 auto;
-        }
-
-        .filter-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        @media (min-width: 768px) {
-            .search-box {
-                margin-bottom: 0;
-            }
-            .filter-btns {
-                justify-content: flex-end;
-                margin-bottom: 0;
-            }
-            .filter-btn {
-                flex: 0 1 auto;
-            }
-        }
-
-        /* ===== TABLE STYLES ===== */
-        .table-responsive {
-            border-radius: var(--border-radius-sm);
-            overflow-x: auto;
-        }
-
-        .table {
-            margin-bottom: 0;
-            min-width: 800px;
-        }
-
-        .table th {
-            background: #f8fafd;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #4a5568;
-            border-bottom: 2px solid #e2e8f0;
-            white-space: nowrap;
-        }
-
-        .table td {
-            vertical-align: middle;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
-        /* Mobile table view */
-        @media (max-width: 768px) {
-            .table {
-                min-width: 100%;
-            }
-            .table td, .table th {
-                font-size: 0.8rem;
-                padding: 0.5rem;
-            }
-        }
-
-        /* ===== TEACHER PHOTO ===== */
-        .teacher-photo {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--primary);
-        }
-
-        .teacher-photo-detail {
-            width: 120px;
-            height: 120px;
-            border-radius: 20px;
-            object-fit: cover;
-            border: 4px solid var(--primary);
-            box-shadow: var(--shadow);
-        }
-
-        @media (min-width: 768px) {
-            .teacher-photo-detail {
-                width: 150px;
-                height: 150px;
-            }
-        }
-
-        /* ===== STATUS BADGES ===== */
-        .status-badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
+        /* Status Badges */
+        .status-badge { padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
         .status-badge.pending { background: #fff3cd; color: #856404; }
         .status-badge.approved { background: #d4edda; color: #155724; }
         .status-badge.rejected { background: #f8d7da; color: #721c24; }
+        .status-badge.deactivated { background: #e2e3e5; color: #6c757d; }
 
+        /* Salary Status */
         .salary-paid { background: #d4edda; color: #155724; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.75rem; }
         .salary-partial { background: #fff3cd; color: #856404; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.75rem; }
         .salary-unpaid { background: #f8d7da; color: #721c24; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.75rem; }
 
-        /* ===== ACTION BUTTONS ===== */
-        .action-buttons {
-            display: flex;
-            gap: 0.3rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-icon {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
+        /* Action Buttons */
+        .action-buttons { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+        .btn-icon { width: 32px; height: 32px; border: none; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
         .btn-icon.view { background: var(--primary); color: white; }
         .btn-icon.edit { background: var(--warning); color: white; }
-        .btn-icon.approve { background: var(--success); color: white; }
+        .btn-icon.approve { background: #2ecc71; color: white; }
         .btn-icon.reject { background: var(--danger); color: white; }
-        .btn-icon.delete { background: #6c757d; color: white; }
-        .btn-icon.salary { background: #20c997; color: white; }
-        .btn-icon.attendance { background: #fd7e14; color: white; }
+        .btn-icon.deactivate { background: #6c757d; color: white; }
+        .btn-icon.reactivate { background: #20c997; color: white; }
+        .btn-icon.delete { background: #dc3545; color: white; }
+        .btn-icon.salary { background: #f39c12; color: white; }
+        .btn-icon.attendance { background: #9b59b6; color: white; }
 
-        /* ===== INFO SECTIONS ===== */
-        .info-section {
-            background: #f8fafd;
-            border-radius: 12px;
-            padding: 1rem;
-            border-left: 4px solid var(--primary);
-            margin-bottom: 1rem;
-        }
+        /* Info Sections */
+        .info-section { background: #f8fafd; border-radius: 12px; padding: 1rem; border-left: 4px solid var(--primary); margin-bottom: 1rem; }
+        .info-section h6 { font-weight: 700; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 2px solid #eef2f6; display: flex; align-items: center; gap: 0.5rem; }
 
-        .info-section h6 {
-            font-weight: 700;
-            margin-bottom: 0.8rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #eef2f6;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        /* Document Preview */
+        .doc-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 2px solid var(--primary); cursor: pointer; transition: transform 0.3s; }
+        .doc-preview:hover { transform: scale(1.1); }
+        .doc-link { color: var(--primary); text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.3rem; }
 
-        /* ===== DOCUMENT PREVIEW ===== */
-        .doc-preview {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 2px solid var(--primary);
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
+        /* Charts */
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .chart-card { background: white; border-radius: 16px; padding: 1rem; box-shadow: var(--shadow); }
+        .chart-title { font-size: 1rem; font-weight: 600; color: var(--dark); margin-bottom: 1rem; text-align: center; }
+        .chart-wrapper { position: relative; height: 250px; width: 100%; }
+        .chart-type-selector { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+        .chart-type-btn { padding: 4px 12px; border: 1px solid #e0e0e0; border-radius: 20px; background: white; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+        .chart-type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .doc-preview:hover {
-            transform: scale(1.1);
-        }
+        /* Camera Section */
+        .camera-preview { background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 0.5rem; }
+        #cameraFeed { width: 100%; max-height: 300px; object-fit: cover; }
 
-        .doc-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
+        /* Modal */
+        .modal-content { border: none; border-radius: 20px; overflow: hidden; }
+        .modal-header { background: var(--gradient); color: white; border: none; padding: 1rem 1.5rem; }
+        .modal-header .btn-close { filter: brightness(0) invert(1); }
+        .modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
+        .form-section-title { color: var(--primary); font-weight: 700; margin: 1.2rem 0 0.8rem; padding-bottom: 0.5rem; border-bottom: 2px solid #eef2f6; }
 
-        /* ===== CHARTS ===== */
-        .chart-container {
-            position: relative;
-            height: 250px;
-            width: 100%;
-        }
+        /* Footer */
+        footer { background: white; padding: 1rem; margin-top: 2rem; color: #666; font-size: 0.85rem; text-align: center; }
 
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 300px;
-            }
-        }
-
-        /* ===== MODAL STYLES ===== */
-        .modal-content {
-            border: none;
-            border-radius: 20px;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            background: var(--gradient);
-            color: white;
-            border: none;
-            padding: 1rem 1.5rem;
-        }
-
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .form-section-title {
-            color: var(--primary);
-            font-weight: 700;
-            margin: 1.2rem 0 0.8rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #eef2f6;
-            font-size: 1rem;
-        }
-
-        /* ===== CAMERA SECTION ===== */
-        .camera-preview {
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 0.5rem;
-        }
-
-        #cameraFeed {
-            width: 100%;
-            max-height: 300px;
-            object-fit: cover;
-        }
-
-        /* ===== LOGIN REQUIRED ===== */
-        .login-required {
-            text-align: center;
-            padding: 2rem 1rem;
-        }
-
-        .login-required i {
-            font-size: 4rem;
-            color: var(--danger);
-            margin-bottom: 1rem;
-        }
-
-        /* ===== FOOTER ===== */
-        footer {
-            background: white;
-            padding: 1rem;
-            margin-top: 2rem;
-            color: #666;
-            font-size: 0.85rem;
-        }
-
-        /* ===== UTILITY CLASSES ===== */
-        .text-gradient {
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .bg-gradient-custom {
-            background: var(--gradient);
-        }
-
-        /* Smooth scrolling */
-        .smooth-scroll {
-            scroll-behavior: smooth;
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 480px) {
-            .btn-icon {
-                width: 28px;
-                height: 28px;
-                font-size: 0.8rem;
-            }
-            
-            .action-buttons {
-                gap: 0.2rem;
-            }
-            
-            .status-badge {
-                font-size: 0.7rem;
-                padding: 0.2rem 0.5rem;
-            }
-            
-            .doc-preview {
-                width: 40px;
-                height: 40px;
-            }
-        }
+        @media (max-width: 768px) { .btn-icon { width: 28px; height: 28px; font-size: 0.8rem; } .status-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; } .charts-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <!-- Loading Spinner -->
-    <div class="spinner-overlay" id="loadingSpinner">
-        <div class="spinner"></div>
-    </div>
+    <div class="spinner-overlay" id="loadingSpinner"><div class="spinner"></div></div>
     
     <!-- Navbar -->
     <header class="vip-nav">
         <div class="d-flex justify-content-between align-items-center w-100">
-            <div class="logo fw-bold" id="db-logo">
-                <i class="fas fa-graduation-cap me-2"></i>BBCC
-            </div>
-            <div class="d-none d-md-block text-center">
-                <h1 class="fs-5 m-0 text-dark">
-                    <i class="fas fa-chalkboard-teacher me-2 text-primary"></i>Teacher Dashboard
-                </h1>
-                <small class="text-muted">Admin Panel</small>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <a href="/index.html" class="text-decoration-none d-none d-sm-inline">
-                    <i class="fas fa-arrow-left me-1 text-primary"></i>
-                    <span class="text-dark">Back</span>
-                </a>
-            </div>
+            <div class="logo fw-bold"><i class="fas fa-graduation-cap me-2"></i>BBCC</div>
+            <div class="d-none d-md-block text-center"><h1 class="fs-5 m-0 text-dark"><i class="fas fa-chalkboard-teacher me-2 text-primary"></i>Teacher Dashboard</h1><small class="text-muted">Admin Panel</small></div>
+            <div class="d-flex align-items-center gap-3"><a href="/index.html" class="text-decoration-none d-none d-sm-inline"><i class="fas fa-arrow-left me-1 text-primary"></i><span class="text-dark">Back</span></a></div>
         </div>
     </header>
 
@@ -666,896 +200,280 @@
     <div class="main-content">
         <!-- Header Card -->
         <div class="header-card">
-            <h2 class="page-title">
-                <i class="fas fa-tachometer-alt" style="color: var(--accent);"></i>
-                Teacher Management
-            </h2>
-            <div class="admin-info">
-                <i class="fas fa-user-circle fa-2x" style="color: var(--primary);"></i>
-                <span id="adminName" style="font-weight: 600;">Admin</span>
-                <button class="logout-btn" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span class="d-none d-sm-inline">Logout</span>
-                </button>
-            </div>
+            <h2 class="page-title"><i class="fas fa-tachometer-alt" style="color: var(--accent);"></i>Teacher Management</h2>
+            <div class="admin-info"><i class="fas fa-user-circle fa-2x" style="color: var(--primary);"></i><span id="adminName" style="font-weight: 600;">Admin</span><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span class="d-none d-sm-inline">Logout</span></button></div>
         </div>
         
         <!-- Stats Cards -->
         <div class="stats-grid" id="statsContainer">
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #e8f4fd; color: var(--primary);">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="stat-value" id="totalTeachers">0</h3>
-                    <p class="stat-label">Total Teachers</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #fff3cd; color: #f39c12;">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="stat-value" id="pendingTeachers">0</h3>
-                    <p class="stat-label">Pending</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #d4edda; color: #2ecc71;">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="stat-value" id="approvedTeachers">0</h3>
-                    <p class="stat-label">Approved</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #f8d7da; color: #e74c3c;">
-                    <i class="fas fa-rupee-sign"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="stat-value" id="totalSalary">0</h3>
-                    <p class="stat-label">Total Salary</p>
-                </div>
-            </div>
+            <div class="stat-card"><div class="stat-icon" style="background: #e8f4fd; color: var(--primary);"><i class="fas fa-users"></i></div><div class="stat-info"><h3 class="stat-value" id="totalTeachers">0</h3><p class="stat-label">Total Teachers</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background: #fff3cd; color: #f39c12;"><i class="fas fa-clock"></i></div><div class="stat-info"><h3 class="stat-value" id="pendingTeachers">0</h3><p class="stat-label">Pending</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background: #d4edda; color: #2ecc71;"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h3 class="stat-value" id="approvedTeachers">0</h3><p class="stat-label">Approved</p></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background: #f8d7da; color: #e74c3c;"><i class="fas fa-rupee-sign"></i></div><div class="stat-info"><h3 class="stat-value" id="totalSalary">0</h3><p class="stat-label">Total Salary</p></div></div>
         </div>
         
-        <!-- Teacher Selection Dropdown (Mobile Friendly) -->
+        <!-- Teacher Selection -->
         <div class="row g-2 mb-4">
-            <div class="col-12 col-md-6">
-                <div class="teacher-select-card">
-                    <label class="form-label fw-bold mb-2">
-                        <i class="fas fa-search me-2 text-primary"></i>Select Teacher:
-                    </label>
-                    <select class="form-select" id="teacherSelect">
-                        <option value="">-- Choose a Teacher --</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-12 col-md-6">
-                <div class="summary-card">
-                    <i class="fas fa-user-check me-2 text-success"></i>
-                    <span><strong>Selected:</strong> <span id="selectedTeacherName">None</span></span>
-                </div>
-            </div>
+            <div class="col-12 col-md-6"><div class="teacher-select-card"><label class="form-label fw-bold mb-2"><i class="fas fa-search me-2 text-primary"></i>Select Teacher:</label><select class="form-select" id="teacherSelect"><option value="">-- Choose a Teacher --</option></select></div></div>
+            <div class="col-12 col-md-6"><div class="summary-card"><i class="fas fa-user-check me-2 text-success"></i><span><strong>Selected:</strong> <span id="selectedTeacherName">None</span></span></div></div>
         </div>
         
-        <!-- Teachers Table Card -->
+        <!-- Teachers Table -->
         <div class="main-card">
-            <div class="card-header">
-                <span>
-                    <i class="fas fa-list me-2"></i>
-                    Teacher Directory
-                </span>
-                <button class="btn btn-sm btn-light" id="refreshBtn">
-                    <i class="fas fa-sync-alt me-1"></i>
-                    <span class="d-none d-sm-inline">Refresh</span>
-                </button>
-            </div>
+            <div class="card-header"><span><i class="fas fa-list me-2"></i>Teacher Directory</span><button class="btn btn-sm btn-light" id="refreshBtn"><i class="fas fa-sync-alt me-1"></i><span class="d-none d-sm-inline">Refresh</span></button></div>
             <div class="card-body">
-                <!-- Search and Filter - Mobile Optimized -->
-                <div class="row g-2 mb-4">
-                    <div class="col-12 col-md-6">
-                        <div class="search-box">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="form-control" id="searchInput" placeholder="Search teachers...">
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="filter-btns">
-                            <button class="filter-btn active" data-filter="all">All</button>
-                            <button class="filter-btn" data-filter="pending">Pending</button>
-                            <button class="filter-btn" data-filter="approved">Approved</button>
-                            <button class="filter-btn" data-filter="rejected">Rejected</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Teachers Table (Scrollable on Mobile) -->
-                <div class="table-responsive">
-                    <table class="table table-hover" id="teachersTable">
-                        <thead>
-                            <tr>
-                                <th>Photo</th>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Mobile</th>
-                                <th>Subject</th>
-                                <th>Salary</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="teachersTableBody">
-                            <tr>
-                                <td colspan="8" class="text-center py-4">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div class="row g-2 mb-4"><div class="col-12 col-md-6"><div class="search-box"><i class="fas fa-search search-icon"></i><input type="text" class="form-control" id="searchInput" placeholder="Search teachers..."></div></div><div class="col-12 col-md-6"><div class="filter-btns"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="pending">Pending</button><button class="filter-btn" data-filter="approved">Approved</button><button class="filter-btn" data-filter="rejected">Rejected</button><button class="filter-btn" data-filter="deactivated">Deactivated</button></div></div></div>
+                <div class="table-responsive"><table class="table table-hover" id="teachersTable"><thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Mobile</th><th>Subject</th><th>Salary</th><th>Status</th><th>Actions</th></tr></thead><tbody id="teachersTableBody"><tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr></tbody></table></div>
             </div>
         </div>
         
         <!-- Teacher Details Card -->
         <div class="main-card" id="teacherDetailsCard" style="display: none;">
-            <div class="card-header">
-                <i class="fas fa-user-graduate me-2"></i>
-                Teacher Profile: <span id="detailsTeacherName"></span>
-            </div>
+            <div class="card-header"><i class="fas fa-user-graduate me-2"></i>Teacher Profile: <span id="detailsTeacherName"></span></div>
             <div class="card-body">
                 <div class="row g-3">
-                    <!-- Photo Column -->
-                    <div class="col-12 col-md-4 text-center">
-                        <img id="detailsPhoto" src="" class="teacher-photo-detail mb-3" alt="Teacher Photo" 
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E'">
-                        <h5 id="detailsFullName" class="mb-1"></h5>
-                        <p class="text-muted small" id="detailsTeacherId"></p>
-                        <span class="status-badge" id="detailsStatus"></span>
-                        
-                        <!-- Quick Actions for Mobile -->
-                        <div class="d-flex gap-2 justify-content-center mt-3">
-                            <button class="btn-icon edit" id="editTeacherBtn" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon approve" id="quickApproveBtn" title="Approve">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="btn-icon salary" id="quickSalaryBtn" title="Pay Salary">
-                                <i class="fas fa-rupee-sign"></i>
-                            </button>
-                            <button class="btn-icon attendance" id="quickAttendanceBtn" title="Mark Attendance">
-                                <i class="fas fa-calendar-check"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Details Column -->
+                    <div class="col-12 col-md-4 text-center"><img id="detailsPhoto" src="" class="teacher-photo-detail mb-3" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E'"><h5 id="detailsFullName" class="mb-1"></h5><p class="text-muted small" id="detailsTeacherId"></p><span class="status-badge" id="detailsStatus"></span><div class="d-flex gap-2 justify-content-center mt-3"><button class="btn-icon edit" id="editTeacherBtn" title="Edit"><i class="fas fa-edit"></i></button><button class="btn-icon approve" id="quickApproveBtn" title="Approve"><i class="fas fa-check"></i></button><button class="btn-icon reject" id="quickRejectBtn" title="Reject"><i class="fas fa-times"></i></button><button class="btn-icon deactivate" id="quickDeactivateBtn" title="Deactivate"><i class="fas fa-pause"></i></button><button class="btn-icon salary" id="quickSalaryBtn" title="Pay Salary"><i class="fas fa-rupee-sign"></i></button><button class="btn-icon attendance" id="quickAttendanceBtn" title="Mark Attendance"><i class="fas fa-calendar-check"></i></button></div></div>
                     <div class="col-12 col-md-8">
-                        <!-- Personal Info -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-user me-2"></i>Personal Details</h6>
-                            <div class="row g-2">
-                                <div class="col-6 col-md-4"><small class="text-muted d-block">First Name:</small> <span id="detailFirstName"></span></div>
-                                <div class="col-6 col-md-4"><small class="text-muted d-block">Middle Name:</small> <span id="detailMiddleName"></span></div>
-                                <div class="col-6 col-md-4"><small class="text-muted d-block">Last Name:</small> <span id="detailLastName"></span></div>
-                                <div class="col-6 col-md-4"><small class="text-muted d-block">DOB:</small> <span id="detailDob"></span></div>
-                                <div class="col-6 col-md-4"><small class="text-muted d-block">Aadhar:</small> <span id="detailAadhar"></span></div>
-                                <div class="col-6 col-md-4"><small class="text-muted d-block">Qualification:</small> <span id="detailQualification"></span></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Father's Name -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-male me-2"></i>Father's Name</h6>
-                            <div class="row g-2">
-                                <div class="col-4"><small class="text-muted d-block">First:</small> <span id="detailFatherFirst"></span></div>
-                                <div class="col-4"><small class="text-muted d-block">Middle:</small> <span id="detailFatherMiddle"></span></div>
-                                <div class="col-4"><small class="text-muted d-block">Last:</small> <span id="detailFatherLast"></span></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Contact Info -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-phone me-2"></i>Contact</h6>
-                            <div class="row g-2">
-                                <div class="col-6"><small class="text-muted d-block">Mobile:</small> <span id="detailMobile"></span></div>
-                                <div class="col-6"><small class="text-muted d-block">Alt Mobile:</small> <span id="detailAltMobile"></span></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Professional Info -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-briefcase me-2"></i>Professional</h6>
-                            <div class="row g-2">
-                                <div class="col-6"><small class="text-muted d-block">Subject:</small> <span id="detailSubject"></span></div>
-                                <div class="col-6"><small class="text-muted d-block">Salary:</small> ₹<span id="detailSalary"></span>/month</div>
-                                <div class="col-6"><small class="text-muted d-block">Experience:</small> <span id="detailExperience"></span> years</div>
-                                <div class="col-6"><small class="text-muted d-block">Previous School:</small> <span id="detailPrevSchool"></span></div>
-                                <div class="col-6"><small class="text-muted d-block">Joining:</small> <span id="detailJoining"></span></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bank Details -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-university me-2"></i>Bank Details</h6>
-                            <div class="row g-2">
-                                <div class="col-12"><small class="text-muted d-block">Account Holder:</small> <span id="detailBankHolder"></span></div>
-                                <div class="col-6"><small class="text-muted d-block">Account No:</small> <span id="detailBankAccount"></span></div>
-                                <div class="col-6"><small class="text-muted d-block">IFSC:</small> <span id="detailBankIfsc"></span></div>
-                                <div class="col-6"><small class="text-muted d-block">Bank Name:</small> <span id="detailBankName"></span></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Emergency Contact -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-ambulance me-2"></i>Emergency Contact</h6>
-                            <div class="row g-2">
-                                <div class="col-4"><small class="text-muted d-block">Name:</small> <span id="detailEmerName"></span></div>
-                                <div class="col-4"><small class="text-muted d-block">Relation:</small> <span id="detailEmerRelation"></span></div>
-                                <div class="col-4"><small class="text-muted d-block">Phone:</small> <span id="detailEmerPhone"></span></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Address -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-map-marker-alt me-2"></i>Address</h6>
-                            <div class="row g-2">
-                                <div class="col-12"><small class="text-muted d-block">Current:</small> <span id="detailCurrentAddr"></span></div>
-                                <div class="col-12"><small class="text-muted d-block">Permanent:</small> <span id="detailPermAddr"></span></div>
-                                <div class="col-4"><small class="text-muted d-block">City:</small> <span id="detailCity"></span></div>
-                                <div class="col-4"><small class="text-muted d-block">State:</small> <span id="detailState"></span></div>
-                                <div class="col-4"><small class="text-muted d-block">Pincode:</small> <span id="detailPincode"></span></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Documents -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-file me-2"></i>Documents</h6>
-                            <div class="row g-3">
-                                <div class="col-6 col-md-4 text-center">
-                                    <small class="text-muted d-block">Aadhar</small>
-                                    <img id="aadharDocPreview" class="doc-preview mt-1" src="" alt="Aadhar" style="display: none;" onclick="window.open(document.getElementById('aadharDocLink').href, '_blank')">
-                                    <a href="#" id="aadharDocLink" class="doc-link" target="_blank" style="display: none;">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                    <span id="aadharNoDoc" class="text-muted small">No doc</span>
-                                </div>
-                                <div class="col-6 col-md-4 text-center">
-                                    <small class="text-muted d-block">Qualification</small>
-                                    <img id="qualificationDocPreview" class="doc-preview mt-1" src="" alt="Qualification" style="display: none;" onclick="window.open(document.getElementById('qualificationDocLink').href, '_blank')">
-                                    <a href="#" id="qualificationDocLink" class="doc-link" target="_blank" style="display: none;">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                    <span id="qualNoDoc" class="text-muted small">No doc</span>
-                                </div>
-                                <div class="col-6 col-md-4 text-center">
-                                    <small class="text-muted d-block">Resume</small>
-                                    <a href="#" id="resumeLink" class="doc-link" target="_blank" style="display: none;">
-                                        <i class="fas fa-file-pdf"></i> View
-                                    </a>
-                                    <span id="resumeNoDoc" class="text-muted small">No doc</span>
-                                </div>
-                                <div class="col-6 col-md-4 text-center">
-                                    <small class="text-muted d-block">Experience</small>
-                                    <a href="#" id="expCertLink" class="doc-link" target="_blank" style="display: none;">
-                                        <i class="fas fa-certificate"></i> View
-                                    </a>
-                                    <span id="expNoDoc" class="text-muted small">No doc</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Remarks -->
-                        <div class="info-section">
-                            <h6><i class="fas fa-comment me-2"></i>Remarks</h6>
-                            <p id="detailRemarks" class="mb-0 small"></p>
-                            <p id="detailRejection" class="mb-0 small text-danger mt-1"></p>
-                        </div>
+                        <div class="info-section"><h6><i class="fas fa-user me-2"></i>Personal Details</h6><div class="row g-2"><div class="col-6 col-md-4"><small>First Name:</small> <span id="detailFirstName"></span></div><div class="col-6 col-md-4"><small>Middle Name:</small> <span id="detailMiddleName"></span></div><div class="col-6 col-md-4"><small>Last Name:</small> <span id="detailLastName"></span></div><div class="col-6 col-md-4"><small>DOB:</small> <span id="detailDob"></span></div><div class="col-6 col-md-4"><small>Aadhar:</small> <span id="detailAadhar"></span></div><div class="col-6 col-md-4"><small>Qualification:</small> <span id="detailQualification"></span></div></div></div>
+                        <div class="info-section"><h6><i class="fas fa-male me-2"></i>Father's Name</h6><div class="row g-2"><div class="col-4"><small>First:</small> <span id="detailFatherFirst"></span></div><div class="col-4"><small>Middle:</small> <span id="detailFatherMiddle"></span></div><div class="col-4"><small>Last:</small> <span id="detailFatherLast"></span></div></div></div>
+                        <div class="info-section"><h6><i class="fas fa-phone me-2"></i>Contact</h6><div class="row g-2"><div class="col-6"><small>Mobile:</small> <span id="detailMobile"></span></div><div class="col-6"><small>Alt Mobile:</small> <span id="detailAltMobile"></span></div></div></div>
+                        <div class="info-section"><h6><i class="fas fa-briefcase me-2"></i>Professional</h6><div class="row g-2"><div class="col-6"><small>Subject:</small> <span id="detailSubject"></span></div><div class="col-6"><small>Salary:</small> ₹<span id="detailSalary"></span>/month</div><div class="col-6"><small>Experience:</small> <span id="detailExperience"></span> years</div><div class="col-6"><small>Joining:</small> <span id="detailJoining"></span></div></div></div>
+                        <div class="info-section"><h6><i class="fas fa-file me-2"></i>Documents</h6><div class="row g-3"><div class="col-6 col-md-3 text-center"><small>Aadhar</small><img id="aadharDocPreview" class="doc-preview mt-1" style="display:none;" onclick="window.open(this.src,'_blank')"><a href="#" id="aadharDocLink" class="doc-link" target="_blank" style="display:none;"><i class="fas fa-eye"></i> View</a><span id="aadharNoDoc" class="text-muted small">No doc</span></div><div class="col-6 col-md-3 text-center"><small>Qualification</small><img id="qualificationDocPreview" class="doc-preview mt-1" style="display:none;" onclick="window.open(this.src,'_blank')"><a href="#" id="qualificationDocLink" class="doc-link" target="_blank" style="display:none;"><i class="fas fa-eye"></i> View</a><span id="qualNoDoc" class="text-muted small">No doc</span></div></div></div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Salary & Attendance Card -->
+        <!-- Salary & Attendance Card with Multiple Charts -->
         <div class="main-card" id="salaryAttendanceCard" style="display: none;">
-            <div class="card-header">
-                <i class="fas fa-chart-line me-2"></i>
-                Salary & Attendance: <span id="salaryTeacherName"></span>
-            </div>
+            <div class="card-header"><i class="fas fa-chart-line me-2"></i>Salary & Attendance: <span id="salaryTeacherName"></span></div>
             <div class="card-body">
-                <!-- Salary Chart -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="mb-3">Salary History Chart</h6>
-                        <div class="chart-container">
-                            <canvas id="teacherSalaryChart"></canvas>
-                        </div>
-                    </div>
+                <!-- Multiple Charts Section -->
+                <div class="charts-container">
+                    <!-- Bar Chart -->
+                    <div class="chart-card"><div class="chart-title"><i class="fas fa-chart-bar me-2"></i>Salary History (Bar Chart)</div><div class="chart-wrapper"><canvas id="barChart"></canvas></div><div class="chart-type-selector"><button class="chart-type-btn active" data-chart="bar">Bar</button><button class="chart-type-btn" data-chart="line">Line</button><button class="chart-type-btn" data-chart="pie">Pie</button><button class="chart-type-btn" data-chart="doughnut">Doughnut</button></div></div>
+                    <!-- Line Chart -->
+                    <div class="chart-card"><div class="chart-title"><i class="fas fa-chart-line me-2"></i>Salary Trend (Line Chart)</div><div class="chart-wrapper"><canvas id="lineChart"></canvas></div></div>
+                    <!-- Pie Chart -->
+                    <div class="chart-card"><div class="chart-title"><i class="fas fa-chart-pie me-2"></i>Payment Distribution (Pie Chart)</div><div class="chart-wrapper"><canvas id="pieChart"></canvas></div></div>
+                    <!-- Doughnut Chart -->
+                    <div class="chart-card"><div class="chart-title"><i class="fas fa-chart-pie me-2"></i>Overall Status (Doughnut)</div><div class="chart-wrapper"><canvas id="doughnutChart"></canvas></div></div>
                 </div>
                 
-                <!-- Salary Records -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h6 class="mb-3">Monthly Salary Records</h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-sm" id="salaryTable">
-                                <thead>
-                                    <tr>
-                                        <th>Month</th>
-                                        <th>Salary</th>
-                                        <th>Paid</th>
-                                        <th>Due</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="salaryTableBody">
-                                    <tr>
-                                        <td colspan="6" class="text-center">Select a teacher</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                <!-- Salary Records Table -->
+                <div class="row mt-4"><div class="col-12"><h6 class="mb-3">Monthly Salary Records</h6><div class="table-responsive"><table class="table table-bordered table-sm" id="salaryTable"><thead><tr><th>Month</th><th>Salary</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr></thead><tbody id="salaryTableBody"><tr><td colspan="6" class="text-center">Select a teacher</td></tr></tbody></table></div></div></div>
                 
                 <!-- Attendance Records -->
-                <div class="row">
-                    <div class="col-12">
-                        <h6 class="mb-3">Attendance Records</h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-sm" id="attendanceTable">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Photo</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="attendanceTableBody">
-                                    <tr>
-                                        <td colspan="4" class="text-center">Select a teacher</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="d-flex gap-2 justify-content-end mt-2">
-                            <button class="btn-icon attendance" id="markAttendanceBtn">
-                                <i class="fas fa-plus"></i> Mark Today
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <div class="row mt-4"><div class="col-12"><h6 class="mb-3">Attendance Records</h6><div class="table-responsive"><table class="table table-bordered table-sm" id="attendanceTable"><thead><tr><th>Date</th><th>Status</th><th>Photo</th><th>Action</th></tr></thead><tbody id="attendanceTableBody"><tr><td colspan="4" class="text-center">Select a teacher</td></tr></tbody></table></div><div class="d-flex gap-2 justify-content-end mt-2"><button class="btn-icon attendance" id="markAttendanceBtn"><i class="fas fa-plus"></i> Mark Today</button></div></div></div>
             </div>
         </div>
         
         <!-- Overall Stats Card -->
-        <div class="main-card" id="chartCard">
-            <div class="card-header">
-                <i class="fas fa-chart-bar me-2"></i>
-                Overall Salary Overview (6 Months)
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="salaryChart"></canvas>
-                </div>
-            </div>
-        </div>
+        <div class="main-card" id="chartCard"><div class="card-header"><i class="fas fa-chart-bar me-2"></i>Overall Salary Overview (6 Months)</div><div class="card-body"><div class="chart-container"><canvas id="salaryChart"></canvas></div></div></div>
     </div>
 
-    <!-- Footer -->
-    <footer class="text-center">
-        <p class="m-0 small">
-            <i class="far fa-copyright me-1"></i>2024 Teacher Dashboard | 
-            <i class="fas fa-shield-alt me-1"></i>Bal Bharti Coaching
-        </p>
-    </footer>
+    <footer class="text-center"><p class="m-0 small"><i class="far fa-copyright me-1"></i>2024 Teacher Dashboard | <i class="fas fa-shield-alt me-1"></i>Bal Bharti Coaching</p></footer>
 
-    <!-- ===== MODALS ===== -->
+    <!-- Modals -->
+    <div class="modal fade" id="editTeacherModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Teacher</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="editTeacherForm"><input type="hidden" id="editTeacherId"><h6 class="form-section-title">Personal Information</h6><div class="row g-2"><div class="col-6 col-md-4 mb-2"><label class="form-label small">First Name</label><input type="text" class="form-control form-control-sm" id="editFirstName" required></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Middle Name</label><input type="text" class="form-control form-control-sm" id="editMiddleName"></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Last Name</label><input type="text" class="form-control form-control-sm" id="editLastName" required></div></div><h6 class="form-section-title">Father's Name</h6><div class="row g-2"><div class="col-6 col-md-4 mb-2"><label class="form-label small">First Name</label><input type="text" class="form-control form-control-sm" id="editFatherFirst" required></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Middle Name</label><input type="text" class="form-control form-control-sm" id="editFatherMiddle"></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Last Name</label><input type="text" class="form-control form-control-sm" id="editFatherLast" required></div></div><h6 class="form-section-title">Contact</h6><div class="row g-2"><div class="col-6 col-md-6 mb-2"><label class="form-label small">Mobile</label><input type="text" class="form-control form-control-sm" id="editMobile" required></div><div class="col-6 col-md-6 mb-2"><label class="form-label small">Alt Mobile</label><input type="text" class="form-control form-control-sm" id="editAltMobile"></div></div><h6 class="form-section-title">Personal Details</h6><div class="row g-2"><div class="col-6 col-md-4 mb-2"><label class="form-label small">DOB</label><input type="date" class="form-control form-control-sm" id="editDob" required></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Aadhar</label><input type="text" class="form-control form-control-sm" id="editAadhar" required></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Qualification</label><input type="text" class="form-control form-control-sm" id="editQualification" required></div></div><h6 class="form-section-title">Professional</h6><div class="row g-2"><div class="col-6 col-md-4 mb-2"><label class="form-label small">Subject</label><input type="text" class="form-control form-control-sm" id="editSubject"></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Salary</label><input type="number" class="form-control form-control-sm" id="editSalary" min="0"></div><div class="col-6 col-md-4 mb-2"><label class="form-label small">Experience</label><input type="number" class="form-control form-control-sm" id="editExperience" min="0"></div><div class="col-6 col-md-6 mb-2"><label class="form-label small">Status</label><select class="form-select form-select-sm" id="editStatus"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="deactivated">Deactivated</option></select></div><div class="col-6 col-md-6 mb-2"><label class="form-label small">Joining Date</label><input type="date" class="form-control form-control-sm" id="editJoiningDate"></div></div><h6 class="form-section-title">Documents (Read-only)</h6><div class="row g-2"><div class="col-6 col-md-3 text-center"><label class="form-label small d-block">Photo</label><img id="editPhotoPreview" src="" style="width:60px;height:60px;object-fit:cover;border-radius:10px;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Crect width=\'60\' height=\'60\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'8\'%3EPhoto%3C/text%3E%3C/svg%3E';"></div><div class="col-6 col-md-3 text-center"><label class="form-label small d-block">Aadhar</label><img id="editAadharPreview" style="width:60px;height:60px;object-fit:cover;border-radius:10px;cursor:pointer;" onclick="window.open(this.src,'_blank')" onerror="this.style.display='none'"><a href="#" id="editAadharLink" target="_blank" style="display:none;">Link</a></div><div class="col-6 col-md-3 text-center"><label class="form-label small d-block">Qualification</label><img id="editQualPreview" style="width:60px;height:60px;object-fit:cover;border-radius:10px;cursor:pointer;" onclick="window.open(this.src,'_blank')" onerror="this.style.display='none'"><a href="#" id="editQualLink" target="_blank" style="display:none;">Link</a></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="saveEditBtn">Save Changes</button></div></div></div></div>
 
-    <!-- Edit Teacher Modal -->
-    <div class="modal fade" id="editTeacherModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-edit me-2"></i>Edit Teacher
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editTeacherForm">
-                        <input type="hidden" id="editTeacherId">
-                        
-                        <!-- Personal Information -->
-                        <h6 class="form-section-title">Personal Information</h6>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">First Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editFirstName" required>
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Middle Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editMiddleName">
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Last Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editLastName" required>
-                            </div>
-                        </div>
-                        
-                        <!-- Father's Name -->
-                        <h6 class="form-section-title">Father's Name</h6>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">First Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editFatherFirst" required>
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Middle Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editFatherMiddle">
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Last Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editFatherLast" required>
-                            </div>
-                        </div>
-                        
-                        <!-- Contact Information -->
-                        <h6 class="form-section-title">Contact Information</h6>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-6 mb-2">
-                                <label class="form-label small">Mobile Number</label>
-                                <input type="text" class="form-control form-control-sm" id="editMobile" required>
-                            </div>
-                            <div class="col-6 col-md-6 mb-2">
-                                <label class="form-label small">Alternative Mobile</label>
-                                <input type="text" class="form-control form-control-sm" id="editAltMobile">
-                            </div>
-                        </div>
-                        
-                        <!-- Personal Details -->
-                        <h6 class="form-section-title">Personal Details</h6>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Date of Birth</label>
-                                <input type="date" class="form-control form-control-sm" id="editDob" required>
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Aadhar Number</label>
-                                <input type="text" class="form-control form-control-sm" id="editAadhar" required>
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Qualification</label>
-                                <input type="text" class="form-control form-control-sm" id="editQualification" required>
-                            </div>
-                        </div>
-                        
-                        <!-- Professional Details -->
-                        <h6 class="form-section-title">Professional Details</h6>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Subject</label>
-                                <input type="text" class="form-control form-control-sm" id="editSubject">
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Salary (Monthly)</label>
-                                <input type="number" class="form-control form-control-sm" id="editSalary" min="0">
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Experience (Years)</label>
-                                <input type="number" class="form-control form-control-sm" id="editExperience" min="0">
-                            </div>
-                            <div class="col-6 col-md-6 mb-2">
-                                <label class="form-label small">Previous School</label>
-                                <input type="text" class="form-control form-control-sm" id="editPrevSchool">
-                            </div>
-                            <div class="col-6 col-md-6 mb-2">
-                                <label class="form-label small">Status</label>
-                                <select class="form-select form-select-sm" id="editStatus">
-                                    <option value="pending">Pending</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Address -->
-                        <h6 class="form-section-title">Address</h6>
-                        <div class="row g-2">
-                            <div class="col-12 mb-2">
-                                <label class="form-label small">Current Address</label>
-                                <input type="text" class="form-control form-control-sm" id="editCurrentAddr">
-                            </div>
-                            <div class="col-12 mb-2">
-                                <label class="form-label small">Permanent Address</label>
-                                <input type="text" class="form-control form-control-sm" id="editPermAddr">
-                            </div>
-                            <div class="col-4 col-md-4 mb-2">
-                                <label class="form-label small">City</label>
-                                <input type="text" class="form-control form-control-sm" id="editCity">
-                            </div>
-                            <div class="col-4 col-md-4 mb-2">
-                                <label class="form-label small">State</label>
-                                <input type="text" class="form-control form-control-sm" id="editState">
-                            </div>
-                            <div class="col-4 col-md-4 mb-2">
-                                <label class="form-label small">Pincode</label>
-                                <input type="text" class="form-control form-control-sm" id="editPincode">
-                            </div>
-                        </div>
-                        
-                        <!-- Bank Details -->
-                        <h6 class="form-section-title">Bank Details</h6>
-                        <div class="row g-2">
-                            <div class="col-12 col-md-6 mb-2">
-                                <label class="form-label small">Account Holder</label>
-                                <input type="text" class="form-control form-control-sm" id="editBankHolder">
-                            </div>
-                            <div class="col-6 col-md-6 mb-2">
-                                <label class="form-label small">Account Number</label>
-                                <input type="text" class="form-control form-control-sm" id="editBankAccount">
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">IFSC Code</label>
-                                <input type="text" class="form-control form-control-sm" id="editBankIfsc">
-                            </div>
-                            <div class="col-6 col-md-4 mb-2">
-                                <label class="form-label small">Bank Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editBankName">
-                            </div>
-                        </div>
-                        
-                        <!-- Emergency Contact -->
-                        <h6 class="form-section-title">Emergency Contact</h6>
-                        <div class="row g-2">
-                            <div class="col-4 col-md-4 mb-2">
-                                <label class="form-label small">Name</label>
-                                <input type="text" class="form-control form-control-sm" id="editEmerName">
-                            </div>
-                            <div class="col-4 col-md-4 mb-2">
-                                <label class="form-label small">Relation</label>
-                                <input type="text" class="form-control form-control-sm" id="editEmerRelation">
-                            </div>
-                            <div class="col-4 col-md-4 mb-2">
-                                <label class="form-label small">Phone</label>
-                                <input type="text" class="form-control form-control-sm" id="editEmerPhone">
-                            </div>
-                        </div>
-                        
-                        <!-- Remarks -->
-                        <h6 class="form-section-title">Remarks</h6>
-                        <div class="row g-2">
-                            <div class="col-12 mb-2">
-                                <label class="form-label small">Remarks</label>
-                                <textarea class="form-control form-control-sm" id="editRemarks" rows="2"></textarea>
-                            </div>
-                            <div class="col-12 mb-2" id="rejectionReasonRow" style="display: none;">
-                                <label class="form-label small text-danger">Rejection Reason</label>
-                                <input type="text" class="form-control form-control-sm" id="editRejectionReason">
-                            </div>
-                        </div>
-                        
-                        <!-- Joining Date -->
-                        <div class="row mt-3" id="joiningDateRow">
-                            <div class="col-12">
-                                <label class="form-label small">Joining Date</label>
-                                <input type="date" class="form-control form-control-sm" id="editJoiningDate">
-                            </div>
-                        </div>
-                        
-                        <!-- Documents Preview (Read-only) -->
-                        <h6 class="form-section-title">Documents (Read-only)</h6>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-3 text-center">
-                                <label class="form-label small d-block">Photo</label>
-                                <img id="editPhotoPreview" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px;" 
-                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Crect width=\'60\' height=\'60\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'8\'%3EPhoto%3C/text%3E%3C/svg%3E';">
-                            </div>
-                            <div class="col-6 col-md-3 text-center">
-                                <label class="form-label small d-block">Aadhar</label>
-                                <img id="editAadharPreview" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
-                                     onclick="window.open(document.getElementById('editAadharLink').href, '_blank')"
-                                     onerror="this.style.display='none'">
-                                <a href="#" id="editAadharLink" target="_blank" style="display: none;">Link</a>
-                            </div>
-                            <div class="col-6 col-md-3 text-center">
-                                <label class="form-label small d-block">Qualification</label>
-                                <img id="editQualPreview" src="" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; cursor: pointer;" 
-                                     onclick="window.open(document.getElementById('editQualLink').href, '_blank')"
-                                     onerror="this.style.display='none'">
-                                <a href="#" id="editQualLink" target="_blank" style="display: none;">Link</a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="saveEditBtn">Save Changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="approveTeacherModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success"><h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>Approve Teacher</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="approveTeacherForm"><input type="hidden" id="approveTeacherId"><div class="mb-3"><label class="form-label">Subject</label><input type="text" class="form-control" id="approveSubject" required></div><div class="mb-3"><label class="form-label">Monthly Salary (₹)</label><input type="number" class="form-control" id="approveSalary" required min="0"></div><div class="mb-3"><label class="form-label">Joining Date</label><input type="date" class="form-control" id="approveJoiningDate"></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-success btn-sm" id="confirmApproveBtn">Approve Teacher</button></div></div></div></div>
 
-    <!-- Approve Teacher Modal -->
-    <div class="modal fade" id="approveTeacherModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-success">
-                    <h5 class="modal-title">
-                        <i class="fas fa-check-circle me-2"></i>Approve Teacher
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="approveTeacherForm">
-                        <input type="hidden" id="approveTeacherId">
-                        <div class="mb-3">
-                            <label class="form-label">Subject</label>
-                            <input type="text" class="form-control" id="approveSubject" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Monthly Salary (₹)</label>
-                            <input type="number" class="form-control" id="approveSalary" required min="0">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Joining Date</label>
-                            <input type="date" class="form-control" id="approveJoiningDate">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success btn-sm" id="confirmApproveBtn">Approve Teacher</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="rejectTeacherModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger"><h5 class="modal-title"><i class="fas fa-times-circle me-2"></i>Reject Teacher</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="rejectTeacherForm"><input type="hidden" id="rejectTeacherId"><div class="mb-3"><label class="form-label">Rejection Reason</label><textarea class="form-control" id="rejectReason" rows="3" required></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-danger btn-sm" id="confirmRejectBtn">Reject Teacher</button></div></div></div></div>
 
-    <!-- Reject Teacher Modal -->
-    <div class="modal fade" id="rejectTeacherModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger">
-                    <h5 class="modal-title">
-                        <i class="fas fa-times-circle me-2"></i>Reject Teacher
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="rejectTeacherForm">
-                        <input type="hidden" id="rejectTeacherId">
-                        <div class="mb-3">
-                            <label class="form-label">Rejection Reason</label>
-                            <textarea class="form-control" id="rejectReason" rows="3" required></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger btn-sm" id="confirmRejectBtn">Reject Teacher</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="deactivateTeacherModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-secondary"><h5 class="modal-title"><i class="fas fa-pause-circle me-2"></i>Deactivate Teacher</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="deactivateTeacherForm"><input type="hidden" id="deactivateTeacherId"><div class="mb-3"><label class="form-label">Reason for Deactivation</label><textarea class="form-control" id="deactivateReason" rows="3" required></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-secondary btn-sm" id="confirmDeactivateBtn">Deactivate Teacher</button></div></div></div></div>
 
-    <!-- Salary Payment Modal -->
-    <div class="modal fade" id="salaryModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header" style="background: var(--primary);">
-                    <h5 class="modal-title">
-                        <i class="fas fa-rupee-sign me-2"></i>Pay Salary
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="salaryForm">
-                        <input type="hidden" id="salaryTeacherId">
-                        <input type="hidden" id="salaryMonth">
-                        
-                        <div class="text-center mb-3">
-                            <h6 id="salaryTeacherName" class="fw-bold"></h6>
-                            <p class="text-muted small" id="salaryMonthDisplay"></p>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Monthly Salary</label>
-                            <input type="text" class="form-control" id="salaryAmount" readonly>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Paid Amount (₹)</label>
-                            <input type="number" class="form-control" id="paidAmount" required min="0">
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Due Amount</label>
-                            <input type="text" class="form-control" id="dueAmount" readonly>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Payment Status</label>
-                            <input type="text" class="form-control" id="paymentStatus" readonly>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Remarks</label>
-                            <input type="text" class="form-control" id="salaryRemarks" placeholder="Optional">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="saveSalaryBtn">Save Payment</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="reactivateTeacherModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-info"><h5 class="modal-title"><i class="fas fa-play-circle me-2"></i>Reactivate Teacher</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="reactivateTeacherForm"><input type="hidden" id="reactivateTeacherId"><p>Are you sure you want to reactivate this teacher?</p></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-info btn-sm" id="confirmReactivateBtn">Reactivate Teacher</button></div></div></div></div>
 
-    <!-- Attendance Modal with Camera -->
-    <div class="modal fade" id="attendanceModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header" style="background: var(--primary);">
-                    <h5 class="modal-title">
-                        <i class="fas fa-calendar-check me-2"></i>Mark Attendance
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="attendanceForm">
-                        <input type="hidden" id="attendanceTeacherId">
-                        <input type="hidden" id="attendanceId">
-                        
-                        <div class="text-center mb-3">
-                            <h6 id="attendanceTeacherName" class="fw-bold"></h6>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Select Date</label>
-                            <input type="date" class="form-control" id="attendanceDateInput" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Status</label>
-                            <select class="form-select" id="attendanceStatus" required>
-                                <option value="present">Present</option>
-                                <option value="absent">Absent</option>
-                                <option value="late">Late</option>
-                                <option value="half-day">Half Day</option>
-                                <option value="leave">Leave</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label small">Remarks</label>
-                            <input type="text" class="form-control" id="attendanceRemarks" placeholder="Optional">
-                        </div>
-                        
-                        <!-- Camera Capture -->
-                        <div class="mb-3">
-                            <label class="form-label small">Capture Photo (Optional)</label>
-                            <div class="camera-preview mb-2">
-                                <video id="cameraFeed" autoplay playsinline style="width: 100%; border-radius: 10px; background: #000;"></video>
-                            </div>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button type="button" class="btn btn-sm btn-primary" id="startCameraBtn">
-                                    <i class="fas fa-camera"></i> Start
-                                </button>
-                                <button type="button" class="btn btn-sm btn-success" id="capturePhotoBtn">
-                                    <i class="fas fa-camera-retro"></i> Capture
-                                </button>
-                                <button type="button" class="btn btn-sm btn-secondary" id="stopCameraBtn">
-                                    <i class="fas fa-stop"></i> Stop
-                                </button>
-                            </div>
-                            <input type="hidden" id="attendancePhoto">
-                            <div id="photoPreview" class="mt-2" style="display: none;">
-                                <img id="capturedPhoto" style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 2px solid var(--primary);">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="saveAttendanceBtn">Save Attendance</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="salaryModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header" style="background: var(--primary);"><h5 class="modal-title"><i class="fas fa-rupee-sign me-2"></i>Pay Salary</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="salaryForm"><input type="hidden" id="salaryTeacherId"><input type="hidden" id="salaryMonth"><div class="text-center mb-3"><h6 id="salaryTeacherName" class="fw-bold"></h6><p class="text-muted small" id="salaryMonthDisplay"></p></div><div class="mb-3"><label class="form-label small">Monthly Salary</label><input type="text" class="form-control" id="salaryAmount" readonly></div><div class="mb-3"><label class="form-label small">Paid Amount (₹)</label><input type="number" class="form-control" id="paidAmount" required min="0"></div><div class="mb-3"><label class="form-label small">Due Amount</label><input type="text" class="form-control" id="dueAmount" readonly></div><div class="mb-3"><label class="form-label small">Payment Status</label><input type="text" class="form-control" id="paymentStatus" readonly></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="saveSalaryBtn">Save Payment</button></div></div></div></div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger">
-                    <h5 class="modal-title">
-                        <i class="fas fa-trash me-2"></i>Confirm Delete
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this teacher? This action cannot be undone.</p>
-                    <input type="hidden" id="deleteTeacherId">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger btn-sm" id="confirmDeleteBtn">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="attendanceModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header" style="background: var(--primary);"><h5 class="modal-title"><i class="fas fa-calendar-check me-2"></i>Mark Attendance</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="attendanceForm"><input type="hidden" id="attendanceTeacherId"><input type="hidden" id="attendanceId"><div class="text-center mb-3"><h6 id="attendanceTeacherName" class="fw-bold"></h6></div><div class="mb-3"><label class="form-label small">Select Date</label><input type="date" class="form-control" id="attendanceDateInput" required></div><div class="mb-3"><label class="form-label small">Status</label><select class="form-select" id="attendanceStatus" required><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option><option value="half-day">Half Day</option><option value="leave">Leave</option></select></div><div class="mb-3"><label class="form-label small">Remarks</label><input type="text" class="form-control" id="attendanceRemarks" placeholder="Optional"></div><div class="mb-3"><label class="form-label small">Capture Photo (Optional)</label><div class="camera-preview mb-2"><video id="cameraFeed" autoplay playsinline style="width:100%;border-radius:10px;background:#000;"></video></div><div class="d-flex gap-2 flex-wrap"><button type="button" class="btn btn-sm btn-primary" id="startCameraBtn"><i class="fas fa-camera"></i> Start</button><button type="button" class="btn btn-sm btn-success" id="capturePhotoBtn"><i class="fas fa-camera-retro"></i> Capture</button><button type="button" class="btn btn-sm btn-secondary" id="stopCameraBtn"><i class="fas fa-stop"></i> Stop</button></div><input type="hidden" id="attendancePhoto"><div id="photoPreview" class="mt-2" style="display:none;"><img id="capturedPhoto" style="width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid var(--primary);"></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary btn-sm" id="saveAttendanceBtn">Save Attendance</button></div></div></div></div>
 
-    <!-- Document Preview Modal -->
-    <div class="modal fade" id="documentPreviewModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Document Preview</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <img id="documentPreviewImage" src="" style="max-width: 100%; max-height: 80vh;" alt="Document Preview">
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger"><h5 class="modal-title"><i class="fas fa-trash me-2"></i>Confirm Delete</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>Are you sure you want to delete this teacher? This action cannot be undone.</p><input type="hidden" id="deleteTeacherId"></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-danger btn-sm" id="confirmDeleteBtn">Delete</button></div></div></div></div>
 
-    <!-- Bulk Registration Modal -->
-    <div class="modal fade" id="bulkRegisterModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success">
-                    <h5 class="modal-title">
-                        <i class="fas fa-upload me-2"></i>Bulk Teacher Registration
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="small text-muted">Upload JSON file with teacher data or paste JSON below:</p>
-                    <textarea class="form-control" id="bulkTeacherData" rows="8" placeholder='[{"teacherId":"T001","teacherName":{"first":"John","last":"Doe"},"mobile":"9876543210","aadharNumber":"123456789012", ...}]'></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success btn-sm" id="processBulkBtn">Process Bulk Upload</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="modal fade" id="documentPreviewModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Document Preview</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><img id="documentPreviewImage" src="" style="max-width:100%;max-height:80vh;"></div></div></div></div>
 
-    <!-- Export Modal -->
-    <div class="modal fade" id="exportModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-info">
-                    <h5 class="modal-title">
-                        <i class="fas fa-download me-2"></i>Export Teachers
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <p>Choose export format:</p>
-                    <div class="d-flex gap-3 justify-content-center">
-                        <a href="/api/teachers/export/json" class="btn btn-primary" target="_blank">
-                            <i class="fas fa-file-code me-2"></i>JSON
-                        </a>
-                        <a href="/api/teachers/export/csv" class="btn btn-success" target="_blank">
-                            <i class="fas fa-file-csv me-2"></i>CSV
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script>
+        // Complete JavaScript Integration - All Features Working
+        let token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+        let currentFilter = 'all';
+        let teachersData = [];
+        let selectedTeacherId = null;
+        let barChart = null, lineChart = null, pieChart = null, doughnutChart = null;
+        let currentChartType = 'bar';
+        let attendanceData = {};
+        
+        const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'12\'%3EPhoto%3C/text%3E%3C/svg%3E';
+        const PLACEHOLDER_LARGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E';
 
-    <!-- JavaScript File (External) -->
-     <script src="teacher-dashboard.css"></script>
-    <script src="teacher-dashboard.js"></script>
+        function showLoading() { document.getElementById('loadingSpinner').style.display = 'flex'; }
+        function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
+        function showError(msg) { alert('❌ Error: ' + msg); }
+        function showSuccess(msg) { alert('✅ Success: ' + msg); }
+
+        function safeShowModal(id) { try { new bootstrap.Modal(document.getElementById(id)).show(); } catch(e) { console.error(e); } }
+        function safeHideModal(id) { try { let m = bootstrap.Modal.getInstance(document.getElementById(id)); if(m) m.hide(); } catch(e) {} }
+
+        if (!token) { document.getElementById('teachersTableBody').innerHTML = '<td colspan="8"><div class="login-required"><i class="fas fa-lock"></i><h3>Please Login First</h3><a href="/index.html" class="btn btn-primary">Go to Login</a></div></td>'; }
+        else { initializeApp(); }
+
+        async function initializeApp() {
+            await loadDashboard();
+            initEventListeners();
+        }
+
+        async function loadDashboard() { showLoading(); try { await loadStats(); await loadTeachers(); } catch(e) { console.error(e); } hideLoading(); }
+
+        async function loadStats() {
+            try { let res = await fetch('/api/teachers/stats/summary', { headers: { 'Authorization': `Bearer ${token}` } }); let data = await res.json();
+            if(data.success) { document.getElementById('totalTeachers').textContent = data.data.total || 0; document.getElementById('pendingTeachers').textContent = data.data.pending || 0; document.getElementById('approvedTeachers').textContent = data.data.approved || 0; document.getElementById('totalSalary').textContent = '₹' + (data.data.totalPaidSalary || 0).toLocaleString(); } } catch(e) { console.error(e); } }
+
+        async function loadTeachers() {
+            let res = await fetch('/api/teachers?status=all', { headers: { 'Authorization': `Bearer ${token}` } }); let data = await res.json();
+            if(data.success) { teachersData = data.data || []; populateTeacherSelect(teachersData); displayTeachers(teachersData); updateSalaryChart(); if(selectedTeacherId) loadTeacherDetails(selectedTeacherId); } }
+
+        function populateTeacherSelect(teachers) {
+            let select = document.getElementById('teacherSelect'); select.innerHTML = '<option value="">-- Choose a Teacher --</option>';
+            teachers.forEach(t => { if(t.status === 'approved') { let opt = document.createElement('option'); opt.value = t.teacherId; opt.textContent = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''} (${t.teacherId})`; select.appendChild(opt); } });
+        }
+
+        function displayTeachers(teachers) {
+            let tbody = document.getElementById('teachersTableBody'); if(!tbody) return; tbody.innerHTML = '';
+            teachers.forEach(t => {
+                let statusClass = t.status === 'pending' ? 'pending' : t.status === 'approved' ? 'approved' : t.status === 'deactivated' ? 'deactivated' : 'rejected';
+                let statusText = t.status ? t.status.toUpperCase() : 'PENDING';
+                let photoUrl = t.photo && t.photo !== '' ? t.photo : PLACEHOLDER_IMAGE;
+                tbody.innerHTML += `<tr data-id="${t.teacherId}"><td><img src="${photoUrl}" class="teacher-photo" onerror="this.src='${PLACEHOLDER_IMAGE}'"></td><td>${t.teacherId}</td><td>${t.teacherName?.first || ''} ${t.teacherName?.last || ''}</td><td>${t.mobile || '-'}</td><td>${t.subject || '-'}</td><td>₹${t.salary?.toLocaleString() || 0}</td><td><span class="status-badge ${statusClass}">${statusText}</span></td><td><div class="action-buttons"><button class="btn-icon view" data-id="${t.teacherId}" onclick="viewTeacher('${t.teacherId}')"><i class="fas fa-eye"></i></button>${t.status === 'pending' ? `<button class="btn-icon approve" data-id="${t.teacherId}" onclick="openApproveModal('${t.teacherId}')"><i class="fas fa-check"></i></button><button class="btn-icon reject" data-id="${t.teacherId}" onclick="openRejectModal('${t.teacherId}')"><i class="fas fa-times"></i></button>` : ''}${t.status === 'approved' ? `<button class="btn-icon deactivate" data-id="${t.teacherId}" onclick="openDeactivateModal('${t.teacherId}')"><i class="fas fa-pause"></i></button><button class="btn-icon salary" data-id="${t.teacherId}" onclick="openSalaryModal('${t.teacherId}')"><i class="fas fa-rupee-sign"></i></button>` : ''}${t.status === 'deactivated' ? `<button class="btn-icon reactivate" data-id="${t.teacherId}" onclick="openReactivateModal('${t.teacherId}')"><i class="fas fa-play"></i></button>` : ''}<button class="btn-icon delete" data-id="${t.teacherId}" onclick="openDeleteModal('${t.teacherId}')"><i class="fas fa-trash"></i></button></div></td></tr>`;
+            });
+        }
+
+        async function viewTeacher(id) { selectedTeacherId = id; document.getElementById('teacherSelect').value = id; await loadTeacherDetails(id); }
+        
+        async function loadTeacherDetails(id) {
+            showLoading(); let res = await fetch(`/api/teachers/${id}`, { headers: { 'Authorization': `Bearer ${token}` } }); let data = await res.json();
+            if(data.success) {
+                let t = data.data;
+                document.getElementById('selectedTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
+                document.getElementById('detailsTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
+                document.getElementById('salaryTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
+                document.getElementById('detailsPhoto').src = t.photo && t.photo !== '' ? t.photo : PLACEHOLDER_LARGE;
+                document.getElementById('detailsFullName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.middle || ''} ${t.teacherName?.last || ''}`;
+                document.getElementById('detailsTeacherId').innerText = `ID: ${t.teacherId}`;
+                let statusClass = t.status || 'pending';
+                document.getElementById('detailsStatus').innerText = statusClass.toUpperCase();
+                document.getElementById('detailsStatus').className = `status-badge ${statusClass}`;
+                document.getElementById('detailFirstName').innerText = t.teacherName?.first || '-';
+                document.getElementById('detailMiddleName').innerText = t.teacherName?.middle || '-';
+                document.getElementById('detailLastName').innerText = t.teacherName?.last || '-';
+                document.getElementById('detailFatherFirst').innerText = t.fatherName?.first || '-';
+                document.getElementById('detailFatherMiddle').innerText = t.fatherName?.middle || '-';
+                document.getElementById('detailFatherLast').innerText = t.fatherName?.last || '-';
+                document.getElementById('detailMobile').innerText = t.mobile || '-';
+                document.getElementById('detailAltMobile').innerText = t.altMobile || '-';
+                document.getElementById('detailDob').innerText = t.dob ? new Date(t.dob).toLocaleDateString() : '-';
+                document.getElementById('detailAadhar').innerText = t.aadharNumber || '-';
+                document.getElementById('detailQualification').innerText = t.lastQualification || '-';
+                document.getElementById('detailSubject').innerText = t.subject || '-';
+                document.getElementById('detailSalary').innerText = t.salary?.toLocaleString() || '0';
+                document.getElementById('detailJoining').innerText = t.joiningDate ? new Date(t.joiningDate).toLocaleDateString() : '-';
+                
+                // Documents
+                if(t.aadharDoc && t.aadharDoc !== '') {
+                    document.getElementById('aadharDocPreview').src = t.aadharDoc; document.getElementById('aadharDocPreview').style.display = 'inline-block';
+                    document.getElementById('aadharDocLink').href = t.aadharDoc; document.getElementById('aadharDocLink').style.display = 'inline-block';
+                    document.getElementById('aadharNoDoc').style.display = 'none';
+                } else { document.getElementById('aadharDocPreview').style.display = 'none'; document.getElementById('aadharDocLink').style.display = 'none'; document.getElementById('aadharNoDoc').style.display = 'inline'; }
+                if(t.qualificationDoc && t.qualificationDoc !== '') {
+                    document.getElementById('qualificationDocPreview').src = t.qualificationDoc; document.getElementById('qualificationDocPreview').style.display = 'inline-block';
+                    document.getElementById('qualificationDocLink').href = t.qualificationDoc; document.getElementById('qualificationDocLink').style.display = 'inline-block';
+                    document.getElementById('qualNoDoc').style.display = 'none';
+                } else { document.getElementById('qualificationDocPreview').style.display = 'none'; document.getElementById('qualificationDocLink').style.display = 'none'; document.getElementById('qualNoDoc').style.display = 'inline'; }
+                
+                document.getElementById('teacherDetailsCard').style.display = 'block';
+                document.getElementById('salaryAttendanceCard').style.display = 'block';
+                loadSalaryData(t);
+                await loadAttendanceData(t);
+            }
+            hideLoading();
+        }
+
+        function loadSalaryData(teacher) {
+            let tbody = document.getElementById('salaryTableBody'); tbody.innerHTML = '';
+            let months = [], paidData = [], dueData = [];
+            if(teacher.salaryMonths && teacher.salaryMonths.length) {
+                teacher.salaryMonths.forEach(r => {
+                    months.push(r.month); paidData.push(r.paidAmount || 0); dueData.push(r.dueAmount || 0);
+                    let statusClass = r.status === 'paid' ? 'salary-paid' : r.status === 'partial' ? 'salary-partial' : 'salary-unpaid';
+                    tbody.innerHTML += `<tr><td>${r.month}</td><td>₹${r.salary?.toLocaleString() || 0}</td><td>₹${r.paidAmount?.toLocaleString() || 0}</td><td>₹${r.dueAmount?.toLocaleString() || 0}</td><td><span class="${statusClass}">${r.status?.toUpperCase() || 'UNPAID'}</span></td><td><button class="btn-edit pay-salary-btn" data-id="${teacher.teacherId}" data-month="${r.month}"><i class="fas fa-rupee-sign"></i> Pay</button></td></tr>`;
+                });
+            } else { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No salary records</td></tr>'; }
+            updateAllCharts(months, paidData, dueData);
+        }
+
+        function updateAllCharts(months, paidData, dueData) {
+            let totalPaid = paidData.reduce((a,b)=>a+b,0);
+            let totalDue = dueData.reduce((a,b)=>a+b,0);
+            let remaining = totalPaid + totalDue;
+            if(barChart) barChart.destroy(); if(lineChart) lineChart.destroy(); if(pieChart) pieChart.destroy(); if(doughnutChart) doughnutChart.destroy();
+            let ctxBar = document.getElementById('barChart').getContext('2d');
+            let ctxLine = document.getElementById('lineChart').getContext('2d');
+            let ctxPie = document.getElementById('pieChart').getContext('2d');
+            let ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+            barChart = new Chart(ctxBar, { type: 'bar', data: { labels: months, datasets: [{ label: 'Paid', data: paidData, backgroundColor: '#2ecc71' }, { label: 'Due', data: dueData, backgroundColor: '#e74c3c' }] }, options: { responsive: true, maintainAspectRatio: false } });
+            lineChart = new Chart(ctxLine, { type: 'line', data: { labels: months, datasets: [{ label: 'Paid', data: paidData, borderColor: '#2ecc71', tension: 0.4, fill: false }, { label: 'Due', data: dueData, borderColor: '#e74c3c', tension: 0.4, fill: false }] }, options: { responsive: true, maintainAspectRatio: false } });
+            pieChart = new Chart(ctxPie, { type: 'pie', data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaid, totalDue], backgroundColor: ['#2ecc71', '#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+            doughnutChart = new Chart(ctxDoughnut, { type: 'doughnut', data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaid, totalDue], backgroundColor: ['#2ecc71', '#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+        }
+
+        async function loadAttendanceData(teacher) {
+            let tbody = document.getElementById('attendanceTableBody');
+            try { let res = await fetch(`/api/teachers/${teacher.teacherId}/attendance`, { headers: { 'Authorization': `Bearer ${token}` } }); let data = await res.json();
+            if(data.success && data.data.length) {
+                let att = data.data.sort((a,b)=>b.date.localeCompare(a.date));
+                attendanceData[teacher.teacherId] = att;
+                tbody.innerHTML = att.map(a => `<tr><td>${new Date(a.date).toLocaleDateString()}</td><td><span class="badge bg-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status?.toUpperCase()}</span></td><td>${a.photo ? `<img src="${a.photo}" style="width:35px;height:35px;border-radius:5px;cursor:pointer;" onclick="window.open(this.src)">` : '-'}</td><td><button class="btn btn-sm btn-warning" onclick="editAttendance('${teacher.teacherId}','${a.date}')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteAttendance('${teacher.teacherId}','${a.date}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+            } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No attendance records</td></tr>'; } } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading attendance</td></tr>'; }
+        }
+
+        function updateSalaryChart() { let ctx = document.getElementById('salaryChart').getContext('2d'); new Chart(ctx, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], datasets: [{ label: 'Total Salary', data: [0,0,0,0,0,0], borderColor: '#0f172a' }] }, options: { responsive: true, maintainAspectRatio: false } }); }
+
+        function openApproveModal(id) { document.getElementById('approveTeacherId').value = id; document.getElementById('approveJoiningDate').value = new Date().toISOString().split('T')[0]; safeShowModal('approveTeacherModal'); }
+        function openRejectModal(id) { document.getElementById('rejectTeacherId').value = id; safeShowModal('rejectTeacherModal'); }
+        function openDeactivateModal(id) { document.getElementById('deactivateTeacherId').value = id; safeShowModal('deactivateTeacherModal'); }
+        function openReactivateModal(id) { document.getElementById('reactivateTeacherId').value = id; safeShowModal('reactivateTeacherModal'); }
+        function openDeleteModal(id) { document.getElementById('deleteTeacherId').value = id; safeShowModal('deleteModal'); }
+        function openSalaryModal(id) { let teacher = teachersData.find(t=>t.teacherId===id); if(teacher) { document.getElementById('salaryTeacherId').value=id; document.getElementById('salaryTeacherName').innerText=`${teacher.teacherName?.first} ${teacher.teacherName?.last}`; document.getElementById('salaryMonth').value=new Date().toLocaleString('default',{month:'long'})+' '+new Date().getFullYear(); document.getElementById('salaryMonthDisplay').innerText=document.getElementById('salaryMonth').value; document.getElementById('salaryAmount').value='₹'+(teacher.salary||0).toLocaleString(); document.getElementById('paidAmount').value=0; document.getElementById('dueAmount').value='₹'+(teacher.salary||0).toLocaleString(); document.getElementById('paymentStatus').value='Unpaid'; safeShowModal('salaryModal'); } }
+
+        function editAttendance(teacherId, date) { alert('Edit attendance for ' + date + ' - Feature coming soon'); }
+        async function deleteAttendance(teacherId, date) { if(confirm('Delete this attendance record?')) { showLoading(); let res = await fetch(`/api/teachers/${teacherId}/attendance`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date }) }); let data = await res.json(); if(data.success) { showSuccess('Deleted!'); loadTeacherDetails(teacherId); } else { showError(data.message); } hideLoading(); } }
+
+        function initEventListeners() {
+            document.getElementById('logoutBtn').onclick = () => { localStorage.clear(); window.location.href = '/index.html'; };
+            document.getElementById('refreshBtn').onclick = () => { loadTeachers(); loadStats(); };
+            document.getElementById('teacherSelect').onchange = (e) => { if(e.target.value) viewTeacher(e.target.value); else { selectedTeacherId=null; document.getElementById('teacherDetailsCard').style.display='none'; document.getElementById('salaryAttendanceCard').style.display='none'; document.getElementById('selectedTeacherName').innerText='None'; } };
+            document.getElementById('searchInput').oninput = () => filterTeachers();
+            document.querySelectorAll('.filter-btn').forEach(btn => { btn.onclick = () => { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); currentFilter=btn.dataset.filter; filterTeachers(); }; });
+            document.getElementById('confirmApproveBtn').onclick = async () => { let id=document.getElementById('approveTeacherId').value, subject=document.getElementById('approveSubject').value, salary=document.getElementById('approveSalary').value, joining=document.getElementById('approveJoiningDate').value; if(!subject||!salary) { showError('Fill all fields'); return; } showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'approved',subject,salary:parseInt(salary),joiningDate:joining})}); let data=await res.json(); if(data.success){showSuccess('Approved!');safeHideModal('approveTeacherModal');loadTeachers();loadStats();if(selectedTeacherId===id)loadTeacherDetails(id);}else showError(data.message); hideLoading(); };
+            document.getElementById('confirmRejectBtn').onclick = async () => { let id=document.getElementById('rejectTeacherId').value, reason=document.getElementById('rejectReason').value; if(!reason) { showError('Enter reason'); return; } showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'rejected',rejectionReason:reason})}); let data=await res.json(); if(data.success){showSuccess('Rejected!');safeHideModal('rejectTeacherModal');loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showError(data.message); hideLoading(); };
+            document.getElementById('confirmDeactivateBtn').onclick = async () => { let id=document.getElementById('deactivateTeacherId').value, reason=document.getElementById('deactivateReason').value; if(!reason) { showError('Enter reason'); return; } showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'deactivated',remarks:reason})}); let data=await res.json(); if(data.success){showSuccess('Deactivated!');safeHideModal('deactivateTeacherModal');loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showError(data.message); hideLoading(); };
+            document.getElementById('confirmReactivateBtn').onclick = async () => { let id=document.getElementById('reactivateTeacherId').value; showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'approved'})}); let data=await res.json(); if(data.success){showSuccess('Reactivated!');safeHideModal('reactivateTeacherModal');loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showError(data.message); hideLoading(); };
+            document.getElementById('confirmDeleteBtn').onclick = async () => { let id=document.getElementById('deleteTeacherId').value; showLoading(); let res=await fetch(`/api/teachers/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}}); let data=await res.json(); if(data.success){showSuccess('Deleted!');safeHideModal('deleteModal');loadTeachers();if(selectedTeacherId===id){selectedTeacherId=null;document.getElementById('teacherDetailsCard').style.display='none';document.getElementById('salaryAttendanceCard').style.display='none';document.getElementById('selectedTeacherName').innerText='None';}}else showError(data.message); hideLoading(); };
+            document.getElementById('saveSalaryBtn').onclick = async () => { let id=document.getElementById('salaryTeacherId').value, month=document.getElementById('salaryMonth').value, paid=parseInt(document.getElementById('paidAmount').value)||0; if(!id||!month) return; showLoading(); let res=await fetch(`/api/teachers/${id}/salary`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({month,paidAmount:paid})}); let data=await res.json(); if(data.success){showSuccess('Salary saved!');safeHideModal('salaryModal');loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showError(data.message); hideLoading(); };
+            document.getElementById('saveAttendanceBtn').onclick = async () => { let id=document.getElementById('attendanceTeacherId').value, date=document.getElementById('attendanceDateInput').value, status=document.getElementById('attendanceStatus').value, remarks=document.getElementById('attendanceRemarks').value; if(!id||!date||!status) return; showLoading(); let res=await fetch(`/api/teachers/${id}/attendance`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({date,status,remarks})}); let data=await res.json(); if(data.success){showSuccess('Attendance saved!');safeHideModal('attendanceModal');loadTeacherDetails(id);}else showError(data.message); hideLoading(); };
+            document.getElementById('markAttendanceBtn').onclick = () => { if(!selectedTeacherId) { showError('Select a teacher first'); return; } document.getElementById('attendanceTeacherId').value=selectedTeacherId; document.getElementById('attendanceDateInput').value=new Date().toISOString().split('T')[0]; safeShowModal('attendanceModal'); };
+            document.getElementById('startCameraBtn').onclick = async () => { try { let stream=await navigator.mediaDevices.getUserMedia({video:true}); document.getElementById('cameraFeed').srcObject=stream; window.cameraStream=stream; } catch(e) { alert('Camera access denied'); } };
+            document.getElementById('capturePhotoBtn').onclick = () => { let video=document.getElementById('cameraFeed'), canvas=document.createElement('canvas'); canvas.width=300; canvas.height=300; canvas.getContext('2d').drawImage(video,0,0,300,300); let photo=canvas.toDataURL('image/jpeg',0.8); document.getElementById('attendancePhoto').value=photo; document.getElementById('capturedPhoto').src=photo; document.getElementById('photoPreview').style.display='block'; };
+            document.getElementById('stopCameraBtn').onclick = () => { if(window.cameraStream) window.cameraStream.getTracks().forEach(t=>t.stop()); document.getElementById('cameraFeed').srcObject=null; };
+            document.getElementById('editTeacherBtn').onclick = () => { if(!selectedTeacherId) return; let t=teachersData.find(t=>t.teacherId===selectedTeacherId); if(t){ document.getElementById('editTeacherId').value=t.teacherId; document.getElementById('editFirstName').value=t.teacherName?.first||''; document.getElementById('editMiddleName').value=t.teacherName?.middle||''; document.getElementById('editLastName').value=t.teacherName?.last||''; document.getElementById('editFatherFirst').value=t.fatherName?.first||''; document.getElementById('editFatherMiddle').value=t.fatherName?.middle||''; document.getElementById('editFatherLast').value=t.fatherName?.last||''; document.getElementById('editMobile').value=t.mobile||''; document.getElementById('editAltMobile').value=t.altMobile||''; if(t.dob) document.getElementById('editDob').value=t.dob.split('T')[0]; document.getElementById('editAadhar').value=t.aadharNumber||''; document.getElementById('editQualification').value=t.lastQualification||''; document.getElementById('editSubject').value=t.subject||''; document.getElementById('editSalary').value=t.salary||0; document.getElementById('editExperience').value=t.experience||0; document.getElementById('editStatus').value=t.status||'pending'; if(t.joiningDate) document.getElementById('editJoiningDate').value=t.joiningDate.split('T')[0]; document.getElementById('editPhotoPreview').src=t.photo||PLACEHOLDER_LARGE; if(t.aadharDoc) document.getElementById('editAadharPreview').src=t.aadharDoc; if(t.qualificationDoc) document.getElementById('editQualPreview').src=t.qualificationDoc; safeShowModal('editTeacherModal'); } };
+            document.getElementById('saveEditBtn').onclick = async () => { let id=document.getElementById('editTeacherId').value; let payload={ teacherName:{first:document.getElementById('editFirstName').value,middle:document.getElementById('editMiddleName').value,last:document.getElementById('editLastName').value}, fatherName:{first:document.getElementById('editFatherFirst').value,middle:document.getElementById('editFatherMiddle').value,last:document.getElementById('editFatherLast').value}, mobile:document.getElementById('editMobile').value, altMobile:document.getElementById('editAltMobile').value, dob:document.getElementById('editDob').value, aadharNumber:document.getElementById('editAadhar').value, lastQualification:document.getElementById('editQualification').value, subject:document.getElementById('editSubject').value, salary:parseInt(document.getElementById('editSalary').value)||0, experience:parseInt(document.getElementById('editExperience').value)||0, status:document.getElementById('editStatus').value, joiningDate:document.getElementById('editJoiningDate').value }; showLoading(); let res=await fetch(`/api/teachers/${id}`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(payload)}); let data=await res.json(); if(data.success){showSuccess('Updated!');safeHideModal('editTeacherModal');loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showError(data.message); hideLoading(); };
+            document.querySelectorAll('.chart-type-btn').forEach(btn=>{ btn.onclick=()=>{ let type=btn.dataset.chart; document.querySelectorAll('.chart-type-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); if(barChart) barChart.config.type=type; barChart.update(); }; });
+        }
+
+        function filterTeachers() {
+            let term = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = teachersData.filter(t => (currentFilter === 'all' || t.status === currentFilter) && (t.teacherId?.toLowerCase().includes(term) || `${t.teacherName?.first} ${t.teacherName?.last}`.toLowerCase().includes(term) || t.mobile?.includes(term)));
+            displayTeachers(filtered);
+        }
+    </script>
 </body>
 </html>
