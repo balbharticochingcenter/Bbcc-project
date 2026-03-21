@@ -29,6 +29,9 @@ app.use((req, res, next) => {
     next();
 });
 
+// ✅ FIX: Trust proxy for Render (fixes X-Forwarded-For error)
+app.set('trust proxy', 1);
+
 // Helmet configuration with CSP
 app.use(
     helmet({
@@ -96,11 +99,13 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
-// Rate Limiter
+// ✅ FIX: Updated rate limiter with proper settings
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
-    message: { success: false, message: "Too many requests, please try again later." }
+    message: { success: false, message: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 app.use('/api/', limiter);
 
@@ -113,23 +118,100 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc')
     .catch(err => console.log("❌ DB Connection Error:", err.message));
 
 // ============================================
-// SCHEMA DEFINITIONS
+// FILE COMPRESSION UTILITY
+// ============================================
+
+/**
+ * Compress image/file to <5KB
+ * Supports: base64 data, image URLs, and file buffers
+ */
+async function compressTo5KB(data, type = 'image') {
+    return new Promise((resolve, reject) => {
+        // If it's already a URL (http/https), return as is
+        if (typeof data === 'string' && (data.startsWith('http://') || data.startsWith('https://'))) {
+            resolve(data);
+            return;
+        }
+        
+        // If it's base64 data
+        if (typeof data === 'string' && data.startsWith('data:')) {
+            // Check current size
+            const sizeInKB = Math.round((data.length * 3) / 4 / 1024);
+            if (sizeInKB <= 5) {
+                resolve(data);
+                return;
+            }
+            
+            // For images, compress
+            if (data.includes('image/')) {
+                const img = new Image();
+                img.src = data;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    let quality = 0.7;
+                    
+                    function compress() {
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const compressed = canvas.toDataURL('image/jpeg', quality);
+                        const newSize = Math.round((compressed.length * 3) / 4 / 1024);
+                        
+                        if (newSize > 5 && (width > 100 || quality > 0.1)) {
+                            if (quality > 0.2) {
+                                quality -= 0.1;
+                            } else {
+                                width = Math.floor(width * 0.8);
+                                height = Math.floor(height * 0.8);
+                            }
+                            compress();
+                        } else {
+                            resolve(compressed);
+                        }
+                    }
+                    compress();
+                };
+                img.onerror = () => resolve(data);
+            } else {
+                resolve(data);
+            }
+        } else {
+            resolve(data);
+        }
+    });
+}
+
+// ============================================
+// SCHEMA DEFINITIONS (with enhanced file support)
 // ============================================
 
 // ---------- Web Config Schema ----------
 const WebConfigSchema = new mongoose.Schema({
+    // Logo can be text, image URL, or base64 image
     logoText: { type: String, required: true, trim: true, default: 'BBCC' },
+    logoType: { type: String, enum: ['text', 'image', 'url'], default: 'text' },
+    logoImage: { type: String, default: '' }, // For image logo (base64 or URL)
+    
     title: { type: String, required: true, default: 'Bal Bharti Coaching' },
     subTitle: { type: String, default: 'Excellence in Education' },
-    aboutText: { type: String, default: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty. Join us for excellence in education.' },
-    slides: [{ type: String }],
+    aboutText: { type: String, default: 'Welcome to Bal Bharti Coaching Center.' },
+    slides: [{ type: String }], // Can be URLs or base64 images
+    
+    // Social Media Links
     whatsapp: { type: String, default: '#' },
     insta: { type: String, default: '#' },
     fb: { type: String, default: '#' },
     twitter: { type: String, default: '#' },
+    
+    // Contact Information
     contactAddress: { type: String, default: '123 Education Street, City' },
     contactPhone: { type: String, default: '+91 98765 43210' },
     contactEmail: { type: String, default: 'info@balbharti.com' },
+    
+    // Institute Info
     establishedYear: { type: Number, default: 2010 },
     totalStudentsTrained: { type: Number, default: 5000 },
     totalFaculty: { type: Number, default: 25 }
@@ -143,7 +225,7 @@ const TestimonialSchema = new mongoose.Schema({
     role: { type: String, required: true, enum: ['Student', 'Parent', 'Teacher', 'Alumni'] },
     text: { type: String, required: true },
     rating: { type: Number, min: 1, max: 5, default: 5 },
-    image: { type: String, default: '' },
+    image: { type: String, default: '' }, // Can be URL or base64
     isActive: { type: Boolean, default: true },
     order: { type: Number, default: 0 }
 }, { timestamps: true });
@@ -153,7 +235,12 @@ const Testimonial = mongoose.model('Testimonial', TestimonialSchema);
 // ---------- Admin Schema ----------
 const AdminSchema = new mongoose.Schema({
     adminID: { type: String, required: true, unique: true, trim: true },
-    pws: { type: String, required: true }
+    pws: { type: String, required: true },
+    // Admin can also have photo
+    photo: { type: String, default: '' },
+    aadharNumber: { type: String, default: '' },
+    aadharDoc: { type: String, default: '' },
+    name: { type: String, default: 'Admin' }
 }, { timestamps: true });
 
 const Admin = mongoose.model('Admin', AdminSchema);
@@ -162,7 +249,7 @@ const Admin = mongoose.model('Admin', AdminSchema);
 const StudentSchema = new mongoose.Schema({
     studentId: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true },
-    photo: { type: String, required: true },
+    photo: { type: String, required: true }, // Base64 or URL
     studentName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
@@ -170,7 +257,7 @@ const StudentSchema = new mongoose.Schema({
     },
     mobile: { type: String, required: true },
     aadharNumber: { type: String, required: true, unique: true },
-    aadharDocument: { type: String, required: true },
+    aadharDocument: { type: String, required: true }, // PDF, image, or URL
     registrationDate: { type: Date, required: true, default: Date.now },
     joiningDate: { type: Date, required: true },
     classMonthlyFees: { type: Number, default: 0 },
@@ -218,7 +305,7 @@ const Student = mongoose.model('Student', StudentSchema);
 const TeacherSchema = new mongoose.Schema({
     teacherId: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
-    photo: { type: String, required: true },
+    photo: { type: String, required: true }, // Base64 or URL
     teacherName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
@@ -233,9 +320,9 @@ const TeacherSchema = new mongoose.Schema({
     altMobile: { type: String, default: '' },
     dob: { type: Date, required: true },
     lastQualification: { type: String, required: true },
-    qualificationDoc: { type: String, required: true },
+    qualificationDoc: { type: String, required: true }, // PDF or image
     aadharNumber: { type: String, required: true, unique: true },
-    aadharDoc: { type: String, required: true },
+    aadharDoc: { type: String, required: true }, // PDF or image
     subject: { type: String, default: '', trim: true },
     salary: { type: Number, default: 0, min: 0 },
     salaryHistory: [{
@@ -300,7 +387,14 @@ async function createDefaultAdmin() {
         const adminExists = await Admin.findOne({ adminID: 'admin' });
         if (!adminExists) {
             const hashedPassword = await bcrypt.hash('admin123', 10);
-            const newAdmin = new Admin({ adminID: 'admin', pws: hashedPassword });
+            const newAdmin = new Admin({ 
+                adminID: 'admin', 
+                pws: hashedPassword,
+                name: 'Super Admin',
+                photo: '',
+                aadharNumber: '',
+                aadharDoc: ''
+            });
             await newAdmin.save();
             console.log("✅ Default Admin Created: Username = admin, Password = admin123");
         } else {
@@ -317,6 +411,8 @@ async function initializeDefaultConfig() {
         if (!configExists) {
             const defaultConfig = new WebConfig({
                 logoText: 'BBCC',
+                logoType: 'text',
+                logoImage: '',
                 title: 'Bal Bharti Coaching',
                 subTitle: 'Excellence in Education',
                 aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty.',
@@ -368,7 +464,8 @@ app.get('/api/config', async (req, res) => {
         let config = await WebConfig.findOne().lean();
         if (!config) {
             config = {
-                logoText: 'BBCC', title: 'Bal Bharti Coaching', subTitle: 'Excellence in Education',
+                logoText: 'BBCC', logoType: 'text', logoImage: '',
+                title: 'Bal Bharti Coaching', subTitle: 'Excellence in Education',
                 aboutText: 'Welcome to Bal Bharti Coaching Center.',
                 slides: ['https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800'],
                 whatsapp: '#', insta: '#', fb: '#',
@@ -456,7 +553,7 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
 });
 
 // ============================================
-// ✅ TOKEN VERIFICATION MIDDLEWARE (DEFINED HERE - BEFORE ITS USAGE)
+// ✅ TOKEN VERIFICATION MIDDLEWARE
 // ============================================
 
 const verifyToken = (req, res, next) => {
@@ -471,7 +568,7 @@ const verifyToken = (req, res, next) => {
 };
 
 // ============================================
-// TOKEN VERIFY ENDPOINT (USES verifyToken)
+// TOKEN VERIFY ENDPOINT
 // ============================================
 
 app.get('/api/verify-token', verifyToken, (req, res) => {
@@ -479,18 +576,52 @@ app.get('/api/verify-token', verifyToken, (req, res) => {
 });
 
 // ============================================
-// WEBSITE CONFIG UPDATE (USES verifyToken)
+// ADMIN MANAGEMENT APIs
+// ============================================
+
+// Get admin profile
+app.get('/api/admin/profile', verifyToken, async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id).select('-pws');
+        if (!admin) return res.status(404).json({ success: false, message: "Admin not found" });
+        res.json({ success: true, data: admin });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update admin profile (photo, aadhar, etc.)
+app.put('/api/admin/profile', verifyToken, async (req, res) => {
+    try {
+        const { name, photo, aadharNumber, aadharDoc } = req.body;
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (photo) updateData.photo = photo;
+        if (aadharNumber) updateData.aadharNumber = aadharNumber;
+        if (aadharDoc) updateData.aadharDoc = aadharDoc;
+        
+        const admin = await Admin.findByIdAndUpdate(req.user.id, updateData, { new: true }).select('-pws');
+        res.json({ success: true, message: "Profile updated", data: admin });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// WEBSITE CONFIG UPDATE
 // ============================================
 
 const configUpdateSchema = Joi.object({
     logoText: Joi.string().required(),
+    logoType: Joi.string().valid('text', 'image', 'url').default('text'),
+    logoImage: Joi.string().allow('').optional(),
     title: Joi.string().required(),
     subTitle: Joi.string().allow('').optional(),
     aboutText: Joi.string().allow('').optional(),
-    whatsapp: Joi.string().uri().allow('').optional(),
-    insta: Joi.string().uri().allow('').optional(),
-    fb: Joi.string().uri().allow('').optional(),
-    slides: Joi.array().items(Joi.string().uri()).optional(),
+    whatsapp: Joi.string().allow('').optional(),
+    insta: Joi.string().allow('').optional(),
+    fb: Joi.string().allow('').optional(),
+    slides: Joi.array().items(Joi.string()).optional(),
     contactAddress: Joi.string().allow('').optional(),
     contactPhone: Joi.string().allow('').optional(),
     contactEmail: Joi.string().email().allow('').optional()
@@ -500,16 +631,18 @@ app.post('/api/update-config', verifyToken, async (req, res) => {
     try {
         const { error, value } = configUpdateSchema.validate(req.body);
         if (error) return res.status(400).json({ success: false, message: error.details[0].message });
+        
         const config = await WebConfig.findOneAndUpdate({}, value, { upsert: true, new: true });
         console.log(`✅ Website updated by admin: ${req.user.adminID}`);
         res.json({ success: true, message: "Website Updated Successfully!", data: config });
     } catch (err) {
-        res.status(500).json({ success: false, message: "Update Failed" });
+        console.error("Update Config Error:", err);
+        res.status(500).json({ success: false, message: "Update Failed: " + err.message });
     }
 });
 
 // ============================================
-// CHANGE PASSWORD (USES verifyToken)
+// CHANGE PASSWORD
 // ============================================
 
 app.post('/api/change-password', verifyToken, async (req, res) => {
@@ -529,26 +662,87 @@ app.post('/api/change-password', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// STUDENT APIs (verifyToken वाले)
+// STUDENT APIs
 // ============================================
 
 app.post('/api/student-register', async (req, res) => {
+    console.log("📝 Student registration request received");
     try {
         const data = req.body;
-        if (!data.studentId || !data.password) return res.status(400).json({ success: false, message: "Student ID and password required" });
-        const existing = await Student.findOne({ $or: [{ studentId: data.studentId }, { aadharNumber: data.aadhar }] });
-        if (existing) return res.status(400).json({ success: false, message: "Student already exists" });
-        const student = new Student({
-            studentId: data.studentId, password: data.password, photo: data.photo, classMonthlyFees: data.classMonthlyFees || 0,
-            studentName: data.student, mobile: data.student.mobile, aadharNumber: data.aadhar, aadharDocument: data.aadharDocument,
-            registrationDate: new Date(data.dates.reg), joiningDate: new Date(data.dates.join),
-            fatherName: data.father, fatherMobile: data.father.mobile, motherName: data.mother,
-            address: data.address, education: data.education, attendance: []
+        
+        // Validate required fields
+        if (!data.studentId || !data.password) {
+            return res.status(400).json({ success: false, message: "Student ID and password required" });
+        }
+        if (!data.photo) {
+            return res.status(400).json({ success: false, message: "Photo is required" });
+        }
+        if (!data.aadharDocument) {
+            return res.status(400).json({ success: false, message: "Aadhar document is required" });
+        }
+        
+        // Check existing
+        const existing = await Student.findOne({ 
+            $or: [{ studentId: data.studentId }, { aadharNumber: data.aadhar }] 
         });
+        if (existing) {
+            return res.status(400).json({ success: false, message: "Student already exists" });
+        }
+        
+        // Create student
+        const student = new Student({
+            studentId: data.studentId,
+            password: data.password,
+            photo: data.photo,
+            classMonthlyFees: data.classMonthlyFees || 0,
+            studentName: {
+                first: data.student?.firstName || data.student?.first,
+                middle: data.student?.middleName || data.student?.middle || '',
+                last: data.student?.lastName || data.student?.last
+            },
+            mobile: data.student?.mobile || data.mobile,
+            aadharNumber: data.aadhar,
+            aadharDocument: data.aadharDocument,
+            registrationDate: new Date(data.dates?.reg || Date.now()),
+            joiningDate: new Date(data.dates?.join || Date.now()),
+            fatherName: {
+                first: data.father?.firstName || data.father?.first,
+                middle: data.father?.middleName || data.father?.middle || '',
+                last: data.father?.lastName || data.father?.last
+            },
+            fatherMobile: data.father?.mobile,
+            motherName: {
+                first: data.mother?.firstName || data.mother?.first || '',
+                middle: data.mother?.middleName || data.mother?.middle || '',
+                last: data.mother?.lastName || data.mother?.last || ''
+            },
+            address: {
+                current: data.address?.current,
+                permanent: data.address?.permanent
+            },
+            education: {
+                board: data.education?.board,
+                class: data.education?.class
+            },
+            attendance: []
+        });
+        
         await student.save();
-        res.json({ success: true, message: "Registration successful", studentId: data.studentId });
+        console.log(`✅ New student registered: ${student.studentName.first} ${student.studentName.last} (ID: ${student.studentId})`);
+        
+        res.json({ 
+            success: true, 
+            message: "Registration successful",
+            studentId: student.studentId,
+            password: student.password
+        });
+        
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error("❌ Registration Error:", err);
+        if (err.code === 11000) {
+            return res.status(400).json({ success: false, message: "Duplicate entry: Student with this Aadhar or ID already exists" });
+        }
+        res.status(500).json({ success: false, message: "Registration failed: " + err.message });
     }
 });
 
@@ -596,6 +790,7 @@ app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
         const { month, paidAmount } = req.body;
         const student = await Student.findOne({ studentId: req.params.studentId });
         if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        
         const feeEntry = student.feesHistory.find(f => f.month === month);
         if (feeEntry) {
             feeEntry.paidAmount = paidAmount;
@@ -627,10 +822,13 @@ app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
         const student = await Student.findOne({ studentId: req.params.id });
         if (!student) return res.status(404).json({ success: false, message: "Student not found" });
         if (!student.attendance) student.attendance = [];
+        
         const existingIndex = student.attendance.findIndex(a => a.date === date);
         const record = { date, status, remarks: remarks || '', markedBy: req.user.adminID, markedAt: new Date() };
+        
         if (existingIndex >= 0) student.attendance[existingIndex] = record;
         else student.attendance.push(record);
+        
         await student.save();
         res.json({ success: true, message: "Attendance marked" });
     } catch (err) {
@@ -639,14 +837,21 @@ app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// TEACHER APIs (verifyToken वाले)
+// TEACHER APIs
 // ============================================
 
 app.post('/api/teacher-register', async (req, res) => {
     try {
         const data = req.body;
-        if (await Teacher.findOne({ aadharNumber: data.aadharNumber })) return res.status(400).json({ success: false, message: "Aadhar already registered" });
-        if (await Teacher.findOne({ teacherId: data.teacherId })) return res.status(400).json({ success: false, message: "Teacher ID exists" });
+        
+        // Check existing
+        if (await Teacher.findOne({ aadharNumber: data.aadharNumber })) {
+            return res.status(400).json({ success: false, message: "Aadhar already registered" });
+        }
+        if (await Teacher.findOne({ teacherId: data.teacherId })) {
+            return res.status(400).json({ success: false, message: "Teacher ID exists" });
+        }
+        
         const newTeacher = new Teacher({ ...data, status: 'pending', attendance: [] });
         await newTeacher.save();
         res.json({ success: true, message: "Registration Successful! Pending approval." });
@@ -678,11 +883,13 @@ app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
     try {
         const { status, subject, salary, joiningDate } = req.body;
         const updateData = { status };
+        
         if (status === 'approved') {
             updateData.joiningDate = joiningDate ? new Date(joiningDate) : new Date();
             if (subject) updateData.subject = subject;
             if (salary) updateData.salary = parseInt(salary);
         }
+        
         const teacher = await Teacher.findOneAndUpdate({ teacherId: req.params.id }, updateData, { new: true });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         res.json({ success: true, message: `Teacher ${status} successfully` });
@@ -697,6 +904,7 @@ app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
         const teacher = await Teacher.findOne({ teacherId: req.params.id });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         if (!teacher.salaryHistory) teacher.salaryHistory = [];
+        
         const existing = teacher.salaryHistory.find(s => s.month === month);
         if (existing) {
             existing.paidAmount = paidAmount;
@@ -704,8 +912,8 @@ app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
             existing.status = paidAmount >= (teacher.salary || 0) ? 'paid' : paidAmount > 0 ? 'partial' : 'unpaid';
             existing.paymentDate = new Date();
             existing.updatedBy = req.user.adminID;
+            await teacher.save();
         }
-        await teacher.save();
         res.json({ success: true, message: "Salary updated" });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -750,10 +958,20 @@ app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
         const teacher = await Teacher.findOne({ teacherId: req.params.id });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         if (!teacher.attendance) teacher.attendance = [];
+        
         const existingIndex = teacher.attendance.findIndex(a => a.date === date);
-        const record = { date, status, remarks: remarks || '', photo: photo || '', markedBy: req.user.role === 'teacher' ? 'self' : req.user.adminID, markedAt: new Date() };
+        const record = { 
+            date, 
+            status, 
+            remarks: remarks || '', 
+            photo: photo || '', 
+            markedBy: req.user.role === 'teacher' ? 'self' : req.user.adminID, 
+            markedAt: new Date() 
+        };
+        
         if (existingIndex >= 0) teacher.attendance[existingIndex] = record;
         else teacher.attendance.push(record);
+        
         await teacher.save();
         res.json({ success: true, message: "Attendance marked" });
     } catch (err) {
@@ -774,16 +992,19 @@ app.get('/register.html', (req, res) => { res.sendFile(path.join(__dirname, 'pub
 app.get('/teacher-reg.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-reg.html')); });
 app.get('/studentats.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'studentats.html')); });
 app.get('/login.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.html')); });
+app.get('/admin-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html')); });
 
 // ============================================
 // ERROR HANDLERS
 // ============================================
 
+// Global error handler
 app.use((err, req, res, next) => {
     console.error("Global Error:", err.stack);
-    res.status(500).json({ success: false, message: "Something went wrong!" });
+    res.status(500).json({ success: false, message: "Something went wrong!", error: err.message });
 });
 
+// 404 handler
 app.use((req, res) => {
     res.status(404).json({ success: false, message: "API endpoint not found", path: req.path });
 });
@@ -805,4 +1026,16 @@ mongoose.connection.once('open', async () => {
 app.listen(PORT, () => {
     console.log(`🔐 Server running on port ${PORT}`);
     console.log(`🌐 http://localhost:${PORT}`);
+    console.log(`\n📌 API Endpoints:`);
+    console.log(`   GET  /api/config           - Website Configuration`);
+    console.log(`   GET  /api/stats            - Statistics Data`);
+    console.log(`   GET  /api/testimonials     - Testimonials`);
+    console.log(`   POST /api/admin-login      - Admin Login`);
+    console.log(`   POST /api/teacher-login    - Teacher Login`);
+    console.log(`   POST /api/student-register - Student Registration`);
+    console.log(`   POST /api/teacher-register - Teacher Registration`);
+    console.log(`   GET  /api/students         - All Students`);
+    console.log(`   GET  /api/teachers         - All Teachers`);
+    console.log(`   GET  /api/admin/profile    - Admin Profile`);
+    console.log(`   PUT  /api/admin/profile    - Update Admin Profile`);
 });
