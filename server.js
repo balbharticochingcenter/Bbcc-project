@@ -80,7 +80,7 @@ app.use(
                 ],
                 objectSrc: ["'none'"],
                 mediaSrc: ["'self'", "blob:", "data:"],
-                frameSrc: ["'none'"],
+                frameSrc: ["'self'", "blob:", "data:", "https:"],
                 upgradeInsecureRequests: [],
             },
         },
@@ -835,7 +835,151 @@ app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// Add after the other attendance endpoints (around line 700)
 
+// DELETE attendance record
+app.delete('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const { date } = req.body;
+        if (!date) return res.status(400).json({ success: false, message: "Date is required" });
+        
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        
+        if (!student.attendance) student.attendance = [];
+        const initialLength = student.attendance.length;
+        student.attendance = student.attendance.filter(a => a.date !== date);
+        
+        if (student.attendance.length === initialLength) {
+            return res.status(404).json({ success: false, message: "Attendance record not found" });
+        }
+        
+        await student.save();
+        res.json({ success: true, message: "Attendance record deleted" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// GET all unique boards and classes
+app.get('/api/boards', verifyToken, async (req, res) => {
+    try {
+        const students = await Student.find();
+        const boards = [...new Set(students.map(s => s.education?.board).filter(b => b))];
+        const classes = [...new Set(students.map(s => s.education?.class).filter(c => c))];
+        res.json({ success: true, data: { boards, classes } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// GET students by board and class
+app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
+    try {
+        const students = await Student.find({
+            'education.board': req.params.board,
+            'education.class': req.params.class
+        });
+        res.json({ success: true, data: students });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update student (full update)
+app.put('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        
+        const updateData = req.body;
+        
+        // Map the incoming data structure
+        if (updateData.student) {
+            student.studentName = {
+                first: updateData.student.firstName,
+                middle: updateData.student.middleName || '',
+                last: updateData.student.lastName
+            };
+            if (updateData.student.mobile) student.mobile = updateData.student.mobile;
+        }
+        
+        if (updateData.password) student.password = updateData.password;
+        if (updateData.photo) student.photo = updateData.photo;
+        if (updateData.classMonthlyFees) student.classMonthlyFees = updateData.classMonthlyFees;
+        if (updateData.aadhar) student.aadharNumber = updateData.aadhar;
+        if (updateData.aadharDocument) student.aadharDocument = updateData.aadharDocument;
+        
+        if (updateData.father) {
+            student.fatherName = {
+                first: updateData.father.firstName,
+                middle: updateData.father.middleName || '',
+                last: updateData.father.lastName
+            };
+            if (updateData.father.mobile) student.fatherMobile = updateData.father.mobile;
+        }
+        
+        if (updateData.mother) {
+            student.motherName = {
+                first: updateData.mother.firstName,
+                middle: updateData.mother.middleName || '',
+                last: updateData.mother.lastName
+            };
+        }
+        
+        if (updateData.address) {
+            student.address = {
+                current: updateData.address.current,
+                permanent: updateData.address.permanent
+            };
+        }
+        
+        if (updateData.education) {
+            student.education = {
+                board: updateData.education.board,
+                class: updateData.education.class
+            };
+        }
+        
+        // Handle joining date update
+        if (updateData.dates && updateData.dates.join) {
+            const newJoiningDate = new Date(updateData.dates.join);
+            if (newJoiningDate.toString() !== student.joiningDate.toString()) {
+                student.joiningDate = newJoiningDate;
+                // Regenerate fees history
+                const currentDate = new Date();
+                const newFeesHistory = [];
+                let current = new Date(newJoiningDate);
+                while (current <= currentDate) {
+                    const monthName = current.toLocaleString('default', { month: 'short' });
+                    const year = current.getFullYear();
+                    const monthKey = `${monthName} ${year}`;
+                    const existingFee = student.feesHistory?.find(f => f.month === monthKey);
+                    
+                    if (existingFee) {
+                        newFeesHistory.push(existingFee);
+                    } else {
+                        newFeesHistory.push({
+                            month: monthKey,
+                            year: year,
+                            monthIndex: current.getMonth(),
+                            paidAmount: 0,
+                            dueAmount: student.classMonthlyFees,
+                            status: 'unpaid'
+                        });
+                    }
+                    current.setMonth(current.getMonth() + 1);
+                }
+                student.feesHistory = newFeesHistory;
+            }
+        }
+        
+        await student.save();
+        res.json({ success: true, message: "Student updated", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 // ============================================
 // TEACHER APIs
 // ============================================
