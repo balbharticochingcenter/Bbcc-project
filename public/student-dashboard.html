@@ -395,7 +395,7 @@
                     if(data.success) {
                         token = data.token; localStorage.setItem('token', token); localStorage.setItem('isAdmin', 'true');
                         loginScreen.style.display = 'none'; dashboard.style.display = 'block';
-                        loadAllStudents(); loadBoards(); loadAttendanceStats();
+                        loadAllStudents(); loadBoardsAndClasses(); loadAttendanceStats();
                         document.getElementById('adminName').textContent = username;
                         showToast('Login successful!');
                     } else showToast('Invalid credentials', true);
@@ -408,7 +408,7 @@
                     const data = await res.json();
                     if(data.success) { 
                         loginScreen.style.display = 'none'; dashboard.style.display = 'block'; 
-                        loadAllStudents(); loadBoards(); loadAttendanceStats();
+                        loadAllStudents(); loadBoardsAndClasses(); loadAttendanceStats();
                         document.getElementById('adminName').textContent = data.user?.username || 'Admin';
                     }
                     else { localStorage.removeItem('token'); token = null; }
@@ -425,14 +425,17 @@
                 } catch(error) { showToast('Failed to load students', true); }
             }
 
-            async function loadBoards() {
+            async function loadBoardsAndClasses() {
                 try {
                     const res = await fetch('/api/boards', { headers: { 'Authorization': `Bearer ${token}` } });
                     const data = await res.json();
                     if(data.success) {
-                        const select = document.getElementById('boardSelect');
-                        select.innerHTML = '<option value="all">All Boards</option>';
-                        data.data.forEach(board => select.innerHTML += `<option value="${board}">${board}</option>`);
+                        const boardSelect = document.getElementById('boardSelect');
+                        const classSelect = document.getElementById('classSelect');
+                        boardSelect.innerHTML = '<option value="all">All Boards</option>';
+                        classSelect.innerHTML = '<option value="all">All Classes</option>';
+                        data.data.boards.forEach(board => boardSelect.innerHTML += `<option value="${board}">${board}</option>`);
+                        data.data.classes.forEach(cls => classSelect.innerHTML += `<option value="${cls}">${cls}</option>`);
                     }
                 } catch(error) { console.error(error); }
             }
@@ -508,7 +511,7 @@
                 } catch(error) { showToast('Search failed', true); }
             }
 
-            function resetFilters() { document.getElementById('boardSelect').value = 'all'; document.getElementById('classSelect').innerHTML = '<option value="all">All Classes</option>'; document.getElementById('searchInput').value = ''; loadAllStudents(); }
+            function resetFilters() { document.getElementById('boardSelect').value = 'all'; document.getElementById('classSelect').value = 'all'; document.getElementById('searchInput').value = ''; loadAllStudents(); }
 
             async function selectStudent(id) {
                 try {
@@ -686,7 +689,10 @@
                 const remarks = document.getElementById('editAttendanceRemarks').value;
                 if(!studentId || !newDate || !status) return showToast('All fields required', true);
                 try {
-                    if(originalDate !== newDate) await fetch(`/api/students/${studentId}/attendance`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date: originalDate }) });
+                    if(originalDate !== newDate) {
+                        const deleteRes = await fetch(`/api/students/${studentId}/attendance`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date: originalDate }) });
+                        if(!deleteRes.ok) return showToast('Failed to delete old record', true);
+                    }
                     const res = await fetch(`/api/students/${studentId}/attendance`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date: newDate, status, remarks }) });
                     const data = await res.json();
                     if(data.success) { showToast('Attendance updated!'); document.getElementById('editAttendanceModal').style.display = 'none'; loadAttendanceStats(); if(selectedStudent?.studentId === studentId) loadAttendanceHistory(); }
