@@ -1196,7 +1196,6 @@
                 document.getElementById('progressPercent').textContent = percentage + '% Complete';
                 
                 // Update step styling with animations
-                const steps = ['photo', 'student', 'father', 'documents', 'address', 'education'];
                 let stepCompleted = 0;
                 if (document.getElementById('studentPhoto').compressedPhoto) stepCompleted++;
                 if (document.getElementById('firstName').value.trim()) stepCompleted++;
@@ -1565,7 +1564,7 @@
                             board: document.getElementById('board').value,
                             class: document.getElementById('class').value
                         },
-                        fees: 0
+                        classMonthlyFees: 0  // ✅ IMPORTANT: Added this field
                     };
                     
                     const password = generatePassword(data.student.firstName, data.aadhar, data.student.mobile);
@@ -1588,7 +1587,8 @@
                         studentId,
                         password,
                         photo: document.getElementById('studentPhoto').compressedPhoto,
-                        aadharDocument: window.aadharDocument
+                        aadharDocument: window.aadharDocument,
+                        classMonthlyFees: 0  // ✅ IMPORTANT: Added this field
                     };
                     
                     new bootstrap.Modal(document.getElementById('previewModal')).show();
@@ -1602,26 +1602,76 @@
             });
 
             // ============================================
-            // CONFIRM BUTTON - API CALL
+            // CONFIRM BUTTON - API CALL (FIXED)
             // ============================================
             document.getElementById('confirmBtn').addEventListener('click', async function() {
                 const data = window.registrationData;
-                if (!data) { showToast('No data to submit', true); return; }
+                if (!data) { 
+                    showToast('No data to submit', true); 
+                    return; 
+                }
                 
                 const btn = this;
                 btn.disabled = true;
                 btn.innerHTML = '<span class="spinner"></span>Saving...';
                 
                 try {
+                    // Prepare data in correct format for server
+                    const apiData = {
+                        studentId: data.studentId,
+                        password: data.password,
+                        photo: data.photo,
+                        classMonthlyFees: data.classMonthlyFees !== undefined ? data.classMonthlyFees : 0,
+                        student: {
+                            firstName: data.student.firstName,
+                            middleName: data.student.middleName || '',
+                            lastName: data.student.lastName,
+                            mobile: data.student.mobile
+                        },
+                        aadhar: data.aadhar,
+                        aadharDocument: data.aadharDocument,
+                        dates: {
+                            reg: data.dates.reg,
+                            join: data.dates.join
+                        },
+                        father: {
+                            firstName: data.father.firstName,
+                            middleName: data.father.middleName || '',
+                            lastName: data.father.lastName,
+                            mobile: data.father.mobile
+                        },
+                        mother: {
+                            firstName: data.mother.firstName || '',
+                            middleName: data.mother.middleName || '',
+                            lastName: data.mother.lastName || ''
+                        },
+                        address: {
+                            current: data.address.current,
+                            permanent: data.address.permanent
+                        },
+                        education: {
+                            board: data.education.board,
+                            class: data.education.class
+                        }
+                    };
+                    
+                    console.log('Sending data to server:', {
+                        studentId: apiData.studentId,
+                        classMonthlyFees: apiData.classMonthlyFees,
+                        hasPhoto: !!apiData.photo,
+                        hasAadharDoc: !!apiData.aadharDocument
+                    });
+                    
                     const response = await fetch('/api/student-register', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(apiData)
                     });
                     
                     const result = await response.json();
+                    console.log('Server response:', result);
                     
-                    if (result.success) {
+                    if (response.ok && result.success) {
                         bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
                         
                         window.lastRegistration = {
@@ -1644,10 +1694,11 @@
                         showToast('Registration successful!');
                     } else {
                         showToast(result.message || 'Registration failed', true);
+                        console.error('Server error details:', result);
                     }
                 } catch (err) {
                     console.error('Registration error:', err);
-                    showToast('Server error: ' + err.message, true);
+                    showToast('Network error: ' + err.message, true);
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-check me-2"></i>Confirm & Submit';
