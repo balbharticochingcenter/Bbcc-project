@@ -670,16 +670,17 @@ function renderTeachers() {
     if(search) filtered = filtered.filter(t => t.teacherId?.toLowerCase().includes(search) || `${t.teacherName?.first} ${t.teacherName?.last}`.toLowerCase().includes(search));
     if(!filtered.length) { tbody.innerHTML = '发展<td colspan="8" class="text-center py-5"><i class="fas fa-users-slash fa-2x text-muted"></i><p>No teachers found</p> </tbody>'; return; }
     tbody.innerHTML = filtered.map(t => `
-        <tr>
-            <td><img src="${t.photo || 'https://via.placeholder.com/45'}" class="avatar" onerror="this.src='https://via.placeholder.com/45'"></td>
-            <td><strong>${t.teacherId}</strong></td>
-            <td>${t.teacherName?.first || ''} ${t.teacherName?.last || ''}</td>
-            <td>${t.subject || '-'}</td>
-            <td>${t.mobile || '-'}</td>
-            <td>₹${t.salary || 0}</td>
-            <td><span class="badge-custom badge-${t.status}">${t.status}</span></td>
-            <td><div class="action-btns"><button class="action-btn btn-view" data-id="${t.teacherId}" data-type="teacher-view"><i class="fas fa-eye"></i></button><button class="action-btn btn-edit" data-id="${t.teacherId}" data-type="teacher-edit"><i class="fas fa-edit"></i></button>${t.status === 'pending' ? `<button class="action-btn btn-approve" data-id="${t.teacherId}" data-type="teacher-approve"><i class="fas fa-check"></i></button>` : ''}<button class="action-btn btn-fees" data-id="${t.teacherId}" data-type="teacher-salary"><i class="fas fa-rupee-sign"></i></button><button class="action-btn btn-delete" data-id="${t.teacherId}" data-type="teacher-delete"><i class="fas fa-trash"></i></button></div></td>
-        </tr>
+       // In renderTeachers function, replace the action-btns div with this:
+<div class="action-btns">
+    <button class="action-btn btn-view" data-id="${t.teacherId}" data-type="teacher-view" title="View Details"><i class="fas fa-eye"></i></button>
+    <button class="action-btn btn-edit" data-id="${t.teacherId}" data-type="teacher-edit" title="Edit Teacher"><i class="fas fa-edit"></i></button>
+    ${t.status === 'pending' ? `<button class="action-btn btn-approve" data-id="${t.teacherId}" data-type="teacher-approve" title="Approve Teacher" style="background: #10b981;"><i class="fas fa-check"></i></button>` : ''}
+    ${t.status === 'pending' ? `<button class="action-btn" data-id="${t.teacherId}" data-type="teacher-reject" title="Reject Teacher" style="background: #ef4444;"><i class="fas fa-times"></i></button>` : ''}
+    ${t.status === 'approved' ? `<button class="action-btn" data-id="${t.teacherId}" data-type="teacher-deactivate" title="Deactivate Teacher" style="background: #f59e0b;"><i class="fas fa-ban"></i></button>` : ''}
+    ${t.status === 'rejected' ? `<button class="action-btn" data-id="${t.teacherId}" data-type="teacher-reactivate" title="Reactivate Teacher" style="background: #10b981;"><i class="fas fa-undo"></i></button>` : ''}
+    <button class="action-btn btn-fees" data-id="${t.teacherId}" data-type="teacher-salary" title="Manage Salary" style="background: #f39c12;"><i class="fas fa-rupee-sign"></i></button>
+    <button class="action-btn btn-delete" data-id="${t.teacherId}" data-type="teacher-delete" title="Delete Teacher" style="background: #dc2626;"><i class="fas fa-trash"></i></button>
+</div>
     `).join('');
     attachTeacherActions();
 }
@@ -694,6 +695,9 @@ function handleTeacherAction(action, id) {
     if(action === 'teacher-view') showTeacherDetails(id);
     else if(action === 'teacher-edit') openEditTeacherForm(id);
     else if(action === 'teacher-approve') approveTeacher(id);
+    else if(action === 'teacher-reject') rejectTeacher(id);
+    else if(action === 'teacher-deactivate') deactivateTeacher(id);
+    else if(action === 'teacher-reactivate') reactivateTeacher(id);
     else if(action === 'teacher-salary') openTeacherSalary(id);
     else if(action === 'teacher-delete') deleteTeacher(id);
 }
@@ -720,26 +724,255 @@ function showTeacherDetails(id) {
     `, 'Teacher Details');
 }
 
-async function openEditTeacherForm(id) {
-    const t = allTeachers.find(tc => tc.teacherId === id);
-    if(!t) return;
-    showModal(`
-        <div class="text-center mb-4"><i class="fas fa-edit fa-3x" style="color: var(--primary);"></i></div>
-        <p><strong>Edit Teacher: ${t.teacherName.first} ${t.teacherName.last}</strong></p>
-        <p>Complete edit form with 50+ fields will open here. Currently showing teacher details:</p>
-        <div class="row g-2 mt-3">
-            <div class="col-md-6"><strong>Teacher ID:</strong> ${t.teacherId}</div>
-            <div class="col-md-6"><strong>Mobile:</strong> ${t.mobile}</div>
-            <div class="col-md-6"><strong>Subject:</strong> ${t.subject || '-'}</div>
-            <div class="col-md-6"><strong>Salary:</strong> ₹${t.salary}</div>
-            <div class="col-md-6"><strong>Qualification:</strong> ${t.lastQualification}</div>
-            <div class="col-md-6"><strong>Joining Date:</strong> ${new Date(t.joiningDate).toLocaleDateString()}</div>
-        </div>
-        <hr>
-        <p class="text-muted">Full edit form implementation ready - includes all fields like Address, Bank Details, Emergency Contact, etc.</p>
-    `, 'Edit Teacher');
+async function openEditTeacherForm(teacherId) {
+    showLoader(true);
+    try {
+        const res = await fetch(`/api/teachers/${teacherId}`, { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showToast('Error loading teacher data', 'error');
+            showLoader(false);
+            return;
+        }
+        
+        const teacher = data.data;
+        const today = new Date().toISOString().split('T')[0];
+        
+        const modalHtml = `
+            <div class="modal-custom" id="editTeacherFullModal">
+                <div class="modal-content-custom" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header-custom">
+                        <h4><i class="fas fa-edit"></i> Edit Teacher - ${teacher.teacherName.first} ${teacher.teacherName.last}</h4>
+                        <button class="modal-close" id="closeEditTeacherModal">&times;</button>
+                    </div>
+                    <div class="modal-body-custom">
+                        <form id="editTeacherFullForm">
+                            <input type="hidden" id="editTeacherId" value="${teacher.teacherId}">
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-id-card"></i> Basic Information</div>
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label>Teacher ID *</label><input type="text" class="form-control" id="editTeacherIdField" value="${teacher.teacherId}" required></div>
+                                    <div class="col-md-6"><label>Password *</label><input type="text" class="form-control" id="editTeacherPassword" value="${teacher.password}" required></div>
+                                    <div class="col-md-4"><label>First Name *</label><input type="text" class="form-control" id="editTeacherFirstName" value="${teacher.teacherName.first}" required></div>
+                                    <div class="col-md-4"><label>Middle Name</label><input type="text" class="form-control" id="editTeacherMiddleName" value="${teacher.teacherName.middle || ''}"></div>
+                                    <div class="col-md-4"><label>Last Name *</label><input type="text" class="form-control" id="editTeacherLastName" value="${teacher.teacherName.last}" required></div>
+                                    <div class="col-md-6"><label>Mobile *</label><input type="text" class="form-control" id="editTeacherMobile" value="${teacher.mobile}" maxlength="10" required></div>
+                                    <div class="col-md-6"><label>Alternate Mobile</label><input type="text" class="form-control" id="editTeacherAltMobile" value="${teacher.altMobile || ''}" maxlength="10"></div>
+                                    <div class="col-md-6"><label>Date of Birth *</label><input type="date" class="form-control" id="editTeacherDob" value="${teacher.dob?.split('T')[0]}" required></div>
+                                    <div class="col-md-6"><label>Aadhar Number *</label><input type="text" class="form-control" id="editTeacherAadhar" value="${teacher.aadharNumber}" maxlength="12" required></div>
+                                    <div class="col-md-12"><label>Last Qualification *</label><input type="text" class="form-control" id="editTeacherQualification" value="${teacher.lastQualification}" required></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-user-tie"></i> Father's Information</div>
+                                <div class="row g-3">
+                                    <div class="col-md-4"><label>Father First Name *</label><input type="text" class="form-control" id="editTeacherFatherFirst" value="${teacher.fatherName.first}" required></div>
+                                    <div class="col-md-4"><label>Father Middle Name</label><input type="text" class="form-control" id="editTeacherFatherMiddle" value="${teacher.fatherName.middle || ''}"></div>
+                                    <div class="col-md-4"><label>Father Last Name *</label><input type="text" class="form-control" id="editTeacherFatherLast" value="${teacher.fatherName.last}" required></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-briefcase"></i> Professional Details</div>
+                                <div class="row g-3">
+                                    <div class="col-md-4"><label>Subject</label><input type="text" class="form-control" id="editTeacherSubject" value="${teacher.subject || ''}"></div>
+                                    <div class="col-md-4"><label>Monthly Salary (₹)</label><input type="number" class="form-control" id="editTeacherSalary" value="${teacher.salary || 0}" min="0"></div>
+                                    <div class="col-md-4"><label>Joining Date</label><input type="date" class="form-control" id="editTeacherJoining" value="${teacher.joiningDate?.split('T')[0] || today}"></div>
+                                    <div class="col-md-4"><label>Status</label>
+                                        <select class="form-select" id="editTeacherStatus">
+                                            <option value="pending" ${teacher.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                            <option value="approved" ${teacher.status === 'approved' ? 'selected' : ''}>Approved</option>
+                                            <option value="rejected" ${teacher.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4"><label>Experience (Years)</label><input type="number" class="form-control" id="editTeacherExperience" value="${teacher.experience || 0}" min="0"></div>
+                                    <div class="col-md-4"><label>Previous School</label><input type="text" class="form-control" id="editTeacherPrevSchool" value="${teacher.previousSchool || ''}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address Details</div>
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label>Current Address</label><textarea class="form-control" id="editTeacherCurrentAddr" rows="2">${teacher.address?.current || ''}</textarea></div>
+                                    <div class="col-md-6"><label>Permanent Address</label><textarea class="form-control" id="editTeacherPermAddr" rows="2">${teacher.address?.permanent || ''}</textarea></div>
+                                    <div class="col-md-4"><label>City</label><input type="text" class="form-control" id="editTeacherCity" value="${teacher.address?.city || ''}"></div>
+                                    <div class="col-md-4"><label>State</label><input type="text" class="form-control" id="editTeacherState" value="${teacher.address?.state || ''}"></div>
+                                    <div class="col-md-4"><label>Pincode</label><input type="text" class="form-control" id="editTeacherPincode" value="${teacher.address?.pincode || ''}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-university"></i> Bank Details</div>
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label>Account Holder Name</label><input type="text" class="form-control" id="editTeacherAccountHolder" value="${teacher.bankDetails?.accountHolder || ''}"></div>
+                                    <div class="col-md-6"><label>Account Number</label><input type="text" class="form-control" id="editTeacherAccountNumber" value="${teacher.bankDetails?.accountNumber || ''}"></div>
+                                    <div class="col-md-6"><label>IFSC Code</label><input type="text" class="form-control" id="editTeacherIfsc" value="${teacher.bankDetails?.ifscCode || ''}"></div>
+                                    <div class="col-md-6"><label>Bank Name</label><input type="text" class="form-control" id="editTeacherBankName" value="${teacher.bankDetails?.bankName || ''}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-phone-alt"></i> Emergency Contact</div>
+                                <div class="row g-3">
+                                    <div class="col-md-4"><label>Contact Name</label><input type="text" class="form-control" id="editTeacherEmergName" value="${teacher.emergencyContact?.name || ''}"></div>
+                                    <div class="col-md-4"><label>Relation</label><input type="text" class="form-control" id="editTeacherEmergRelation" value="${teacher.emergencyContact?.relation || ''}"></div>
+                                    <div class="col-md-4"><label>Phone</label><input type="text" class="form-control" id="editTeacherEmergPhone" value="${teacher.emergencyContact?.phone || ''}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-file-alt"></i> Documents</div>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label>Photo</label>
+                                        <div class="file-upload-area" id="editTeacherPhotoArea">Change Photo</div>
+                                        <input type="file" id="editTeacherPhotoFile" style="display:none" accept="image/*">
+                                        <input type="hidden" id="editTeacherPhotoData" value="${teacher.photo || ''}">
+                                        <div id="editTeacherPhotoPreview" class="mt-2">${teacher.photo ? `<img src="${teacher.photo}" style="max-width:100px; border-radius:12px;">` : 'No photo'}</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Aadhar Document</label>
+                                        <div class="file-upload-area" id="editTeacherAadharArea">Change Document</div>
+                                        <input type="file" id="editTeacherAadharFile" style="display:none" accept="image/*,.pdf">
+                                        <input type="hidden" id="editTeacherAadharData" value="${teacher.aadharDoc || ''}">
+                                        <div id="editTeacherAadharPreview" class="mt-2">${teacher.aadharDoc ? (teacher.aadharDoc.includes('pdf') ? '<i class="fas fa-file-pdf fa-3x"></i>' : `<img src="${teacher.aadharDoc}" style="max-width:100px;">`) : 'No document'}</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Qualification Document</label>
+                                        <div class="file-upload-area" id="editTeacherQualArea">Change Document</div>
+                                        <input type="file" id="editTeacherQualFile" style="display:none" accept="image/*,.pdf">
+                                        <input type="hidden" id="editTeacherQualData" value="${teacher.qualificationDoc || ''}">
+                                        <div id="editTeacherQualPreview" class="mt-2">${teacher.qualificationDoc ? (teacher.qualificationDoc.includes('pdf') ? '<i class="fas fa-file-pdf fa-3x"></i>' : `<img src="${teacher.qualificationDoc}" style="max-width:100px;">`) : 'No document'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-comment"></i> Remarks</div>
+                                <textarea class="form-control" id="editTeacherRemarks" rows="2">${teacher.remarks || ''}</textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer-custom">
+                        <button class="btn-secondary-premium" id="cancelEditTeacherBtn">Cancel</button>
+                        <button class="btn-primary-premium" id="saveEditTeacherBtn"><i class="fas fa-save"></i> Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = document.getElementById('editTeacherFullModal');
+        modal.style.display = 'block';
+        
+        document.getElementById('closeEditTeacherModal').onclick = () => modal.remove();
+        document.getElementById('cancelEditTeacherBtn').onclick = () => modal.remove();
+        
+        // File upload handlers
+        const setupFileUpload = (areaId, fileId, dataId, previewId) => {
+            const area = document.getElementById(areaId);
+            const fileInput = document.getElementById(fileId);
+            if (!area || !fileInput) return;
+            area.onclick = () => fileInput.click();
+            fileInput.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const compressed = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                    document.getElementById(dataId).value = compressed;
+                    const preview = document.getElementById(previewId);
+                    if (file.type === 'application/pdf') {
+                        preview.innerHTML = '<i class="fas fa-file-pdf fa-3x"></i>';
+                    } else {
+                        preview.innerHTML = `<img src="${compressed}" style="max-width:100px; border-radius:12px;">`;
+                    }
+                }
+            };
+        };
+        
+        setupFileUpload('editTeacherPhotoArea', 'editTeacherPhotoFile', 'editTeacherPhotoData', 'editTeacherPhotoPreview');
+        setupFileUpload('editTeacherAadharArea', 'editTeacherAadharFile', 'editTeacherAadharData', 'editTeacherAadharPreview');
+        setupFileUpload('editTeacherQualArea', 'editTeacherQualFile', 'editTeacherQualData', 'editTeacherQualPreview');
+        
+        document.getElementById('saveEditTeacherBtn').onclick = async () => {
+            const teacherId = document.getElementById('editTeacherId').value;
+            const updateData = {
+                teacherId: document.getElementById('editTeacherIdField').value,
+                password: document.getElementById('editTeacherPassword').value,
+                photo: document.getElementById('editTeacherPhotoData').value,
+                teacherName: {
+                    first: document.getElementById('editTeacherFirstName').value,
+                    middle: document.getElementById('editTeacherMiddleName').value,
+                    last: document.getElementById('editTeacherLastName').value
+                },
+                fatherName: {
+                    first: document.getElementById('editTeacherFatherFirst').value,
+                    middle: document.getElementById('editTeacherFatherMiddle').value,
+                    last: document.getElementById('editTeacherFatherLast').value
+                },
+                mobile: document.getElementById('editTeacherMobile').value,
+                altMobile: document.getElementById('editTeacherAltMobile').value,
+                dob: document.getElementById('editTeacherDob').value,
+                aadharNumber: document.getElementById('editTeacherAadhar').value,
+                lastQualification: document.getElementById('editTeacherQualification').value,
+                aadharDoc: document.getElementById('editTeacherAadharData').value,
+                qualificationDoc: document.getElementById('editTeacherQualData').value,
+                subject: document.getElementById('editTeacherSubject').value,
+                salary: parseInt(document.getElementById('editTeacherSalary').value) || 0,
+                joiningDate: document.getElementById('editTeacherJoining').value,
+                status: document.getElementById('editTeacherStatus').value,
+                experience: parseInt(document.getElementById('editTeacherExperience').value) || 0,
+                previousSchool: document.getElementById('editTeacherPrevSchool').value,
+                address: {
+                    current: document.getElementById('editTeacherCurrentAddr').value,
+                    permanent: document.getElementById('editTeacherPermAddr').value,
+                    city: document.getElementById('editTeacherCity').value,
+                    state: document.getElementById('editTeacherState').value,
+                    pincode: document.getElementById('editTeacherPincode').value
+                },
+                bankDetails: {
+                    accountHolder: document.getElementById('editTeacherAccountHolder').value,
+                    accountNumber: document.getElementById('editTeacherAccountNumber').value,
+                    ifscCode: document.getElementById('editTeacherIfsc').value,
+                    bankName: document.getElementById('editTeacherBankName').value
+                },
+                emergencyContact: {
+                    name: document.getElementById('editTeacherEmergName').value,
+                    relation: document.getElementById('editTeacherEmergRelation').value,
+                    phone: document.getElementById('editTeacherEmergPhone').value
+                },
+                remarks: document.getElementById('editTeacherRemarks').value
+            };
+            
+            showLoader(true);
+            try {
+                const res = await fetch(`/api/teachers/${teacherId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(updateData)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('✅ Teacher updated successfully!', 'success');
+                    modal.remove();
+                    loadTeachers();
+                } else {
+                    showToast(result.message || 'Update failed', 'error');
+                }
+            } catch (err) {
+                showToast('Update failed', 'error');
+            }
+            showLoader(false);
+        };
+        
+    } catch (err) {
+        showToast('Error loading teacher data', 'error');
+    }
+    showLoader(false);
 }
-
 async function approveTeacher(id) {
     const subject = prompt('📚 Enter subject for teacher:', 'Mathematics');
     if(!subject) return;
@@ -773,55 +1006,258 @@ async function deleteTeacher(id) {
     showLoader(false);
 }
 
-async function openTeacherSalary(id) {
-    const teacher = allTeachers.find(t => t.teacherId === id);
-    if(!teacher) return;
-    const salaryHistory = teacher.salaryHistory || [];
-    const totalPaid = salaryHistory.reduce((a,b)=>a+(b.paidAmount||0),0);
-    const months = salaryHistory.map(f => f.month);
-    const paidData = salaryHistory.map(f => f.paidAmount);
-    const dueData = salaryHistory.map(f => f.dueAmount);
-    const modalHtml = `
-        <div class="modal-custom" id="salaryModal"><div class="modal-content-custom" style="max-width:750px;"><div class="modal-header-custom"><h4><i class="fas fa-rupee-sign"></i> Salary - ${teacher.teacherName.first} ${teacher.teacherName.last}</h4><button class="modal-close" id="closeSalaryModal">&times;</button></div>
-        <div class="modal-body-custom"><div class="row mb-3"><div class="col-6 text-center"><div class="bg-success bg-opacity-10 p-3 rounded-3"><h2 class="text-success">₹${totalPaid}</h2><small>Total Paid</small></div></div><div class="col-6 text-center"><div class="bg-danger bg-opacity-10 p-3 rounded-3"><h2 class="text-danger">₹${teacher.salary * (salaryHistory.length||0) - totalPaid}</h2><small>Total Due</small></div></div></div>
-        <div class="chart-container"><canvas id="salaryChartCanvas"></canvas><div class="chart-type-selector"><button class="chart-type-btn active" data-chart="bar">Bar</button><button class="chart-type-btn" data-chart="line">Line</button><button class="chart-type-btn" data-chart="pie">Pie</button><button class="chart-type-btn" data-chart="doughnut">Doughnut</button></div></div>
-        <hr><div class="table-responsive"><table class="table table-sm"><thead> <tr><th>Month</th><th>Paid (₹)</th><th>Due (₹)</th><th>Status</th><th>Action</th></tr> </thead><tbody id="salaryTableBody"></tbody> </table></div></div></div></div>`;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    const modal = document.getElementById('salaryModal');
-    modal.style.display = 'block';
-    document.getElementById('closeSalaryModal').onclick = () => modal.remove();
-    const tbody = document.getElementById('salaryTableBody');
-    if(salaryHistory.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center">No salary records found</td></tr>';
-    else tbody.innerHTML = salaryHistory.map(s => `
-        <tr><td><strong>${s.month}</strong></td><td>₹${s.paidAmount}</td><td>₹${s.dueAmount}</td><td><span class="badge-custom badge-${s.status}">${s.status}</span></td><td><button class="btn btn-sm btn-primary pay-salary-btn" data-month="${s.month}"><i class="fas fa-rupee-sign"></i> Pay</button></td></tr>
-    `).join('');
-    const ctx = document.getElementById('salaryChartCanvas').getContext('2d');
-    let chart = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label: 'Paid (₹)', data: paidData, backgroundColor: '#06d6a0', borderRadius: 8 }, { label: 'Due (₹)', data: dueData, backgroundColor: '#fb5607', borderRadius: 8 }] }, options: { responsive: true } });
-    document.querySelectorAll('.chart-type-btn').forEach(btn => btn.onclick = () => {
-        document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-        const type = btn.dataset.chart;
-        if(type === 'pie' || type === 'doughnut') {
-            const totalPaidC = salaryHistory.reduce((a,b)=>a+(b.paidAmount||0),0);
-            const totalDueC = salaryHistory.reduce((a,b)=>a+(b.dueAmount||0),0);
-            chart.destroy(); chart = new Chart(ctx, { type: type, data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaidC, totalDueC], backgroundColor: ['#06d6a0', '#fb5607'] }] }, options: { responsive: true } });
-        } else { chart.destroy(); chart = new Chart(ctx, { type: type, data: { labels: months, datasets: [{ label: 'Paid (₹)', data: paidData, backgroundColor: '#06d6a0', borderRadius: 8 }, { label: 'Due (₹)', data: dueData, backgroundColor: '#fb5607', borderRadius: 8 }] }, options: { responsive: true } }); }
-    });
-    document.querySelectorAll('.pay-salary-btn').forEach(btn => btn.onclick = async () => {
-        const amount = prompt('💰 Enter amount to pay (₹):', '0');
-        if(amount === null) return;
-        const paid = parseFloat(amount);
-        if(isNaN(paid) || paid < 0 || paid > teacher.salary) return showToast('Invalid amount', 'error');
-        showLoader(true);
-        try {
-            const res = await fetch(`/api/teachers/${id}/salary`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body:JSON.stringify({month:btn.dataset.month, paidAmount:paid}) });
-            const data = await res.json();
-            if(data.success) { showToast('Salary updated!'); modal.remove(); loadTeachers(); }
-            else showToast(data.message || 'Failed', 'error');
-        } catch(e) { showToast('Failed', 'error'); }
-        showLoader(false);
-    });
+let currentTeacherSalaryChart = null;
+
+async function openTeacherSalary(teacherId) {
+    showLoader(true);
+    try {
+        const res = await fetch(`/api/teachers/${teacherId}`, { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showToast('Error loading teacher data', 'error');
+            showLoader(false);
+            return;
+        }
+        
+        const teacher = data.data;
+        let salaryHistory = teacher.salaryHistory || [];
+        const totalPaid = salaryHistory.reduce((a, b) => a + (b.paidAmount || 0), 0);
+        const totalDue = (teacher.salary || 0) * (salaryHistory.length || 0) - totalPaid;
+        
+        if (salaryHistory.length === 0 && teacher.joiningDate) {
+            const startDate = new Date(teacher.joiningDate);
+            const currentDate = new Date();
+            let current = new Date(startDate);
+            while (current <= currentDate) {
+                const monthName = current.toLocaleString('default', { month: 'short' });
+                const year = current.getFullYear();
+                salaryHistory.push({
+                    month: `${monthName} ${year}`,
+                    paidAmount: 0,
+                    dueAmount: teacher.salary,
+                    status: 'unpaid'
+                });
+                current.setMonth(current.getMonth() + 1);
+            }
+        }
+        
+        const months = salaryHistory.map(f => f.month);
+        const paidData = salaryHistory.map(f => f.paidAmount);
+        const dueData = salaryHistory.map(f => f.dueAmount);
+        
+        const modalHtml = `
+            <div class="modal-custom" id="teacherSalaryModal">
+                <div class="modal-content-custom" style="max-width: 800px;">
+                    <div class="modal-header-custom">
+                        <h4><i class="fas fa-rupee-sign"></i> Salary Management - ${teacher.teacherName.first} ${teacher.teacherName.last}</h4>
+                        <button class="modal-close" id="closeSalaryModal">&times;</button>
+                    </div>
+                    <div class="modal-body-custom">
+                        <div class="row mb-4">
+                            <div class="col-md-4 text-center"><div class="p-3 rounded-3" style="background: #06d6a020;"><h3 class="text-success mb-0">₹${teacher.salary || 0}</h3><small>Monthly Salary</small></div></div>
+                            <div class="col-md-4 text-center"><div class="p-3 rounded-3" style="background: #06d6a020;"><h3 class="text-success mb-0">₹${totalPaid}</h3><small>Total Paid</small></div></div>
+                            <div class="col-md-4 text-center"><div class="p-3 rounded-3" style="background: #fb560720;"><h3 class="text-danger mb-0">₹${totalDue}</h3><small>Total Due</small></div></div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="teacherSalaryChartCanvas"></canvas>
+                            <div class="chart-type-selector mt-3">
+                                <button class="chart-type-btn active" data-chart="bar">Bar Chart</button>
+                                <button class="chart-type-btn" data-chart="line">Line Chart</button>
+                                <button class="chart-type-btn" data-chart="pie">Pie Chart</button>
+                                <button class="chart-type-btn" data-chart="doughnut">Doughnut Chart</button>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-history me-2"></i> Monthly Salary History</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light"><tr><th>Month</th><th>Salary (₹)</th><th>Paid (₹)</th><th>Due (₹)</th><th>Status</th><th>Action</th></tr></thead>
+                                <tbody id="salaryHistoryTableBody"></tbody>
+                             </table>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-fast-forward me-2"></i> Quick Pay</h6>
+                        <div class="row g-2">
+                            <div class="col-md-5"><select class="form-select" id="quickPayMonth"><option value="">Select Month</option>${salaryHistory.map(f => `<option value="${f.month}">${f.month}</option>`).join('')}</select></div>
+                            <div class="col-md-4"><input type="number" class="form-control" id="quickPayAmount" placeholder="Amount (₹)" min="0" max="${teacher.salary}"></div>
+                            <div class="col-md-3"><button class="btn-primary-premium w-100" id="quickPayBtn"><i class="fas fa-rupee-sign"></i> Pay</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = document.getElementById('teacherSalaryModal');
+        modal.style.display = 'block';
+        document.getElementById('closeSalaryModal').onclick = () => {
+            modal.remove();
+            if (currentTeacherSalaryChart) currentTeacherSalaryChart.destroy();
+        };
+        
+        const tbody = document.getElementById('salaryHistoryTableBody');
+        if (salaryHistory.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3">No salary records found</td></tr>';
+        } else {
+            tbody.innerHTML = salaryHistory.map(f => `
+                <tr><td><strong>${f.month}</strong></td><td>₹${teacher.salary || 0}</td><td>₹${f.paidAmount || 0}</td><td>₹${f.dueAmount || 0}</td>
+                <td><span class="badge-custom badge-${f.status}">${f.status}</span></td>
+                <td><button class="btn btn-sm btn-primary pay-month-btn" data-month="${f.month}"><i class="fas fa-rupee-sign"></i> Pay</button></td></tr>
+            `).join('');
+        }
+        
+        const ctx = document.getElementById('teacherSalaryChartCanvas').getContext('2d');
+        if (currentTeacherSalaryChart) currentTeacherSalaryChart.destroy();
+        
+        currentTeacherSalaryChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: months, datasets: [{ label: 'Paid (₹)', data: paidData, backgroundColor: '#06d6a0', borderRadius: 8 }, { label: 'Due (₹)', data: dueData, backgroundColor: '#fb5607', borderRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+        
+        document.querySelectorAll('.chart-type-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const type = btn.dataset.chart;
+                if (type === 'pie' || type === 'doughnut') {
+                    const totalPaidC = salaryHistory.reduce((a, b) => a + (b.paidAmount || 0), 0);
+                    const totalDueC = salaryHistory.reduce((a, b) => a + (b.dueAmount || 0), 0);
+                    currentTeacherSalaryChart.destroy();
+                    currentTeacherSalaryChart = new Chart(ctx, { type: type, data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaidC, totalDueC], backgroundColor: ['#06d6a0', '#fb5607'] }] }, options: { responsive: true } });
+                } else {
+                    currentTeacherSalaryChart.destroy();
+                    currentTeacherSalaryChart = new Chart(ctx, { type: type, data: { labels: months, datasets: [{ label: 'Paid (₹)', data: paidData, backgroundColor: '#06d6a0', borderRadius: 8 }, { label: 'Due (₹)', data: dueData, backgroundColor: '#fb5607', borderRadius: 8 }] }, options: { responsive: true } });
+                }
+            };
+        });
+        
+        document.querySelectorAll('.pay-month-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const amount = prompt(`💰 Enter amount to pay for ${btn.dataset.month} (Max: ₹${teacher.salary}):`, '0');
+                if (amount === null) return;
+                const paid = parseFloat(amount);
+                if (isNaN(paid) || paid < 0 || paid > teacher.salary) {
+                    showToast('Invalid amount', 'error');
+                    return;
+                }
+                showLoader(true);
+                try {
+                    const res = await fetch(`/api/teachers/${teacherId}/salary`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ month: btn.dataset.month, paidAmount: paid })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast('✅ Salary payment recorded!', 'success');
+                        modal.remove();
+                        loadTeachers();
+                    } else {
+                        showToast(data.message || 'Payment failed', 'error');
+                    }
+                } catch (err) {
+                    showToast('Payment failed', 'error');
+                }
+                showLoader(false);
+            };
+        });
+        
+        document.getElementById('quickPayBtn').onclick = async () => {
+            const month = document.getElementById('quickPayMonth').value;
+            const amount = document.getElementById('quickPayAmount').value;
+            if (!month) {
+                showToast('Please select a month', 'warning');
+                return;
+            }
+            const paid = parseFloat(amount);
+            if (isNaN(paid) || paid < 0 || paid > teacher.salary) {
+                showToast(`Invalid amount (Max: ₹${teacher.salary})`, 'error');
+                return;
+            }
+            showLoader(true);
+            try {
+                const res = await fetch(`/api/teachers/${teacherId}/salary`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ month, paidAmount: paid })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Salary payment recorded!', 'success');
+                    modal.remove();
+                    loadTeachers();
+                } else {
+                    showToast(data.message || 'Payment failed', 'error');
+                }
+            } catch (err) {
+                showToast('Payment failed', 'error');
+            }
+            showLoader(false);
+        };
+        
+    } catch (err) {
+        showToast('Error loading salary data', 'error');
+    }
+    showLoader(false);
+}
+    // ============================================
+// TEACHER STATUS MANAGEMENT FUNCTIONS
+// ============================================
+
+async function rejectTeacher(id) {
+    const reason = prompt('❌ Enter rejection reason:', 'Not qualified for the position');
+    if(!reason) return;
+    showLoader(true);
+    try {
+        const res = await fetch(`/api/teachers/${id}/status`, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+            body:JSON.stringify({status:'rejected', rejectionReason:reason})
+        });
+        const data = await res.json();
+        if(data.success) { showToast('❌ Teacher rejected!'); loadTeachers(); }
+        else showToast(data.message || 'Rejection failed', 'error');
+    } catch(e) { showToast('Rejection failed', 'error'); }
+    showLoader(false);
 }
 
+async function deactivateTeacher(id) {
+    if(!confirm('⚠️ Deactivate this teacher? They will not be able to login.')) return;
+    showLoader(true);
+    try {
+        const res = await fetch(`/api/teachers/${id}/status`, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+            body:JSON.stringify({status:'rejected', rejectionReason:'Deactivated by admin'})
+        });
+        const data = await res.json();
+        if(data.success) { showToast('⚠️ Teacher deactivated!'); loadTeachers(); }
+        else showToast(data.message || 'Deactivation failed', 'error');
+    } catch(e) { showToast('Deactivation failed', 'error'); }
+    showLoader(false);
+}
+
+async function reactivateTeacher(id) {
+    if(!confirm('🔄 Reactivate this teacher? They will be able to login again.')) return;
+    showLoader(true);
+    try {
+        const res = await fetch(`/api/teachers/${id}/status`, {
+            method:'PUT',
+            headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+            body:JSON.stringify({status:'pending'})
+        });
+        const data = await res.json();
+        if(data.success) { showToast('🔄 Teacher reactivated! Pending approval.'); loadTeachers(); }
+        else showToast(data.message || 'Reactivation failed', 'error');
+    } catch(e) { showToast('Reactivation failed', 'error'); }
+    showLoader(false);
+}
 // ============================================
 // ADD NEW STUDENT/TEACHER FORMS
 // ============================================
