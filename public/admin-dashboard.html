@@ -3,27 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Admin Dashboard | Bal Bharti Coaching</title>
+    <title>Admin Dashboard | Bal Bharti Coaching - Complete Management System</title>
     
-    <!-- ============================================
-         TOKEN BASED AUTHENTICATION CHECK
-         ============================================ -->
-    <script>
-        (function() {
-            const token = localStorage.getItem('token');
-            const isAdmin = localStorage.getItem('isAdmin');
-            
-            if (!token || !isAdmin || isAdmin !== 'true') {
-                console.log('No token found, redirecting to login');
-                window.location.href = 'login.html';
-            }
-        })();
-    </script>
-
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
@@ -74,11 +61,7 @@
         .toast-message.error { border-left-color: var(--danger); }
         .toast-message.warning { border-left-color: var(--warning); }
         .toast-message i { font-size: 1.3rem; }
-        .toast-message.success i { color: var(--success); }
-        .toast-message.error i { color: var(--danger); }
         @keyframes slideDown { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .toast-message.fade-out { animation: fadeOut 0.3s forwards; }
-        @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
 
         /* Header */
         .admin-header {
@@ -102,7 +85,8 @@
         /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
         @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
-        .stat-card { background: white; border-radius: 20px; padding: 16px 12px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-md); }
+        .stat-card { background: white; border-radius: 20px; padding: 16px 12px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
         .stat-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
         .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--dark); line-height: 1.2; }
         .stat-label { font-size: 0.7rem; color: #64748b; font-weight: 500; }
@@ -121,36 +105,9 @@
         }
         .tab-btn.active { background: var(--gradient-primary); color: white; }
 
-        /* Split Layout */
-        .split-layout { display: flex; flex-direction: column; gap: 24px; }
-        @media (min-width: 1024px) { .split-layout { flex-direction: row; } .split-left { flex: 1; } .split-right { width: 450px; position: sticky; top: 90px; height: fit-content; } }
-
-        /* Live Preview */
-        .live-preview { background: white; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); }
-        .preview-header { background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #eef2f6; display: flex; align-items: center; justify-content: space-between; }
-        .preview-header h4 { font-size: 1rem; font-weight: 700; margin: 0; }
-        .preview-iframe { background: white; height: 500px; overflow: auto; }
-        .preview-iframe iframe { width: 100%; height: 100%; border: none; }
-        .refresh-preview { background: var(--primary); color: white; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
-
-        /* Logo Type Toggle */
-        .logo-type-toggle { display: flex; gap: 12px; margin-bottom: 16px; }
-        .logo-type-btn {
-            flex: 1; padding: 10px; border: 2px solid #eef2f6; border-radius: 14px;
-            background: white; font-weight: 600; color: #64748b; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .logo-type-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
-
-        /* Logo Preview */
-        .logo-preview-wrapper { background: #f8fafc; border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px; }
-        .logo-preview { width: 100px; height: 100px; border-radius: 20px; border: 3px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; overflow: hidden; background: white; }
-        .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .logo-preview .logo-text-preview { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #ec489a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* Content Card */
+        /* Content Cards */
         .content-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); margin-bottom: 24px; }
-        .card-header-custom { padding: 18px 20px; border-bottom: 1px solid #eef2f6; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .card-header-custom { padding: 18px 20px; border-bottom: 1px solid #eef2f6; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: linear-gradient(135deg, #f8fafc, #fff); }
         .card-header-custom h3 { font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
         .card-body-custom { padding: 20px; }
 
@@ -170,7 +127,7 @@
             transition: all 0.2s; box-shadow: 0 4px 12px rgba(67,97,238,0.3);
         }
         .btn-primary-custom:active { transform: scale(0.96); }
-        .btn-primary-custom.loading { opacity: 0.7; pointer-events: none; color: transparent; position: relative; }
+        .btn-primary-custom.loading { opacity: 0.7; pointer-events: none; position: relative; }
         .btn-primary-custom.loading::after {
             content: ''; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%;
             margin-left: -10px; margin-top: -10px; border: 2px solid white;
@@ -182,41 +139,80 @@
             display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
         }
 
-        /* Slides */
-        .slides-container { background: #f8fafc; border-radius: 20px; padding: 20px; margin: 20px 0; }
-        .slide-item { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; background: white; padding: 8px; border-radius: 14px; }
-        .btn-remove-slide { background: var(--danger); color: white; border: none; border-radius: 10px; width: 40px; height: 40px; cursor: pointer; }
-        .btn-add-slide { background: var(--primary); color: white; border: none; border-radius: 40px; padding: 12px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px; }
-
         /* Tables */
         .table-responsive { border-radius: 16px; overflow-x: auto; }
         .table { margin-bottom: 0; min-width: 900px; }
         .table th { background: #f8fafc; font-weight: 600; font-size: 0.8rem; padding: 12px 8px; white-space: nowrap; }
         .table td { vertical-align: middle; padding: 12px 8px; font-size: 0.85rem; }
         .student-photo, .teacher-photo { width: 40px; height: 40px; border-radius: 12px; object-fit: cover; border: 2px solid var(--primary); }
-        .action-group { display: flex; gap: 6px; }
+        .action-group { display: flex; gap: 6px; flex-wrap: wrap; }
         .action-btn { width: 36px; height: 36px; border: none; border-radius: 10px; color: white; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
-        .action-btn.approve { background: var(--success); }
+        .action-btn.approve { background: #2ecc71; }
         .action-btn.edit { background: var(--primary); }
         .action-btn.view { background: #8b5cf6; }
+        .action-btn.delete { background: var(--danger); }
+        .action-btn.salary { background: #f39c12; }
+        .action-btn.attendance { background: #9b59b6; }
 
         /* Status Badges */
         .status-badge { padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
         .status-badge.pending { background: #fff3cd; color: #856404; }
         .status-badge.approved { background: #d4edda; color: #155724; }
         .status-badge.rejected { background: #f8d7da; color: #721c24; }
+        .status-badge.paid { background: #d4edda; color: #155724; }
+        .status-badge.partial { background: #fff3cd; color: #856404; }
+        .status-badge.unpaid { background: #f8d7da; color: #721c24; }
 
         /* Filter & Search */
         .filter-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
         .filter-btn { padding: 8px 16px; border: 2px solid #eef2f6; border-radius: 30px; background: white; font-weight: 600; cursor: pointer; }
-        .filter-btn.active { background: var(--primary); color: white; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         .search-box { position: relative; }
         .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         .search-box input { width: 100%; padding: 12px 16px 12px 45px; border: 2px solid #eef2f6; border-radius: 40px; }
 
-        /* Password Toggle */
-        .password-wrapper { position: relative; }
-        .toggle-password { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; }
+        /* Modal Styles */
+        .modal-custom {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 10000;
+            overflow-y: auto; padding: 20px;
+        }
+        .modal-content-custom {
+            background: white; border-radius: 28px; max-width: 800px; margin: 40px auto;
+            animation: slideUp 0.3s ease; overflow: hidden;
+        }
+        .modal-header-custom {
+            background: var(--gradient-primary); color: white; padding: 20px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header-custom h4 { margin: 0; font-size: 1.2rem; }
+        .modal-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .modal-body-custom { padding: 24px; max-height: 70vh; overflow-y: auto; }
+        .modal-footer-custom { padding: 16px 24px; border-top: 1px solid #eef2f6; display: flex; gap: 12px; justify-content: flex-end; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Form Sections */
+        .form-section { background: #f8fafc; border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+        .form-section-title { font-weight: 700; color: var(--primary); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #eef2f6; display: flex; align-items: center; gap: 8px; }
+        .file-upload-area { border: 2px dashed var(--primary); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; background: #fef9e8; transition: all 0.3s; }
+        .file-upload-area:hover { background: #fff3e0; }
+        .preview-image { max-width: 100px; max-height: 100px; border-radius: 12px; margin-top: 10px; }
+        .doc-preview { max-width: 100%; max-height: 150px; border-radius: 12px; margin-top: 10px; }
+
+        /* Attendance Calendar */
+        .attendance-calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 16px; }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border-radius: 8px; background: #f8fafc; cursor: pointer; transition: all 0.2s; }
+        .calendar-day.present { background: #10b981; color: white; }
+        .calendar-day.absent { background: #ef4444; color: white; }
+        .calendar-day.late { background: #f59e0b; color: white; }
+        .calendar-day.half-day { background: #8b5cf6; color: white; }
+        .calendar-day:hover { transform: scale(1.05); }
+
+        /* Charts */
+        .chart-container { background: white; border-radius: 16px; padding: 16px; margin-top: 20px; }
+        .chart-type-selector { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+        .chart-type-btn { padding: 6px 12px; border: 1px solid #eef2f6; border-radius: 20px; background: white; font-size: 0.75rem; cursor: pointer; }
+        .chart-type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         /* Bottom Navigation */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 16px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 999; border-radius: 30px 30px 0 0; }
@@ -225,13 +221,14 @@
         @media (min-width: 768px) { .bottom-nav { display: none; } }
 
         footer { text-align: center; padding: 20px; color: #64748b; font-size: 0.8rem; border-top: 1px solid #eef2f6; background: white; margin-top: 30px; }
-        .security-badge { background: #e8f5e9; color: #2e7d32; padding: 8px 12px; border-radius: 30px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; }
+
+        .row.g-3 { margin-bottom: 1rem; }
     </style>
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text">लोड हो रहा है...</div>
+        <div class="loading-text">Loading...</div>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
@@ -252,23 +249,23 @@
 
     <div class="main-container">
         <div class="stats-grid" id="quickStats">
-            <div class="stat-card"><div class="stat-icon" style="background: #e8f4fd; color: var(--primary);"><i class="fas fa-users"></i></div><div class="stat-info"><div class="stat-value" id="totalStudentsStat">0</div><div class="stat-label">Total Students</div></div></div>
-            <div class="stat-card"><div class="stat-icon" style="background: #d4edda; color: var(--success);"><i class="fas fa-chalkboard-teacher"></i></div><div class="stat-info"><div class="stat-value" id="totalTeachersStat">0</div><div class="stat-label">Total Teachers</div></div></div>
-            <div class="stat-card"><div class="stat-icon" style="background: #fff3cd; color: var(--warning);"><i class="fas fa-clock"></i></div><div class="stat-info"><div class="stat-value" id="pendingTeachersStat">0</div><div class="stat-label">Pending Approval</div></div></div>
-            <div class="stat-card"><div class="stat-icon" style="background: #f8d7da; color: var(--danger);"><i class="fas fa-rupee-sign"></i></div><div class="stat-info"><div class="stat-value" id="totalFeesStat">₹0</div><div class="stat-label">Monthly Fees</div></div></div>
+            <div class="stat-card" data-tab="students"><div class="stat-icon" style="background: #e8f4fd; color: var(--primary);"><i class="fas fa-users"></i></div><div class="stat-info"><div class="stat-value" id="totalStudentsStat">0</div><div class="stat-label">Total Students</div></div></div>
+            <div class="stat-card" data-tab="teachers"><div class="stat-icon" style="background: #d4edda; color: var(--success);"><i class="fas fa-chalkboard-teacher"></i></div><div class="stat-info"><div class="stat-value" id="totalTeachersStat">0</div><div class="stat-label">Total Teachers</div></div></div>
+            <div class="stat-card" data-tab="teachers"><div class="stat-icon" style="background: #fff3cd; color: var(--warning);"><i class="fas fa-clock"></i></div><div class="stat-info"><div class="stat-value" id="pendingTeachersStat">0</div><div class="stat-label">Pending Approval</div></div></div>
+            <div class="stat-card" data-tab="students"><div class="stat-icon" style="background: #f8d7da; color: var(--danger);"><i class="fas fa-rupee-sign"></i></div><div class="stat-info"><div class="stat-value" id="totalFeesStat">₹0</div><div class="stat-label">Monthly Fees</div></div></div>
         </div>
 
         <div class="tabs-wrapper d-none d-md-flex" id="desktopTabs">
-            <button class="tab-btn active" data-tab="website"><i class="fas fa-globe"></i> Website</button>
-            <button class="tab-btn" data-tab="students"><i class="fas fa-users"></i> Students</button>
-            <button class="tab-btn" data-tab="teachers"><i class="fas fa-chalkboard-teacher"></i> Teachers</button>
-            <button class="tab-btn" data-tab="admin"><i class="fas fa-user-shield"></i> Admin</button>
+            <button class="tab-btn active" data-tab="website"><i class="fas fa-globe"></i> Website Manager</button>
+            <button class="tab-btn" data-tab="students"><i class="fas fa-users"></i> Student Management</button>
+            <button class="tab-btn" data-tab="teachers"><i class="fas fa-chalkboard-teacher"></i> Teacher Management</button>
+            <button class="tab-btn" data-tab="admin"><i class="fas fa-user-shield"></i> Admin Settings</button>
         </div>
 
         <div class="tab-content" id="myTabContent">
-            <!-- TAB 1: WEBSITE SETTINGS -->
+            <!-- ==================== TAB 1: WEBSITE MANAGER ==================== -->
             <div class="tab-pane active" id="website" data-tab-content="website">
-                <div class="split-layout">
+                <div class="split-layout" style="display: flex; flex-direction: column; gap: 24px;">
                     <div class="split-left">
                         <div class="content-card">
                             <div class="card-header-custom">
@@ -276,248 +273,153 @@
                             </div>
                             <div class="card-body-custom">
                                 <form id="updateForm">
-                                    <!-- Logo Type Toggle -->
                                     <div class="mb-4">
                                         <label class="form-label fw-bold">Logo Type</label>
-                                        <div class="logo-type-toggle">
-                                            <button type="button" class="logo-type-btn" data-logo-type="text" id="logoTextBtn">
-                                                <i class="fas fa-font"></i> Text Logo
-                                            </button>
-                                            <button type="button" class="logo-type-btn" data-logo-type="image" id="logoImageBtn">
-                                                <i class="fas fa-image"></i> Image Logo
-                                            </button>
+                                        <div class="d-flex gap-3">
+                                            <button type="button" class="btn-outline-custom" id="logoTextBtn" style="flex:1"><i class="fas fa-font"></i> Text Logo</button>
+                                            <button type="button" class="btn-outline-custom" id="logoImageBtn" style="flex:1"><i class="fas fa-image"></i> Image Logo</button>
                                         </div>
                                     </div>
-
                                     <div id="textLogoSection" class="mb-4">
                                         <label class="form-label">Logo Text</label>
                                         <input type="text" id="edit-logo-text" class="form-control" placeholder="Enter logo text (e.g., BBCC)">
                                     </div>
-
                                     <div id="imageLogoSection" class="mb-4" style="display: none;">
                                         <label class="form-label">Logo Image</label>
-                                        <input type="file" id="logoUpload" class="form-control" accept="image/*">
-                                        <small class="text-muted">Auto compress to <5KB</small>
-                                        <input type="hidden" id="edit-logo-image" value="">
+                                        <div class="file-upload-area" id="logoUploadArea"><i class="fas fa-cloud-upload-alt"></i> Click to upload logo</div>
+                                        <input type="file" id="logoUpload" style="display:none" accept="image/*">
+                                        <input type="hidden" id="edit-logo-image">
+                                        <div id="logoPreview"></div>
                                     </div>
-
                                     <div class="row g-3 mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Main Title</label>
-                                            <input type="text" id="edit-title" class="form-control" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Sub-Title</label>
-                                            <input type="text" id="edit-subtitle" class="form-control">
-                                        </div>
+                                        <div class="col-md-6"><label class="form-label">Main Title</label><input type="text" id="edit-title" class="form-control" required></div>
+                                        <div class="col-md-6"><label class="form-label">Sub-Title</label><input type="text" id="edit-subtitle" class="form-control"></div>
                                     </div>
-
-                                    <div class="mb-4">
-                                        <label class="form-label">About Text</label>
-                                        <textarea id="edit-about" class="form-control" rows="4"></textarea>
-                                    </div>
-
-                                    <div class="slides-container">
+                                    <div class="mb-4"><label class="form-label">About Text</label><textarea id="edit-about" class="form-control" rows="4"></textarea></div>
+                                    <div class="slides-container mb-4">
                                         <h6 class="mb-3 fw-bold"><i class="fas fa-images me-2"></i>Slider Images</h6>
                                         <div id="slidesList"></div>
-                                        <button type="button" class="btn-add-slide" id="addSlideBtn"><i class="fas fa-plus-circle"></i>Add New Slide</button>
+                                        <button type="button" class="btn-outline-custom mt-2" id="addSlideBtn"><i class="fas fa-plus-circle"></i> Add New Slide</button>
                                     </div>
-
-                                    <hr class="my-4">
-                                    
+                                    <hr>
                                     <h5 class="mb-3 fw-bold">Social Media Links</h5>
                                     <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label class="form-label text-success">WhatsApp URL</label>
-                                            <input type="url" id="edit-whatsapp" class="form-control">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label text-danger">Instagram URL</label>
-                                            <input type="url" id="edit-insta" class="form-control">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label text-primary">Facebook URL</label>
-                                            <input type="url" id="edit-fb" class="form-control">
-                                        </div>
+                                        <div class="col-md-4"><label class="form-label text-success">WhatsApp URL</label><input type="url" id="edit-whatsapp" class="form-control"></div>
+                                        <div class="col-md-4"><label class="form-label text-danger">Instagram URL</label><input type="url" id="edit-insta" class="form-control"></div>
+                                        <div class="col-md-4"><label class="form-label text-primary">Facebook URL</label><input type="url" id="edit-fb" class="form-control"></div>
                                     </div>
-
-                                    <hr class="my-4">
-                                    
+                                    <hr>
                                     <h5 class="mb-3 fw-bold">Contact Information</h5>
                                     <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label class="form-label">Address</label>
-                                            <input type="text" id="edit-address" class="form-control">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Phone</label>
-                                            <input type="text" id="edit-phone" class="form-control">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Email</label>
-                                            <input type="email" id="edit-email" class="form-control">
-                                        </div>
+                                        <div class="col-md-4"><label class="form-label">Address</label><input type="text" id="edit-address" class="form-control"></div>
+                                        <div class="col-md-4"><label class="form-label">Phone</label><input type="text" id="edit-phone" class="form-control"></div>
+                                        <div class="col-md-4"><label class="form-label">Email</label><input type="email" id="edit-email" class="form-control"></div>
                                     </div>
-
                                     <div class="d-flex gap-2 justify-content-end mt-4">
-                                        <button type="button" class="btn-outline-custom" id="resetFormBtn"><i class="fas fa-undo me-2"></i>Reset</button>
-                                        <button type="submit" class="btn-primary-custom" id="saveBtn"><i class="fas fa-save me-2"></i>Update Website</button>
+                                        <button type="button" class="btn-outline-custom" id="resetFormBtn"><i class="fas fa-undo"></i> Reset</button>
+                                        <button type="submit" class="btn-primary-custom" id="saveBtn"><i class="fas fa-save"></i> Update Website</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-
                     <div class="split-right">
-                        <div class="live-preview">
-                            <div class="preview-header">
-                                <h4><i class="fas fa-mobile-alt me-2"></i>Live Website Preview</h4>
-                                <button class="refresh-preview" id="refreshPreviewBtn"><i class="fas fa-sync-alt"></i></button>
+                        <div class="content-card">
+                            <div class="card-header-custom">
+                                <h4><i class="fas fa-mobile-alt"></i> Live Preview</h4>
+                                <button class="refresh-preview btn-outline-custom" id="refreshPreviewBtn" style="padding: 8px 16px;"><i class="fas fa-sync-alt"></i> Refresh</button>
                             </div>
-                            <div class="preview-iframe">
-                                <iframe id="livePreviewFrame" src="about:blank" title="Live Preview"></iframe>
-                            </div>
-                            <div class="preview-header" style="border-top: 1px solid #eef2f6;">
-                                <small><i class="fas fa-info-circle me-1"></i>Changes appear after clicking "Update Website"</small>
+                            <div class="preview-iframe" style="background: white; height: 400px; overflow: auto; padding: 16px;">
+                                <iframe id="livePreviewFrame" style="width:100%; height:100%; border:none;"></iframe>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- TAB 2: STUDENT MANAGEMENT -->
+
+            <!-- ==================== TAB 2: STUDENT MANAGEMENT ==================== -->
             <div class="tab-pane" id="students" data-tab-content="students" style="display: none;">
                 <div class="content-card">
                     <div class="card-header-custom">
-                        <h3><i class="fas fa-users"></i>Student Management</h3>
-                        <button class="btn-sm btn-outline-custom" id="refreshStudentsBtn"><i class="fas fa-sync-alt me-2"></i>Refresh</button>
+                        <h3><i class="fas fa-users"></i> Student Management</h3>
+                        <div class="d-flex gap-2">
+                            <button class="btn-primary-custom" id="addStudentBtn" style="padding: 10px 20px;"><i class="fas fa-user-plus"></i> Add Student</button>
+                            <button class="btn-outline-custom" id="refreshStudentsBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        </div>
                     </div>
                     <div class="card-body-custom">
                         <div class="row g-3 mb-4">
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #e8f4fd; width: 40px; height: 40px;"><i class="fas fa-users"></i></div><div><div class="stat-value" id="studentTotal">0</div><div class="stat-label">Total</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #d4edda; width: 40px; height: 40px;"><i class="fas fa-rupee-sign"></i></div><div><div class="stat-value" id="studentFeesTotal">₹0</div><div class="stat-label">Fees</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #fff3cd; width: 40px; height: 40px;"><i class="fas fa-check-circle"></i></div><div><div class="stat-value" id="studentPresent">0</div><div class="stat-label">Present</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #f8d7da; width: 40px; height: 40px;"><i class="fas fa-times-circle"></i></div><div><div class="stat-value" id="studentAbsent">0</div><div class="stat-label">Absent</div></div></div></div>
-                        </div>
-
-                        <div class="row g-3 mb-4">
                             <div class="col-md-4"><select class="form-select" id="studentBoardFilter"><option value="">All Boards</option></select></div>
                             <div class="col-md-4"><select class="form-select" id="studentClassFilter"><option value="">All Classes</option></select></div>
-                            <div class="col-md-4"><div class="search-box"><i class="fas fa-search"></i><input type="text" id="studentSearch" placeholder="Search students..."></div></div>
+                            <div class="col-md-4"><div class="search-box"><i class="fas fa-search"></i><input type="text" id="studentSearch" placeholder="Search by name/ID..."></div></div>
                         </div>
-
                         <div class="table-responsive">
-                            <table class="table"><thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Board</th><th>Class</th><th>Mobile</th><th>Fees</th><th>Attendance</th><th>Actions</th></tr></thead><tbody id="studentsTableBody"><tr><td colspan="9" class="text-center py-5">Loading...</td></tr></tbody></table>
-                        </div>
-
-                        <div class="mt-4 text-end">
-                            <button class="btn-primary-custom" id="openStudentDashboardBtn"><i class="fas fa-external-link-alt me-2"></i>Open Full Dashboard</button>
+                            <table class="table">
+                                <thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Board</th><th>Class</th><th>Mobile</th><th>Fees</th><th>Actions</th></tr></thead>
+                                <tbody id="studentsTableBody"><tr><td colspan="8" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- TAB 3: TEACHER MANAGEMENT -->
+
+            <!-- ==================== TAB 3: TEACHER MANAGEMENT ==================== -->
             <div class="tab-pane" id="teachers" data-tab-content="teachers" style="display: none;">
                 <div class="content-card">
                     <div class="card-header-custom">
-                        <h3><i class="fas fa-chalkboard-teacher"></i>Teacher Management</h3>
-                        <button class="btn-sm btn-outline-custom" id="refreshTeachersBtn"><i class="fas fa-sync-alt me-2"></i>Refresh</button>
+                        <h3><i class="fas fa-chalkboard-teacher"></i> Teacher Management</h3>
+                        <div class="d-flex gap-2">
+                            <button class="btn-primary-custom" id="addTeacherBtn" style="padding: 10px 20px;"><i class="fas fa-user-plus"></i> Add Teacher</button>
+                            <button class="btn-outline-custom" id="refreshTeachersBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        </div>
                     </div>
                     <div class="card-body-custom">
-                        <div class="row g-3 mb-4">
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #e8f4fd; width: 40px; height: 40px;"><i class="fas fa-users"></i></div><div><div class="stat-value" id="teacherTotal">0</div><div class="stat-label">Total</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #fff3cd; width: 40px; height: 40px;"><i class="fas fa-clock"></i></div><div><div class="stat-value" id="teacherPending">0</div><div class="stat-label">Pending</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #d4edda; width: 40px; height: 40px;"><i class="fas fa-check-circle"></i></div><div><div class="stat-value" id="teacherApproved">0</div><div class="stat-label">Approved</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #f8d7da; width: 40px; height: 40px;"><i class="fas fa-rupee-sign"></i></div><div><div class="stat-value" id="teacherSalary">₹0</div><div class="stat-label">Salary</div></div></div></div>
-                        </div>
-
                         <div class="filter-buttons">
                             <button class="filter-btn active" data-filter="all">All</button>
                             <button class="filter-btn" data-filter="pending">Pending</button>
                             <button class="filter-btn" data-filter="approved">Approved</button>
                             <button class="filter-btn" data-filter="rejected">Rejected</button>
                         </div>
-
                         <div class="row g-3 mb-4">
                             <div class="col-md-6"><div class="search-box"><i class="fas fa-search"></i><input type="text" id="teacherSearch" placeholder="Search teachers..."></div></div>
-                            <div class="col-md-6 text-end"><button class="btn-primary-custom" id="openTeacherDashboardBtn"><i class="fas fa-external-link-alt me-2"></i>Open Dashboard</button></div>
+                            <div class="col-md-6 text-end"><div class="stat-card d-inline-flex" style="padding: 8px 16px;"><i class="fas fa-rupee-sign me-2"></i> Total Salary: <strong id="totalSalaryDisplay">₹0</strong></div></div>
                         </div>
-
                         <div class="table-responsive">
-                            <table class="table"><thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Subject</th><th>Mobile</th><th>Salary</th><th>Status</th><th>Actions</th> </thead><tbody id="teachersTableBody">发展<td colspan="8" class="text-center py-5">Loading...</td> </tbody> </table>
+                            <table class="table">
+                                <thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Subject</th><th>Mobile</th><th>Salary</th><th>Status</th><th>Actions</th> </thead>
+                                <tbody id="teachersTableBody">发展<td colspan="8" class="text-center py-5"><div class="spinner-border text-primary"></div> </tbody>
+                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- TAB 4: ADMIN SETTINGS -->
+
+            <!-- ==================== TAB 4: ADMIN SETTINGS ==================== -->
             <div class="tab-pane" id="admin" data-tab-content="admin" style="display: none;">
                 <div class="row justify-content-center">
-                    <div class="col-md-6">
+                    <div class="col-md-8">
                         <div class="content-card">
-                            <div class="card-header-custom"><h3><i class="fas fa-user-shield"></i>Admin Settings</h3></div>
+                            <div class="card-header-custom"><h3><i class="fas fa-user-shield"></i> Admin Settings</h3></div>
                             <div class="card-body-custom">
-                                <!-- Admin Profile Section -->
-                                <h5 class="mb-3 fw-bold"><i class="fas fa-user-circle me-2"></i>Admin Profile</h5>
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-12">
-                                        <label class="form-label">Admin Name</label>
-                                        <input type="text" class="form-control" id="adminName" placeholder="Admin Name">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label">Admin Photo</label>
-                                        <input type="file" class="form-control" id="adminPhoto" accept="image/*">
-                                        <small class="text-muted">Upload profile photo (auto compress to <5KB)</small>
-                                        <input type="hidden" id="adminPhotoData">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label">Aadhar Number</label>
-                                        <input type="text" class="form-control" id="adminAadhar" maxlength="12" placeholder="12 digit Aadhar number">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label class="form-label">Aadhar Document</label>
-                                        <input type="file" class="form-control" id="adminAadharDoc" accept=".pdf,image/*">
-                                        <small class="text-muted">PDF or Image (auto compress to <5KB)</small>
-                                        <input type="hidden" id="adminAadharDocData">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <button type="button" class="btn-primary-custom w-100" id="updateProfileBtn">
-                                            <i class="fas fa-save me-2"></i>Update Profile
-                                        </button>
+                                <div class="form-section">
+                                    <h5 class="form-section-title"><i class="fas fa-user-circle"></i> Admin Profile</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-12"><label class="form-label">Admin Name</label><input type="text" class="form-control" id="adminName" placeholder="Admin Name"></div>
+                                        <div class="col-md-12"><label class="form-label">Admin Photo</label><div class="file-upload-area" id="adminPhotoUpload"><i class="fas fa-camera"></i> Click to upload photo</div><input type="file" id="adminPhoto" style="display:none" accept="image/*"><input type="hidden" id="adminPhotoData"><div id="adminPhotoPreview"></div></div>
+                                        <div class="col-md-12"><label class="form-label">Aadhar Number</label><input type="text" class="form-control" id="adminAadhar" maxlength="12" placeholder="12 digit Aadhar number"></div>
+                                        <div class="col-md-12"><label class="form-label">Aadhar Document</label><div class="file-upload-area" id="adminAadharUpload"><i class="fas fa-file-pdf"></i> Click to upload document</div><input type="file" id="adminAadharDoc" style="display:none" accept=".pdf,image/*"><input type="hidden" id="adminAadharDocData"><div id="adminAadharPreview"></div></div>
+                                        <div class="col-md-12"><button type="button" class="btn-primary-custom w-100" id="updateProfileBtn"><i class="fas fa-save"></i> Update Profile</button></div>
                                     </div>
                                 </div>
-                                
-                                <hr class="my-4">
-                                
-                                <h5 class="mb-3 fw-bold"><i class="fas fa-key me-2"></i>Change Password</h5>
-                                <form id="adminSettingsForm">
-                                    <div class="mb-3">
-                                        <label class="form-label">Current Password</label>
-                                        <div class="password-wrapper">
-                                            <input type="password" class="form-control" id="oldPassword" required>
-                                            <i class="fas fa-eye toggle-password" data-target="oldPassword"></i>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">New Password</label>
-                                        <div class="password-wrapper">
-                                            <input type="password" class="form-control" id="newPassword" required>
-                                            <i class="fas fa-eye toggle-password" data-target="newPassword"></i>
-                                        </div>
-                                        <small class="text-muted">Minimum 6 characters</small>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="form-label">Confirm New Password</label>
-                                        <div class="password-wrapper">
-                                            <input type="password" class="form-control" id="confirmPassword" required>
-                                            <i class="fas fa-eye toggle-password" data-target="confirmPassword"></i>
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="btn-primary-custom w-100" id="changePasswordBtn">
-                                        <i class="fas fa-sync-alt me-2"></i>Change Password
-                                    </button>
-                                </form>
+                                <div class="form-section">
+                                    <h5 class="form-section-title"><i class="fas fa-key"></i> Change Password</h5>
+                                    <form id="adminSettingsForm">
+                                        <div class="mb-3"><label class="form-label">Current Password</label><div class="position-relative"><input type="password" class="form-control" id="oldPassword" required><i class="fas fa-eye toggle-password position-absolute" style="right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i></div></div>
+                                        <div class="mb-3"><label class="form-label">New Password</label><div class="position-relative"><input type="password" class="form-control" id="newPassword" required><i class="fas fa-eye toggle-password position-absolute" style="right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i></div><small class="text-muted">Minimum 6 characters</small></div>
+                                        <div class="mb-4"><label class="form-label">Confirm New Password</label><div class="position-relative"><input type="password" class="form-control" id="confirmPassword" required><i class="fas fa-eye toggle-password position-absolute" style="right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i></div></div>
+                                        <button type="submit" class="btn-primary-custom w-100"><i class="fas fa-sync-alt"></i> Change Password</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -533,7 +435,7 @@
         <div class="bottom-nav-item" data-tab="admin"><i class="fas fa-user-shield"></i><span>Admin</span></div>
     </div>
 
-    <footer><small><i class="far fa-copyright me-1"></i>2026 Bal Bharti Coaching | Complete Management System</small></footer>
+    <footer><small><i class="far fa-copyright"></i> 2026 Bal Bharti Coaching | Complete Management System</small></footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -544,28 +446,30 @@
         let currentData = {};
         let slideCount = 0;
         let logoType = 'text';
-        const token = localStorage.getItem('token');
-        const toastContainer = document.getElementById('toastContainer');
+        let token = localStorage.getItem('token');
         let students = [];
         let teachers = [];
-
+        let selectedStudent = null;
+        let selectedTeacher = null;
+        let salaryChart = null;
+        let currentChartType = 'bar';
+        
+        const toastContainer = document.getElementById('toastContainer');
+        
         // ============================================
-        // TOAST NOTIFICATION
+        // UTILITY FUNCTIONS
         // ============================================
         function showToast(message, type = 'success', duration = 3000) {
             const toast = document.createElement('div');
             toast.className = `toast-message ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><span>${message}</span>`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${message}</span>`;
             toastContainer.appendChild(toast);
-            setTimeout(() => { toast.classList.add('fade-out'); setTimeout(() => toast.remove(), 300); }, duration);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(-20px)'; setTimeout(() => toast.remove(), 300); }, duration);
         }
-
+        
         function showLoading(show) { document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; }
-
-        // ============================================
-        // COMPRESS IMAGE (to <5KB)
-        // ============================================
-        function compressImage(file) {
+        
+        async function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -586,20 +490,39 @@
                             compressedData = canvas.toDataURL('image/jpeg', quality);
                             const sizeInKB = compressedData.length * 0.75 / 1024;
                             if (sizeInKB > 5 && (width > 100 || quality > 0.1)) {
-                                if (quality > 0.2) { quality -= 0.1; }
+                                if (quality > 0.2) quality -= 0.1;
                                 else { width = Math.floor(width * 0.8); height = Math.floor(height * 0.8); }
                                 compress();
-                            } else { resolve(compressedData); }
+                            } else resolve(compressedData);
                         };
                         compress();
                     };
+                    img.onerror = reject;
                 };
                 reader.onerror = reject;
             });
         }
-
+        
+        function compressPDF(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        function verifyToken() {
+            if (!token) {
+                showToast('Please login first', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+                return false;
+            }
+            return true;
+        }
+        
         // ============================================
-        // LOGO TYPE TOGGLE
+        // WEBSITE MANAGER FUNCTIONS
         // ============================================
         function setLogoType(type) {
             logoType = type;
@@ -609,96 +532,53 @@
             document.getElementById('imageLogoSection').style.display = type === 'image' ? 'block' : 'none';
             updateLivePreview();
         }
-
-        document.getElementById('logoTextBtn').addEventListener('click', () => setLogoType('text'));
-        document.getElementById('logoImageBtn').addEventListener('click', () => setLogoType('image'));
-
-        // ============================================
-        // LOGO UPLOAD
-        // ============================================
-        document.getElementById('logoUpload').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            try {
-                showToast('Compressing image...', 'info');
-                showLoading(true);
-                const compressedImage = await compressImage(file);
-                document.getElementById('edit-logo-image').value = compressedImage;
-                updateLivePreview();
-                showToast('Logo compressed to <5KB!', 'success');
-            } catch (err) {
-                showToast('Error compressing image', 'error');
-            } finally { showLoading(false); }
-        });
-
-        // ============================================
-        // UPDATE LIVE PREVIEW
-        // ============================================
-        function updateLivePreview() {
-            const title = document.getElementById('edit-title').value || 'Bal Bharti Coaching';
-            const subtitle = document.getElementById('edit-subtitle').value || 'Excellence in Education';
-            const aboutText = document.getElementById('edit-about').value || 'Welcome to Bal Bharti Coaching Center.';
-            
-            let logoHtml = '';
-            if (logoType === 'text') {
-                const logoText = document.getElementById('edit-logo-text').value || 'BBCC';
-                logoHtml = `<div class="logo-icon" style="width:42px;height:42px;background:linear-gradient(135deg,#ec489a,#f97316);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:white;"><i class="fas fa-graduation-cap"></i></div>
-                            <div class="logo-text-wrapper"><span class="logo-main-text" style="font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,#ec489a,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${logoText}</span><span class="logo-sub-text" style="font-size:0.65rem;color:#f59e0b;">Since 2010</span></div>`;
-            } else {
-                const logoImage = document.getElementById('edit-logo-image').value;
-                logoHtml = `<div class="logo-icon" style="width:42px;height:42px;background:linear-gradient(135deg,#ec489a,#f97316);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${logoImage ? `<img src="${logoImage}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-graduation-cap"></i>'}</div>
-                            <div class="logo-text-wrapper"><span class="logo-main-text" style="font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,#ec489a,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Bal Bharti</span><span class="logo-sub-text" style="font-size:0.65rem;color:#f59e0b;">Since 2010</span></div>`;
-            }
-            
-            const previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"><style>
-                *{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',sans-serif;background:#fff;color:#0f172a;}.preview-nav{background:white;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,0.05);border-bottom:2px solid #6366f1;}.logo-container{display:flex;align-items:center;gap:10px;}.header-center{text-align:center;flex:1;}.header-center h1{font-size:1.1rem;margin:0;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;}.header-center small{font-size:0.7rem;color:#475569;}.hero{background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:40px 20px;text-align:center;color:white;}.hero h2{font-size:1.5rem;margin-bottom:10px;}.about{padding:30px 20px;text-align:center;}.about p{color:#475569;line-height:1.6;}.footer{background:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;margin-top:20px;font-size:0.8rem;color:#64748b;}</style></head>
-            <body><div class="preview-nav"><div class="logo-container">${logoHtml}</div><div class="header-center"><h1>${title}</h1><small>${subtitle}</small></div><div><i class="fas fa-bars" style="font-size:1.2rem;"></i></div></div>
-            <div class="hero"><h2><i class="fas fa-graduation-cap"></i> ${title}</h2><p>Your Path to Excellence</p></div>
-            <div class="about"><h3><i class="fas fa-info-circle"></i> About Us</h3><p>${aboutText.substring(0, 200)}...</p></div>
-            <div class="footer"><p><i class="far fa-copyright"></i> 2026 ${title} | Excellence in Education</p></div>
-            </body></html>`;
-            
-            const iframe = document.getElementById('livePreviewFrame');
-            if (iframe) iframe.srcdoc = previewHtml;
-        }
-
-        // ============================================
-        // SLIDE FUNCTIONS
-        // ============================================
+        
         function addSlideField(slideUrl = '') {
             const slidesList = document.getElementById('slidesList');
             const slideId = `slide_${Date.now()}_${slideCount}`;
             const slideDiv = document.createElement('div');
-            slideDiv.className = 'slide-item';
+            slideDiv.className = 'd-flex gap-2 mb-2';
             slideDiv.id = slideId;
-            slideDiv.innerHTML = `<input type="url" class="form-control slide-input" placeholder="Enter image URL" value="${slideUrl}"><button type="button" class="btn-remove-slide" data-slide-id="${slideId}"><i class="fas fa-trash"></i></button>`;
+            slideDiv.innerHTML = `<input type="url" class="form-control slide-input" placeholder="Enter image URL" value="${slideUrl}"><button type="button" class="btn btn-danger btn-sm btn-remove-slide" data-slide-id="${slideId}"><i class="fas fa-trash"></i></button>`;
             slidesList.appendChild(slideDiv);
             slideCount++;
         }
-
-        function removeSlideField(slideId) { const slideDiv = document.getElementById(slideId); if (slideDiv) { slideDiv.remove(); slideCount--; } }
+        
+        function removeSlideField(slideId) { const slideDiv = document.getElementById(slideId); if (slideDiv) slideDiv.remove(); }
         function getSlidesArray() { const slides = []; document.querySelectorAll('.slide-input').forEach(input => { if (input.value.trim()) slides.push(input.value.trim()); }); return slides; }
-        function loadSlides(slides = []) { document.getElementById('slidesList').innerHTML = ''; slideCount = 0; if (slides && slides.length > 0) slides.forEach(slide => addSlideField(slide)); else for (let i = 0; i < 3; i++) addSlideField(''); }
-
-        // ============================================
-        // FETCH CURRENT DATA
-        // ============================================
+        function loadSlides(slides = []) { document.getElementById('slidesList').innerHTML = ''; slideCount = 0; if (slides && slides.length) slides.forEach(slide => addSlideField(slide)); else for (let i = 0; i < 3; i++) addSlideField(''); }
+        
+        function updateLivePreview() {
+            const title = document.getElementById('edit-title').value || 'Bal Bharti Coaching';
+            const subtitle = document.getElementById('edit-subtitle').value || 'Excellence in Education';
+            const aboutText = document.getElementById('edit-about').value || 'Welcome to Bal Bharti Coaching Center.';
+            let logoHtml = '';
+            if (logoType === 'text') {
+                const logoText = document.getElementById('edit-logo-text').value || 'BBCC';
+                logoHtml = `<div style="display:flex;align-items:center;gap:10px;"><div style="width:42px;height:42px;background:linear-gradient(135deg,#ec489a,#f97316);border-radius:12px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-graduation-cap"></i></div><div><span style="font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,#ec489a,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${logoText}</span><span style="font-size:0.65rem;color:#f59e0b;display:block;">Since 2010</span></div></div>`;
+            } else {
+                const logoImage = document.getElementById('edit-logo-image').value;
+                logoHtml = `<div style="display:flex;align-items:center;gap:10px;"><div style="width:42px;height:42px;background:linear-gradient(135deg,#ec489a,#f97316);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${logoImage ? `<img src="${logoImage}" style="width:100%;height:100%;object-fit:cover;">` : '<i class="fas fa-graduation-cap"></i>'}</div><div><span style="font-size:1.2rem;font-weight:800;background:linear-gradient(135deg,#ec489a,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Bal Bharti</span><span style="font-size:0.65rem;color:#f59e0b;display:block;">Since 2010</span></div></div>`;
+            }
+            const previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',sans-serif;background:#fff;color:#0f172a;}.preview-nav{background:white;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,0.05);border-bottom:2px solid #6366f1;}.logo-container{display:flex;align-items:center;gap:10px;}.header-center{text-align:center;flex:1;}.header-center h1{font-size:1.1rem;margin:0;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;}.header-center small{font-size:0.7rem;color:#475569;}.hero{background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:40px 20px;text-align:center;color:white;}.hero h2{font-size:1.5rem;margin-bottom:10px;}.about{padding:30px 20px;text-align:center;}.about p{color:#475569;line-height:1.6;}.footer{background:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;margin-top:20px;font-size:0.8rem;color:#64748b;}</style></head><body><div class="preview-nav"><div class="logo-container">${logoHtml}</div><div class="header-center"><h1>${title}</h1><small>${subtitle}</small></div><div><i class="fas fa-bars" style="font-size:1.2rem;"></i></div></div><div class="hero"><h2><i class="fas fa-graduation-cap"></i> ${title}</h2><p>Your Path to Excellence</p></div><div class="about"><h3><i class="fas fa-info-circle"></i> About Us</h3><p>${aboutText.substring(0, 200)}...</p></div><div class="footer"><p><i class="far fa-copyright"></i> 2026 ${title} | Excellence in Education</p></div></body></html>`;
+            const iframe = document.getElementById('livePreviewFrame');
+            if (iframe) iframe.srcdoc = previewHtml;
+        }
+        
         async function fetchCurrentData() {
             try {
                 const res = await fetch('/api/config');
                 const data = await res.json();
                 currentData = data;
-                
-                // Detect logo type
                 if (data.logoImage && data.logoImage.startsWith('data:image')) {
                     setLogoType('image');
                     document.getElementById('edit-logo-image').value = data.logoImage;
                     document.getElementById('edit-logo-text').value = data.logoText || 'BBCC';
+                    if (document.getElementById('logoPreview')) document.getElementById('logoPreview').innerHTML = `<img src="${data.logoImage}" style="max-width:100px; border-radius:12px;">`;
                 } else {
                     setLogoType('text');
                     document.getElementById('edit-logo-text').value = data.logoText || 'BBCC';
                 }
-                
                 document.getElementById('edit-title').value = data.title || '';
                 document.getElementById('edit-subtitle').value = data.subTitle || '';
                 document.getElementById('edit-about').value = data.aboutText || '';
@@ -708,177 +588,16 @@
                 document.getElementById('edit-address').value = data.contactAddress || '';
                 document.getElementById('edit-phone').value = data.contactPhone || '';
                 document.getElementById('edit-email').value = data.contactEmail || '';
-                
                 loadSlides(data.slides || []);
                 updateLivePreview();
-            } catch (err) { console.error('Fetch error:', err); showToast('Failed to load current data', 'error'); loadSlides([]); }
+            } catch (err) { console.error('Fetch error:', err); showToast('Failed to load current data', 'error'); }
         }
-
-        // ============================================
-        // FETCH ADMIN PROFILE
-        // ============================================
-        async function fetchAdminProfile() {
-            try {
-                const response = await fetch('/api/admin/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('adminName').value = data.data.name || '';
-                    document.getElementById('adminAadhar').value = data.data.aadharNumber || '';
-                }
-            } catch (err) {
-                console.error('Error fetching admin profile:', err);
-            }
-        }
-
-        // ============================================
-        // UPDATE ADMIN PROFILE
-        // ============================================
-        document.getElementById('updateProfileBtn').addEventListener('click', async () => {
-            const name = document.getElementById('adminName').value;
-            const aadharNumber = document.getElementById('adminAadhar').value;
-            const photo = document.getElementById('adminPhotoData').value;
-            const aadharDoc = document.getElementById('adminAadharDocData').value;
-            
-            const updateData = {};
-            if (name) updateData.name = name;
-            if (aadharNumber && aadharNumber.length === 12) updateData.aadharNumber = aadharNumber;
-            if (photo) updateData.photo = photo;
-            if (aadharDoc) updateData.aadharDoc = aadharDoc;
-            
-            if (Object.keys(updateData).length === 0) {
-                showToast('No changes to update', 'warning');
-                return;
-            }
-            
-            const btn = document.getElementById('updateProfileBtn');
-            btn.classList.add('loading');
-            btn.disabled = true;
-            showLoading(true);
-            
-            try {
-                const response = await fetch('/api/admin/profile', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(updateData)
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showToast('Profile updated successfully!', 'success');
-                    document.getElementById('adminPhotoData').value = '';
-                    document.getElementById('adminAadharDocData').value = '';
-                    document.getElementById('adminPhoto').value = '';
-                    document.getElementById('adminAadharDoc').value = '';
-                } else {
-                    showToast(result.message || 'Update failed', 'error');
-                }
-            } catch (err) {
-                showToast('Server error', 'error');
-            } finally {
-                btn.classList.remove('loading');
-                btn.disabled = false;
-                showLoading(false);
-            }
-        });
-
-        // Admin Photo Upload
-        document.getElementById('adminPhoto').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            try {
-                showToast('Compressing photo...', 'info');
-                const compressed = await compressImage(file);
-                document.getElementById('adminPhotoData').value = compressed;
-                showToast('Photo ready!', 'success');
-            } catch (err) {
-                showToast('Error compressing photo', 'error');
-            }
-        });
-
-        // Admin Aadhar Doc Upload
-        document.getElementById('adminAadharDoc').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            try {
-                showToast('Processing document...', 'info');
-                if (file.type === 'application/pdf') {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        document.getElementById('adminAadharDocData').value = e.target.result;
-                        showToast('PDF ready!', 'success');
-                    };
-                    reader.readAsDataURL(file);
-                } else if (file.type.startsWith('image/')) {
-                    const compressed = await compressImage(file);
-                    document.getElementById('adminAadharDocData').value = compressed;
-                    showToast('Document ready!', 'success');
-                } else {
-                    showToast('Unsupported file type', 'error');
-                }
-            } catch (err) {
-                showToast('Error processing document', 'error');
-            }
-        });
-
-        // ============================================
-        // RESET FORM
-        // ============================================
-        function resetForm() {
-            if (currentData.logoImage && currentData.logoImage.startsWith('data:image')) {
-                setLogoType('image');
-                document.getElementById('edit-logo-image').value = currentData.logoImage;
-                document.getElementById('edit-logo-text').value = currentData.logoText || 'BBCC';
-            } else {
-                setLogoType('text');
-                document.getElementById('edit-logo-text').value = currentData.logoText || 'BBCC';
-            }
-            document.getElementById('edit-title').value = currentData.title || '';
-            document.getElementById('edit-subtitle').value = currentData.subTitle || '';
-            document.getElementById('edit-about').value = currentData.aboutText || '';
-            document.getElementById('edit-whatsapp').value = currentData.whatsapp || '';
-            document.getElementById('edit-insta').value = currentData.insta || '';
-            document.getElementById('edit-fb').value = currentData.fb || '';
-            document.getElementById('edit-address').value = currentData.contactAddress || '';
-            document.getElementById('edit-phone').value = currentData.contactPhone || '';
-            document.getElementById('edit-email').value = currentData.contactEmail || '';
-            loadSlides(currentData.slides || []);
-            updateLivePreview();
-            showToast('Form reset to last saved data', 'info');
-        }
-
-        // ============================================
-        // UPDATE WEBSITE
-        // ============================================
-        document.getElementById('updateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const updatedConfig = {
-                logoText: document.getElementById('edit-logo-text').value.trim(),
-                logoType: logoType,
-                logoImage: logoType === 'image' ? document.getElementById('edit-logo-image').value.trim() : '',
-                title: document.getElementById('edit-title').value.trim(),
-                subTitle: document.getElementById('edit-subtitle').value.trim(),
-                aboutText: document.getElementById('edit-about').value.trim(),
-                whatsapp: document.getElementById('edit-whatsapp').value.trim(),
-                insta: document.getElementById('edit-insta').value.trim(),
-                fb: document.getElementById('edit-fb').value.trim(),
-                contactAddress: document.getElementById('edit-address').value.trim(),
-                contactPhone: document.getElementById('edit-phone').value.trim(),
-                contactEmail: document.getElementById('edit-email').value.trim(),
-                slides: getSlidesArray()
-            };
-
-            if (!updatedConfig.title) { showToast('Title is required', 'warning'); return; }
-
+        
+        async function updateWebsiteConfig(updatedConfig) {
             const saveBtn = document.getElementById('saveBtn');
             saveBtn.classList.add('loading');
             saveBtn.disabled = true;
             showLoading(true);
-
             try {
                 const response = await fetch('/api/update-config', {
                     method: 'POST',
@@ -893,215 +612,1216 @@
                 } else { showToast('❌ Error: ' + (result.message || 'Update failed'), 'error'); }
             } catch (err) { console.error('Update error:', err); showToast('❌ Server error! Try again.', 'error'); }
             finally { saveBtn.classList.remove('loading'); saveBtn.disabled = false; showLoading(false); }
-        });
-
+        }
+        
         // ============================================
-        // FETCH STUDENTS & TEACHERS
+        // STUDENT MANAGEMENT FUNCTIONS
         // ============================================
         async function fetchStudents() {
+            if (!verifyToken()) return;
             try {
                 const response = await fetch('/api/students', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await response.json();
                 if (data.success) { students = data.data; displayStudents(students); updateStudentStats(); }
+                else if (response.status === 401) { showToast('Session expired', 'error'); setTimeout(() => logout(), 1500); }
             } catch (err) { console.error('Error fetching students:', err); showToast('Error loading students', 'error'); }
         }
-
+        
         function displayStudents(studentList) {
             const tbody = document.getElementById('studentsTableBody');
-            if (!studentList || studentList.length === 0) { tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No students found</td></tr>'; return; }
+            if (!tbody) return;
+            if (!studentList || studentList.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No students found</td></tr>'; return; }
             tbody.innerHTML = studentList.map(student => {
                 const name = `${student.studentName?.first || ''} ${student.studentName?.last || ''}`;
-                const today = new Date().toISOString().split('T')[0];
-                const attendanceToday = student.attendance?.find(a => a.date === today);
-                const attendanceStatus = attendanceToday ? (attendanceToday.status === 'present' ? '✅' : '❌') : '⏳';
-                return `<tr><td><img src="${student.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
-                        <td>${student.studentId || '-'}</td><td>${name || '-'}</td>
-                        <td>${student.education?.board || '-'}</td><td>${student.education?.class || '-'}</td>
-                        <td>${student.mobile || '-'}</td><td>₹${student.classMonthlyFees || 0}</td>
-                        <td>${attendanceStatus}</td>
-                        <td><div class="action-group"><button class="action-btn edit" data-student-id="${student.studentId}"><i class="fas fa-edit"></i></button><button class="action-btn view" data-student-id="${student.studentId}"><i class="fas fa-eye"></i></button></div></td></tr>`;
+                return `<tr>
+                    <td><img src="${student.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
+                    <td>${student.studentId || '-'}</td>
+                    <td>${name || '-'}</td>
+                    <td>${student.education?.board || '-'}</td>
+                    <td>${student.education?.class || '-'}</td>
+                    <td>${student.mobile || '-'}</td>
+                    <td>₹${student.classMonthlyFees || 0}</td>
+                    <td><div class="action-group">
+                        <button class="action-btn edit" data-student-id="${student.studentId}" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn view" data-student-id="${student.studentId}" title="View Details"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn attendance" data-student-id="${student.studentId}" title="Mark Attendance"><i class="fas fa-calendar-check"></i></button>
+                        <button class="action-btn salary" data-student-id="${student.studentId}" title="Manage Fees"><i class="fas fa-rupee-sign"></i></button>
+                        <button class="action-btn delete" data-student-id="${student.studentId}" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div></td>
+                </tr>`;
             }).join('');
+            attachStudentButtons();
         }
-
+        
+        function attachStudentButtons() {
+            document.querySelectorAll('#studentsTableBody .action-btn').forEach(btn => {
+                btn.removeEventListener('click', handleStudentAction);
+                btn.addEventListener('click', handleStudentAction);
+            });
+        }
+        
+        function handleStudentAction(e) {
+            const btn = e.currentTarget;
+            const studentId = btn.getAttribute('data-student-id');
+            if (btn.classList.contains('edit')) openEditStudentModal(studentId);
+            else if (btn.classList.contains('view')) viewStudentDetails(studentId);
+            else if (btn.classList.contains('attendance')) openStudentAttendanceModal(studentId);
+            else if (btn.classList.contains('salary')) openStudentFeesModal(studentId);
+            else if (btn.classList.contains('delete')) deleteStudent(studentId);
+        }
+        
         function updateStudentStats() {
             const total = students.length;
             let totalFees = students.reduce((sum, s) => sum + (s.classMonthlyFees || 0), 0);
-            document.getElementById('studentTotal').textContent = total;
-            document.getElementById('studentFeesTotal').textContent = `₹${totalFees}`;
+            document.getElementById('studentTotalStat') && (document.getElementById('studentTotalStat').textContent = total);
             document.getElementById('totalStudentsStat').textContent = total;
             document.getElementById('totalFeesStat').textContent = `₹${totalFees}`;
         }
-
-        async function fetchTeachers() {
+        
+        async function openEditStudentModal(id) {
             try {
-                const response = await fetch('/api/teachers', { headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await response.json();
-                if (data.success) { teachers = data.data; displayTeachers(teachers); updateTeacherStats(); }
-            } catch (err) { console.error('Error fetching teachers:', err); showToast('Error loading teachers', 'error'); }
+                const res = await fetch(`/api/students/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) showStudentModal(data.data);
+            } catch (err) { showToast('Error loading student', 'error'); }
         }
-
+        
+        function showStudentModal(student) {
+            const modalHtml = `
+            <div class="modal-custom" id="studentModal">
+                <div class="modal-content-custom">
+                    <div class="modal-header-custom"><h4><i class="fas fa-user-graduate"></i> Student Details</h4><button class="modal-close" onclick="closeModal('studentModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <form id="studentForm">
+                            <input type="hidden" id="studentId" value="${student.studentId}">
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-id-card"></i> Basic Information</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Student ID *</label><input type="text" class="form-control" id="editStudentId" value="${student.studentId}" required></div>
+                                <div class="col-md-6"><label>Password *</label><input type="text" class="form-control" id="editPassword" value="${student.password}" required></div>
+                                <div class="col-md-4"><label>First Name *</label><input type="text" class="form-control" id="editFirstName" value="${student.studentName.first}" required></div>
+                                <div class="col-md-4"><label>Middle Name</label><input type="text" class="form-control" id="editMiddleName" value="${student.studentName.middle || ''}"></div>
+                                <div class="col-md-4"><label>Last Name *</label><input type="text" class="form-control" id="editLastName" value="${student.studentName.last}" required></div>
+                                <div class="col-md-6"><label>Mobile *</label><input type="text" class="form-control" id="editMobile" value="${student.mobile}" maxlength="10" required></div>
+                                <div class="col-md-6"><label>Aadhar Number *</label><input type="text" class="form-control" id="editAadhar" value="${student.aadharNumber}" maxlength="12" required></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-camera"></i> Documents</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Photo</label><div class="file-upload-area" id="photoUploadArea">Click to upload photo</div><input type="file" id="photoFile" style="display:none" accept="image/*"><input type="hidden" id="editPhoto"><div id="photoPreview"><img src="${student.photo}" style="max-width:100px; border-radius:12px;"></div></div>
+                                <div class="col-md-6"><label>Aadhar Document</label><div class="file-upload-area" id="aadharUploadArea">Click to upload document</div><input type="file" id="aadharFile" style="display:none" accept="image/*,.pdf"><input type="hidden" id="editAadharDoc"><div id="aadharPreview">${student.aadharDocument ? (student.aadharDocument.includes('pdf') ? '<i class="fas fa-file-pdf fa-3x"></i>' : `<img src="${student.aadharDocument}" style="max-width:100px;">`) : '-'}</div></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-graduation-cap"></i> Education & Fees</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Board *</label><input type="text" class="form-control" id="editBoard" value="${student.education.board}" required></div>
+                                <div class="col-md-4"><label>Class *</label><input type="text" class="form-control" id="editClass" value="${student.education.class}" required></div>
+                                <div class="col-md-4"><label>Monthly Fees (₹) *</label><input type="number" class="form-control" id="editFees" value="${student.classMonthlyFees}" required></div>
+                                <div class="col-md-6"><label>Registration Date</label><input type="date" class="form-control" id="editRegDate" value="${student.registrationDate?.split('T')[0]}"></div>
+                                <div class="col-md-6"><label>Joining Date</label><input type="date" class="form-control" id="editJoinDate" value="${student.joiningDate?.split('T')[0]}"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-users"></i> Family Details</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Father First Name *</label><input type="text" class="form-control" id="editFatherFirst" value="${student.fatherName.first}" required></div>
+                                <div class="col-md-4"><label>Father Middle Name</label><input type="text" class="form-control" id="editFatherMiddle" value="${student.fatherName.middle || ''}"></div>
+                                <div class="col-md-4"><label>Father Last Name *</label><input type="text" class="form-control" id="editFatherLast" value="${student.fatherName.last}" required></div>
+                                <div class="col-md-6"><label>Father Mobile *</label><input type="text" class="form-control" id="editFatherMobile" value="${student.fatherMobile}" maxlength="10" required></div>
+                                <div class="col-md-6"><label>Mother Name</label><input type="text" class="form-control" id="editMotherName" value="${student.motherName.first || ''} ${student.motherName.middle || ''} ${student.motherName.last || ''}"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Current Address *</label><textarea class="form-control" id="editCurrentAddress" rows="2" required>${student.address.current}</textarea></div>
+                                <div class="col-md-6"><label>Permanent Address *</label><textarea class="form-control" id="editPermanentAddress" rows="2" required>${student.address.permanent}</textarea></div></div></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer-custom"><button class="btn-outline-custom" onclick="closeModal('studentModal')">Cancel</button><button class="btn-primary-custom" id="saveStudentBtn">Save Changes</button></div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('studentModal').style.display = 'block';
+            setupFileUploads();
+            document.getElementById('saveStudentBtn').onclick = () => updateStudent();
+        }
+        
+        function setupFileUploads() {
+            const photoArea = document.getElementById('photoUploadArea');
+            const photoFile = document.getElementById('photoFile');
+            const aadharArea = document.getElementById('aadharUploadArea');
+            const aadharFile = document.getElementById('aadharFile');
+            if (photoArea) photoArea.onclick = () => photoFile.click();
+            if (aadharArea) aadharArea.onclick = () => aadharFile.click();
+            if (photoFile) photoFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const compressed = await compressImage(e.target.files[0]);
+                    document.getElementById('editPhoto').value = compressed;
+                    document.getElementById('photoPreview').innerHTML = `<img src="${compressed}" style="max-width:100px; border-radius:12px;">`;
+                }
+            };
+            if (aadharFile) aadharFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const data = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                    document.getElementById('editAadharDoc').value = data;
+                    const previewDiv = document.getElementById('aadharPreview');
+                    if (file.type === 'application/pdf') previewDiv.innerHTML = '<i class="fas fa-file-pdf fa-3x"></i>';
+                    else previewDiv.innerHTML = `<img src="${data}" style="max-width:100px;">`;
+                }
+            };
+        }
+        
+        async function updateStudent() {
+            const id = document.getElementById('studentId').value;
+            const data = {
+                studentId: document.getElementById('editStudentId').value,
+                password: document.getElementById('editPassword').value,
+                photo: document.getElementById('editPhoto').value || document.getElementById('photoPreview').querySelector('img')?.src,
+                student: {
+                    firstName: document.getElementById('editFirstName').value,
+                    middleName: document.getElementById('editMiddleName').value,
+                    lastName: document.getElementById('editLastName').value,
+                    mobile: document.getElementById('editMobile').value
+                },
+                aadhar: document.getElementById('editAadhar').value,
+                aadharDocument: document.getElementById('editAadharDoc').value,
+                classMonthlyFees: parseInt(document.getElementById('editFees').value),
+                dates: {
+                    reg: document.getElementById('editRegDate').value,
+                    join: document.getElementById('editJoinDate').value
+                },
+                father: {
+                    firstName: document.getElementById('editFatherFirst').value,
+                    middleName: document.getElementById('editFatherMiddle').value,
+                    lastName: document.getElementById('editFatherLast').value,
+                    mobile: document.getElementById('editFatherMobile').value
+                },
+                mother: {
+                    firstName: document.getElementById('editMotherName').value.split(' ')[0] || '',
+                    lastName: document.getElementById('editMotherName').value.split(' ').slice(1).join(' ') || ''
+                },
+                address: {
+                    current: document.getElementById('editCurrentAddress').value,
+                    permanent: document.getElementById('editPermanentAddress').value
+                },
+                education: {
+                    board: document.getElementById('editBoard').value,
+                    class: document.getElementById('editClass').value
+                }
+            };
+            showLoading(true);
+            try {
+                const res = await fetch(`/api/students/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Student updated successfully!');
+                    closeModal('studentModal');
+                    fetchStudents();
+                } else showToast(result.message || 'Update failed', 'error');
+            } catch (err) { showToast('Update failed', 'error'); }
+            showLoading(false);
+        }
+        
+        async function viewStudentDetails(id) {
+            try {
+                const res = await fetch(`/api/students/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) showStudentDetailsModal(data.data);
+            } catch (err) { showToast('Error loading details', 'error'); }
+        }
+        
+        function showStudentDetailsModal(student) {
+            const feesPaid = student.feesHistory?.reduce((s, f) => s + (f.paidAmount || 0), 0) || 0;
+            const feesDue = student.feesHistory?.reduce((s, f) => s + (f.dueAmount || 0), 0) || 0;
+            const attendancePresent = student.attendance?.filter(a => a.status === 'present').length || 0;
+            const attendanceAbsent = student.attendance?.filter(a => a.status === 'absent').length || 0;
+            const modalHtml = `
+            <div class="modal-custom" id="viewStudentModal">
+                <div class="modal-content-custom" style="max-width: 700px;">
+                    <div class="modal-header-custom"><h4><i class="fas fa-user-graduate"></i> ${student.studentName.first} ${student.studentName.last}</h4><button class="modal-close" onclick="closeModal('viewStudentModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <div class="text-center mb-3"><img src="${student.photo}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);"></div>
+                        <div class="row g-2">
+                            <div class="col-md-6"><strong>Student ID:</strong> ${student.studentId}</div>
+                            <div class="col-md-6"><strong>Mobile:</strong> ${student.mobile}</div>
+                            <div class="col-md-6"><strong>Board:</strong> ${student.education.board}</div>
+                            <div class="col-md-6"><strong>Class:</strong> ${student.education.class}</div>
+                            <div class="col-md-6"><strong>Monthly Fees:</strong> ₹${student.classMonthlyFees}</div>
+                            <div class="col-md-6"><strong>Joining Date:</strong> ${new Date(student.joiningDate).toLocaleDateString()}</div>
+                            <div class="col-md-12"><hr><strong>Fees Summary:</strong> Paid: ₹${feesPaid} | Due: ₹${feesDue}</div>
+                            <div class="col-md-12"><strong>Attendance:</strong> Present: ${attendancePresent} | Absent: ${attendanceAbsent}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('viewStudentModal').style.display = 'block';
+        }
+        
+        async function openStudentAttendanceModal(id) {
+            const student = students.find(s => s.studentId === id);
+            if (!student) return;
+            const today = new Date().toISOString().split('T')[0];
+            const modalHtml = `
+            <div class="modal-custom" id="attendanceModal">
+                <div class="modal-content-custom">
+                    <div class="modal-header-custom"><h4><i class="fas fa-calendar-check"></i> Mark Attendance - ${student.studentName.first} ${student.studentName.last}</h4><button class="modal-close" onclick="closeModal('attendanceModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <form id="attendanceForm">
+                            <input type="hidden" id="attStudentId" value="${id}">
+                            <div class="mb-3"><label>Date</label><input type="date" class="form-control" id="attDate" value="${today}" required></div>
+                            <div class="mb-3"><label>Status</label><select class="form-select" id="attStatus" required><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option><option value="half-day">Half Day</option></select></div>
+                            <div class="mb-3"><label>Remarks</label><input type="text" class="form-control" id="attRemarks" placeholder="Optional"></div>
+                        </form>
+                        <hr>
+                        <h6>Attendance History</h6>
+                        <div id="attHistoryList" style="max-height:200px; overflow-y:auto;"></div>
+                    </div>
+                    <div class="modal-footer-custom"><button class="btn-outline-custom" onclick="closeModal('attendanceModal')">Cancel</button><button class="btn-primary-custom" id="saveAttendanceBtn">Save Attendance</button></div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('attendanceModal').style.display = 'block';
+            await loadAttendanceHistory(id);
+            document.getElementById('saveAttendanceBtn').onclick = () => saveStudentAttendance(id);
+        }
+        
+        async function loadAttendanceHistory(studentId) {
+            try {
+                const res = await fetch(`/api/students/${studentId}/attendance`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const historyDiv = document.getElementById('attHistoryList');
+                    historyDiv.innerHTML = data.data.slice(-10).reverse().map(a => `<div class="d-flex justify-content-between p-2 border-bottom"><span>${a.date}</span><span class="badge bg-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status}</span><span>${a.remarks || ''}</span></div>`).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+        
+        async function saveStudentAttendance(studentId) {
+            const date = document.getElementById('attDate').value;
+            const status = document.getElementById('attStatus').value;
+            const remarks = document.getElementById('attRemarks').value;
+            if (!date) return showToast('Select date', 'error');
+            showLoading(true);
+            try {
+                const res = await fetch(`/api/students/${studentId}/attendance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ date, status, remarks })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Attendance marked!');
+                    closeModal('attendanceModal');
+                    fetchStudents();
+                } else showToast(data.message || 'Failed', 'error');
+            } catch (err) { showToast('Failed', 'error'); }
+            showLoading(false);
+        }
+        
+        async function openStudentFeesModal(id) {
+            const student = students.find(s => s.studentId === id);
+            if (!student) return;
+            const modalHtml = `
+            <div class="modal-custom" id="feesModal">
+                <div class="modal-content-custom" style="max-width: 600px;">
+                    <div class="modal-header-custom"><h4><i class="fas fa-rupee-sign"></i> Fees Management - ${student.studentName.first} ${student.studentName.last}</h4><button class="modal-close" onclick="closeModal('feesModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <div class="text-center mb-3"><h5>Monthly Fees: ₹${student.classMonthlyFees}</h5></div>
+                        <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Month</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr></thead><tbody id="feesHistoryBody"></tbody></table></div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('feesModal').style.display = 'block';
+            const feesHistory = student.feesHistory || [];
+            const tbody = document.getElementById('feesHistoryBody');
+            if (feesHistory.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center">No fees records</td></tr>';
+            else tbody.innerHTML = feesHistory.map(f => `
+                <tr><td>${f.month}</td><td>₹${f.paidAmount}</td><td>₹${f.dueAmount}</td><td><span class="status-badge ${f.status}">${f.status}</span></td>
+                <td><button class="btn-sm btn-primary" onclick="payFees('${id}', '${f.month}', ${student.classMonthlyFees})">Pay</button></td></tr>
+            `).join('');
+            window.payFees = async (sid, month, totalFees) => {
+                const amount = prompt('Enter amount to pay:', '0');
+                if (amount === null) return;
+                const paid = parseFloat(amount);
+                if (isNaN(paid) || paid < 0 || paid > totalFees) return showToast('Invalid amount', 'error');
+                showLoading(true);
+                try {
+                    const res = await fetch(`/api/update-fees/${sid}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ month, paidAmount: paid })
+                    });
+                    const data = await res.json();
+                    if (data.success) { showToast('Fees updated!'); closeModal('feesModal'); fetchStudents(); }
+                    else showToast(data.message || 'Failed', 'error');
+                } catch (err) { showToast('Failed', 'error'); }
+                showLoading(false);
+            };
+        }
+        
+        async function deleteStudent(id) {
+            if (!confirm('Are you sure you want to delete this student? This action cannot be undone.')) return;
+            showLoading(true);
+            try {
+                const res = await fetch(`/api/students/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) { showToast('Student deleted'); fetchStudents(); }
+                else showToast(data.message || 'Delete failed', 'error');
+            } catch (err) { showToast('Delete failed', 'error'); }
+            showLoading(false);
+        }
+        
+        async function addNewStudent() {
+            const modalHtml = `
+            <div class="modal-custom" id="addStudentModal">
+                <div class="modal-content-custom" style="max-width: 800px;">
+                    <div class="modal-header-custom"><h4><i class="fas fa-user-plus"></i> Add New Student</h4><button class="modal-close" onclick="closeModal('addStudentModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <form id="addStudentForm">
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-id-card"></i> Basic Information</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Student ID *</label><input type="text" class="form-control" id="addStudentId" required></div>
+                                <div class="col-md-6"><label>Password *</label><input type="text" class="form-control" id="addPassword" required></div>
+                                <div class="col-md-4"><label>First Name *</label><input type="text" class="form-control" id="addFirstName" required></div>
+                                <div class="col-md-4"><label>Middle Name</label><input type="text" class="form-control" id="addMiddleName"></div>
+                                <div class="col-md-4"><label>Last Name *</label><input type="text" class="form-control" id="addLastName" required></div>
+                                <div class="col-md-6"><label>Mobile *</label><input type="text" class="form-control" id="addMobile" maxlength="10" required></div>
+                                <div class="col-md-6"><label>Aadhar Number *</label><input type="text" class="form-control" id="addAadhar" maxlength="12" required></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-camera"></i> Documents</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Photo *</label><div class="file-upload-area" id="addPhotoArea">Click to upload photo</div><input type="file" id="addPhotoFile" style="display:none" accept="image/*"><input type="hidden" id="addPhoto"><div id="addPhotoPreview"></div></div>
+                                <div class="col-md-6"><label>Aadhar Document *</label><div class="file-upload-area" id="addAadharArea">Click to upload document</div><input type="file" id="addAadharFile" style="display:none" accept="image/*,.pdf"><input type="hidden" id="addAadharDoc"><div id="addAadharPreview"></div></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-graduation-cap"></i> Education & Fees</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Board *</label><input type="text" class="form-control" id="addBoard" required></div>
+                                <div class="col-md-4"><label>Class *</label><input type="text" class="form-control" id="addClass" required></div>
+                                <div class="col-md-4"><label>Monthly Fees (₹) *</label><input type="number" class="form-control" id="addFees" required></div>
+                                <div class="col-md-6"><label>Registration Date</label><input type="date" class="form-control" id="addRegDate" value="${new Date().toISOString().split('T')[0]}"></div>
+                                <div class="col-md-6"><label>Joining Date</label><input type="date" class="form-control" id="addJoinDate" value="${new Date().toISOString().split('T')[0]}"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-users"></i> Family Details</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Father First Name *</label><input type="text" class="form-control" id="addFatherFirst" required></div>
+                                <div class="col-md-4"><label>Father Middle Name</label><input type="text" class="form-control" id="addFatherMiddle"></div>
+                                <div class="col-md-4"><label>Father Last Name *</label><input type="text" class="form-control" id="addFatherLast" required></div>
+                                <div class="col-md-6"><label>Father Mobile *</label><input type="text" class="form-control" id="addFatherMobile" maxlength="10" required></div>
+                                <div class="col-md-6"><label>Mother Name</label><input type="text" class="form-control" id="addMotherName"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Current Address *</label><textarea class="form-control" id="addCurrentAddress" rows="2" required></textarea></div>
+                                <div class="col-md-6"><label>Permanent Address *</label><textarea class="form-control" id="addPermanentAddress" rows="2" required></textarea></div></div></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer-custom"><button class="btn-outline-custom" onclick="closeModal('addStudentModal')">Cancel</button><button class="btn-primary-custom" id="submitAddStudentBtn">Add Student</button></div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('addStudentModal').style.display = 'block';
+            
+            const photoArea = document.getElementById('addPhotoArea');
+            const photoFile = document.getElementById('addPhotoFile');
+            const aadharArea = document.getElementById('addAadharArea');
+            const aadharFile = document.getElementById('addAadharFile');
+            photoArea.onclick = () => photoFile.click();
+            aadharArea.onclick = () => aadharFile.click();
+            photoFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const compressed = await compressImage(e.target.files[0]);
+                    document.getElementById('addPhoto').value = compressed;
+                    document.getElementById('addPhotoPreview').innerHTML = `<img src="${compressed}" style="max-width:100px; border-radius:12px;">`;
+                }
+            };
+            aadharFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const data = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                    document.getElementById('addAadharDoc').value = data;
+                    const previewDiv = document.getElementById('addAadharPreview');
+                    if (file.type === 'application/pdf') previewDiv.innerHTML = '<i class="fas fa-file-pdf fa-3x"></i>';
+                    else previewDiv.innerHTML = `<img src="${data}" style="max-width:100px;">`;
+                }
+            };
+            document.getElementById('submitAddStudentBtn').onclick = async () => {
+                const data = {
+                    studentId: document.getElementById('addStudentId').value,
+                    password: document.getElementById('addPassword').value,
+                    photo: document.getElementById('addPhoto').value,
+                    student: {
+                        firstName: document.getElementById('addFirstName').value,
+                        middleName: document.getElementById('addMiddleName').value,
+                        lastName: document.getElementById('addLastName').value,
+                        mobile: document.getElementById('addMobile').value
+                    },
+                    aadhar: document.getElementById('addAadhar').value,
+                    aadharDocument: document.getElementById('addAadharDoc').value,
+                    classMonthlyFees: parseInt(document.getElementById('addFees').value),
+                    dates: {
+                        reg: document.getElementById('addRegDate').value,
+                        join: document.getElementById('addJoinDate').value
+                    },
+                    father: {
+                        firstName: document.getElementById('addFatherFirst').value,
+                        middleName: document.getElementById('addFatherMiddle').value,
+                        lastName: document.getElementById('addFatherLast').value,
+                        mobile: document.getElementById('addFatherMobile').value
+                    },
+                    mother: {
+                        firstName: document.getElementById('addMotherName').value.split(' ')[0] || '',
+                        lastName: document.getElementById('addMotherName').value.split(' ').slice(1).join(' ') || ''
+                    },
+                    address: {
+                        current: document.getElementById('addCurrentAddress').value,
+                        permanent: document.getElementById('addPermanentAddress').value
+                    },
+                    education: {
+                        board: document.getElementById('addBoard').value,
+                        class: document.getElementById('addClass').value
+                    }
+                };
+                if (!data.studentId || !data.password || !data.photo || !data.aadharDocument) {
+                    return showToast('Please fill all required fields', 'error');
+                }
+                showLoading(true);
+                try {
+                    const res = await fetch('/api/student-register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (result.success) { showToast('Student added successfully!'); closeModal('addStudentModal'); fetchStudents(); }
+                    else showToast(result.message || 'Registration failed', 'error');
+                } catch (err) { showToast('Failed to add student', 'error'); }
+                showLoading(false);
+            };
+        }
+        
+        // ============================================
+        // TEACHER MANAGEMENT FUNCTIONS
+        // ============================================
+        async function fetchTeachers() {
+            if (!verifyToken()) return;
+            try {
+                const res = await fetch('/api/teachers', { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) { teachers = data.data; displayTeachers(teachers); updateTeacherStats(); }
+            } catch (err) { showToast('Error loading teachers', 'error'); }
+        }
+        
         function displayTeachers(teacherList) {
             const tbody = document.getElementById('teachersTableBody');
-            if (!teacherList || teacherList.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No teachers found</td></tr>'; return; }
+            if (!tbody) return;
+            if (!teacherList || teacherList.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No teachers found</td></tr>'; return; }
             tbody.innerHTML = teacherList.map(teacher => {
                 const name = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
                 const statusClass = teacher.status === 'approved' ? 'approved' : teacher.status === 'pending' ? 'pending' : 'rejected';
-                return `<tr><td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
-                        <td>${teacher.teacherId || '-'}</td><td>${name || '-'}</td>
-                        <td>${teacher.subject || '-'}</td><td>${teacher.mobile || '-'}</td>
-                        <td>₹${teacher.salary || 0}</td>
-                        <td><span class="status-badge ${statusClass}">${teacher.status || 'pending'}</span></td>
-                        <td><div class="action-group"><button class="action-btn approve" data-teacher-id="${teacher.teacherId}"><i class="fas fa-check"></i></button><button class="action-btn edit" data-teacher-id="${teacher.teacherId}"><i class="fas fa-edit"></i></button><button class="action-btn view" data-teacher-id="${teacher.teacherId}"><i class="fas fa-eye"></i></button></div></td></tr>`;
+                return `<tr>
+                    <td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="teacher-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
+                    <td>${teacher.teacherId || '-'}</td>
+                    <td>${name || '-'}</td>
+                    <td>${teacher.subject || '-'}</td>
+                    <td>${teacher.mobile || '-'}</td>
+                    <td>₹${teacher.salary || 0}</td>
+                    <td><span class="status-badge ${statusClass}">${teacher.status || 'pending'}</span></td>
+                    <td><div class="action-group">
+                        <button class="action-btn edit" data-teacher-id="${teacher.teacherId}" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn view" data-teacher-id="${teacher.teacherId}" title="View"><i class="fas fa-eye"></i></button>
+                        ${teacher.status === 'pending' ? `<button class="action-btn approve" data-teacher-id="${teacher.teacherId}" title="Approve"><i class="fas fa-check"></i></button>` : ''}
+                        <button class="action-btn salary" data-teacher-id="${teacher.teacherId}" title="Pay Salary"><i class="fas fa-rupee-sign"></i></button>
+                        <button class="action-btn delete" data-teacher-id="${teacher.teacherId}" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div></td>
+                </tr>`;
             }).join('');
+            attachTeacherButtons();
         }
-
+        
+        function attachTeacherButtons() {
+            document.querySelectorAll('#teachersTableBody .action-btn').forEach(btn => {
+                btn.removeEventListener('click', handleTeacherAction);
+                btn.addEventListener('click', handleTeacherAction);
+            });
+        }
+        
+        function handleTeacherAction(e) {
+            const btn = e.currentTarget;
+            const teacherId = btn.getAttribute('data-teacher-id');
+            if (btn.classList.contains('edit')) openEditTeacherModal(teacherId);
+            else if (btn.classList.contains('view')) viewTeacherDetails(teacherId);
+            else if (btn.classList.contains('approve')) approveTeacher(teacherId);
+            else if (btn.classList.contains('salary')) openTeacherSalaryModal(teacherId);
+            else if (btn.classList.contains('delete')) deleteTeacher(teacherId);
+        }
+        
         function updateTeacherStats() {
             const total = teachers.length;
             const pending = teachers.filter(t => t.status === 'pending').length;
-            const approved = teachers.filter(t => t.status === 'approved').length;
             const totalSalary = teachers.reduce((sum, t) => sum + (t.salary || 0), 0);
-            document.getElementById('teacherTotal').textContent = total;
-            document.getElementById('teacherPending').textContent = pending;
-            document.getElementById('teacherApproved').textContent = approved;
-            document.getElementById('teacherSalary').textContent = `₹${totalSalary}`;
             document.getElementById('totalTeachersStat').textContent = total;
             document.getElementById('pendingTeachersStat').textContent = pending;
+            document.getElementById('totalSalaryDisplay').innerHTML = `₹${totalSalary}`;
         }
-
-        function approveTeacher(teacherId) {
-            const subject = prompt('Enter subject for teacher:'); if (!subject) return;
-            const salary = prompt('Enter monthly salary:'); if (!salary) return;
+        
+        async function openEditTeacherModal(id) {
+            try {
+                const res = await fetch(`/api/teachers/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) showTeacherModal(data.data);
+            } catch (err) { showToast('Error loading teacher', 'error'); }
+        }
+        
+        function showTeacherModal(teacher) {
+            const modalHtml = `
+            <div class="modal-custom" id="teacherModal">
+                <div class="modal-content-custom" style="max-width: 900px;">
+                    <div class="modal-header-custom"><h4><i class="fas fa-chalkboard-teacher"></i> Teacher Details</h4><button class="modal-close" onclick="closeModal('teacherModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <form id="teacherForm">
+                            <input type="hidden" id="teacherId" value="${teacher.teacherId}">
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-id-card"></i> Basic Information</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Teacher ID *</label><input type="text" class="form-control" id="editTeacherId" value="${teacher.teacherId}" required></div>
+                                <div class="col-md-6"><label>Password *</label><input type="text" class="form-control" id="editTeacherPassword" value="${teacher.password}" required></div>
+                                <div class="col-md-4"><label>First Name *</label><input type="text" class="form-control" id="editTeacherFirst" value="${teacher.teacherName.first}" required></div>
+                                <div class="col-md-4"><label>Middle Name</label><input type="text" class="form-control" id="editTeacherMiddle" value="${teacher.teacherName.middle || ''}"></div>
+                                <div class="col-md-4"><label>Last Name *</label><input type="text" class="form-control" id="editTeacherLast" value="${teacher.teacherName.last}" required></div>
+                                <div class="col-md-6"><label>Mobile *</label><input type="text" class="form-control" id="editTeacherMobile" value="${teacher.mobile}" maxlength="10" required></div>
+                                <div class="col-md-6"><label>Alternate Mobile</label><input type="text" class="form-control" id="editTeacherAltMobile" value="${teacher.altMobile || ''}" maxlength="10"></div>
+                                <div class="col-md-6"><label>Date of Birth *</label><input type="date" class="form-control" id="editTeacherDob" value="${teacher.dob?.split('T')[0]}" required></div>
+                                <div class="col-md-6"><label>Aadhar Number *</label><input type="text" class="form-control" id="editTeacherAadhar" value="${teacher.aadharNumber}" maxlength="12" required></div>
+                                <div class="col-md-12"><label>Last Qualification *</label><input type="text" class="form-control" id="editTeacherQualification" value="${teacher.lastQualification}" required></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-camera"></i> Documents</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Photo *</label><div class="file-upload-area" id="teacherPhotoArea">Click to upload photo</div><input type="file" id="teacherPhotoFile" style="display:none" accept="image/*"><input type="hidden" id="editTeacherPhoto"><div id="teacherPhotoPreview"><img src="${teacher.photo}" style="max-width:100px; border-radius:12px;"></div></div>
+                                <div class="col-md-6"><label>Aadhar Document *</label><div class="file-upload-area" id="teacherAadharArea">Click to upload document</div><input type="file" id="teacherAadharFile" style="display:none" accept="image/*,.pdf"><input type="hidden" id="editTeacherAadharDoc"><div id="teacherAadharPreview">${teacher.aadharDoc ? (teacher.aadharDoc.includes('pdf') ? '<i class="fas fa-file-pdf fa-3x"></i>' : `<img src="${teacher.aadharDoc}" style="max-width:100px;">`) : '-'}</div></div>
+                                <div class="col-md-12"><label>Qualification Document *</label><div class="file-upload-area" id="teacherQualArea">Click to upload document</div><input type="file" id="teacherQualFile" style="display:none" accept="image/*,.pdf"><input type="hidden" id="editTeacherQualDoc"><div id="teacherQualPreview">${teacher.qualificationDoc ? (teacher.qualificationDoc.includes('pdf') ? '<i class="fas fa-file-pdf fa-3x"></i>' : `<img src="${teacher.qualificationDoc}" style="max-width:100px;">`) : '-'}</div></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-briefcase"></i> Professional Details</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Subject</label><input type="text" class="form-control" id="editTeacherSubject" value="${teacher.subject || ''}"></div>
+                                <div class="col-md-4"><label>Monthly Salary (₹)</label><input type="number" class="form-control" id="editTeacherSalary" value="${teacher.salary || 0}"></div>
+                                <div class="col-md-4"><label>Joining Date</label><input type="date" class="form-control" id="editTeacherJoining" value="${teacher.joiningDate?.split('T')[0] || ''}"></div>
+                                <div class="col-md-4"><label>Status</label><select class="form-select" id="editTeacherStatus"><option value="pending" ${teacher.status === 'pending' ? 'selected' : ''}>Pending</option><option value="approved" ${teacher.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${teacher.status === 'rejected' ? 'selected' : ''}>Rejected</option></select></div>
+                                <div class="col-md-4"><label>Experience (Years)</label><input type="number" class="form-control" id="editTeacherExperience" value="${teacher.experience || 0}"></div>
+                                <div class="col-md-4"><label>Previous School</label><input type="text" class="form-control" id="editTeacherPrevSchool" value="${teacher.previousSchool || ''}"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Current Address</label><textarea class="form-control" id="editTeacherCurrentAddr" rows="2">${teacher.address?.current || ''}</textarea></div>
+                                <div class="col-md-6"><label>Permanent Address</label><textarea class="form-control" id="editTeacherPermAddr" rows="2">${teacher.address?.permanent || ''}</textarea></div>
+                                <div class="col-md-4"><label>City</label><input type="text" class="form-control" id="editTeacherCity" value="${teacher.address?.city || ''}"></div>
+                                <div class="col-md-4"><label>State</label><input type="text" class="form-control" id="editTeacherState" value="${teacher.address?.state || ''}"></div>
+                                <div class="col-md-4"><label>Pincode</label><input type="text" class="form-control" id="editTeacherPincode" value="${teacher.address?.pincode || ''}"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-university"></i> Bank Details</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Account Holder Name</label><input type="text" class="form-control" id="editTeacherAccountHolder" value="${teacher.bankDetails?.accountHolder || ''}"></div>
+                                <div class="col-md-6"><label>Account Number</label><input type="text" class="form-control" id="editTeacherAccountNumber" value="${teacher.bankDetails?.accountNumber || ''}"></div>
+                                <div class="col-md-6"><label>IFSC Code</label><input type="text" class="form-control" id="editTeacherIfsc" value="${teacher.bankDetails?.ifscCode || ''}"></div>
+                                <div class="col-md-6"><label>Bank Name</label><input type="text" class="form-control" id="editTeacherBankName" value="${teacher.bankDetails?.bankName || ''}"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-phone-alt"></i> Emergency Contact</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Contact Name</label><input type="text" class="form-control" id="editTeacherEmergName" value="${teacher.emergencyContact?.name || ''}"></div>
+                                <div class="col-md-4"><label>Relation</label><input type="text" class="form-control" id="editTeacherEmergRelation" value="${teacher.emergencyContact?.relation || ''}"></div>
+                                <div class="col-md-4"><label>Phone</label><input type="text" class="form-control" id="editTeacherEmergPhone" value="${teacher.emergencyContact?.phone || ''}"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-comment"></i> Remarks</div>
+                                <div class="row"><div class="col-12"><textarea class="form-control" id="editTeacherRemarks" rows="2">${teacher.remarks || ''}</textarea></div></div></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer-custom"><button class="btn-outline-custom" onclick="closeModal('teacherModal')">Cancel</button><button class="btn-primary-custom" id="saveTeacherBtn">Save Changes</button></div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('teacherModal').style.display = 'block';
+            
+            setupTeacherFileUploads();
+            document.getElementById('saveTeacherBtn').onclick = () => updateTeacher();
+        }
+        
+        function setupTeacherFileUploads() {
+            const photoArea = document.getElementById('teacherPhotoArea');
+            const photoFile = document.getElementById('teacherPhotoFile');
+            const aadharArea = document.getElementById('teacherAadharArea');
+            const aadharFile = document.getElementById('teacherAadharFile');
+            const qualArea = document.getElementById('teacherQualArea');
+            const qualFile = document.getElementById('teacherQualFile');
+            
+            if (photoArea) photoArea.onclick = () => photoFile.click();
+            if (aadharArea) aadharArea.onclick = () => aadharFile.click();
+            if (qualArea) qualArea.onclick = () => qualFile.click();
+            
+            if (photoFile) photoFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const compressed = await compressImage(e.target.files[0]);
+                    document.getElementById('editTeacherPhoto').value = compressed;
+                    document.getElementById('teacherPhotoPreview').innerHTML = `<img src="${compressed}" style="max-width:100px; border-radius:12px;">`;
+                }
+            };
+            if (aadharFile) aadharFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const data = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                    document.getElementById('editTeacherAadharDoc').value = data;
+                    const previewDiv = document.getElementById('teacherAadharPreview');
+                    if (file.type === 'application/pdf') previewDiv.innerHTML = '<i class="fas fa-file-pdf fa-3x"></i>';
+                    else previewDiv.innerHTML = `<img src="${data}" style="max-width:100px;">`;
+                }
+            };
+            if (qualFile) qualFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const data = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                    document.getElementById('editTeacherQualDoc').value = data;
+                    const previewDiv = document.getElementById('teacherQualPreview');
+                    if (file.type === 'application/pdf') previewDiv.innerHTML = '<i class="fas fa-file-pdf fa-3x"></i>';
+                    else previewDiv.innerHTML = `<img src="${data}" style="max-width:100px;">`;
+                }
+            };
+        }
+        
+        async function updateTeacher() {
+            const id = document.getElementById('teacherId').value;
+            const data = {
+                teacherId: document.getElementById('editTeacherId').value,
+                password: document.getElementById('editTeacherPassword').value,
+                photo: document.getElementById('editTeacherPhoto').value || document.getElementById('teacherPhotoPreview').querySelector('img')?.src,
+                teacherName: {
+                    first: document.getElementById('editTeacherFirst').value,
+                    middle: document.getElementById('editTeacherMiddle').value,
+                    last: document.getElementById('editTeacherLast').value
+                },
+                mobile: document.getElementById('editTeacherMobile').value,
+                altMobile: document.getElementById('editTeacherAltMobile').value,
+                dob: document.getElementById('editTeacherDob').value,
+                aadharNumber: document.getElementById('editTeacherAadhar').value,
+                lastQualification: document.getElementById('editTeacherQualification').value,
+                aadharDoc: document.getElementById('editTeacherAadharDoc').value,
+                qualificationDoc: document.getElementById('editTeacherQualDoc').value,
+                subject: document.getElementById('editTeacherSubject').value,
+                salary: parseInt(document.getElementById('editTeacherSalary').value) || 0,
+                joiningDate: document.getElementById('editTeacherJoining').value,
+                status: document.getElementById('editTeacherStatus').value,
+                experience: parseInt(document.getElementById('editTeacherExperience').value) || 0,
+                previousSchool: document.getElementById('editTeacherPrevSchool').value,
+                address: {
+                    current: document.getElementById('editTeacherCurrentAddr').value,
+                    permanent: document.getElementById('editTeacherPermAddr').value,
+                    city: document.getElementById('editTeacherCity').value,
+                    state: document.getElementById('editTeacherState').value,
+                    pincode: document.getElementById('editTeacherPincode').value
+                },
+                bankDetails: {
+                    accountHolder: document.getElementById('editTeacherAccountHolder').value,
+                    accountNumber: document.getElementById('editTeacherAccountNumber').value,
+                    ifscCode: document.getElementById('editTeacherIfsc').value,
+                    bankName: document.getElementById('editTeacherBankName').value
+                },
+                emergencyContact: {
+                    name: document.getElementById('editTeacherEmergName').value,
+                    relation: document.getElementById('editTeacherEmergRelation').value,
+                    phone: document.getElementById('editTeacherEmergPhone').value
+                },
+                remarks: document.getElementById('editTeacherRemarks').value
+            };
+            showLoading(true);
+            try {
+                const res = await fetch(`/api/teachers/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Teacher updated successfully!');
+                    closeModal('teacherModal');
+                    fetchTeachers();
+                } else showToast(result.message || 'Update failed', 'error');
+            } catch (err) { showToast('Update failed', 'error'); }
+            showLoading(false);
+        }
+        
+        async function viewTeacherDetails(id) {
+            try {
+                const res = await fetch(`/api/teachers/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) showTeacherDetailsModal(data.data);
+            } catch (err) { showToast('Error loading details', 'error'); }
+        }
+        
+        function showTeacherDetailsModal(teacher) {
+            const salaryPaid = teacher.salaryHistory?.reduce((s, f) => s + (f.paidAmount || 0), 0) || 0;
+            const modalHtml = `
+            <div class="modal-custom" id="viewTeacherModal">
+                <div class="modal-content-custom" style="max-width: 700px;">
+                    <div class="modal-header-custom"><h4><i class="fas fa-chalkboard-teacher"></i> ${teacher.teacherName.first} ${teacher.teacherName.last}</h4><button class="modal-close" onclick="closeModal('viewTeacherModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <div class="text-center mb-3"><img src="${teacher.photo}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);"></div>
+                        <div class="row g-2">
+                            <div class="col-md-6"><strong>Teacher ID:</strong> ${teacher.teacherId}</div>
+                            <div class="col-md-6"><strong>Mobile:</strong> ${teacher.mobile}</div>
+                            <div class="col-md-6"><strong>Subject:</strong> ${teacher.subject || '-'}</div>
+                            <div class="col-md-6"><strong>Salary:</strong> ₹${teacher.salary}</div>
+                            <div class="col-md-6"><strong>Qualification:</strong> ${teacher.lastQualification}</div>
+                            <div class="col-md-6"><strong>Joining Date:</strong> ${new Date(teacher.joiningDate).toLocaleDateString()}</div>
+                            <div class="col-md-12"><hr><strong>Salary Paid:</strong> ₹${salaryPaid}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('viewTeacherModal').style.display = 'block';
+        }
+        
+        async function approveTeacher(id) {
+            const subject = prompt('Enter subject for teacher:');
+            if (!subject) return;
+            const salary = prompt('Enter monthly salary:');
+            if (!salary) return;
             const joiningDate = prompt('Enter joining date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
             showLoading(true);
-            fetch(`/api/teachers/${teacherId}/status`, {
-                method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ status: 'approved', subject: subject, salary: parseInt(salary), joiningDate: joiningDate })
-            }).then(res => res.json()).then(data => { if (data.success) { showToast('Teacher approved successfully', 'success'); fetchTeachers(); } else { showToast('Error: ' + data.message, 'error'); } }).catch(err => { showToast('Server error', 'error'); }).finally(() => showLoading(false));
-        }
-
-        // ============================================
-        // VERIFY TOKEN & INIT
-        // ============================================
-        async function verifyToken() {
             try {
-                const response = await fetch('/api/verify-token', { headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await response.json();
-                if (!data.success) { showToast('Session expired. Please login again.', 'warning'); setTimeout(() => logout(), 2000); }
-            } catch (err) { console.log('Token verification failed:', err); }
+                const res = await fetch(`/api/teachers/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ status: 'approved', subject, salary: parseInt(salary), joiningDate })
+                });
+                const data = await res.json();
+                if (data.success) { showToast('Teacher approved!'); fetchTeachers(); }
+                else showToast(data.message, 'error');
+            } catch (err) { showToast('Server error', 'error'); }
+            showLoading(false);
         }
-
+        
+        async function openTeacherSalaryModal(id) {
+            const teacher = teachers.find(t => t.teacherId === id);
+            if (!teacher) return;
+            const modalHtml = `
+            <div class="modal-custom" id="salaryModal">
+                <div class="modal-content-custom" style="max-width: 600px;">
+                    <div class="modal-header-custom"><h4><i class="fas fa-rupee-sign"></i> Salary Management - ${teacher.teacherName.first} ${teacher.teacherName.last}</h4><button class="modal-close" onclick="closeModal('salaryModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <div class="text-center mb-3"><h5>Monthly Salary: ₹${teacher.salary}</h5></div>
+                        <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Month</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th> </thead><tbody id="salaryHistoryBody"></tbody> </table></div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('salaryModal').style.display = 'block';
+            const salaryHistory = teacher.salaryHistory || [];
+            const tbody = document.getElementById('salaryHistoryBody');
+            if (salaryHistory.length === 0) tbody.innerHTML = '<tr><td colspan="5" class="text-center">No salary records</td></tr>';
+            else tbody.innerHTML = salaryHistory.map(s => `
+                <tr><td>${s.month}</td><td>₹${s.paidAmount}</td><td>₹${s.dueAmount}</td><td><span class="status-badge ${s.status}">${s.status}</span></td>
+                <td><button class="btn-sm btn-primary" onclick="payTeacherSalary('${id}', '${s.month}', ${teacher.salary})">Pay</button></td></tr>
+            `).join('');
+            window.payTeacherSalary = async (tid, month, totalSalary) => {
+                const amount = prompt('Enter amount to pay:', '0');
+                if (amount === null) return;
+                const paid = parseFloat(amount);
+                if (isNaN(paid) || paid < 0 || paid > totalSalary) return showToast('Invalid amount', 'error');
+                showLoading(true);
+                try {
+                    const res = await fetch(`/api/teachers/${tid}/salary`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ month, paidAmount: paid })
+                    });
+                    const data = await res.json();
+                    if (data.success) { showToast('Salary updated!'); closeModal('salaryModal'); fetchTeachers(); }
+                    else showToast(data.message || 'Failed', 'error');
+                } catch (err) { showToast('Failed', 'error'); }
+                showLoading(false);
+            };
+        }
+        
+        async function deleteTeacher(id) {
+            if (!confirm('Are you sure you want to delete this teacher? This action cannot be undone.')) return;
+            showLoading(true);
+            try {
+                const res = await fetch(`/api/teachers/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) { showToast('Teacher deleted'); fetchTeachers(); }
+                else showToast(data.message || 'Delete failed', 'error');
+            } catch (err) { showToast('Delete failed', 'error'); }
+            showLoading(false);
+        }
+        
+        async function addNewTeacher() {
+            const modalHtml = `
+            <div class="modal-custom" id="addTeacherModal">
+                <div class="modal-content-custom" style="max-width: 900px;">
+                    <div class="modal-header-custom"><h4><i class="fas fa-user-plus"></i> Add New Teacher</h4><button class="modal-close" onclick="closeModal('addTeacherModal')">&times;</button></div>
+                    <div class="modal-body-custom">
+                        <form id="addTeacherForm">
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-id-card"></i> Basic Information</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Teacher ID *</label><input type="text" class="form-control" id="addTeacherId" required></div>
+                                <div class="col-md-6"><label>Password *</label><input type="text" class="form-control" id="addTeacherPassword" required></div>
+                                <div class="col-md-4"><label>First Name *</label><input type="text" class="form-control" id="addTeacherFirst" required></div>
+                                <div class="col-md-4"><label>Middle Name</label><input type="text" class="form-control" id="addTeacherMiddle"></div>
+                                <div class="col-md-4"><label>Last Name *</label><input type="text" class="form-control" id="addTeacherLast" required></div>
+                                <div class="col-md-4"><label>Father First *</label><input type="text" class="form-control" id="addTeacherFatherFirst" required></div>
+                                <div class="col-md-4"><label>Father Middle</label><input type="text" class="form-control" id="addTeacherFatherMiddle"></div>
+                                <div class="col-md-4"><label>Father Last *</label><input type="text" class="form-control" id="addTeacherFatherLast" required></div>
+                                <div class="col-md-6"><label>Mobile *</label><input type="text" class="form-control" id="addTeacherMobile" maxlength="10" required></div>
+                                <div class="col-md-6"><label>Alternate Mobile</label><input type="text" class="form-control" id="addTeacherAltMobile" maxlength="10"></div>
+                                <div class="col-md-6"><label>Date of Birth *</label><input type="date" class="form-control" id="addTeacherDob" required></div>
+                                <div class="col-md-6"><label>Aadhar Number *</label><input type="text" class="form-control" id="addTeacherAadhar" maxlength="12" required></div>
+                                <div class="col-md-12"><label>Last Qualification *</label><input type="text" class="form-control" id="addTeacherQualification" required></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-camera"></i> Documents</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Photo *</label><div class="file-upload-area" id="addTeacherPhotoArea">Click to upload</div><input type="file" id="addTeacherPhotoFile" style="display:none" accept="image/*"><input type="hidden" id="addTeacherPhoto"><div id="addTeacherPhotoPreview"></div></div>
+                                <div class="col-md-4"><label>Aadhar Document *</label><div class="file-upload-area" id="addTeacherAadharArea">Click to upload</div><input type="file" id="addTeacherAadharFile" style="display:none" accept="image/*,.pdf"><input type="hidden" id="addTeacherAadharDoc"><div id="addTeacherAadharPreview"></div></div>
+                                <div class="col-md-4"><label>Qualification Document *</label><div class="file-upload-area" id="addTeacherQualArea">Click to upload</div><input type="file" id="addTeacherQualFile" style="display:none" accept="image/*,.pdf"><input type="hidden" id="addTeacherQualDoc"><div id="addTeacherQualPreview"></div></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-briefcase"></i> Professional Details</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Subject</label><input type="text" class="form-control" id="addTeacherSubject"></div>
+                                <div class="col-md-4"><label>Monthly Salary (₹)</label><input type="number" class="form-control" id="addTeacherSalary" min="0"></div>
+                                <div class="col-md-4"><label>Joining Date</label><input type="date" class="form-control" id="addTeacherJoining" value="${new Date().toISOString().split('T')[0]}"></div>
+                                <div class="col-md-4"><label>Experience (Years)</label><input type="number" class="form-control" id="addTeacherExperience" min="0"></div>
+                                <div class="col-md-8"><label>Previous School</label><input type="text" class="form-control" id="addTeacherPrevSchool"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Address</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Current Address</label><textarea class="form-control" id="addTeacherCurrentAddr" rows="2"></textarea></div>
+                                <div class="col-md-6"><label>Permanent Address</label><textarea class="form-control" id="addTeacherPermAddr" rows="2"></textarea></div>
+                                <div class="col-md-4"><label>City</label><input type="text" class="form-control" id="addTeacherCity"></div>
+                                <div class="col-md-4"><label>State</label><input type="text" class="form-control" id="addTeacherState"></div>
+                                <div class="col-md-4"><label>Pincode</label><input type="text" class="form-control" id="addTeacherPincode"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-university"></i> Bank Details</div>
+                                <div class="row g-3"><div class="col-md-6"><label>Account Holder Name</label><input type="text" class="form-control" id="addTeacherAccountHolder"></div>
+                                <div class="col-md-6"><label>Account Number</label><input type="text" class="form-control" id="addTeacherAccountNumber"></div>
+                                <div class="col-md-6"><label>IFSC Code</label><input type="text" class="form-control" id="addTeacherIfsc"></div>
+                                <div class="col-md-6"><label>Bank Name</label><input type="text" class="form-control" id="addTeacherBankName"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-phone-alt"></i> Emergency Contact</div>
+                                <div class="row g-3"><div class="col-md-4"><label>Contact Name</label><input type="text" class="form-control" id="addTeacherEmergName"></div>
+                                <div class="col-md-4"><label>Relation</label><input type="text" class="form-control" id="addTeacherEmergRelation"></div>
+                                <div class="col-md-4"><label>Phone</label><input type="text" class="form-control" id="addTeacherEmergPhone"></div></div></div>
+                            <div class="form-section"><div class="form-section-title"><i class="fas fa-comment"></i> Remarks</div>
+                                <div class="row"><div class="col-12"><textarea class="form-control" id="addTeacherRemarks" rows="2"></textarea></div></div></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer-custom"><button class="btn-outline-custom" onclick="closeModal('addTeacherModal')">Cancel</button><button class="btn-primary-custom" id="submitAddTeacherBtn">Add Teacher</button></div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('addTeacherModal').style.display = 'block';
+            
+            const setupAddTeacherUploads = () => {
+                const areas = ['Photo', 'Aadhar', 'Qual'];
+                areas.forEach(type => {
+                    const area = document.getElementById(`addTeacher${type}Area`);
+                    const file = document.getElementById(`addTeacher${type}File`);
+                    if (area) area.onclick = () => file.click();
+                    if (file) file.onchange = async (e) => {
+                        if (e.target.files[0]) {
+                            const fileData = e.target.files[0];
+                            const data = fileData.type === 'application/pdf' ? await compressPDF(fileData) : await compressImage(fileData);
+                            const inputId = `addTeacher${type === 'Photo' ? 'Photo' : type === 'Aadhar' ? 'AadharDoc' : 'QualDoc'}`;
+                            document.getElementById(`addTeacher${inputId}`).value = data;
+                            const previewDiv = document.getElementById(`addTeacher${type}Preview`);
+                            if (fileData.type === 'application/pdf') previewDiv.innerHTML = '<i class="fas fa-file-pdf fa-2x"></i>';
+                            else previewDiv.innerHTML = `<img src="${data}" style="max-width:80px; border-radius:8px;">`;
+                        }
+                    };
+                });
+            };
+            setupAddTeacherUploads();
+            
+            document.getElementById('submitAddTeacherBtn').onclick = async () => {
+                const data = {
+                    teacherId: document.getElementById('addTeacherId').value,
+                    password: document.getElementById('addTeacherPassword').value,
+                    photo: document.getElementById('addTeacherPhoto').value,
+                    teacherName: {
+                        first: document.getElementById('addTeacherFirst').value,
+                        middle: document.getElementById('addTeacherMiddle').value,
+                        last: document.getElementById('addTeacherLast').value
+                    },
+                    fatherName: {
+                        first: document.getElementById('addTeacherFatherFirst').value,
+                        middle: document.getElementById('addTeacherFatherMiddle').value,
+                        last: document.getElementById('addTeacherFatherLast').value
+                    },
+                    mobile: document.getElementById('addTeacherMobile').value,
+                    altMobile: document.getElementById('addTeacherAltMobile').value,
+                    dob: document.getElementById('addTeacherDob').value,
+                    aadharNumber: document.getElementById('addTeacherAadhar').value,
+                    lastQualification: document.getElementById('addTeacherQualification').value,
+                    aadharDoc: document.getElementById('addTeacherAadharDoc').value,
+                    qualificationDoc: document.getElementById('addTeacherQualDoc').value,
+                    subject: document.getElementById('addTeacherSubject').value,
+                    salary: parseInt(document.getElementById('addTeacherSalary').value) || 0,
+                    joiningDate: document.getElementById('addTeacherJoining').value,
+                    experience: parseInt(document.getElementById('addTeacherExperience').value) || 0,
+                    previousSchool: document.getElementById('addTeacherPrevSchool').value,
+                    address: {
+                        current: document.getElementById('addTeacherCurrentAddr').value,
+                        permanent: document.getElementById('addTeacherPermAddr').value,
+                        city: document.getElementById('addTeacherCity').value,
+                        state: document.getElementById('addTeacherState').value,
+                        pincode: document.getElementById('addTeacherPincode').value
+                    },
+                    bankDetails: {
+                        accountHolder: document.getElementById('addTeacherAccountHolder').value,
+                        accountNumber: document.getElementById('addTeacherAccountNumber').value,
+                        ifscCode: document.getElementById('addTeacherIfsc').value,
+                        bankName: document.getElementById('addTeacherBankName').value
+                    },
+                    emergencyContact: {
+                        name: document.getElementById('addTeacherEmergName').value,
+                        relation: document.getElementById('addTeacherEmergRelation').value,
+                        phone: document.getElementById('addTeacherEmergPhone').value
+                    },
+                    remarks: document.getElementById('addTeacherRemarks').value
+                };
+                if (!data.teacherId || !data.password || !data.photo || !data.aadharDoc || !data.qualificationDoc) {
+                    return showToast('Please fill all required fields', 'error');
+                }
+                showLoading(true);
+                try {
+                    const res = await fetch('/api/teacher-register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (result.success) { showToast('Teacher registered! Pending approval.'); closeModal('addTeacherModal'); fetchTeachers(); }
+                    else showToast(result.message || 'Registration failed', 'error');
+                } catch (err) { showToast('Failed to add teacher', 'error'); }
+                showLoading(false);
+            };
+        }
+        
+        // ============================================
+        // ADMIN SETTINGS FUNCTIONS
+        // ============================================
+        async function fetchAdminProfile() {
+            try {
+                const res = await fetch('/api/admin/profile', { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('adminName').value = data.data.name || '';
+                    document.getElementById('adminAadhar').value = data.data.aadharNumber || '';
+                    if (data.data.photo) document.getElementById('adminPhotoPreview').innerHTML = `<img src="${data.data.photo}" style="max-width:100px; border-radius:12px;">`;
+                    if (data.data.aadharDoc) document.getElementById('adminAadharPreview').innerHTML = data.data.aadharDoc.includes('pdf') ? '<i class="fas fa-file-pdf fa-3x"></i>' : `<img src="${data.data.aadharDoc}" style="max-width:100px;">`;
+                }
+            } catch (err) { console.error(err); }
+        }
+        
+        function setupAdminUploads() {
+            const photoArea = document.getElementById('adminPhotoUpload');
+            const photoFile = document.getElementById('adminPhoto');
+            const aadharArea = document.getElementById('adminAadharUpload');
+            const aadharFile = document.getElementById('adminAadharDoc');
+            if (photoArea) photoArea.onclick = () => photoFile.click();
+            if (aadharArea) aadharArea.onclick = () => aadharFile.click();
+            if (photoFile) photoFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const compressed = await compressImage(e.target.files[0]);
+                    document.getElementById('adminPhotoData').value = compressed;
+                    document.getElementById('adminPhotoPreview').innerHTML = `<img src="${compressed}" style="max-width:100px; border-radius:12px;">`;
+                }
+            };
+            if (aadharFile) aadharFile.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    const file = e.target.files[0];
+                    const data = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                    document.getElementById('adminAadharDocData').value = data;
+                    const previewDiv = document.getElementById('adminAadharPreview');
+                    if (file.type === 'application/pdf') previewDiv.innerHTML = '<i class="fas fa-file-pdf fa-3x"></i>';
+                    else previewDiv.innerHTML = `<img src="${data}" style="max-width:100px;">`;
+                }
+            };
+        }
+        
+        async function updateAdminProfile() {
+            const name = document.getElementById('adminName').value;
+            const aadharNumber = document.getElementById('adminAadhar').value;
+            const photo = document.getElementById('adminPhotoData').value;
+            const aadharDoc = document.getElementById('adminAadharDocData').value;
+            const updateData = {};
+            if (name) updateData.name = name;
+            if (aadharNumber && aadharNumber.length === 12) updateData.aadharNumber = aadharNumber;
+            if (photo) updateData.photo = photo;
+            if (aadharDoc) updateData.aadharDoc = aadharDoc;
+            if (Object.keys(updateData).length === 0) return showToast('No changes to update', 'warning');
+            const btn = document.getElementById('updateProfileBtn');
+            btn.classList.add('loading');
+            showLoading(true);
+            try {
+                const res = await fetch('/api/admin/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(updateData)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    showToast('Profile updated successfully!');
+                    document.getElementById('adminPhotoData').value = '';
+                    document.getElementById('adminAadharDocData').value = '';
+                    document.getElementById('adminPhoto').value = '';
+                    document.getElementById('adminAadharDoc').value = '';
+                } else showToast(result.message || 'Update failed', 'error');
+            } catch (err) { showToast('Server error', 'error'); }
+            finally { btn.classList.remove('loading'); showLoading(false); }
+        }
+        
+        async function changeAdminPassword(e) {
+            e.preventDefault();
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (!oldPassword || !newPassword || !confirmPassword) return showToast('All fields are required', 'warning');
+            if (newPassword.length < 6) return showToast('Password must be at least 6 characters', 'warning');
+            if (newPassword !== confirmPassword) return showToast('New passwords do not match', 'warning');
+            const btn = document.getElementById('changePasswordBtn');
+            btn.classList.add('loading');
+            showLoading(true);
+            try {
+                const res = await fetch('/api/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Password changed successfully!', 'success');
+                    document.getElementById('oldPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    setTimeout(() => logout(), 2000);
+                } else showToast('❌ ' + data.message, 'error');
+            } catch (err) { showToast('❌ Server error', 'error'); }
+            finally { btn.classList.remove('loading'); showLoading(false); }
+        }
+        
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.remove();
+        }
+        
         function logout() {
-            localStorage.removeItem('token'); localStorage.removeItem('isAdmin');
+            localStorage.removeItem('token');
+            localStorage.removeItem('isAdmin');
             showToast('Logging out...', 'info');
-            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+            setTimeout(() => window.location.href = 'login.html', 1000);
         }
-
-        // ============================================
-        // TAB SWITCHING
-        // ============================================
+        
         function switchTab(tabId) {
             document.querySelectorAll('[data-tab-content]').forEach(content => content.style.display = 'none');
             document.getElementById(tabId).style.display = 'block';
             document.querySelectorAll('#desktopTabs .tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
             document.querySelectorAll('.bottom-nav-item').forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
         }
-
+        
+        function filterTeachers() {
+            const term = document.getElementById('teacherSearch')?.value.toLowerCase() || '';
+            const filter = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
+            let filtered = teachers;
+            if (filter !== 'all') filtered = teachers.filter(t => t.status === filter);
+            if (term) filtered = filtered.filter(t => (t.teacherId?.toLowerCase().includes(term) || `${t.teacherName?.first} ${t.teacherName?.last}`.toLowerCase().includes(term)));
+            displayTeachers(filtered);
+        }
+        
+        function filterStudents() {
+            const board = document.getElementById('studentBoardFilter')?.value || '';
+            const classVal = document.getElementById('studentClassFilter')?.value || '';
+            const term = document.getElementById('studentSearch')?.value.toLowerCase() || '';
+            let filtered = students;
+            if (board) filtered = filtered.filter(s => s.education?.board === board);
+            if (classVal) filtered = filtered.filter(s => s.education?.class === classVal);
+            if (term) filtered = filtered.filter(s => (s.studentId?.toLowerCase().includes(term) || `${s.studentName?.first} ${s.studentName?.last}`.toLowerCase().includes(term)));
+            displayStudents(filtered);
+        }
+        
+        async function loadBoardsAndClasses() {
+            try {
+                const res = await fetch('/api/boards', { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (data.success) {
+                    const boardSelect = document.getElementById('studentBoardFilter');
+                    const classSelect = document.getElementById('studentClassFilter');
+                    if (boardSelect) {
+                        boardSelect.innerHTML = '<option value="">All Boards</option>';
+                        data.data.boards.forEach(board => boardSelect.innerHTML += `<option value="${board}">${board}</option>`);
+                    }
+                    if (classSelect) {
+                        classSelect.innerHTML = '<option value="">All Classes</option>';
+                        data.data.classes.forEach(cls => classSelect.innerHTML += `<option value="${cls}">${cls}</option>`);
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+        
         // ============================================
-        // EVENT LISTENERS
+        // EVENT LISTENERS & INITIALIZATION
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            verifyToken();
+            if (!token) {
+                showToast('Please login first', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+                return;
+            }
+            
             fetchCurrentData();
             fetchStudents();
             fetchTeachers();
             fetchAdminProfile();
-
+            loadBoardsAndClasses();
+            
             document.querySelectorAll('#desktopTabs .tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
             document.querySelectorAll('.bottom-nav-item').forEach(item => item.addEventListener('click', () => switchTab(item.dataset.tab)));
-
+            document.querySelectorAll('.stat-card').forEach(card => card.addEventListener('click', () => switchTab(card.dataset.tab)));
+            
             document.getElementById('logoutBtn').addEventListener('click', logout);
             document.getElementById('refreshAllBtn').addEventListener('click', () => { fetchStudents(); fetchTeachers(); showToast('Data refreshed', 'success'); });
-            document.getElementById('refreshStudentsBtn').addEventListener('click', fetchStudents);
-            document.getElementById('refreshTeachersBtn').addEventListener('click', fetchTeachers);
-            document.getElementById('addSlideBtn').addEventListener('click', () => addSlideField(''));
-            document.getElementById('resetFormBtn').addEventListener('click', resetForm);
-            document.getElementById('refreshPreviewBtn').addEventListener('click', updateLivePreview);
-            document.getElementById('openStudentDashboardBtn').addEventListener('click', () => window.open('/student-dashboard.html', '_blank'));
-            document.getElementById('openTeacherDashboardBtn').addEventListener('click', () => window.open('/teacher-dashboard.html', '_blank'));
-
-            document.getElementById('slidesList').addEventListener('click', function(e) {
+            document.getElementById('refreshStudentsBtn')?.addEventListener('click', fetchStudents);
+            document.getElementById('refreshTeachersBtn')?.addEventListener('click', fetchTeachers);
+            document.getElementById('addStudentBtn')?.addEventListener('click', addNewStudent);
+            document.getElementById('addTeacherBtn')?.addEventListener('click', addNewTeacher);
+            document.getElementById('studentBoardFilter')?.addEventListener('change', filterStudents);
+            document.getElementById('studentClassFilter')?.addEventListener('change', filterStudents);
+            document.getElementById('studentSearch')?.addEventListener('input', filterStudents);
+            document.getElementById('teacherSearch')?.addEventListener('input', filterTeachers);
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                filterTeachers();
+            }));
+            
+            document.getElementById('logoTextBtn')?.addEventListener('click', () => setLogoType('text'));
+            document.getElementById('logoImageBtn')?.addEventListener('click', () => setLogoType('image'));
+            document.getElementById('addSlideBtn')?.addEventListener('click', () => addSlideField(''));
+            document.getElementById('resetFormBtn')?.addEventListener('click', () => { fetchCurrentData(); showToast('Form reset', 'info'); });
+            document.getElementById('refreshPreviewBtn')?.addEventListener('click', updateLivePreview);
+            document.getElementById('logoUploadArea')?.addEventListener('click', () => document.getElementById('logoUpload').click());
+            document.getElementById('logoUpload')?.addEventListener('change', async (e) => {
+                if (e.target.files[0]) {
+                    const compressed = await compressImage(e.target.files[0]);
+                    document.getElementById('edit-logo-image').value = compressed;
+                    document.getElementById('logoPreview').innerHTML = `<img src="${compressed}" style="max-width:100px; border-radius:12px;">`;
+                    updateLivePreview();
+                }
+            });
+            
+            document.getElementById('slidesList')?.addEventListener('click', function(e) {
                 const btn = e.target.closest('.btn-remove-slide');
-                if (btn) { const slideId = btn.getAttribute('data-slide-id'); if (slideId) removeSlideField(slideId); }
+                if (btn) removeSlideField(btn.getAttribute('data-slide-id'));
             });
-
-            document.getElementById('studentsTableBody').addEventListener('click', function(e) {
-                const btn = e.target.closest('button');
-                if (btn && btn.classList.contains('edit')) window.open(`/student-dashboard.html?edit=${btn.getAttribute('data-student-id')}`, '_blank');
-                if (btn && btn.classList.contains('view')) window.open(`/student-dashboard.html?student=${btn.getAttribute('data-student-id')}`, '_blank');
+            
+            document.getElementById('updateForm')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const updatedConfig = {
+                    logoText: document.getElementById('edit-logo-text').value.trim(),
+                    logoType: logoType,
+                    logoImage: logoType === 'image' ? document.getElementById('edit-logo-image').value.trim() : '',
+                    title: document.getElementById('edit-title').value.trim(),
+                    subTitle: document.getElementById('edit-subtitle').value.trim(),
+                    aboutText: document.getElementById('edit-about').value.trim(),
+                    whatsapp: document.getElementById('edit-whatsapp').value.trim(),
+                    insta: document.getElementById('edit-insta').value.trim(),
+                    fb: document.getElementById('edit-fb').value.trim(),
+                    contactAddress: document.getElementById('edit-address').value.trim(),
+                    contactPhone: document.getElementById('edit-phone').value.trim(),
+                    contactEmail: document.getElementById('edit-email').value.trim(),
+                    slides: getSlidesArray()
+                };
+                if (!updatedConfig.title) { showToast('Title is required', 'warning'); return; }
+                await updateWebsiteConfig(updatedConfig);
             });
-
-            document.getElementById('teachersTableBody').addEventListener('click', function(e) {
-                const btn = e.target.closest('button');
-                if (btn && btn.classList.contains('approve')) approveTeacher(btn.getAttribute('data-teacher-id'));
-                if (btn && btn.classList.contains('edit')) window.open(`/teacher-dashboard.html?edit=${btn.getAttribute('data-teacher-id')}`, '_blank');
-                if (btn && btn.classList.contains('view')) window.open(`/teacher-dashboard.html?teacher=${btn.getAttribute('data-teacher-id')}`, '_blank');
-            });
-
+            
+            document.getElementById('updateProfileBtn')?.addEventListener('click', updateAdminProfile);
+            document.getElementById('adminSettingsForm')?.addEventListener('submit', changeAdminPassword);
             document.querySelectorAll('.toggle-password').forEach(icon => {
                 icon.addEventListener('click', function() {
-                    const targetId = this.getAttribute('data-target');
-                    const input = document.getElementById(targetId);
+                    const input = this.previousElementSibling;
                     if (input.type === 'password') { input.type = 'text'; this.classList.remove('fa-eye'); this.classList.add('fa-eye-slash'); }
                     else { input.type = 'password'; this.classList.remove('fa-eye-slash'); this.classList.add('fa-eye'); }
                 });
             });
-
-            document.getElementById('studentSearch').addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                if (!searchTerm) displayStudents(students);
-                else displayStudents(students.filter(s => `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase().includes(searchTerm) || (s.studentId && s.studentId.toLowerCase().includes(searchTerm))));
-            });
-
-            document.getElementById('teacherSearch').addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                if (!searchTerm) displayTeachers(teachers);
-                else displayTeachers(teachers.filter(t => `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`.toLowerCase().includes(searchTerm) || (t.teacherId && t.teacherId.toLowerCase().includes(searchTerm))));
-            });
-
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    const filter = this.getAttribute('data-filter');
-                    displayTeachers(filter === 'all' ? teachers : teachers.filter(t => t.status === filter));
-                });
-            });
-
-            document.getElementById('adminSettingsForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const oldPassword = document.getElementById('oldPassword').value;
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                if (!oldPassword || !newPassword || !confirmPassword) { showToast('All fields are required', 'warning'); return; }
-                if (newPassword.length < 6) { showToast('Password must be at least 6 characters', 'warning'); return; }
-                if (newPassword !== confirmPassword) { showToast('New passwords do not match', 'warning'); return; }
-                const changeBtn = document.getElementById('changePasswordBtn');
-                changeBtn.classList.add('loading'); changeBtn.disabled = true; showLoading(true);
-                try {
-                    const response = await fetch('/api/change-password', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                        body: JSON.stringify({ oldPassword, newPassword })
-                    });
-                    const data = await response.json();
-                    if (data.success) { showToast('✅ Password changed successfully!', 'success'); document.getElementById('oldPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmPassword').value = ''; setTimeout(() => logout(), 2000); }
-                    else { showToast('❌ ' + data.message, 'error'); }
-                } catch (err) { showToast('❌ Server error', 'error'); }
-                finally { changeBtn.classList.remove('loading'); changeBtn.disabled = false; showLoading(false); }
-            });
-
+            
+            setupAdminUploads();
+            
             const inputs = document.querySelectorAll('#updateForm input, #updateForm textarea');
             inputs.forEach(input => input.addEventListener('input', updateLivePreview));
         });
+        
+        window.closeModal = closeModal;
     </script>
 </body>
 </html>
