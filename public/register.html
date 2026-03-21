@@ -23,7 +23,6 @@
             min-height: 100vh;
         }
 
-        /* Premium Navbar */
         .vip-nav {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
@@ -124,7 +123,6 @@
             }
         }
 
-        /* Premium Progress Bar */
         .progress-container {
             margin-bottom: 25px;
             background: #f1f5f9;
@@ -162,21 +160,6 @@
             }
         }
 
-        .step::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .step:hover::before {
-            left: 100%;
-        }
-
         .step.active {
             background: #0f172a;
             color: #ffd700;
@@ -190,14 +173,8 @@
         }
 
         @keyframes slideIn {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         @keyframes pulse {
@@ -245,7 +222,6 @@
             font-size: 0.75rem;
             font-weight: bold;
             color: #0f172a;
-            transition: all 0.3s;
         }
 
         .section-title {
@@ -259,7 +235,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.3s;
         }
         
         @media (max-width: 768px) {
@@ -311,7 +286,6 @@
             75% { transform: translateX(5px); }
         }
 
-        /* Photo Section */
         .photo-section {
             text-align: center;
             margin-bottom: 25px;
@@ -386,7 +360,6 @@
             background: #2563eb;
         }
 
-        /* Fees Field */
         .fees-field {
             background: #fef9e8;
             border-radius: 12px;
@@ -404,7 +377,6 @@
             color: #0f172a;
         }
 
-        /* Camera Modal */
         .camera-modal {
             position: fixed;
             top: 0;
@@ -448,7 +420,6 @@
             background: #000;
         }
 
-        /* Address Checkbox */
         .address-checkbox {
             background: #f8fafc;
             padding: 12px;
@@ -469,21 +440,14 @@
             cursor: pointer;
         }
 
-        /* CAPTCHA Section */
         .captcha-section {
             background: linear-gradient(135deg, #f8fafc, #f1f5f9);
             padding: 20px;
             border-radius: 20px;
             margin: 20px 0;
             text-align: center;
-            transition: all 0.3s;
         }
         
-        .captcha-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
         .captcha-box {
             display: flex;
             align-items: center;
@@ -502,7 +466,6 @@
             border-radius: 12px;
             letter-spacing: 5px;
             user-select: none;
-            transition: all 0.3s;
         }
         
         @media (max-width: 768px) {
@@ -517,13 +480,6 @@
             width: 130px;
             text-align: center;
             font-size: 1.1rem;
-        }
-        
-        @media (max-width: 768px) {
-            .captcha-input {
-                width: 110px;
-                font-size: 1rem;
-            }
         }
 
         .captcha-refresh {
@@ -542,7 +498,6 @@
             transform: rotate(180deg);
         }
 
-        /* Submit Button */
         .btn-submit {
             background: linear-gradient(135deg, #0f172a, #1e293b);
             color: white;
@@ -555,8 +510,6 @@
             margin: 25px auto 15px;
             display: block;
             transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
         }
         
         @media (max-width: 768px) {
@@ -594,7 +547,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Error Message */
         .error-message {
             color: #dc2626;
             font-size: 0.75rem;
@@ -609,17 +561,10 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Toast Notification */
         .toast-notification {
             position: fixed;
             top: 20px;
@@ -652,17 +597,10 @@
         }
 
         @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Success Popup */
         .overlay {
             position: fixed;
             top: 0;
@@ -688,14 +626,6 @@
             max-width: 400px;
             width: 90%;
             transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-        }
-        
-        @media (max-width: 768px) {
-            .popup {
-                padding: 25px 20px;
-                width: 92%;
-            }
         }
         
         .popup .credentials {
@@ -756,36 +686,6 @@
             font-size: 0.8rem;
         }
         
-        @media (max-width: 768px) {
-            footer {
-                padding: 12px;
-                font-size: 0.7rem;
-            }
-        }
-        
-        /* Row adjustments for mobile */
-        .row {
-            margin-left: -8px;
-            margin-right: -8px;
-        }
-        
-        .row > [class*="col-"] {
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-        
-        @media (max-width: 768px) {
-            .row {
-                margin-left: -6px;
-                margin-right: -6px;
-            }
-            .row > [class*="col-"] {
-                padding-left: 6px;
-                padding-right: 6px;
-            }
-        }
-        
-        /* Preview Modal */
         .preview-item {
             padding: 10px 0;
             border-bottom: 1px solid #e2e8f0;
@@ -829,15 +729,14 @@
                 Registration Form
             </h2>
             
-            <!-- Premium Progress Bar -->
             <div class="progress-container">
                 <div class="progress-steps">
-                    <div class="step" data-step="1">📸 Photo</div>
-                    <div class="step" data-step="2">👤 Student</div>
-                    <div class="step" data-step="3">👨 Father</div>
-                    <div class="step" data-step="4">📄 Docs</div>
-                    <div class="step" data-step="5">📍 Address</div>
-                    <div class="step" data-step="6">📚 Education</div>
+                    <div class="step">📸 Photo</div>
+                    <div class="step">👤 Student</div>
+                    <div class="step">👨 Father</div>
+                    <div class="step">📄 Docs</div>
+                    <div class="step">📍 Address</div>
+                    <div class="step">📚 Education</div>
                 </div>
                 <div class="progress-bar-custom">
                     <div class="progress-fill" id="progressFill"></div>
@@ -847,7 +746,7 @@
             
             <form id="registrationForm" novalidate>
                 <!-- Photo Upload Section -->
-                <div class="photo-section" data-section="photo">
+                <div class="photo-section">
                     <div class="photo-preview" id="photoPreviewDiv">
                         <img id="photoPreview" src="" style="display: none;">
                         <i id="photoIcon" class="fas fa-camera"></i>
@@ -880,11 +779,11 @@
                 </div>
 
                 <!-- Student Details -->
-                <div class="section-title" data-section="student">
+                <div class="section-title">
                     <i class="fas fa-user me-2"></i>Student Details
                 </div>
                 
-                <div class="row" data-section="student">
+                <div class="row">
                     <div class="col-md-4 col-12 mb-3">
                         <label class="form-label">First Name *</label>
                         <input type="text" class="form-control" id="firstName" required>
@@ -901,7 +800,7 @@
                     </div>
                 </div>
 
-                <div class="row" data-section="student">
+                <div class="row">
                     <div class="col-md-6 col-12 mb-3">
                         <label class="form-label">Mobile Number *</label>
                         <input type="tel" class="form-control" id="mobile" maxlength="10" pattern="\d*" inputmode="numeric" required>
@@ -914,7 +813,7 @@
                     </div>
                 </div>
 
-                <div class="row" data-section="student">
+                <div class="row">
                     <div class="col-md-6 col-12 mb-3">
                         <label class="form-label">Registration Date *</label>
                         <input type="date" class="form-control" id="regDate" required>
@@ -925,19 +824,20 @@
                     </div>
                 </div>
                 
-                <!-- Monthly Fees (Locked) -->
+                <!-- Monthly Fees (Locked) - IMPORTANT: This value will be sent to server -->
                 <div class="fees-field">
                     <label class="form-label mb-1"><i class="fas fa-rupee-sign me-1"></i>Monthly Fees</label>
                     <input type="number" class="form-control" id="monthlyFees" value="0" readonly disabled style="background: #fef9e8; font-weight: bold; color: #0f172a;">
                     <small class="text-muted">Fees will be assigned after admission</small>
+                    <input type="hidden" id="classMonthlyFees" value="0">
                 </div>
 
                 <!-- Father Details -->
-                <div class="section-title" data-section="father">
+                <div class="section-title">
                     <i class="fas fa-male me-2"></i>Father's Details
                 </div>
                 
-                <div class="row" data-section="father">
+                <div class="row">
                     <div class="col-md-4 col-12 mb-3">
                         <label class="form-label">First Name *</label>
                         <input type="text" class="form-control" id="fatherFirstName" required>
@@ -954,7 +854,7 @@
                     </div>
                 </div>
 
-                <div class="mb-3" data-section="father">
+                <div class="mb-3">
                     <label class="form-label">Father's Mobile *</label>
                     <input type="tel" class="form-control" id="fatherMobile" maxlength="10" pattern="\d*" inputmode="numeric" required>
                     <div class="error-message" id="fatherMobileError">10 digits mobile number required</div>
@@ -979,11 +879,11 @@
                 </div>
 
                 <!-- Aadhar Document Upload -->
-                <div class="section-title" data-section="documents">
+                <div class="section-title">
                     <i class="fas fa-id-card me-2"></i>Aadhar Document
                 </div>
                 
-                <div class="mb-3" data-section="documents">
+                <div class="mb-3">
                     <label class="form-label">Upload Aadhar Card *</label>
                     <input type="file" class="form-control" id="aadharDoc" accept=".pdf,image/png,image/jpeg,image/jpg" required>
                     <small class="text-muted">PDF or Image (Max 100KB, auto-compressed)</small>
@@ -991,11 +891,11 @@
                 </div>
 
                 <!-- Address -->
-                <div class="section-title" data-section="address">
+                <div class="section-title">
                     <i class="fas fa-map-marker-alt me-2"></i>Address
                 </div>
                 
-                <div class="mb-3" data-section="address">
+                <div class="mb-3">
                     <label class="form-label">Current Address *</label>
                     <textarea class="form-control" id="currentAddress" rows="3" required></textarea>
                     <div class="error-message" id="currentAddressError">Current address required</div>
@@ -1006,18 +906,18 @@
                     <label for="sameAddress">Permanent address same as current address</label>
                 </div>
 
-                <div class="mb-3" id="permanentDiv" data-section="address">
+                <div class="mb-3" id="permanentDiv">
                     <label class="form-label">Permanent Address *</label>
                     <textarea class="form-control" id="permanentAddress" rows="3" required></textarea>
                     <div class="error-message" id="permanentAddressError">Permanent address required</div>
                 </div>
 
                 <!-- Education -->
-                <div class="section-title" data-section="education">
+                <div class="section-title">
                     <i class="fas fa-book me-2"></i>Education
                 </div>
                 
-                <div class="row" data-section="education">
+                <div class="row">
                     <div class="col-md-6 col-12 mb-3">
                         <label class="form-label">Board *</label>
                         <select class="form-select" id="board" required>
@@ -1152,50 +1052,36 @@
             }
 
             // ============================================
-            // PROGRESS CALCULATION with Animation
+            // PROGRESS CALCULATION
             // ============================================
             function calculateProgress() {
                 let completed = 0;
                 let total = 0;
                 
-                // Check Photo
-                total++;
-                if (document.getElementById('studentPhoto').compressedPhoto) completed++;
+                total++; if (document.getElementById('studentPhoto').compressedPhoto) completed++;
                 
-                // Check Student Details
                 const studentFields = ['firstName', 'lastName', 'mobile', 'aadhar'];
                 total += studentFields.length;
-                studentFields.forEach(field => {
-                    if (document.getElementById(field).value.trim()) completed++;
-                });
+                studentFields.forEach(field => { if (document.getElementById(field).value.trim()) completed++; });
                 
-                // Check Father Details
                 const fatherFields = ['fatherFirstName', 'fatherLastName', 'fatherMobile'];
                 total += fatherFields.length;
-                fatherFields.forEach(field => {
-                    if (document.getElementById(field).value.trim()) completed++;
-                });
+                fatherFields.forEach(field => { if (document.getElementById(field).value.trim()) completed++; });
                 
-                // Check Documents
-                total++;
-                if (window.aadharDocument) completed++;
+                total++; if (window.aadharDocument) completed++;
                 
-                // Check Address
                 total += 2;
                 if (document.getElementById('currentAddress').value.trim()) completed++;
                 if (document.getElementById('sameAddress').checked || document.getElementById('permanentAddress').value.trim()) completed++;
                 
-                // Check Education
                 total += 2;
                 if (document.getElementById('board').value) completed++;
                 if (document.getElementById('class').value) completed++;
                 
                 const percentage = Math.floor((completed / total) * 100);
-                const progressFill = document.getElementById('progressFill');
-                progressFill.style.width = percentage + '%';
+                document.getElementById('progressFill').style.width = percentage + '%';
                 document.getElementById('progressPercent').textContent = percentage + '% Complete';
                 
-                // Update step styling with animations
                 let stepCompleted = 0;
                 if (document.getElementById('studentPhoto').compressedPhoto) stepCompleted++;
                 if (document.getElementById('firstName').value.trim()) stepCompleted++;
@@ -1205,21 +1091,14 @@
                 if (document.getElementById('board').value && document.getElementById('class').value) stepCompleted++;
                 
                 document.querySelectorAll('.step').forEach((step, idx) => {
-                    if (idx < stepCompleted && !step.classList.contains('completed')) {
-                        step.classList.add('completed');
-                    }
-                    if (idx === stepCompleted) {
-                        step.classList.add('active');
-                    } else {
-                        step.classList.remove('active');
-                    }
+                    if (idx < stepCompleted) step.classList.add('completed');
+                    else step.classList.remove('completed');
+                    if (idx === stepCompleted) step.classList.add('active');
+                    else step.classList.remove('active');
                 });
                 
-                // Enable/disable submit button
                 const captchaValid = document.getElementById('captchaInput').value === currentCaptcha;
                 document.getElementById('submitBtn').disabled = !(percentage === 100 && captchaValid);
-                
-                return percentage;
             }
 
             // ============================================
@@ -1246,8 +1125,6 @@
                     calculateProgress();
                 } else if (this.value.length === 4) {
                     document.getElementById('captchaError').classList.add('show');
-                } else {
-                    document.getElementById('captchaError').classList.remove('show');
                 }
             });
 
@@ -1464,7 +1341,6 @@
                 }
             }
 
-            // Add event listeners
             const allInputs = document.querySelectorAll('#registrationForm input, #registrationForm select, #registrationForm textarea');
             allInputs.forEach(input => {
                 input.addEventListener('input', () => calculateProgress());
@@ -1492,7 +1368,6 @@
             document.getElementById('registrationForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                // Validate CAPTCHA
                 if (document.getElementById('captchaInput').value !== currentCaptcha) {
                     showToast('Invalid CAPTCHA! Please try again.', true);
                     generateCaptcha();
@@ -1564,7 +1439,7 @@
                             board: document.getElementById('board').value,
                             class: document.getElementById('class').value
                         },
-                        classMonthlyFees: 0  // ✅ IMPORTANT: Added this field
+                        classMonthlyFees: 0
                     };
                     
                     const password = generatePassword(data.student.firstName, data.aadhar, data.student.mobile);
@@ -1579,7 +1454,7 @@
                         <div class="preview-item"><strong>🎓 Class:</strong> ${data.education.class}</div>
                         <div class="preview-item"><strong>🆔 Student ID:</strong> ${studentId}</div>
                         <div class="preview-item"><strong>🔑 Password:</strong> ${password}</div>
-                        <div class="preview-item"><strong>💰 Monthly Fees:</strong> ₹0 (Will be assigned after admission)</div>
+                        <div class="preview-item"><strong>💰 Monthly Fees:</strong> ₹0</div>
                     `;
                     
                     window.registrationData = {
@@ -1588,7 +1463,7 @@
                         password,
                         photo: document.getElementById('studentPhoto').compressedPhoto,
                         aadharDocument: window.aadharDocument,
-                        classMonthlyFees: 0  // ✅ IMPORTANT: Added this field
+                        classMonthlyFees: 0
                     };
                     
                     new bootstrap.Modal(document.getElementById('previewModal')).show();
@@ -1616,12 +1491,11 @@
                 btn.innerHTML = '<span class="spinner"></span>Saving...';
                 
                 try {
-                    // Prepare data in correct format for server
                     const apiData = {
                         studentId: data.studentId,
                         password: data.password,
                         photo: data.photo,
-                        classMonthlyFees: data.classMonthlyFees !== undefined ? data.classMonthlyFees : 0,
+                        classMonthlyFees: 0,
                         student: {
                             firstName: data.student.firstName,
                             middleName: data.student.middleName || '',
@@ -1655,11 +1529,11 @@
                         }
                     };
                     
-                    console.log('Sending data to server:', {
+                    console.log('📤 Sending to server:', { 
                         studentId: apiData.studentId,
                         classMonthlyFees: apiData.classMonthlyFees,
                         hasPhoto: !!apiData.photo,
-                        hasAadharDoc: !!apiData.aadharDocument
+                        hasDoc: !!apiData.aadharDocument
                     });
                     
                     const response = await fetch('/api/student-register', {
@@ -1669,7 +1543,7 @@
                     });
                     
                     const result = await response.json();
-                    console.log('Server response:', result);
+                    console.log('📥 Server response:', result);
                     
                     if (response.ok && result.success) {
                         bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
@@ -1684,7 +1558,7 @@
                             <strong>🆔 Student ID:</strong> ${result.studentId}<br>
                             <strong>🔑 Password:</strong> ${result.password}<br>
                             <strong>👤 Name:</strong> ${data.student.firstName} ${data.student.lastName}<br>
-                            <strong>💰 Fees:</strong> ₹0 (Pending)
+                            <strong>💰 Fees:</strong> ₹0
                         `;
                         
                         document.getElementById('overlay').style.display = 'block';
@@ -1694,10 +1568,10 @@
                         showToast('Registration successful!');
                     } else {
                         showToast(result.message || 'Registration failed', true);
-                        console.error('Server error details:', result);
+                        console.error('Server error:', result);
                     }
                 } catch (err) {
-                    console.error('Registration error:', err);
+                    console.error('Network error:', err);
                     showToast('Network error: ' + err.message, true);
                 } finally {
                     btn.disabled = false;
@@ -1710,7 +1584,7 @@
             // ============================================
             document.getElementById('whatsappShareBtn').addEventListener('click', function() {
                 if (window.lastRegistration) {
-                    const message = `🎓 *Student Registration Successful!* 🎓%0A%0A📝 *Name:* ${window.lastRegistration.name}%0A🆔 *Student ID:* ${window.lastRegistration.studentId}%0A🔑 *Password:* ${window.lastRegistration.password}%0A💰 *Fees:* ₹0 (Pending)%0A📚 *Institute:* Bal Bharti Coaching Center%0A%0A✨ *Keep this ID for future reference* ✨`;
+                    const message = `🎓 *Student Registration Successful!* 🎓%0A%0A📝 *Name:* ${window.lastRegistration.name}%0A🆔 *Student ID:* ${window.lastRegistration.studentId}%0A🔑 *Password:* ${window.lastRegistration.password}%0A💰 *Fees:* ₹0%0A📚 *Institute:* Bal Bharti Coaching Center%0A%0A✨ *Keep this ID for future reference* ✨`;
                     window.open(`https://wa.me/?text=${message}`, '_blank');
                 }
             });
