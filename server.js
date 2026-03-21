@@ -1,5 +1,5 @@
 // ============================================
-// SERVER.JS - COMPLETE FIXED VERSION
+// SERVER.JS - COMPLETE ENHANCED VERSION
 // Bal Bharti Coaching Center Management System
 // ============================================
 
@@ -14,13 +14,16 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const path = require('path');
+const xss = require('xss-clean');
+const compression = require('compression');
+const mongoSanitize = require('express-mongo-sanitize');
 
 // Load environment variables
 dotenv.config();
 const app = express();
 
 // ============================================
-// SECURITY & MIDDLEWARE CONFIGURATION
+// ENHANCED SECURITY CONFIGURATION
 // ============================================
 
 // Generate nonce for CSP
@@ -29,10 +32,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// ✅ FIX: Trust proxy for Render (fixes X-Forwarded-For error)
+// Trust proxy for Render
 app.set('trust proxy', 1);
 
-// Helmet configuration with CSP
+// Enhanced Helmet configuration
 app.use(
     helmet({
         contentSecurityPolicy: {
@@ -45,7 +48,8 @@ app.use(
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
                     "https://code.jquery.com",
-                    "https://cdn.datatables.net"
+                    "https://cdn.datatables.net",
+                    "https://cdn.jsdelivr.net"
                 ],
                 styleSrc: [
                     "'self'",
@@ -86,20 +90,36 @@ app.use(
         },
         crossOriginEmbedderPolicy: false,
         crossOriginResourcePolicy: { policy: "cross-origin" },
+        hsts: {
+            maxAge: 31536000,
+            includeSubDomains: true,
+            preload: true
+        }
     })
 );
 
-// CORS configuration
+// CORS with specific origin
 app.use(cors({
-    origin: '*',
-    credentials: true
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+    credentials: true,
+    optionsSuccessStatus: 200
 }));
 
-// JSON parser with increased limit for images
-app.use(express.json({ limit: '50mb' }));
+// Data sanitization against XSS
+app.use(xss());
+
+// Sanitize data against NoSQL injection
+app.use(mongoSanitize());
+
+// Compression
+app.use(compression());
+
+// JSON parser with limit
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
-// ✅ FIX: Updated rate limiter with proper settings
+// Enhanced rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -109,109 +129,48 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Stricter rate limit for auth endpoints
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    skipSuccessfulRequests: true,
+    message: { success: false, message: "Too many login attempts. Please try again after 15 minutes." }
+});
+
 // ============================================
 // DATABASE CONNECTION
 // ============================================
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc')
-    .then(() => console.log("✅ MongoDB Connected Successfully"))
-    .catch(err => console.log("❌ DB Connection Error:", err.message));
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc';
+
+mongoose.connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000
+})
+.then(() => console.log("✅ MongoDB Connected Successfully"))
+.catch(err => console.log("❌ DB Connection Error:", err.message));
 
 // ============================================
-// FILE COMPRESSION UTILITY
+// SCHEMA DEFINITIONS
 // ============================================
 
-/**
- * Compress image/file to <5KB
- * Supports: base64 data, image URLs, and file buffers
- */
-async function compressTo5KB(data, type = 'image') {
-    return new Promise((resolve, reject) => {
-        // If it's already a URL (http/https), return as is
-        if (typeof data === 'string' && (data.startsWith('http://') || data.startsWith('https://'))) {
-            resolve(data);
-            return;
-        }
-        
-        // If it's base64 data
-        if (typeof data === 'string' && data.startsWith('data:')) {
-            // Check current size
-            const sizeInKB = Math.round((data.length * 3) / 4 / 1024);
-            if (sizeInKB <= 5) {
-                resolve(data);
-                return;
-            }
-            
-            // For images, compress
-            if (data.includes('image/')) {
-                const img = new Image();
-                img.src = data;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    let quality = 0.7;
-                    
-                    function compress() {
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const compressed = canvas.toDataURL('image/jpeg', quality);
-                        const newSize = Math.round((compressed.length * 3) / 4 / 1024);
-                        
-                        if (newSize > 5 && (width > 100 || quality > 0.1)) {
-                            if (quality > 0.2) {
-                                quality -= 0.1;
-                            } else {
-                                width = Math.floor(width * 0.8);
-                                height = Math.floor(height * 0.8);
-                            }
-                            compress();
-                        } else {
-                            resolve(compressed);
-                        }
-                    }
-                    compress();
-                };
-                img.onerror = () => resolve(data);
-            } else {
-                resolve(data);
-            }
-        } else {
-            resolve(data);
-        }
-    });
-}
-
-// ============================================
-// SCHEMA DEFINITIONS (with enhanced file support)
-// ============================================
-
-// ---------- Web Config Schema ----------
+// Web Config Schema
 const WebConfigSchema = new mongoose.Schema({
-    // Logo can be text, image URL, or base64 image
     logoText: { type: String, required: true, trim: true, default: 'BBCC' },
     logoType: { type: String, enum: ['text', 'image', 'url'], default: 'text' },
-    logoImage: { type: String, default: '' }, // For image logo (base64 or URL)
-    
+    logoImage: { type: String, default: '' },
     title: { type: String, required: true, default: 'Bal Bharti Coaching' },
     subTitle: { type: String, default: 'Excellence in Education' },
     aboutText: { type: String, default: 'Welcome to Bal Bharti Coaching Center.' },
-    slides: [{ type: String }], // Can be URLs or base64 images
-    
-    // Social Media Links
+    slides: [{ type: String }],
     whatsapp: { type: String, default: '#' },
     insta: { type: String, default: '#' },
     fb: { type: String, default: '#' },
     twitter: { type: String, default: '#' },
-    
-    // Contact Information
     contactAddress: { type: String, default: '123 Education Street, City' },
     contactPhone: { type: String, default: '+91 98765 43210' },
     contactEmail: { type: String, default: 'info@balbharti.com' },
-    
-    // Institute Info
     establishedYear: { type: Number, default: 2010 },
     totalStudentsTrained: { type: Number, default: 5000 },
     totalFaculty: { type: Number, default: 25 }
@@ -219,37 +178,39 @@ const WebConfigSchema = new mongoose.Schema({
 
 const WebConfig = mongoose.model('WebConfig', WebConfigSchema);
 
-// ---------- Testimonials Schema ----------
+// Testimonial Schema
 const TestimonialSchema = new mongoose.Schema({
     name: { type: String, required: true },
     role: { type: String, required: true, enum: ['Student', 'Parent', 'Teacher', 'Alumni'] },
     text: { type: String, required: true },
     rating: { type: Number, min: 1, max: 5, default: 5 },
-    image: { type: String, default: '' }, // Can be URL or base64
+    image: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
     order: { type: Number, default: 0 }
 }, { timestamps: true });
 
 const Testimonial = mongoose.model('Testimonial', TestimonialSchema);
 
-// ---------- Admin Schema ----------
+// Admin Schema
 const AdminSchema = new mongoose.Schema({
     adminID: { type: String, required: true, unique: true, trim: true },
     pws: { type: String, required: true },
-    // Admin can also have photo
     photo: { type: String, default: '' },
     aadharNumber: { type: String, default: '' },
     aadharDoc: { type: String, default: '' },
-    name: { type: String, default: 'Admin' }
+    name: { type: String, default: 'Admin' },
+    lastLogin: { type: Date },
+    loginAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date }
 }, { timestamps: true });
 
 const Admin = mongoose.model('Admin', AdminSchema);
 
-// ---------- STUDENT SCHEMA ----------
+// Student Schema
 const StudentSchema = new mongoose.Schema({
     studentId: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true },
-    photo: { type: String, required: true }, // Base64 or URL
+    photo: { type: String, required: true },
     studentName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
@@ -257,7 +218,7 @@ const StudentSchema = new mongoose.Schema({
     },
     mobile: { type: String, required: true },
     aadharNumber: { type: String, required: true, unique: true },
-    aadharDocument: { type: String, required: true }, // PDF, image, or URL
+    aadharDocument: { type: String, required: true },
     registrationDate: { type: Date, required: true, default: Date.now },
     joiningDate: { type: Date, required: true },
     classMonthlyFees: { type: Number, default: 0 },
@@ -301,11 +262,11 @@ const StudentSchema = new mongoose.Schema({
 
 const Student = mongoose.model('Student', StudentSchema);
 
-// ---------- TEACHER SCHEMA ----------
+// Teacher Schema
 const TeacherSchema = new mongoose.Schema({
     teacherId: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
-    photo: { type: String, required: true }, // Base64 or URL
+    photo: { type: String, required: true },
     teacherName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
@@ -320,9 +281,9 @@ const TeacherSchema = new mongoose.Schema({
     altMobile: { type: String, default: '' },
     dob: { type: Date, required: true },
     lastQualification: { type: String, required: true },
-    qualificationDoc: { type: String, required: true }, // PDF or image
+    qualificationDoc: { type: String, required: true },
     aadharNumber: { type: String, required: true, unique: true },
-    aadharDoc: { type: String, required: true }, // PDF or image
+    aadharDoc: { type: String, required: true },
     subject: { type: String, default: '', trim: true },
     salary: { type: Number, default: 0, min: 0 },
     salaryHistory: [{
@@ -452,7 +413,31 @@ async function initializeDefaultTestimonials() {
 }
 
 // ============================================
-// HEALTH CHECK & CONFIG APIs (NO TOKEN NEEDED)
+// ENHANCED TOKEN VERIFICATION MIDDLEWARE
+// ============================================
+
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.status(401).json({ success: false, message: "Access denied. No token provided." });
+    }
+    
+    jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, decoded) => {
+        if (err) {
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ success: false, message: "Token expired. Please login again." });
+            }
+            return res.status(403).json({ success: false, message: "Invalid token." });
+        }
+        req.user = decoded;
+        next();
+    });
+};
+
+// ============================================
+// PUBLIC APIs (No token needed)
 // ============================================
 
 app.get('/api/health', (req, res) => {
@@ -501,87 +486,132 @@ app.get('/api/testimonials', async (req, res) => {
 });
 
 // ============================================
-// LOGIN APIs (NO TOKEN NEEDED)
+// ENHANCED LOGIN APIs with account locking
 // ============================================
 
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 5,
-    skipSuccessfulRequests: true,
-    message: { success: false, message: "Too many login attempts. Please try again after 15 minutes." }
-});
-
-app.post('/api/admin-login', loginLimiter, async (req, res) => {
+app.post('/api/admin-login', authLimiter, async (req, res) => {
     const { userid, password } = req.body;
-    if (!userid || !password) return res.status(400).json({ success: false, message: "User ID and Password are required!" });
+    
+    if (!userid || !password) {
+        return res.status(400).json({ success: false, message: "User ID and Password are required!" });
+    }
+    
     try {
         const admin = await Admin.findOne({ adminID: userid });
+        
+        // Check if account is locked
+        if (admin && admin.lockUntil && admin.lockUntil > new Date()) {
+            const remainingMinutes = Math.ceil((admin.lockUntil - new Date()) / 60000);
+            return res.status(401).json({ 
+                success: false, 
+                message: `Account locked. Try again after ${remainingMinutes} minutes.` 
+            });
+        }
+        
         if (admin && await bcrypt.compare(password, admin.pws)) {
-            const token = jwt.sign({ id: admin._id, adminID: admin.adminID, role: 'admin' }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '1h' });
-            res.json({ success: true, message: "Login Successful", token });
+            // Reset login attempts on successful login
+            admin.loginAttempts = 0;
+            admin.lockUntil = null;
+            admin.lastLogin = new Date();
+            await admin.save();
+            
+            const token = jwt.sign(
+                { id: admin._id, adminID: admin.adminID, role: 'admin' }, 
+                process.env.JWT_SECRET || 'fallback_secret', 
+                { expiresIn: '2h' }
+            );
+            
+            res.json({ 
+                success: true, 
+                message: "Login Successful", 
+                token,
+                admin: { name: admin.name, adminID: admin.adminID }
+            });
         } else {
+            // Increment login attempts
+            if (admin) {
+                admin.loginAttempts += 1;
+                if (admin.loginAttempts >= 5) {
+                    admin.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
+                }
+                await admin.save();
+            }
             res.status(401).json({ success: false, message: "Wrong ID or Password!" });
         }
     } catch (err) {
+        console.error('Login error:', err);
         res.status(500).json({ success: false, message: "Server Error" });
     }
 });
 
-app.post('/api/teacher-login', loginLimiter, async (req, res) => {
+app.post('/api/teacher-login', authLimiter, async (req, res) => {
     const { teacherId, password, aadharNumber, dob } = req.body;
+    
     try {
         let teacher;
         if (teacherId && password) {
             teacher = await Teacher.findOne({ teacherId });
-            if (!teacher || teacher.password !== password) return res.status(401).json({ success: false, message: "Invalid credentials" });
+            if (!teacher || teacher.password !== password) {
+                return res.status(401).json({ success: false, message: "Invalid credentials" });
+            }
         } else if (aadharNumber && dob) {
             teacher = await Teacher.findOne({ aadharNumber });
-            if (!teacher) return res.status(404).json({ success: false, message: "Aadhar not found" });
+            if (!teacher) {
+                return res.status(404).json({ success: false, message: "Aadhar not found" });
+            }
             const teacherDob = new Date(teacher.dob).toISOString().split('T')[0];
-            if (teacherDob !== dob) return res.status(401).json({ success: false, message: "Invalid DOB" });
+            if (teacherDob !== dob) {
+                return res.status(401).json({ success: false, message: "Invalid DOB" });
+            }
         } else {
             return res.status(400).json({ success: false, message: "Please provide (ID+Password) OR (Aadhar+DOB)" });
         }
-        if (teacher.status !== 'approved') return res.status(403).json({ success: false, message: `Account is ${teacher.status}` });
-        const token = jwt.sign({ id: teacher._id, teacherId: teacher.teacherId, role: 'teacher', name: `${teacher.teacherName.first} ${teacher.teacherName.last}` }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '8h' });
+        
+        if (teacher.status !== 'approved') {
+            return res.status(403).json({ success: false, message: `Account is ${teacher.status}` });
+        }
+        
+        const token = jwt.sign(
+            { id: teacher._id, teacherId: teacher.teacherId, role: 'teacher', name: `${teacher.teacherName.first} ${teacher.teacherName.last}` }, 
+            process.env.JWT_SECRET || 'fallback_secret', 
+            { expiresIn: '8h' }
+        );
+        
         const teacherData = teacher.toObject();
         delete teacherData.password;
+        
         res.json({ success: true, message: "Login successful", token, data: teacherData });
     } catch (err) {
+        console.error('Teacher login error:', err);
         res.status(500).json({ success: false, message: "Login failed" });
     }
 });
-
-// ============================================
-// ✅ TOKEN VERIFICATION MIDDLEWARE
-// ============================================
-
-const verifyToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ success: false, message: "Access denied. No token provided." });
-    jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, decoded) => {
-        if (err) return res.status(403).json({ success: false, message: "Invalid or expired token." });
-        req.user = decoded;
-        next();
-    });
-};
 
 // ============================================
 // TOKEN VERIFY ENDPOINT
 // ============================================
 
 app.get('/api/verify-token', verifyToken, (req, res) => {
-    res.json({ success: true, message: "Token is valid", user: { id: req.user.id, username: req.user.adminID || req.user.teacherId, role: req.user.role } });
+    res.json({ 
+        success: true, 
+        message: "Token is valid", 
+        user: { 
+            id: req.user.id, 
+            username: req.user.adminID || req.user.teacherId, 
+            role: req.user.role 
+        } 
+    });
 });
 
 // ============================================
 // ADMIN MANAGEMENT APIs
 // ============================================
 
-// Get admin profile
 app.get('/api/admin/profile', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const admin = await Admin.findById(req.user.id).select('-pws');
         if (!admin) return res.status(404).json({ success: false, message: "Admin not found" });
         res.json({ success: true, data: admin });
@@ -590,9 +620,11 @@ app.get('/api/admin/profile', verifyToken, async (req, res) => {
     }
 });
 
-// Update admin profile (photo, aadhar, etc.)
 app.put('/api/admin/profile', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const { name, photo, aadharNumber, aadharDoc } = req.body;
         const updateData = {};
         if (name) updateData.name = name;
@@ -629,6 +661,10 @@ const configUpdateSchema = Joi.object({
 
 app.post('/api/update-config', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        
         const { error, value } = configUpdateSchema.validate(req.body);
         if (error) return res.status(400).json({ success: false, message: error.details[0].message });
         
@@ -647,14 +683,28 @@ app.post('/api/update-config', verifyToken, async (req, res) => {
 
 app.post('/api/change-password', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        
         const { oldPassword, newPassword } = req.body;
-        if (!oldPassword || !newPassword) return res.status(400).json({ success: false, message: "All fields required" });
-        if (newPassword.length < 6) return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: "All fields required" });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+        }
+        
         const admin = await Admin.findById(req.user.id);
         if (!admin) return res.status(404).json({ success: false, message: "Admin not found" });
-        if (!await bcrypt.compare(oldPassword, admin.pws)) return res.status(401).json({ success: false, message: "Old password is incorrect" });
+        
+        if (!await bcrypt.compare(oldPassword, admin.pws)) {
+            return res.status(401).json({ success: false, message: "Old password is incorrect" });
+        }
+        
         admin.pws = await bcrypt.hash(newPassword, 10);
         await admin.save();
+        
         res.json({ success: true, message: "Password changed successfully!" });
     } catch (err) {
         res.status(500).json({ success: false, message: "Server error" });
@@ -662,7 +712,7 @@ app.post('/api/change-password', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// STUDENT APIs
+// STUDENT APIs (with enhanced security)
 // ============================================
 
 app.post('/api/student-register', async (req, res) => {
@@ -671,14 +721,11 @@ app.post('/api/student-register', async (req, res) => {
         const data = req.body;
         
         // Validate required fields
-        if (!data.studentId || !data.password) {
-            return res.status(400).json({ success: false, message: "Student ID and password required" });
-        }
-        if (!data.photo) {
-            return res.status(400).json({ success: false, message: "Photo is required" });
-        }
-        if (!data.aadharDocument) {
-            return res.status(400).json({ success: false, message: "Aadhar document is required" });
+        const requiredFields = ['studentId', 'password', 'photo', 'aadharDocument', 'classMonthlyFees'];
+        for (const field of requiredFields) {
+            if (!data[field]) {
+                return res.status(400).json({ success: false, message: `${field} is required` });
+            }
         }
         
         // Check existing
@@ -748,6 +795,9 @@ app.post('/api/student-register', async (req, res) => {
 
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const students = await Student.find().sort({ createdAt: -1 });
         res.json({ success: true, data: students });
     } catch (err) {
@@ -757,6 +807,9 @@ app.get('/api/students', verifyToken, async (req, res) => {
 
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const student = await Student.findOne({ studentId: req.params.id });
         if (!student) return res.status(404).json({ success: false, message: "Student not found" });
         res.json({ success: true, data: student });
@@ -767,128 +820,9 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
 
 app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        const student = await Student.findOneAndUpdate({ studentId: req.params.id }, req.body, { new: true });
-        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
-        res.json({ success: true, message: "Student updated", data: student });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.delete('/api/students/:id', verifyToken, async (req, res) => {
-    try {
-        const student = await Student.findOneAndDelete({ studentId: req.params.id });
-        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
-        res.json({ success: true, message: "Student deleted" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
-    try {
-        const { month, paidAmount } = req.body;
-        const student = await Student.findOne({ studentId: req.params.studentId });
-        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
-        
-        const feeEntry = student.feesHistory.find(f => f.month === month);
-        if (feeEntry) {
-            feeEntry.paidAmount = paidAmount;
-            feeEntry.dueAmount = student.classMonthlyFees - paidAmount;
-            feeEntry.status = paidAmount >= student.classMonthlyFees ? 'paid' : paidAmount > 0 ? 'partial' : 'unpaid';
-            feeEntry.paymentDate = new Date();
-            feeEntry.updatedBy = req.user.adminID;
-            await student.save();
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
         }
-        res.json({ success: true, message: "Fees updated" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const student = await Student.findOne({ studentId: req.params.id });
-        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
-        res.json({ success: true, data: student.attendance || [] });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const { date, status, remarks } = req.body;
-        const student = await Student.findOne({ studentId: req.params.id });
-        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
-        if (!student.attendance) student.attendance = [];
-        
-        const existingIndex = student.attendance.findIndex(a => a.date === date);
-        const record = { date, status, remarks: remarks || '', markedBy: req.user.adminID, markedAt: new Date() };
-        
-        if (existingIndex >= 0) student.attendance[existingIndex] = record;
-        else student.attendance.push(record);
-        
-        await student.save();
-        res.json({ success: true, message: "Attendance marked" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-// Add after the other attendance endpoints (around line 700)
-
-// DELETE attendance record
-app.delete('/api/students/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const { date } = req.body;
-        if (!date) return res.status(400).json({ success: false, message: "Date is required" });
-        
-        const student = await Student.findOne({ studentId: req.params.id });
-        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
-        
-        if (!student.attendance) student.attendance = [];
-        const initialLength = student.attendance.length;
-        student.attendance = student.attendance.filter(a => a.date !== date);
-        
-        if (student.attendance.length === initialLength) {
-            return res.status(404).json({ success: false, message: "Attendance record not found" });
-        }
-        
-        await student.save();
-        res.json({ success: true, message: "Attendance record deleted" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// GET all unique boards and classes
-app.get('/api/boards', verifyToken, async (req, res) => {
-    try {
-        const students = await Student.find();
-        const boards = [...new Set(students.map(s => s.education?.board).filter(b => b))];
-        const classes = [...new Set(students.map(s => s.education?.class).filter(c => c))];
-        res.json({ success: true, data: { boards, classes } });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// GET students by board and class
-app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
-    try {
-        const students = await Student.find({
-            'education.board': req.params.board,
-            'education.class': req.params.class
-        });
-        res.json({ success: true, data: students });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// Update student (full update)
-app.put('/api/students/:id', verifyToken, async (req, res) => {
-    try {
         const student = await Student.findOne({ studentId: req.params.id });
         if (!student) return res.status(404).json({ success: false, message: "Student not found" });
         
@@ -980,6 +914,135 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
+app.delete('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const student = await Student.findOneAndDelete({ studentId: req.params.id });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        res.json({ success: true, message: "Student deleted" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const { month, paidAmount } = req.body;
+        const student = await Student.findOne({ studentId: req.params.studentId });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        
+        const feeEntry = student.feesHistory.find(f => f.month === month);
+        if (feeEntry) {
+            feeEntry.paidAmount = paidAmount;
+            feeEntry.dueAmount = student.classMonthlyFees - paidAmount;
+            feeEntry.status = paidAmount >= student.classMonthlyFees ? 'paid' : paidAmount > 0 ? 'partial' : 'unpaid';
+            feeEntry.paymentDate = new Date();
+            feeEntry.updatedBy = req.user.adminID;
+            await student.save();
+        }
+        res.json({ success: true, message: "Fees updated" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        res.json({ success: true, data: student.attendance || [] });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const { date, status, remarks } = req.body;
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        if (!student.attendance) student.attendance = [];
+        
+        const existingIndex = student.attendance.findIndex(a => a.date === date);
+        const record = { date, status, remarks: remarks || '', markedBy: req.user.adminID, markedAt: new Date() };
+        
+        if (existingIndex >= 0) student.attendance[existingIndex] = record;
+        else student.attendance.push(record);
+        
+        await student.save();
+        res.json({ success: true, message: "Attendance marked" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.delete('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const { date } = req.body;
+        if (!date) return res.status(400).json({ success: false, message: "Date is required" });
+        
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+        
+        if (!student.attendance) student.attendance = [];
+        const initialLength = student.attendance.length;
+        student.attendance = student.attendance.filter(a => a.date !== date);
+        
+        if (student.attendance.length === initialLength) {
+            return res.status(404).json({ success: false, message: "Attendance record not found" });
+        }
+        
+        await student.save();
+        res.json({ success: true, message: "Attendance record deleted" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.get('/api/boards', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const students = await Student.find();
+        const boards = [...new Set(students.map(s => s.education?.board).filter(b => b))];
+        const classes = [...new Set(students.map(s => s.education?.class).filter(c => c))];
+        res.json({ success: true, data: { boards, classes } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const students = await Student.find({
+            'education.board': req.params.board,
+            'education.class': req.params.class
+        });
+        res.json({ success: true, data: students });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ============================================
 // TEACHER APIs
 // ============================================
@@ -987,6 +1050,14 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
 app.post('/api/teacher-register', async (req, res) => {
     try {
         const data = req.body;
+        
+        // Validate required fields
+        const requiredFields = ['teacherId', 'password', 'photo', 'aadharNumber', 'aadharDoc', 'mobile', 'dob', 'lastQualification', 'qualificationDoc'];
+        for (const field of requiredFields) {
+            if (!data[field]) {
+                return res.status(400).json({ success: false, message: `${field} is required` });
+            }
+        }
         
         // Check existing
         if (await Teacher.findOne({ aadharNumber: data.aadharNumber })) {
@@ -1000,12 +1071,16 @@ app.post('/api/teacher-register', async (req, res) => {
         await newTeacher.save();
         res.json({ success: true, message: "Registration Successful! Pending approval." });
     } catch (err) {
+        console.error('Teacher registration error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
 app.get('/api/teachers', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const teachers = await Teacher.find().sort({ createdAt: -1 });
         res.json({ success: true, data: teachers });
     } catch (err) {
@@ -1015,6 +1090,9 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
 
 app.get('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const teacher = await Teacher.findOne({ teacherId: req.params.id }).select('-password');
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         res.json({ success: true, data: teacher });
@@ -1023,8 +1101,32 @@ app.get('/api/teachers/:id', verifyToken, async (req, res) => {
     }
 });
 
+app.put('/api/teachers/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const teacher = await Teacher.findOne({ teacherId: req.params.id });
+        if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
+        
+        const updateData = req.body;
+        Object.assign(teacher, updateData);
+        await teacher.save();
+        
+        const teacherData = teacher.toObject();
+        delete teacherData.password;
+        
+        res.json({ success: true, message: "Teacher updated", data: teacherData });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const { status, subject, salary, joiningDate } = req.body;
         const updateData = { status };
         
@@ -1032,6 +1134,8 @@ app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
             updateData.joiningDate = joiningDate ? new Date(joiningDate) : new Date();
             if (subject) updateData.subject = subject;
             if (salary) updateData.salary = parseInt(salary);
+        } else if (status === 'rejected' && req.body.rejectionReason) {
+            updateData.rejectionReason = req.body.rejectionReason;
         }
         
         const teacher = await Teacher.findOneAndUpdate({ teacherId: req.params.id }, updateData, { new: true });
@@ -1044,6 +1148,9 @@ app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
 
 app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const { month, paidAmount } = req.body;
         const teacher = await Teacher.findOne({ teacherId: req.params.id });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
@@ -1066,6 +1173,9 @@ app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
 
 app.delete('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const teacher = await Teacher.findOneAndDelete({ teacherId: req.params.id });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         res.json({ success: true, message: "Teacher deleted" });
@@ -1076,6 +1186,9 @@ app.delete('/api/teachers/:id', verifyToken, async (req, res) => {
 
 app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const total = await Teacher.countDocuments();
         const pending = await Teacher.countDocuments({ status: 'pending' });
         const approved = await Teacher.countDocuments({ status: 'approved' });
@@ -1088,6 +1201,9 @@ app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
 
 app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const teacher = await Teacher.findOne({ teacherId: req.params.id });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         res.json({ success: true, data: teacher.attendance || [] });
@@ -1098,6 +1214,9 @@ app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
 
 app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
         const { date, status, remarks, photo } = req.body;
         const teacher = await Teacher.findOne({ teacherId: req.params.id });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
@@ -1118,6 +1237,32 @@ app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
         
         await teacher.save();
         res.json({ success: true, message: "Attendance marked" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.delete('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const { date } = req.body;
+        if (!date) return res.status(400).json({ success: false, message: "Date is required" });
+        
+        const teacher = await Teacher.findOne({ teacherId: req.params.id });
+        if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
+        
+        if (!teacher.attendance) teacher.attendance = [];
+        const initialLength = teacher.attendance.length;
+        teacher.attendance = teacher.attendance.filter(a => a.date !== date);
+        
+        if (teacher.attendance.length === initialLength) {
+            return res.status(404).json({ success: false, message: "Attendance record not found" });
+        }
+        
+        await teacher.save();
+        res.json({ success: true, message: "Attendance record deleted" });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -1182,4 +1327,5 @@ app.listen(PORT, () => {
     console.log(`   GET  /api/teachers         - All Teachers`);
     console.log(`   GET  /api/admin/profile    - Admin Profile`);
     console.log(`   PUT  /api/admin/profile    - Update Admin Profile`);
+    console.log(`\n📝 Default Admin: admin / admin123`);
 });
