@@ -2,7 +2,7 @@
 // SERVER.JS - COMPLETE FINAL VERSION
 // Bal Bharti Coaching Center Management System
 // Includes: Student, Teacher, Attendance, Salary, Fees
-// With Teacher Self Dashboard Support
+// With Teacher Self Dashboard Support & Dynamic Website Config
 // ============================================
 
 const express = require('express');
@@ -39,7 +39,7 @@ app.use(
                 defaultSrc: ["'self'"],
                 scriptSrc: [
                     "'self'",
-                    "'unsafe-inline'",      // Required for teacher dashboard
+                    "'unsafe-inline'",
                     "'unsafe-eval'",
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com",
@@ -57,7 +57,7 @@ app.use(
                 imgSrc: [
                     "'self'",
                     "data:",
-                    "blob:",               // For camera capture
+                    "blob:",
                     "https://images.unsplash.com",
                     "https://*.unsplash.com",
                     "https://*.cloudinary.com",
@@ -78,7 +78,7 @@ app.use(
                     "https://*.mongodb.net"
                 ],
                 objectSrc: ["'none'"],
-                mediaSrc: ["'self'", "blob:", "data:"],  // UPDATED: Added blob and data for camera
+                mediaSrc: ["'self'", "blob:", "data:"],
                 frameSrc: ["'none'"],
                 upgradeInsecureRequests: [],
             },
@@ -90,7 +90,7 @@ app.use(
 
 // CORS configuration
 app.use(cors({
-    origin: '*', // In production, replace with specific domains
+    origin: '*',
     credentials: true
 }));
 
@@ -100,8 +100,8 @@ app.use(express.static('public'));
 
 // Rate Limiter - Prevents brute force attacks
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: { success: false, message: "Too many requests, please try again later." }
 });
 app.use('/api/', limiter);
@@ -137,7 +137,7 @@ const WebConfigSchema = new mongoose.Schema({
     },
     aboutText: {
         type: String,
-        default: 'Welcome to Bal Bharti Coaching Center. We provide quality education to students.'
+        default: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty. Join us for excellence in education.'
     },
     slides: [{
         type: String,
@@ -148,13 +148,59 @@ const WebConfigSchema = new mongoose.Schema({
             message: props => `${props.value} is not a valid URL!`
         }
     }],
-    whatsapp: String,
-    insta: String,
-    fb: String,
-    twitter: String
+    // Social Media Links
+    whatsapp: { type: String, default: '#' },
+    insta: { type: String, default: '#' },
+    fb: { type: String, default: '#' },
+    twitter: { type: String, default: '#' },
+    // Contact Information
+    contactAddress: { type: String, default: '123 Education Street, City' },
+    contactPhone: { type: String, default: '+91 98765 43210' },
+    contactEmail: { type: String, default: 'info@balbharti.com' },
+    // Institute Info
+    establishedYear: { type: Number, default: 2010 },
+    totalStudentsTrained: { type: Number, default: 5000 },
+    totalFaculty: { type: Number, default: 25 }
 }, { timestamps: true });
 
 const WebConfig = mongoose.model('WebConfig', WebConfigSchema);
+
+// ---------- Testimonials Schema ----------
+const TestimonialSchema = new mongoose.Schema({
+    name: { 
+        type: String, 
+        required: true 
+    },
+    role: { 
+        type: String, 
+        required: true,
+        enum: ['Student', 'Parent', 'Teacher', 'Alumni']
+    },
+    text: { 
+        type: String, 
+        required: true 
+    },
+    rating: { 
+        type: Number, 
+        min: 1, 
+        max: 5, 
+        default: 5 
+    },
+    image: { 
+        type: String, 
+        default: '' 
+    },
+    isActive: { 
+        type: Boolean, 
+        default: true 
+    },
+    order: { 
+        type: Number, 
+        default: 0 
+    }
+}, { timestamps: true });
+
+const Testimonial = mongoose.model('Testimonial', TestimonialSchema);
 
 // ---------- Admin Schema ----------
 const AdminSchema = new mongoose.Schema({
@@ -174,7 +220,6 @@ const Admin = mongoose.model('Admin', AdminSchema);
 
 // ---------- STUDENT SCHEMA with Attendance ----------
 const StudentSchema = new mongoose.Schema({
-    // Basic Information
     studentId: { 
         type: String, 
         required: true, 
@@ -189,15 +234,11 @@ const StudentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    
-    // Student Name
     studentName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
         last: { type: String, required: true }
     },
-    
-    // Contact Information
     mobile: { 
         type: String, 
         required: true,
@@ -208,8 +249,6 @@ const StudentSchema = new mongoose.Schema({
             message: 'Mobile number must be 10 digits'
         }
     },
-    
-    // Aadhar Details
     aadharNumber: { 
         type: String, 
         required: true,
@@ -225,8 +264,6 @@ const StudentSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    
-    // Dates
     registrationDate: { 
         type: Date, 
         required: true,
@@ -236,8 +273,6 @@ const StudentSchema = new mongoose.Schema({
         type: Date, 
         required: true 
     },
-    
-    // Fees Management
     classMonthlyFees: { 
         type: Number, 
         default: 0 
@@ -252,17 +287,13 @@ const StudentSchema = new mongoose.Schema({
         paymentDate: { type: Date },
         updatedBy: { type: String }
     }],
-    
-    // Student Attendance
     attendance: [{
-        date: { type: String, required: true }, // Format: YYYY-MM-DD
+        date: { type: String, required: true },
         status: { type: String, enum: ['present', 'absent', 'late', 'half-day'], default: 'present' },
         remarks: { type: String, default: '' },
         markedBy: { type: String },
         markedAt: { type: Date, default: Date.now }
     }],
-    
-    // Family Information
     fatherName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
@@ -283,21 +314,16 @@ const StudentSchema = new mongoose.Schema({
         middle: { type: String, default: '' },
         last: { type: String, default: '' }
     },
-    
-    // Address
     address: {
         current: { type: String, required: true },
         permanent: { type: String, required: true }
     },
-    
-    // Education
     education: {
         board: { type: String, required: true },
         class: { type: String, required: true }
     }
 }, { timestamps: true });
 
-// Index for search
 StudentSchema.index({ 
     'studentName.first': 'text', 
     'studentName.last': 'text',
@@ -308,41 +334,32 @@ StudentSchema.index({
 
 const Student = mongoose.model('Student', StudentSchema);
 
-// ---------- TEACHER SCHEMA with Attendance & Salary ----------
+// ---------- TEACHER SCHEMA ----------
 const TeacherSchema = new mongoose.Schema({
-    // Basic Information
     teacherId: { 
         type: String, 
         required: true, 
         unique: true,
         trim: true 
-    }, // Aadhar Number as ID
-    
+    },
     password: { 
         type: String, 
         required: true 
     },
-    
     photo: { 
         type: String, 
         required: true 
     },
-    
-    // Teacher Name
     teacherName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
         last: { type: String, required: true }
     },
-    
-    // Father's Name
     fatherName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
         last: { type: String, required: true }
     },
-    
-    // Contact Information
     mobile: { 
         type: String, 
         required: true,
@@ -353,7 +370,6 @@ const TeacherSchema = new mongoose.Schema({
             message: 'Mobile number must be 10 digits'
         }
     },
-    
     altMobile: { 
         type: String,
         validate: {
@@ -363,14 +379,10 @@ const TeacherSchema = new mongoose.Schema({
             message: 'Alternative mobile must be 10 digits'
         }
     },
-    
-    // Personal Details
     dob: { 
         type: Date, 
         required: true 
     },
-    
-    // Qualification
     lastQualification: { 
         type: String, 
         required: true 
@@ -379,8 +391,6 @@ const TeacherSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    
-    // Aadhar Details
     aadharNumber: { 
         type: String, 
         required: true, 
@@ -396,15 +406,11 @@ const TeacherSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    
-    // Professional Information
     subject: { 
         type: String,
         default: '',
         trim: true
     },
-    
-    // Salary Management
     salary: { 
         type: Number, 
         default: 0,
@@ -422,18 +428,14 @@ const TeacherSchema = new mongoose.Schema({
         updatedBy: { type: String },
         remarks: { type: String, default: '' }
     }],
-    
-    // Teacher Attendance - UPDATED with photo field
     attendance: [{
-        date: { type: String, required: true }, // Format: YYYY-MM-DD
+        date: { type: String, required: true },
         status: { type: String, enum: ['present', 'absent', 'late', 'half-day', 'leave'], default: 'present' },
         remarks: { type: String, default: '' },
-        photo: { type: String, default: '' },  // ADDED: Photo for attendance verification
+        photo: { type: String, default: '' },
         markedBy: { type: String },
         markedAt: { type: Date, default: Date.now }
     }],
-    
-    // Status Management
     joiningDate: { 
         type: Date, 
         default: null 
@@ -443,8 +445,6 @@ const TeacherSchema = new mongoose.Schema({
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending' 
     },
-    
-    // Address
     address: {
         current: { type: String, default: '' },
         permanent: { type: String, default: '' },
@@ -452,23 +452,17 @@ const TeacherSchema = new mongoose.Schema({
         state: { type: String, default: '' },
         pincode: { type: String, default: '' }
     },
-    
-    // Bank Details
     bankDetails: {
         accountHolder: { type: String, default: '' },
         accountNumber: { type: String, default: '' },
         ifscCode: { type: String, default: '' },
         bankName: { type: String, default: '' }
     },
-    
-    // Emergency Contact
     emergencyContact: {
         name: { type: String, default: '' },
         relation: { type: String, default: '' },
         phone: { type: String, default: '' }
     },
-    
-    // Experience
     experience: { 
         type: Number, 
         default: 0 
@@ -477,8 +471,6 @@ const TeacherSchema = new mongoose.Schema({
         type: String, 
         default: '' 
     },
-    
-    // Documents
     resume: { 
         type: String, 
         default: '' 
@@ -487,8 +479,6 @@ const TeacherSchema = new mongoose.Schema({
         type: String, 
         default: '' 
     },
-    
-    // Remarks
     remarks: { 
         type: String, 
         default: '' 
@@ -497,16 +487,12 @@ const TeacherSchema = new mongoose.Schema({
         type: String, 
         default: '' 
     },
-    
-    // Metadata
     createdBy: { 
         type: String, 
         default: 'self' 
     }
-
 }, { timestamps: true });
 
-// Index for search
 TeacherSchema.index({ 
     'teacherName.first': 'text', 
     'teacherName.last': 'text',
@@ -557,18 +543,79 @@ async function initializeDefaultConfig() {
                 logoText: 'BBCC',
                 title: 'Bal Bharti Coaching',
                 subTitle: 'Excellence in Education',
-                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education to students.',
+                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty. Join us for excellence in education.',
                 slides: [
-                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500',
-                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500',
-                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=500'
-                ]
+                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
+                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800',
+                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=800'
+                ],
+                whatsapp: '#',
+                insta: '#',
+                fb: '#',
+                contactAddress: '123 Education Street, City',
+                contactPhone: '+91 98765 43210',
+                contactEmail: 'info@balbharti.com',
+                establishedYear: 2010,
+                totalStudentsTrained: 5000,
+                totalFaculty: 25
             });
             await defaultConfig.save();
             console.log("✅ Default website config created");
         }
     } catch (err) {
         console.log("❌ Config initialization error:", err.message);
+    }
+}
+
+// Initialize default testimonials
+async function initializeDefaultTestimonials() {
+    try {
+        const testimonialsCount = await Testimonial.countDocuments();
+        if (testimonialsCount === 0) {
+            const defaultTestimonials = [
+                {
+                    name: "Priya Sharma",
+                    role: "Parent",
+                    text: "Bal Bharti Coaching has transformed my child's academic performance. The teachers are dedicated and use modern teaching methods. I highly recommend this institute.",
+                    rating: 5,
+                    image: "https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100",
+                    order: 1,
+                    isActive: true
+                },
+                {
+                    name: "Rajesh Kumar",
+                    role: "Teacher",
+                    text: "As a teacher, I love the dashboard. Marking attendance with photo has become so easy. The salary tracking system is excellent and very transparent.",
+                    rating: 5,
+                    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100",
+                    order: 2,
+                    isActive: true
+                },
+                {
+                    name: "Amit Patel",
+                    role: "Student",
+                    text: "The attendance system is very efficient. I can check my history anytime. The teaching quality is outstanding and the faculty is very supportive.",
+                    rating: 5,
+                    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
+                    order: 3,
+                    isActive: true
+                },
+                {
+                    name: "Neha Gupta",
+                    role: "Alumni",
+                    text: "I completed my coaching from Bal Bharti and got admission in top engineering college. The study material and test series are excellent.",
+                    rating: 5,
+                    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100",
+                    order: 4,
+                    isActive: true
+                }
+            ];
+            
+            await Testimonial.insertMany(defaultTestimonials);
+            console.log("✅ Default testimonials created");
+        }
+    } catch (err) {
+        console.log("❌ Testimonials initialization error:", err.message);
     }
 }
 
@@ -586,10 +633,16 @@ app.get('/api/health', (req, res) => {
             register: "/api/student-register",
             config: "/api/config",
             login: "/api/admin-login",
-            teacherLogin: "/api/teacher-login"
+            teacherLogin: "/api/teacher-login",
+            stats: "/api/stats",
+            testimonials: "/api/testimonials"
         }
     });
 });
+
+// ============================================
+// WEBSITE CONFIG APIs
+// ============================================
 
 // Get website config
 app.get('/api/config', async (req, res) => {
@@ -597,19 +650,26 @@ app.get('/api/config', async (req, res) => {
         let config = await WebConfig.findOne().lean();
         
         if (!config) {
-            const defaultConfig = new WebConfig({
+            config = {
                 logoText: 'BBCC',
                 title: 'Bal Bharti Coaching',
                 subTitle: 'Excellence in Education',
-                aboutText: 'Welcome to Bal Bharti Coaching Center.',
+                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty. Join us for excellence in education.',
                 slides: [
-                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=500',
-                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500',
-                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=500'
-                ]
-            });
-            await defaultConfig.save();
-            config = defaultConfig.toObject();
+                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
+                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800',
+                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=800'
+                ],
+                whatsapp: '#',
+                insta: '#',
+                fb: '#',
+                contactAddress: '123 Education Street, City',
+                contactPhone: '+91 98765 43210',
+                contactEmail: 'info@balbharti.com',
+                establishedYear: 2010,
+                totalStudentsTrained: 5000,
+                totalFaculty: 25
+            };
         }
         
         res.json(config);
@@ -618,6 +678,220 @@ app.get('/api/config', async (req, res) => {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 });
+
+// Update website configuration
+const configUpdateSchema = Joi.object({
+    logoText: Joi.string().required(),
+    title: Joi.string().required(),
+    subTitle: Joi.string().allow('').optional(),
+    aboutText: Joi.string().allow('').optional(),
+    whatsapp: Joi.string().uri().allow('').optional(),
+    insta: Joi.string().uri().allow('').optional(),
+    fb: Joi.string().uri().allow('').optional(),
+    twitter: Joi.string().uri().allow('').optional(),
+    slides: Joi.array().items(Joi.string().uri()).optional(),
+    contactAddress: Joi.string().allow('').optional(),
+    contactPhone: Joi.string().allow('').optional(),
+    contactEmail: Joi.string().email().allow('').optional(),
+    establishedYear: Joi.number().optional(),
+    totalStudentsTrained: Joi.number().optional(),
+    totalFaculty: Joi.number().optional()
+});
+
+app.post('/api/update-config', verifyToken, async (req, res) => {
+    try {
+        const { error, value } = configUpdateSchema.validate(req.body);
+        
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: "Validation Error: " + error.details[0].message
+            });
+        }
+        
+        const config = await WebConfig.findOneAndUpdate(
+            {},
+            value,
+            {
+                upsert: true,
+                new: true,
+                runValidators: true
+            }
+        );
+        
+        console.log(`✅ Website updated by admin: ${req.user.adminID}`);
+        
+        res.json({
+            success: true,
+            message: "Website Updated Successfully!",
+            data: config
+        });
+        
+    } catch (err) {
+        console.error("Update Config Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Update Failed. Please try again."
+        });
+    }
+});
+
+// ============================================
+// STATS APIs
+// ============================================
+
+// Get all statistics
+app.get('/api/stats', async (req, res) => {
+    try {
+        const totalStudents = await Student.countDocuments();
+        const totalTeachers = await Teacher.countDocuments({ status: 'approved' });
+        const pendingTeachers = await Teacher.countDocuments({ status: 'pending' });
+        const totalBatches = 15; // You can make this dynamic if needed
+        
+        // Calculate total fees collected
+        const students = await Student.find();
+        let totalFeesCollected = 0;
+        students.forEach(student => {
+            if (student.feesHistory) {
+                student.feesHistory.forEach(fee => {
+                    totalFeesCollected += fee.paidAmount || 0;
+                });
+            }
+        });
+        
+        // Calculate total salary paid
+        const teachers = await Teacher.find({ status: 'approved' });
+        let totalSalaryPaid = 0;
+        teachers.forEach(teacher => {
+            if (teacher.salaryHistory) {
+                teacher.salaryHistory.forEach(salary => {
+                    totalSalaryPaid += salary.paidAmount || 0;
+                });
+            }
+        });
+        
+        // Get config for custom stats
+        const config = await WebConfig.findOne();
+        
+        res.json({
+            success: true,
+            data: {
+                totalStudents: totalStudents || 0,
+                totalTeachers: totalTeachers || 0,
+                pendingTeachers: pendingTeachers || 0,
+                totalBatches: totalBatches,
+                totalCourses: 12,
+                successRate: 96,
+                totalSubjects: 8,
+                totalFeesCollected: totalFeesCollected,
+                totalSalaryPaid: totalSalaryPaid,
+                establishedYear: config?.establishedYear || 2010,
+                totalStudentsTrained: config?.totalStudentsTrained || 5000,
+                totalFaculty: config?.totalFaculty || 25
+            }
+        });
+    } catch (err) {
+        console.error('Stats error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// TESTIMONIALS APIs
+// ============================================
+
+// Get all testimonials
+app.get('/api/testimonials', async (req, res) => {
+    try {
+        const testimonials = await Testimonial.find({ isActive: true }).sort({ order: 1, createdAt: -1 });
+        
+        res.json({
+            success: true,
+            data: testimonials
+        });
+    } catch (err) {
+        console.error('Testimonials fetch error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Admin: Get all testimonials (including inactive)
+app.get('/api/admin/testimonials', verifyToken, async (req, res) => {
+    try {
+        const testimonials = await Testimonial.find().sort({ order: 1, createdAt: -1 });
+        res.json({ success: true, data: testimonials });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Admin: Add testimonial
+app.post('/api/testimonials', verifyToken, async (req, res) => {
+    try {
+        const { name, role, text, rating, image, order } = req.body;
+        
+        const testimonial = new Testimonial({
+            name,
+            role,
+            text,
+            rating: rating || 5,
+            image: image || '',
+            order: order || 0,
+            isActive: true
+        });
+        
+        await testimonial.save();
+        console.log(`✅ New testimonial added by ${req.user.adminID}`);
+        
+        res.json({ 
+            success: true, 
+            message: "Testimonial added successfully",
+            data: testimonial 
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Admin: Update testimonial
+app.put('/api/testimonials/:id', verifyToken, async (req, res) => {
+    try {
+        const testimonial = await Testimonial.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        
+        if (!testimonial) {
+            return res.status(404).json({ success: false, message: "Testimonial not found" });
+        }
+        
+        console.log(`✅ Testimonial updated by ${req.user.adminID}`);
+        res.json({ success: true, message: "Testimonial updated", data: testimonial });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Admin: Delete testimonial
+app.delete('/api/testimonials/:id', verifyToken, async (req, res) => {
+    try {
+        const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
+        
+        if (!testimonial) {
+            return res.status(404).json({ success: false, message: "Testimonial not found" });
+        }
+        
+        console.log(`🗑️ Testimonial deleted by ${req.user.adminID}`);
+        res.json({ success: true, message: "Testimonial deleted" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// AUTHENTICATION APIs
+// ============================================
 
 // Login rate limiter
 const loginLimiter = rateLimit({
@@ -629,10 +903,6 @@ const loginLimiter = rateLimit({
         message: "Too many login attempts. Please try again after 15 minutes."
     }
 });
-
-// ============================================
-// ADMIN LOGIN API
-// ============================================
 
 // Admin login
 app.post('/api/admin-login', loginLimiter, async (req, res) => {
@@ -690,11 +960,7 @@ app.post('/api/admin-login', loginLimiter, async (req, res) => {
     }
 });
 
-// ============================================
-// TEACHER LOGIN API - ADDED FOR TEACHER DASHBOARD
-// ============================================
-
-// Teacher Login - Supports both Password and Aadhar+DOB login
+// Teacher Login
 app.post('/api/teacher-login', loginLimiter, async (req, res) => {
     const { teacherId, password, aadharNumber, dob } = req.body;
     
@@ -702,7 +968,6 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
         let teacher;
         let loginMethod = '';
         
-        // Case 1: Password Login (ID + Password)
         if (teacherId && password) {
             loginMethod = 'password';
             teacher = await Teacher.findOne({ teacherId });
@@ -714,7 +979,6 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
                 });
             }
             
-            // Compare password (plain text for now - should use bcrypt in production)
             if (teacher.password !== password) {
                 return res.status(401).json({ 
                     success: false, 
@@ -722,7 +986,6 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
                 });
             }
         }
-        // Case 2: Aadhar Login (Aadhar + DOB)
         else if (aadharNumber && dob) {
             loginMethod = 'aadhar';
             teacher = await Teacher.findOne({ aadharNumber });
@@ -734,7 +997,6 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
                 });
             }
             
-            // Compare DOB
             const teacherDob = new Date(teacher.dob).toISOString().split('T')[0];
             if (teacherDob !== dob) {
                 return res.status(401).json({ 
@@ -750,7 +1012,6 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
             });
         }
         
-        // Check if teacher is approved
         if (teacher.status !== 'approved') {
             return res.status(403).json({ 
                 success: false, 
@@ -758,7 +1019,6 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
             });
         }
         
-        // Generate JWT token for teacher
         const token = jwt.sign(
             {
                 id: teacher._id,
@@ -767,10 +1027,9 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
                 name: `${teacher.teacherName.first} ${teacher.teacherName.last}`
             },
             process.env.JWT_SECRET || 'fallback_secret_change_this',
-            { expiresIn: '8h' } // 8 hours session
+            { expiresIn: '8h' }
         );
         
-        // Don't send password in response
         const teacherData = teacher.toObject();
         delete teacherData.password;
         
@@ -791,10 +1050,6 @@ app.post('/api/teacher-login', loginLimiter, async (req, res) => {
         });
     }
 });
-
-// ============================================
-// TOKEN VERIFICATION MIDDLEWARE
-// ============================================
 
 // Token verification middleware
 const verifyToken = (req, res, next) => {
@@ -821,7 +1076,7 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// Verify token endpoint - UPDATED for both admin and teacher
+// Verify token endpoint
 app.get('/api/verify-token', verifyToken, (req, res) => {
     res.json({
         success: true,
@@ -832,1452 +1087,6 @@ app.get('/api/verify-token', verifyToken, (req, res) => {
             role: req.user.role || 'admin'
         }
     });
-});
-
-// ============================================
-// STUDENT APIs
-// ============================================
-
-// ---------- Student Registration ----------
-app.post('/api/student-register', async (req, res) => {
-    console.log("📝 Student registration request received");
-    
-    try {
-        const studentData = req.body;
-        
-        // Validate required fields
-        if (!studentData.studentId || !studentData.password) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Student ID and password are required" 
-            });
-        }
-        
-        if (!studentData.photo) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Photo is required" 
-            });
-        }
-        
-        if (!studentData.aadharDocument) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Aadhar document is required" 
-            });
-        }
-        
-        // Check if student already exists
-        const existingStudent = await Student.findOne({ 
-            $or: [
-                { studentId: studentData.studentId },
-                { aadharNumber: studentData.aadhar }
-            ]
-        });
-        
-        if (existingStudent) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Student already registered with this Aadhar number or ID" 
-            });
-        }
-        
-        // Create new student
-        const student = new Student({
-            studentId: studentData.studentId,
-            password: studentData.password,
-            classMonthlyFees: studentData.classMonthlyFees || 0,
-            photo: studentData.photo,
-            studentName: {
-                first: studentData.student.firstName,
-                middle: studentData.student.middleName || '',
-                last: studentData.student.lastName
-            },
-            mobile: studentData.student.mobile,
-            aadharNumber: studentData.aadhar,
-            aadharDocument: studentData.aadharDocument,
-            registrationDate: new Date(studentData.dates.reg),
-            joiningDate: new Date(studentData.dates.join),
-            fatherName: {
-                first: studentData.father.firstName,
-                middle: studentData.father.middleName || '',
-                last: studentData.father.lastName
-            },
-            fatherMobile: studentData.father.mobile,
-            motherName: {
-                first: studentData.mother.firstName || '',
-                middle: studentData.mother.middleName || '',
-                last: studentData.mother.lastName || ''
-            },
-            address: {
-                current: studentData.address.current,
-                permanent: studentData.address.permanent
-            },
-            education: {
-                board: studentData.education.board,
-                class: studentData.education.class
-            },
-            attendance: [] // Initialize empty attendance array
-        });
-        
-        await student.save();
-        
-        console.log(`✅ New student registered: ${studentData.student.firstName} ${studentData.student.lastName} (ID: ${studentData.studentId})`);
-        
-        res.json({ 
-            success: true, 
-            message: "Registration successful",
-            studentId: studentData.studentId,
-            password: studentData.password
-        });
-        
-    } catch (err) {
-        console.error("❌ Registration Error:", err);
-        
-        if (err.code === 11000) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Duplicate entry: Student with this Aadhar or ID already exists" 
-            });
-        }
-        
-        res.status(500).json({ 
-            success: false, 
-            message: "Registration failed: " + err.message 
-        });
-    }
-});
-
-// ---------- Get All Students ----------
-app.get('/api/students', verifyToken, async (req, res) => {
-    try {
-        const students = await Student.find().sort({ createdAt: -1 });
-        res.json({ success: true, data: students });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Get Single Student by ID ----------
-app.get('/api/students/:id', verifyToken, async (req, res) => {
-    try {
-        const student = await Student.findOne({ studentId: req.params.id });
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        res.json({ success: true, data: student });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Update Student Fees ----------
-app.put('/api/students/:id/fees', verifyToken, async (req, res) => {
-    try {
-        const { classMonthlyFees } = req.body;
-        const student = await Student.findOneAndUpdate(
-            { studentId: req.params.id },
-            { classMonthlyFees: classMonthlyFees },
-            { new: true }
-        );
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        res.json({ 
-            success: true, 
-            message: "Class monthly fees updated successfully",
-            data: student 
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Delete Student ----------
-app.delete('/api/students/:id', verifyToken, async (req, res) => {
-    try {
-        const student = await Student.findOneAndDelete({ studentId: req.params.id });
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        res.json({ success: true, message: "Student deleted successfully" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Update Student by ID ----------
-app.put('/api/students/:id', verifyToken, async (req, res) => {
-    try {
-        const studentData = req.body;
-        
-        const student = await Student.findOneAndUpdate(
-            { studentId: req.params.id },
-            {
-                password: studentData.password,
-                classMonthlyFees: studentData.classMonthlyFees,
-                photo: studentData.photo,
-                studentName: studentData.student,
-                mobile: studentData.student.mobile,
-                aadharNumber: studentData.aadhar,
-                aadharDocument: studentData.aadharDocument,
-                registrationDate: studentData.dates.reg,
-                joiningDate: studentData.dates.join,
-                fatherName: studentData.father,
-                fatherMobile: studentData.father.mobile,
-                motherName: studentData.mother,
-                address: studentData.address,
-                education: studentData.education
-            },
-            { new: true }
-        );
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        res.json({ success: true, message: "Student updated successfully", data: student });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ============================================
-// STUDENT DASHBOARD & ATTENDANCE APIs
-// ============================================
-
-// ---------- Get all boards ----------
-app.get('/api/boards', verifyToken, async (req, res) => {
-    try {
-        const boards = await Student.distinct('education.board');
-        res.json({ success: true, data: boards });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Get classes by board ----------
-app.get('/api/classes/:board', verifyToken, async (req, res) => {
-    try {
-        const classes = await Student.distinct('education.class', { 
-            'education.board': req.params.board 
-        });
-        res.json({ success: true, data: classes });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Get students by board and class ----------
-app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
-    try {
-        const students = await Student.find({
-            'education.board': req.params.board,
-            'education.class': req.params.class
-        }).select('studentId studentName photo classMonthlyFees');
-        
-        res.json({ success: true, data: students });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Get complete student data for dashboard ----------
-app.get('/api/student-dashboard/:studentId', verifyToken, async (req, res) => {
-    try {
-        const student = await Student.findOne({ 
-            studentId: req.params.studentId 
-        });
-        
-        if (!student) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "Student not found" 
-            });
-        }
-
-        // Generate fees history if not exists
-        if (!student.feesHistory || student.feesHistory.length === 0) {
-            const joiningDate = new Date(student.joiningDate);
-            const currentDate = new Date();
-            const feesHistory = [];
-
-            let currentMonth = new Date(joiningDate);
-            
-            while (currentMonth <= currentDate) {
-                const monthName = currentMonth.toLocaleString('default', { month: 'long' });
-                const year = currentMonth.getFullYear();
-                
-                feesHistory.push({
-                    month: `${monthName} ${year}`,
-                    year: year,
-                    monthIndex: currentMonth.getMonth(),
-                    paidAmount: 0,
-                    dueAmount: student.classMonthlyFees,
-                    status: 'unpaid'
-                });
-
-                currentMonth.setMonth(currentMonth.getMonth() + 1);
-            }
-
-            student.feesHistory = feesHistory;
-            await student.save();
-        }
-
-        res.json({ success: true, data: student });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Update fees payment ----------
-app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
-    try {
-        const { month, paidAmount } = req.body;
-        const student = await Student.findOne({ studentId: req.params.studentId });
-        
-        if (!student) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "Student not found" 
-            });
-        }
-
-        const feeEntry = student.feesHistory.find(f => f.month === month);
-        
-        if (feeEntry) {
-            feeEntry.paidAmount = paidAmount;
-            feeEntry.dueAmount = student.classMonthlyFees - paidAmount;
-            feeEntry.status = paidAmount >= student.classMonthlyFees ? 'paid' : 
-                             paidAmount > 0 ? 'partial' : 'unpaid';
-            feeEntry.paymentDate = new Date();
-            feeEntry.updatedBy = req.user.adminID;
-        }
-
-        await student.save({ validateBeforeSave: false });
-
-        const months = student.feesHistory.map(f => f.month);
-        const paidAmounts = student.feesHistory.map(f => f.paidAmount);
-        const dueAmounts = student.feesHistory.map(f => f.dueAmount);
-        
-        const chartData = {
-            months: months,
-            paid: paidAmounts,
-            due: dueAmounts,
-            totalPaid: paidAmounts.reduce((a, b) => a + b, 0),
-            totalDue: dueAmounts.reduce((a, b) => a + b, 0)
-        };
-
-        res.json({ 
-            success: true, 
-            message: "Fees updated successfully",
-            data: {
-                feesHistory: student.feesHistory,
-                chartData: chartData
-            }
-        });
-    } catch (err) {
-        console.error("Update fees error:", err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- STUDENT ATTENDANCE APIs ----------
-
-// Get student attendance
-app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const studentId = req.params.id;
-        const { month, year } = req.query;
-        
-        const student = await Student.findOne({ studentId });
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        let attendance = student.attendance || [];
-        
-        // Filter by month/year if provided
-        if (month && year) {
-            const monthStr = month.padStart(2, '0');
-            attendance = attendance.filter(a => a.date.startsWith(`${year}-${monthStr}`));
-        }
-        
-        res.json({
-            success: true,
-            data: attendance.sort((a, b) => b.date.localeCompare(a.date))
-        });
-        
-    } catch (err) {
-        console.error('Error fetching student attendance:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// Mark student attendance
-app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const studentId = req.params.id;
-        const { date, status, remarks } = req.body;
-        
-        if (!date || !status) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Date and status are required" 
-            });
-        }
-        
-        const student = await Student.findOne({ studentId });
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        // Initialize attendance array if not exists
-        if (!student.attendance) {
-            student.attendance = [];
-        }
-        
-        // Check if attendance already exists for this date
-        const existingIndex = student.attendance.findIndex(a => a.date === date);
-        
-        const attendanceRecord = {
-            date,
-            status,
-            remarks: remarks || '',
-            markedBy: req.user.adminID,
-            markedAt: new Date()
-        };
-        
-        if (existingIndex >= 0) {
-            // Update existing
-            student.attendance[existingIndex] = attendanceRecord;
-        } else {
-            // Add new
-            student.attendance.push(attendanceRecord);
-        }
-        
-        await student.save();
-        
-        res.json({
-            success: true,
-            message: existingIndex >= 0 ? "Attendance updated successfully" : "Attendance marked successfully",
-            data: attendanceRecord
-        });
-        
-    } catch (err) {
-        console.error('Error saving student attendance:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// Delete student attendance
-app.delete('/api/students/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const studentId = req.params.id;
-        const { date } = req.body;
-        
-        if (!date) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Date is required" 
-            });
-        }
-        
-        const student = await Student.findOne({ studentId });
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        // Filter out the attendance record
-        student.attendance = (student.attendance || []).filter(a => a.date !== date);
-        
-        await student.save();
-        
-        res.json({
-            success: true,
-            message: "Attendance deleted successfully"
-        });
-        
-    } catch (err) {
-        console.error('Error deleting student attendance:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ============================================
-// TEACHER REGISTRATION APIs
-// ============================================
-
-// ---------- Teacher Registration ----------
-app.post('/api/teacher-register', async (req, res) => {
-    try {
-        const data = req.body;
-        
-        // Validate required fields
-        const requiredFields = [
-            'teacherId', 'password', 'photo', 
-            'teacherName.first', 'teacherName.last',
-            'fatherName.first', 'fatherName.last',
-            'mobile', 'dob', 'lastQualification',
-            'qualificationDoc', 'aadharNumber', 'aadharDoc'
-        ];
-        
-        for (const field of requiredFields) {
-            const keys = field.split('.');
-            let value = data;
-            for (const key of keys) {
-                value = value?.[key];
-                if (!value) {
-                    return res.status(400).json({ 
-                        success: false, 
-                        message: `${field} is required` 
-                    });
-                }
-            }
-        }
-        
-        // Validate mobile number
-        if (!/^\d{10}$/.test(data.mobile)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Mobile number must be 10 digits" 
-            });
-        }
-        
-        // Validate Aadhar number
-        if (!/^\d{12}$/.test(data.aadharNumber)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Aadhar number must be 12 digits" 
-            });
-        }
-        
-        // Check for existing teacher by Aadhar
-        const existingAadhar = await Teacher.findOne({ aadharNumber: data.aadharNumber });
-        if (existingAadhar) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Aadhar number already registered!" 
-            });
-        }
-        
-        // Check for existing teacher by Teacher ID
-        const existingId = await Teacher.findOne({ teacherId: data.teacherId });
-        if (existingId) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Teacher ID already exists!" 
-            });
-        }
-        
-        // Check for existing teacher by Mobile
-        const existingMobile = await Teacher.findOne({ mobile: data.mobile });
-        if (existingMobile) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Mobile number already registered!" 
-            });
-        }
-        
-        // Create new teacher
-        const newTeacher = new Teacher({
-            teacherId: data.teacherId,
-            password: data.password,
-            photo: data.photo,
-            teacherName: {
-                first: data.teacherName.first,
-                middle: data.teacherName.middle || '',
-                last: data.teacherName.last
-            },
-            fatherName: {
-                first: data.fatherName.first,
-                middle: data.fatherName.middle || '',
-                last: data.fatherName.last
-            },
-            mobile: data.mobile,
-            altMobile: data.altMobile || '',
-            dob: new Date(data.dob),
-            lastQualification: data.lastQualification,
-            qualificationDoc: data.qualificationDoc,
-            aadharNumber: data.aadharNumber,
-            aadharDoc: data.aadharDoc,
-            
-            // Optional fields
-            subject: data.subject || '',
-            salary: data.salary || 0,
-            address: data.address || {
-                current: '',
-                permanent: '',
-                city: '',
-                state: '',
-                pincode: ''
-            },
-            bankDetails: data.bankDetails || {
-                accountHolder: '',
-                accountNumber: '',
-                ifscCode: '',
-                bankName: ''
-            },
-            emergencyContact: data.emergencyContact || {
-                name: '',
-                relation: '',
-                phone: ''
-            },
-            experience: data.experience || 0,
-            previousSchool: data.previousSchool || '',
-            resume: data.resume || '',
-            experienceCertificate: data.experienceCertificate || '',
-            remarks: data.remarks || '',
-            
-            // Status
-            status: 'pending',
-            joiningDate: null,
-            createdBy: 'self',
-            attendance: [] // Initialize empty attendance array
-        });
-
-        await newTeacher.save();
-
-        console.log(`✅ New teacher registered: ${data.teacherName.first} ${data.teacherName.last} (ID: ${data.teacherId})`);
-
-        res.json({ 
-            success: true, 
-            message: "Registration Successful! Your application is pending approval.",
-            id: data.teacherId,
-            name: `${data.teacherName.first} ${data.teacherName.last}`,
-            status: 'pending'
-        });
-
-    } catch (err) {
-        console.error("❌ Teacher Registration Error:", err);
-        
-        if (err.code === 11000) {
-            const field = Object.keys(err.keyPattern)[0];
-            return res.status(400).json({ 
-                success: false, 
-                message: `${field} already exists. Please use different value.` 
-            });
-        }
-        
-        res.status(500).json({ 
-            success: false, 
-            message: "Registration failed: " + err.message 
-        });
-    }
-});
-
-// ---------- Bulk Teacher Registration ----------
-app.post('/api/teachers/bulk-register', verifyToken, async (req, res) => {
-    try {
-        const teachers = req.body.teachers;
-        
-        if (!Array.isArray(teachers) || teachers.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Please provide an array of teachers" 
-            });
-        }
-        
-        const results = {
-            success: 0,
-            failed: 0,
-            errors: []
-        };
-        
-        for (const teacherData of teachers) {
-            try {
-                const existing = await Teacher.findOne({ 
-                    $or: [
-                        { aadharNumber: teacherData.aadharNumber },
-                        { teacherId: teacherData.teacherId }
-                    ]
-                });
-                
-                if (existing) {
-                    results.failed++;
-                    results.errors.push({
-                        teacher: teacherData.teacherId,
-                        error: "Duplicate Aadhar or ID"
-                    });
-                    continue;
-                }
-                
-                const newTeacher = new Teacher({
-                    ...teacherData,
-                    createdBy: req.user.adminID,
-                    status: 'pending',
-                    attendance: []
-                });
-                
-                await newTeacher.save();
-                results.success++;
-                
-            } catch (err) {
-                results.failed++;
-                results.errors.push({
-                    teacher: teacherData.teacherId,
-                    error: err.message
-                });
-            }
-        }
-        
-        res.json({
-            success: true,
-            message: `Bulk registration completed: ${results.success} success, ${results.failed} failed`,
-            data: results
-        });
-        
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Check Teacher Availability ----------
-app.post('/api/teacher-check', async (req, res) => {
-    try {
-        const { aadharNumber, mobile, teacherId } = req.body;
-        
-        const checks = {};
-        
-        if (aadharNumber) {
-            checks.aadharExists = await Teacher.exists({ aadharNumber });
-        }
-        
-        if (mobile) {
-            checks.mobileExists = await Teacher.exists({ mobile });
-        }
-        
-        if (teacherId) {
-            checks.idExists = await Teacher.exists({ teacherId });
-        }
-        
-        res.json({
-            success: true,
-            data: checks
-        });
-        
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ============================================
-// TEACHER MANAGEMENT APIs
-// ============================================
-
-// ---------- Get All Teachers with filters ----------
-app.get('/api/teachers', verifyToken, async (req, res) => {
-    try {
-        const { status, search, subject, page = 1, limit = 50 } = req.query;
-        let query = {};
-        
-        if (status && status !== 'all') {
-            query.status = status;
-        }
-        
-        if (subject && subject !== 'all') {
-            query.subject = subject;
-        }
-        
-        if (search) {
-            query.$or = [
-                { 'teacherName.first': { $regex: search, $options: 'i' } },
-                { 'teacherName.last': { $regex: search, $options: 'i' } },
-                { teacherId: { $regex: search, $options: 'i' } },
-                { mobile: { $regex: search, $options: 'i' } },
-                { aadharNumber: { $regex: search, $options: 'i' } },
-                { subject: { $regex: search, $options: 'i' } }
-            ];
-        }
-        
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-        
-        const teachers = await Teacher.find(query)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
-            
-        const total = await Teacher.countDocuments(query);
-        
-        // Add salary calculation for each teacher
-        const teachersWithSalary = teachers.map(teacher => {
-            const teacherObj = teacher.toObject();
-            
-            if (teacher.joiningDate) {
-                const joiningDate = new Date(teacher.joiningDate);
-                const currentDate = new Date();
-                const months = [];
-                
-                let currentMonth = new Date(joiningDate);
-                currentMonth.setDate(1);
-                
-                // Limit to 24 months for performance
-                let count = 0;
-                const maxMonths = 24;
-                
-                while (currentMonth <= currentDate && count < maxMonths) {
-                    const monthName = currentMonth.toLocaleString('default', { month: 'long' });
-                    const year = currentMonth.getFullYear();
-                    const monthKey = `${monthName} ${year}`;
-                    
-                    const existingSalary = teacher.salaryHistory?.find(
-                        s => s.month === monthKey
-                    ) || {
-                        month: monthKey,
-                        year: year,
-                        monthIndex: currentMonth.getMonth(),
-                        salary: teacher.salary || 0,
-                        paidAmount: 0,
-                        dueAmount: teacher.salary || 0,
-                        status: 'unpaid'
-                    };
-                    
-                    months.push(existingSalary);
-                    
-                    currentMonth.setMonth(currentMonth.getMonth() + 1);
-                    count++;
-                }
-                
-                teacherObj.salaryMonths = months;
-            } else {
-                teacherObj.salaryMonths = [];
-            }
-            
-            return teacherObj;
-        });
-        
-        res.json({ 
-            success: true, 
-            data: teachersWithSalary,
-            pagination: {
-                total,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                pages: Math.ceil(total / parseInt(limit))
-            }
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Get Single Teacher by ID ----------
-app.get('/api/teachers/:id', verifyToken, async (req, res) => {
-    try {
-        const teacher = await Teacher.findOne({ teacherId: req.params.id })
-            .select('-password -__v')
-            .lean();
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        // Generate salary months if approved
-        if (teacher.status === 'approved' && teacher.joiningDate) {
-            const joiningDate = new Date(teacher.joiningDate);
-            const currentDate = new Date();
-            const months = [];
-            
-            let currentMonth = new Date(joiningDate);
-            currentMonth.setDate(1);
-            
-            // Limit to 24 months for performance
-            let count = 0;
-            const maxMonths = 24;
-            
-            while (currentMonth <= currentDate && count < maxMonths) {
-                const monthName = currentMonth.toLocaleString('default', { month: 'long' });
-                const year = currentMonth.getFullYear();
-                const monthKey = `${monthName} ${year}`;
-                
-                const existingSalary = teacher.salaryHistory?.find(
-                    s => s.month === monthKey
-                ) || {
-                    month: monthKey,
-                    year: year,
-                    monthIndex: currentMonth.getMonth(),
-                    salary: teacher.salary || 0,
-                    paidAmount: 0,
-                    dueAmount: teacher.salary || 0,
-                    status: 'unpaid'
-                };
-                
-                months.push(existingSalary);
-                currentMonth.setMonth(currentMonth.getMonth() + 1);
-                count++;
-            }
-            
-            teacher.salaryMonths = months;
-        } else {
-            teacher.salaryMonths = [];
-        }
-        
-        res.json({ success: true, data: teacher });
-    } catch (err) {
-        console.error('Error fetching teacher:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Update Teacher Status (Approve/Reject) ----------
-app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
-    try {
-        const { status, subject, salary, joiningDate, rejectionReason } = req.body;
-        
-        if (!['pending', 'approved', 'rejected'].includes(status)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Invalid status" 
-            });
-        }
-        
-        const updateData = { status };
-        
-        if (status === 'approved') {
-            updateData.joiningDate = joiningDate ? new Date(joiningDate) : new Date();
-            if (subject) updateData.subject = subject;
-            if (salary) updateData.salary = parseInt(salary);
-            
-            const teacher = await Teacher.findOne({ teacherId: req.params.id });
-            if (teacher && !teacher.salaryHistory) {
-                updateData.salaryHistory = [];
-            }
-        } else if (status === 'rejected') {
-            updateData.rejectionReason = rejectionReason || 'Not specified';
-            updateData.joiningDate = null;
-        }
-        
-        const teacher = await Teacher.findOneAndUpdate(
-            { teacherId: req.params.id },
-            updateData,
-            { new: true }
-        );
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        console.log(`✅ Teacher ${req.params.id} status updated to ${status} by ${req.user.adminID}`);
-        
-        res.json({ 
-            success: true, 
-            message: `Teacher ${status} successfully`,
-            data: teacher 
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Update Teacher Complete Details ----------
-app.put('/api/teachers/:id', verifyToken, async (req, res) => {
-    try {
-        const teacherData = req.body;
-        
-        delete teacherData._id;
-        delete teacherData.__v;
-        delete teacherData.createdAt;
-        delete teacherData.updatedAt;
-        delete teacherData.password;
-        
-        const teacher = await Teacher.findOneAndUpdate(
-            { teacherId: req.params.id },
-            teacherData,
-            { new: true, runValidators: true }
-        );
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        console.log(`✅ Teacher ${req.params.id} updated by ${req.user.adminID}`);
-        
-        res.json({ 
-            success: true, 
-            message: "Teacher updated successfully",
-            data: teacher 
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Update Teacher Salary ----------
-app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
-    try {
-        const { month, paidAmount, remarks } = req.body;
-        const teacher = await Teacher.findOne({ teacherId: req.params.id });
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-
-        if (teacher.status !== 'approved') {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Can only pay salary to approved teachers" 
-            });
-        }
-
-        if (!teacher.salaryHistory) {
-            teacher.salaryHistory = [];
-        }
-
-        const salaryEntry = teacher.salaryHistory.find(s => s.month === month);
-        const monthlySalary = teacher.salary || 0;
-        
-        if (salaryEntry) {
-            salaryEntry.paidAmount = paidAmount;
-            salaryEntry.dueAmount = monthlySalary - paidAmount;
-            salaryEntry.status = paidAmount >= monthlySalary ? 'paid' : 
-                                paidAmount > 0 ? 'partial' : 'unpaid';
-            salaryEntry.paymentDate = new Date();
-            salaryEntry.updatedBy = req.user.adminID;
-            if (remarks) salaryEntry.remarks = remarks;
-        } else {
-            teacher.salaryHistory.push({
-                month: month,
-                year: new Date().getFullYear(),
-                monthIndex: new Date().getMonth(),
-                salary: monthlySalary,
-                paidAmount: paidAmount,
-                dueAmount: monthlySalary - paidAmount,
-                status: paidAmount >= monthlySalary ? 'paid' : 
-                       paidAmount > 0 ? 'partial' : 'unpaid',
-                paymentDate: new Date(),
-                updatedBy: req.user.adminID,
-                remarks: remarks || ''
-            });
-        }
-
-        await teacher.save({ validateBeforeSave: false });
-
-        const totalPaid = teacher.salaryHistory.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
-        const totalDue = teacher.salaryHistory.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
-        
-        const months = teacher.salaryHistory.map(s => s.month);
-        const paidAmounts = teacher.salaryHistory.map(s => s.paidAmount);
-        const dueAmounts = teacher.salaryHistory.map(s => s.dueAmount);
-        
-        const chartData = {
-            months: months,
-            paid: paidAmounts,
-            due: dueAmounts,
-            totalPaid: totalPaid,
-            totalDue: totalDue
-        };
-
-        console.log(`💰 Salary updated for ${req.params.id} - Month: ${month}, Paid: ₹${paidAmount}`);
-
-        res.json({ 
-            success: true, 
-            message: "Salary updated successfully",
-            data: {
-                salaryHistory: teacher.salaryHistory,
-                chartData: chartData,
-                totalPaid,
-                totalDue
-            }
-        });
-    } catch (err) {
-        console.error("Update salary error:", err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Delete Teacher ----------
-app.delete('/api/teachers/:id', verifyToken, async (req, res) => {
-    try {
-        const teacher = await Teacher.findOneAndDelete({ teacherId: req.params.id });
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        console.log(`🗑️ Teacher ${req.params.id} deleted by ${req.user.adminID}`);
-        
-        res.json({ 
-            success: true, 
-            message: "Teacher deleted successfully" 
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Get Teacher Statistics ----------
-app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
-    try {
-        const totalTeachers = await Teacher.countDocuments();
-        const pendingTeachers = await Teacher.countDocuments({ status: 'pending' });
-        const approvedTeachers = await Teacher.countDocuments({ status: 'approved' });
-        const rejectedTeachers = await Teacher.countDocuments({ status: 'rejected' });
-        
-        const subjectStats = await Teacher.aggregate([
-            { $match: { status: 'approved', subject: { $ne: '' } } },
-            { $group: { _id: '$subject', count: { $sum: 1 } } },
-            { $sort: { count: -1 } }
-        ]);
-        
-        const teachers = await Teacher.find({ status: 'approved' });
-        let totalPaidSalary = 0;
-        let totalDueSalary = 0;
-        let totalMonthlySalary = 0;
-        
-        teachers.forEach(teacher => {
-            totalMonthlySalary += teacher.salary || 0;
-            if (teacher.salaryHistory) {
-                teacher.salaryHistory.forEach(s => {
-                    totalPaidSalary += s.paidAmount || 0;
-                    totalDueSalary += s.dueAmount || 0;
-                });
-            }
-        });
-        
-        const months = [];
-        const paidTrend = [];
-        const dueTrend = [];
-        
-        for (let i = 5; i >= 0; i--) {
-            const date = new Date();
-            date.setMonth(date.getMonth() - i);
-            const monthName = date.toLocaleString('default', { month: 'short' });
-            const year = date.getFullYear();
-            const monthKey = `${monthName} ${year}`;
-            months.push(monthKey);
-            
-            let monthPaid = 0;
-            let monthDue = 0;
-            
-            teachers.forEach(teacher => {
-                if (teacher.salaryHistory) {
-                    const salaryMonth = teacher.salaryHistory.find(s => s.month === monthKey);
-                    if (salaryMonth) {
-                        monthPaid += salaryMonth.paidAmount || 0;
-                        monthDue += salaryMonth.dueAmount || 0;
-                    }
-                }
-            });
-            
-            paidTrend.push(monthPaid);
-            dueTrend.push(monthDue);
-        }
-        
-        res.json({
-            success: true,
-            data: {
-                total: totalTeachers,
-                pending: pendingTeachers,
-                approved: approvedTeachers,
-                rejected: rejectedTeachers,
-                totalPaidSalary,
-                totalDueSalary,
-                totalMonthlySalary,
-                subjectStats,
-                salaryTrend: {
-                    months,
-                    paid: paidTrend,
-                    due: dueTrend
-                }
-            }
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ---------- Export Teachers Data ----------
-app.get('/api/teachers/export/:format', verifyToken, async (req, res) => {
-    try {
-        const { format } = req.params;
-        const { status } = req.query;
-        
-        let query = {};
-        if (status && status !== 'all') {
-            query.status = status;
-        }
-        
-        const teachers = await Teacher.find(query).sort({ createdAt: -1 });
-        
-        if (format === 'json') {
-            return res.json({ success: true, data: teachers });
-        } 
-        else if (format === 'csv') {
-            const fields = [
-                'teacherId', 'teacherName.first', 'teacherName.last',
-                'mobile', 'subject', 'salary', 'status', 'joiningDate'
-            ];
-            
-            let csv = fields.join(',') + '\n';
-            
-            teachers.forEach(t => {
-                const row = fields.map(f => {
-                    const val = f.split('.').reduce((obj, key) => obj?.[key], t) || '';
-                    return `"${val}"`;
-                }).join(',');
-                csv += row + '\n';
-            });
-            
-            res.setHeader('Content-Type', 'text/csv');
-            res.setHeader('Content-Disposition', 'attachment; filename=teachers.csv');
-            return res.send(csv);
-        }
-        
-        res.status(400).json({ success: false, message: "Invalid format" });
-        
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ============================================
-// TEACHER ATTENDANCE APIs - UPDATED with photo support
-// ============================================
-
-// Get teacher attendance
-app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const teacherId = req.params.id;
-        const { month, year } = req.query;
-        
-        const teacher = await Teacher.findOne({ teacherId });
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        let attendance = teacher.attendance || [];
-        
-        // Filter by month/year if provided
-        if (month && year) {
-            const monthStr = month.padStart(2, '0');
-            attendance = attendance.filter(a => a.date.startsWith(`${year}-${monthStr}`));
-        }
-        
-        res.json({
-            success: true,
-            data: attendance.sort((a, b) => b.date.localeCompare(a.date))
-        });
-        
-    } catch (err) {
-        console.error('Error fetching teacher attendance:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// Mark teacher attendance - UPDATED with photo support
-app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const teacherId = req.params.id;
-        const { date, status, remarks, photo } = req.body;  // Added photo
-        
-        if (!date || !status) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Date and status are required" 
-            });
-        }
-        
-        const teacher = await Teacher.findOne({ teacherId });
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        // Initialize attendance array if not exists
-        if (!teacher.attendance) {
-            teacher.attendance = [];
-        }
-        
-        // Check if attendance already exists for this date
-        const existingIndex = teacher.attendance.findIndex(a => a.date === date);
-        
-        const attendanceRecord = {
-            date,
-            status,
-            remarks: remarks || '',
-            photo: photo || '',  // Save photo
-            markedBy: req.user.role === 'teacher' ? 'self' : req.user.adminID,
-            markedAt: new Date()
-        };
-        
-        if (existingIndex >= 0) {
-            // Update existing - keep old photo if new not provided
-            if (!photo && teacher.attendance[existingIndex].photo) {
-                attendanceRecord.photo = teacher.attendance[existingIndex].photo;
-            }
-            teacher.attendance[existingIndex] = attendanceRecord;
-        } else {
-            // Add new
-            teacher.attendance.push(attendanceRecord);
-        }
-        
-        await teacher.save();
-        
-        console.log(`✅ Attendance marked for ${teacherId}: ${status} on ${date}`);
-        
-        res.json({
-            success: true,
-            message: existingIndex >= 0 ? "Attendance updated successfully" : "Attendance marked successfully",
-            data: attendanceRecord
-        });
-        
-    } catch (err) {
-        console.error('Error saving teacher attendance:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// Update teacher attendance (PUT) - UPDATED with photo support
-app.put('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const teacherId = req.params.id;
-        const { date, status, remarks, photo } = req.body;
-        
-        if (!date || !status) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Date and status are required" 
-            });
-        }
-        
-        const teacher = await Teacher.findOne({ teacherId });
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        if (!teacher.attendance) {
-            teacher.attendance = [];
-        }
-        
-        const existingIndex = teacher.attendance.findIndex(a => a.date === date);
-        
-        if (existingIndex === -1) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "Attendance record not found for this date" 
-            });
-        }
-        
-        teacher.attendance[existingIndex] = {
-            date,
-            status,
-            remarks: remarks || '',
-            photo: photo || teacher.attendance[existingIndex].photo || '',
-            markedBy: req.user.role === 'teacher' ? 'self' : req.user.adminID,
-            markedAt: new Date()
-        };
-        
-        await teacher.save();
-        
-        res.json({
-            success: true,
-            message: "Attendance updated successfully",
-            data: teacher.attendance[existingIndex]
-        });
-        
-    } catch (err) {
-        console.error('Error updating teacher attendance:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// Delete teacher attendance
-app.delete('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
-    try {
-        const teacherId = req.params.id;
-        const { date } = req.body;
-        
-        if (!date) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Date is required" 
-            });
-        }
-        
-        const teacher = await Teacher.findOne({ teacherId });
-        
-        if (!teacher) {
-            return res.status(404).json({ success: false, message: "Teacher not found" });
-        }
-        
-        // Filter out the attendance record
-        teacher.attendance = (teacher.attendance || []).filter(a => a.date !== date);
-        
-        await teacher.save();
-        
-        res.json({
-            success: true,
-            message: "Attendance deleted successfully"
-        });
-        
-    } catch (err) {
-        console.error('Error deleting teacher attendance:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ============================================
-// CONFIGURATION APIs
-// ============================================
-
-// Update website configuration
-const configUpdateSchema = Joi.object({
-    logoText: Joi.string().required(),
-    title: Joi.string().required(),
-    subTitle: Joi.string().allow('').optional(),
-    aboutText: Joi.string().allow('').optional(),
-    whatsapp: Joi.string().uri().allow('').optional(),
-    insta: Joi.string().uri().allow('').optional(),
-    fb: Joi.string().uri().allow('').optional(),
-    twitter: Joi.string().uri().allow('').optional(),
-    slides: Joi.array().items(Joi.string().uri()).optional()
-});
-
-app.post('/api/update-config', verifyToken, async (req, res) => {
-    try {
-        const { error, value } = configUpdateSchema.validate(req.body);
-        
-        if (error) {
-            return res.status(400).json({
-                success: false,
-                message: "Validation Error: " + error.details[0].message
-            });
-        }
-        
-        const config = await WebConfig.findOneAndUpdate(
-            {},
-            value,
-            {
-                upsert: true,
-                new: true,
-                runValidators: true
-            }
-        );
-        
-        console.log(`✅ Website updated by admin: ${req.user.adminID}`);
-        
-        res.json({
-            success: true,
-            message: "Website Updated Successfully!",
-            data: config
-        });
-        
-    } catch (err) {
-        console.error("Update Config Error:", err);
-        res.status(500).json({
-            success: false,
-            message: "Update Fail Ho Gaya. Please try again."
-        });
-    }
 });
 
 // Change admin password
@@ -2339,6 +1148,504 @@ app.post('/api/change-password', verifyToken, async (req, res) => {
 });
 
 // ============================================
+// STUDENT APIs
+// ============================================
+
+// Student Registration
+app.post('/api/student-register', async (req, res) => {
+    console.log("📝 Student registration request received");
+    
+    try {
+        const studentData = req.body;
+        
+        if (!studentData.studentId || !studentData.password) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Student ID and password are required" 
+            });
+        }
+        
+        if (!studentData.photo) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Photo is required" 
+            });
+        }
+        
+        if (!studentData.aadharDocument) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Aadhar document is required" 
+            });
+        }
+        
+        const existingStudent = await Student.findOne({ 
+            $or: [
+                { studentId: studentData.studentId },
+                { aadharNumber: studentData.aadhar }
+            ]
+        });
+        
+        if (existingStudent) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Student already registered with this Aadhar number or ID" 
+            });
+        }
+        
+        const student = new Student({
+            studentId: studentData.studentId,
+            password: studentData.password,
+            classMonthlyFees: studentData.classMonthlyFees || 0,
+            photo: studentData.photo,
+            studentName: {
+                first: studentData.student.firstName,
+                middle: studentData.student.middleName || '',
+                last: studentData.student.lastName
+            },
+            mobile: studentData.student.mobile,
+            aadharNumber: studentData.aadhar,
+            aadharDocument: studentData.aadharDocument,
+            registrationDate: new Date(studentData.dates.reg),
+            joiningDate: new Date(studentData.dates.join),
+            fatherName: {
+                first: studentData.father.firstName,
+                middle: studentData.father.middleName || '',
+                last: studentData.father.lastName
+            },
+            fatherMobile: studentData.father.mobile,
+            motherName: {
+                first: studentData.mother.firstName || '',
+                middle: studentData.mother.middleName || '',
+                last: studentData.mother.lastName || ''
+            },
+            address: {
+                current: studentData.address.current,
+                permanent: studentData.address.permanent
+            },
+            education: {
+                board: studentData.education.board,
+                class: studentData.education.class
+            },
+            attendance: []
+        });
+        
+        await student.save();
+        
+        console.log(`✅ New student registered: ${studentData.student.firstName} ${studentData.student.lastName} (ID: ${studentData.studentId})`);
+        
+        res.json({ 
+            success: true, 
+            message: "Registration successful",
+            studentId: studentData.studentId,
+            password: studentData.password
+        });
+        
+    } catch (err) {
+        console.error("❌ Registration Error:", err);
+        
+        if (err.code === 11000) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Duplicate entry: Student with this Aadhar or ID already exists" 
+            });
+        }
+        
+        res.status(500).json({ 
+            success: false, 
+            message: "Registration failed: " + err.message 
+        });
+    }
+});
+
+// Get All Students
+app.get('/api/students', verifyToken, async (req, res) => {
+    try {
+        const students = await Student.find().sort({ createdAt: -1 });
+        res.json({ success: true, data: students });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get Single Student
+app.get('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        res.json({ success: true, data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update Student
+app.put('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOneAndUpdate(
+            { studentId: req.params.id },
+            req.body,
+            { new: true }
+        );
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, message: "Student updated successfully", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Delete Student
+app.delete('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOneAndDelete({ studentId: req.params.id });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, message: "Student deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Student Dashboard
+app.get('/api/student-dashboard/:studentId', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.studentId });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update Student Fees
+app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
+    try {
+        const { month, paidAmount } = req.body;
+        const student = await Student.findOne({ studentId: req.params.studentId });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        const feeEntry = student.feesHistory.find(f => f.month === month);
+        
+        if (feeEntry) {
+            feeEntry.paidAmount = paidAmount;
+            feeEntry.dueAmount = student.classMonthlyFees - paidAmount;
+            feeEntry.status = paidAmount >= student.classMonthlyFees ? 'paid' : 
+                             paidAmount > 0 ? 'partial' : 'unpaid';
+            feeEntry.paymentDate = new Date();
+            feeEntry.updatedBy = req.user.adminID;
+        }
+        
+        await student.save();
+        
+        res.json({ success: true, message: "Fees updated successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Student Attendance
+app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, data: student.attendance || [] });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const { date, status, remarks } = req.body;
+        const student = await Student.findOne({ studentId: req.params.id });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        if (!student.attendance) student.attendance = [];
+        
+        const existingIndex = student.attendance.findIndex(a => a.date === date);
+        const attendanceRecord = { date, status, remarks: remarks || '', markedBy: req.user.adminID, markedAt: new Date() };
+        
+        if (existingIndex >= 0) {
+            student.attendance[existingIndex] = attendanceRecord;
+        } else {
+            student.attendance.push(attendanceRecord);
+        }
+        
+        await student.save();
+        
+        res.json({ success: true, message: "Attendance marked successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// TEACHER APIs
+// ============================================
+
+// Teacher Registration
+app.post('/api/teacher-register', async (req, res) => {
+    try {
+        const data = req.body;
+        
+        const existingAadhar = await Teacher.findOne({ aadharNumber: data.aadharNumber });
+        if (existingAadhar) {
+            return res.status(400).json({ success: false, message: "Aadhar number already registered!" });
+        }
+        
+        const existingId = await Teacher.findOne({ teacherId: data.teacherId });
+        if (existingId) {
+            return res.status(400).json({ success: false, message: "Teacher ID already exists!" });
+        }
+        
+        const existingMobile = await Teacher.findOne({ mobile: data.mobile });
+        if (existingMobile) {
+            return res.status(400).json({ success: false, message: "Mobile number already registered!" });
+        }
+        
+        const newTeacher = new Teacher({
+            teacherId: data.teacherId,
+            password: data.password,
+            photo: data.photo,
+            teacherName: data.teacherName,
+            fatherName: data.fatherName,
+            mobile: data.mobile,
+            altMobile: data.altMobile || '',
+            dob: new Date(data.dob),
+            lastQualification: data.lastQualification,
+            qualificationDoc: data.qualificationDoc,
+            aadharNumber: data.aadharNumber,
+            aadharDoc: data.aadharDoc,
+            subject: data.subject || '',
+            salary: data.salary || 0,
+            address: data.address || {},
+            bankDetails: data.bankDetails || {},
+            emergencyContact: data.emergencyContact || {},
+            experience: data.experience || 0,
+            previousSchool: data.previousSchool || '',
+            status: 'pending',
+            createdBy: 'self',
+            attendance: []
+        });
+        
+        await newTeacher.save();
+        
+        console.log(`✅ New teacher registered: ${data.teacherName.first} ${data.teacherName.last}`);
+        
+        res.json({ success: true, message: "Registration Successful! Pending approval." });
+        
+    } catch (err) {
+        console.error("❌ Teacher Registration Error:", err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get All Teachers
+app.get('/api/teachers', verifyToken, async (req, res) => {
+    try {
+        const { status, search, page = 1, limit = 50 } = req.query;
+        let query = {};
+        
+        if (status && status !== 'all') query.status = status;
+        if (search) {
+            query.$or = [
+                { 'teacherName.first': { $regex: search, $options: 'i' } },
+                { 'teacherName.last': { $regex: search, $options: 'i' } },
+                { teacherId: { $regex: search, $options: 'i' } },
+                { mobile: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const teachers = await Teacher.find(query).sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit));
+        const total = await Teacher.countDocuments(query);
+        
+        res.json({ 
+            success: true, 
+            data: teachers,
+            pagination: { total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / parseInt(limit)) }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get Single Teacher
+app.get('/api/teachers/:id', verifyToken, async (req, res) => {
+    try {
+        const teacher = await Teacher.findOne({ teacherId: req.params.id }).select('-password');
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        res.json({ success: true, data: teacher });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update Teacher Status
+app.put('/api/teachers/:id/status', verifyToken, async (req, res) => {
+    try {
+        const { status, subject, salary, joiningDate, rejectionReason } = req.body;
+        const updateData = { status };
+        
+        if (status === 'approved') {
+            updateData.joiningDate = joiningDate ? new Date(joiningDate) : new Date();
+            if (subject) updateData.subject = subject;
+            if (salary) updateData.salary = parseInt(salary);
+        } else if (status === 'rejected') {
+            updateData.rejectionReason = rejectionReason || 'Not specified';
+        }
+        
+        const teacher = await Teacher.findOneAndUpdate(
+            { teacherId: req.params.id },
+            updateData,
+            { new: true }
+        );
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        res.json({ success: true, message: `Teacher ${status} successfully` });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update Teacher Salary
+app.post('/api/teachers/:id/salary', verifyToken, async (req, res) => {
+    try {
+        const { month, paidAmount, remarks } = req.body;
+        const teacher = await Teacher.findOne({ teacherId: req.params.id });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        if (!teacher.salaryHistory) teacher.salaryHistory = [];
+        
+        const salaryEntry = teacher.salaryHistory.find(s => s.month === month);
+        const monthlySalary = teacher.salary || 0;
+        
+        if (salaryEntry) {
+            salaryEntry.paidAmount = paidAmount;
+            salaryEntry.dueAmount = monthlySalary - paidAmount;
+            salaryEntry.status = paidAmount >= monthlySalary ? 'paid' : paidAmount > 0 ? 'partial' : 'unpaid';
+            salaryEntry.paymentDate = new Date();
+            salaryEntry.updatedBy = req.user.adminID;
+            if (remarks) salaryEntry.remarks = remarks;
+        } else {
+            teacher.salaryHistory.push({
+                month, year: new Date().getFullYear(), monthIndex: new Date().getMonth(),
+                salary: monthlySalary, paidAmount, dueAmount: monthlySalary - paidAmount,
+                status: paidAmount >= monthlySalary ? 'paid' : paidAmount > 0 ? 'partial' : 'unpaid',
+                paymentDate: new Date(), updatedBy: req.user.adminID, remarks: remarks || ''
+            });
+        }
+        
+        await teacher.save();
+        
+        res.json({ success: true, message: "Salary updated successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Delete Teacher
+app.delete('/api/teachers/:id', verifyToken, async (req, res) => {
+    try {
+        const teacher = await Teacher.findOneAndDelete({ teacherId: req.params.id });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        res.json({ success: true, message: "Teacher deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Teacher Statistics
+app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
+    try {
+        const totalTeachers = await Teacher.countDocuments();
+        const pendingTeachers = await Teacher.countDocuments({ status: 'pending' });
+        const approvedTeachers = await Teacher.countDocuments({ status: 'approved' });
+        const rejectedTeachers = await Teacher.countDocuments({ status: 'rejected' });
+        
+        res.json({
+            success: true,
+            data: { total: totalTeachers, pending: pendingTeachers, approved: approvedTeachers, rejected: rejectedTeachers }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Teacher Attendance
+app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const teacher = await Teacher.findOne({ teacherId: req.params.id });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        res.json({ success: true, data: teacher.attendance || [] });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        const { date, status, remarks, photo } = req.body;
+        const teacher = await Teacher.findOne({ teacherId: req.params.id });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        if (!teacher.attendance) teacher.attendance = [];
+        
+        const existingIndex = teacher.attendance.findIndex(a => a.date === date);
+        const attendanceRecord = { date, status, remarks: remarks || '', photo: photo || '', markedBy: req.user.role === 'teacher' ? 'self' : req.user.adminID, markedAt: new Date() };
+        
+        if (existingIndex >= 0) {
+            teacher.attendance[existingIndex] = attendanceRecord;
+        } else {
+            teacher.attendance.push(attendanceRecord);
+        }
+        
+        await teacher.save();
+        
+        res.json({ success: true, message: "Attendance marked successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
 // SERVE HTML FILES
 // ============================================
 
@@ -2358,31 +1665,37 @@ app.get('/teacher-dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'teacher-dashboard.html'));
 });
 
-// ADD THIS LINE for teacher-self-dashboard.html
 app.get('/teacher-self-dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'teacher-self-dashboard.html'));
+});
+
+app.get('/register.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
+app.get('/teacher-reg.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'teacher-reg.html'));
+});
+
+app.get('/studentats.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'studentats.html'));
+});
+
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // ============================================
 // ERROR HANDLERS
 // ============================================
 
-// Global error handler
 app.use((err, req, res, next) => {
     console.error("Global Error:", err.stack);
-    res.status(500).json({
-        success: false,
-        message: "Something went wrong! Please try again later."
-    });
+    res.status(500).json({ success: false, message: "Something went wrong!" });
 });
 
-// 404 handler
 app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: "API endpoint not found",
-        path: req.path
-    });
+    res.status(404).json({ success: false, message: "API endpoint not found", path: req.path });
 });
 
 // ============================================
@@ -2395,26 +1708,20 @@ mongoose.connection.once('open', async () => {
     console.log("🔄 Initializing data...");
     await createDefaultAdmin();
     await initializeDefaultConfig();
+    await initializeDefaultTestimonials();
 });
 
 app.listen(PORT, () => {
     console.log(`🔐 Server running on port ${PORT}`);
-    console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 http://localhost:${PORT}`);
-    console.log(`📌 API Endpoints:`);
-    console.log(`   - POST /api/student-register - Student Registration`);
-    console.log(`   - POST /api/teacher-register - Teacher Registration`);
-    console.log(`   - POST /api/admin-login - Admin Login`);
-    console.log(`   - POST /api/teacher-login - Teacher Login (NEW)`);
-    console.log(`   - GET /api/config - Website Config`);
-    console.log(`   - GET /api/students - Get All Students`);
-    console.log(`   - GET /api/teachers - Get All Teachers`);
-    console.log(`   - GET /api/teachers/stats/summary - Teacher Statistics`);
-    console.log(`   - GET /api/students/:id/attendance - Student Attendance`);
-    console.log(`   - GET /api/teachers/:id/attendance - Teacher Attendance`);
-    console.log(`   - POST /api/teachers/:id/attendance - Mark Attendance (with photo)`);
-    console.log(`   - GET /api/health - Health Check`);
-    console.log(`   - GET /student-dashboard.html - Student Dashboard`);
-    console.log(`   - GET /teacher-dashboard.html - Teacher Dashboard`);
-    console.log(`   - GET /teacher-self-dashboard.html - Teacher Self Dashboard (NEW)`);
+    console.log(`\n📌 API Endpoints:`);
+    console.log(`   GET  /api/config           - Website Configuration`);
+    console.log(`   GET  /api/stats            - Statistics Data`);
+    console.log(`   GET  /api/testimonials     - Testimonials`);
+    console.log(`   POST /api/admin-login      - Admin Login`);
+    console.log(`   POST /api/teacher-login    - Teacher Login`);
+    console.log(`   POST /api/student-register - Student Registration`);
+    console.log(`   POST /api/teacher-register - Teacher Registration`);
+    console.log(`   GET  /api/students         - All Students`);
+    console.log(`   GET  /api/teachers         - All Teachers`);
 });
