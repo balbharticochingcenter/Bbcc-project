@@ -66,7 +66,7 @@
         .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .vip-nav { background: white; padding: 0.8rem 1rem; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95); }
+        .vip-nav { background: white; padding: 0.8rem 1rem; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .logo { font-size: 1.3rem; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .main-content { max-width: 1600px; margin: 1rem auto; padding: 0 1rem; }
         .header-card { background: white; border-radius: var(--border-radius-sm); padding: 1.2rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: var(--shadow); }
@@ -138,7 +138,6 @@
         .file-upload { border: 2px dashed var(--primary); border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; background: #f8fafd; transition: all 0.3s; }
         .file-upload:hover { background: #eef2ff; }
         footer { background: white; padding: 1rem; margin-top: 2rem; color: #666; font-size: 0.85rem; text-align: center; }
-        .login-required { text-align: center; padding: 50px 20px; background: white; border-radius: 20px; }
         .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 12px 24px; border-radius: 50px; box-shadow: var(--shadow); z-index: 10000; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @media (max-width: 768px) { .btn-icon { width: 28px; height: 28px; font-size: 0.8rem; } .status-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; } .charts-container { grid-template-columns: 1fr; } }
@@ -177,7 +176,7 @@
             <div class="card-header"><span><i class="fas fa-list me-2"></i>Teacher Directory</span><button class="btn btn-sm btn-light" id="refreshBtn"><i class="fas fa-sync-alt me-1"></i><span class="d-none d-sm-inline">Refresh</span></button></div>
             <div class="card-body">
                 <div class="row g-2 mb-4"><div class="col-12 col-md-6"><div class="search-box"><i class="fas fa-search search-icon"></i><input type="text" class="form-control" id="searchInput" placeholder="Search teachers..."></div></div><div class="col-12 col-md-6"><div class="filter-btns"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="pending">Pending</button><button class="filter-btn" data-filter="approved">Approved</button><button class="filter-btn" data-filter="rejected">Rejected</button></div></div></div>
-                <div class="table-responsive"><table class="table table-hover" id="teachersTable"><thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Mobile</th><th>Subject</th><th>Salary</th><th>Status</th><th>Actions</th></tr></thead><tbody id="teachersTableBody"><tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr></tbody></table></div>
+                <div class="table-responsive"><table class="table table-hover" id="teachersTable"><thead> <tr><th>Photo</th><th>ID</th><th>Name</th><th>Mobile</th><th>Subject</th><th>Salary</th><th>Status</th><th>Actions</th></tr></thead><tbody id="teachersTableBody"><tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></td></tr></tbody></table></div>
             </div>
         </div>
         
@@ -186,19 +185,19 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-12 col-md-4 text-center">
-                        <img id="detailsPhoto" src="" class="teacher-photo-detail mb-3">
+                        <img id="detailsPhoto" src="" class="teacher-photo-detail mb-3" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22150%22%20height%3D%22150%22%20viewBox%3D%220%200%20150%20150%22%3E%3Crect%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%20fill%3D%22%23333%22%20font-size%3D%2216%22%3ENo%20Photo%3C%2Ftext%3E%3C%2Fsvg%3E'">
                         <button class="btn btn-sm btn-outline-primary mt-2" id="changePhotoBtn"><i class="fas fa-camera"></i> Change Photo</button>
                         <input type="file" id="photoFileInput" style="display:none" accept="image/*">
                         <h5 id="detailsFullName" class="mb-1 mt-2"></h5>
                         <p class="text-muted small" id="detailsTeacherId"></p>
                         <span class="status-badge" id="detailsStatus"></span>
                         <div class="d-flex gap-2 justify-content-center mt-3">
-                            <button class="btn-icon edit" id="editTeacherBtn"><i class="fas fa-edit"></i></button>
-                            <button class="btn-icon approve" id="quickApproveBtn"><i class="fas fa-check"></i></button>
-                            <button class="btn-icon reject" id="quickRejectBtn"><i class="fas fa-times"></i></button>
-                            <button class="btn-icon salary" id="quickSalaryBtn"><i class="fas fa-rupee-sign"></i></button>
-                            <button class="btn-icon attendance" id="quickAttendanceBtn"><i class="fas fa-calendar-check"></i></button>
-                            <button class="btn-icon delete" id="quickDeleteBtn"><i class="fas fa-trash"></i></button>
+                            <button class="btn-icon edit" id="editTeacherBtn" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-icon approve" id="quickApproveBtn" title="Approve"><i class="fas fa-check"></i></button>
+                            <button class="btn-icon reject" id="quickRejectBtn" title="Reject"><i class="fas fa-times"></i></button>
+                            <button class="btn-icon salary" id="quickSalaryBtn" title="Pay Salary"><i class="fas fa-rupee-sign"></i></button>
+                            <button class="btn-icon attendance" id="quickAttendanceBtn" title="Mark Attendance"><i class="fas fa-calendar-check"></i></button>
+                            <button class="btn-icon delete" id="quickDeleteBtn" title="Delete"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                     <div class="col-12 col-md-8">
@@ -247,606 +246,609 @@
     <div class="modal fade" id="deleteModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger"><h5 class="modal-title"><i class="fas fa-trash me-2"></i>Confirm Delete</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>Are you sure you want to delete this teacher? This action cannot be undone.</p><input type="hidden" id="deleteTeacherId"></div><div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-danger btn-sm" id="confirmDeleteBtn">Delete Permanently</button></div></div></div></div>
 
     <script>
-        // ========== ALL EVENT HANDLERS IN JAVASCRIPT ==========
-        let token = localStorage.getItem('token') || localStorage.getItem('adminToken');
-        let currentFilter = 'all';
-        let teachersData = [];
-        let selectedTeacherId = null;
-        let salaryChart = null;
-        let mainChart = null;
-        let currentChartType = 'bar';
-        
-        const PLACEHOLDER_IMAGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'12\'%3EPhoto%3C/text%3E%3C/svg%3E';
-        const PLACEHOLDER_LARGE = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'150\' viewBox=\'0 0 150 150\'%3E%3Crect width=\'150\' height=\'150\' fill=\'%23cccccc\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23333\' font-size=\'16\'%3ENo Photo%3C/text%3E%3C/svg%3E';
+        (function() {
+            let token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+            let currentFilter = 'all';
+            let teachersData = [];
+            let selectedTeacherId = null;
+            let salaryChart = null;
+            let mainChart = null;
+            let currentChartType = 'bar';
+            
+            const PLACEHOLDER_LARGE = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22150%22%20height%3D%22150%22%20viewBox%3D%220%200%20150%20150%22%3E%3Crect%20width%3D%22150%22%20height%3D%22150%22%20fill%3D%22%23cccccc%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%20fill%3D%22%23333%22%20font-size%3D%2216%22%3ENo%20Photo%3C%2Ftext%3E%3C%2Fsvg%3E';
 
-        function showLoading() { document.getElementById('loadingSpinner').style.display = 'flex'; }
-        function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
-        
-        function showToast(message, isError = false) {
-            const toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.style.background = isError ? '#fee2e2' : '#d4edda';
-            toast.style.color = isError ? '#dc2626' : '#155724';
-            toast.style.borderLeft = isError ? '4px solid #dc2626' : '4px solid #10b981';
-            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} me-2"></i>${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
+            function showLoading() { document.getElementById('loadingSpinner').style.display = 'flex'; }
+            function hideLoading() { document.getElementById('loadingSpinner').style.display = 'none'; }
+            
+            function showToast(message, isError = false) {
+                const toast = document.createElement('div');
+                toast.className = 'toast-message';
+                toast.style.background = isError ? '#fee2e2' : '#d4edda';
+                toast.style.color = isError ? '#dc2626' : '#155724';
+                toast.style.borderLeft = isError ? '4px solid #dc2626' : '4px solid #10b981';
+                toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'} me-2"></i>${message}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
 
-        async function compressImage(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width, height = img.height, quality = 0.7;
-                        const compress = () => {
-                            canvas.width = width;
-                            canvas.height = height;
-                            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                            const data = canvas.toDataURL('image/jpeg', quality);
-                            const size = Math.round((data.length * 3) / 4 / 1024);
-                            if (size > 5 && (width > 100 || quality > 0.1)) {
-                                if (quality > 0.2) quality -= 0.1;
-                                else { width *= 0.8; height *= 0.8; }
-                                compress();
-                            } else resolve(data);
+            async function compressImage(file) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width, height = img.height, quality = 0.7;
+                            const compress = () => {
+                                canvas.width = width;
+                                canvas.height = height;
+                                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                                const data = canvas.toDataURL('image/jpeg', quality);
+                                const size = Math.round((data.length * 3) / 4 / 1024);
+                                if (size > 5 && (width > 100 || quality > 0.1)) {
+                                    if (quality > 0.2) quality -= 0.1;
+                                    else { width *= 0.8; height *= 0.8; }
+                                    compress();
+                                } else resolve(data);
+                            };
+                            compress();
                         };
-                        compress();
+                        img.onerror = () => resolve(e.target.result);
                     };
-                    img.onerror = reject;
-                };
-                reader.onerror = reject;
-            });
-        }
+                    reader.onerror = () => resolve(file);
+                });
+            }
 
-        async function compressPDF(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
+            async function compressPDF(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
 
-        if (!token) {
-            document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="8"><div class="login-required"><i class="fas fa-lock fa-3x mb-3"></i><h3>Please Login First</h3><a href="/login.html" class="btn btn-primary mt-3">Go to Login</a></div></td></tr>';
-        } else {
-            initializeApp();
-        }
+            if (!token) {
+                document.getElementById('teachersTableBody').innerHTML = '<tr><td colspan="8"><div class="login-required text-center py-5"><i class="fas fa-lock fa-3x mb-3 text-muted"></i><h3>Please Login First</h3><a href="/login.html" class="btn btn-primary mt-3">Go to Login</a></div></td></tr>';
+            } else {
+                initializeApp();
+            }
 
-        async function initializeApp() {
-            showLoading();
-            await loadStats();
-            await loadTeachers();
-            initEventListeners();
-            hideLoading();
-        }
+            async function initializeApp() {
+                showLoading();
+                await loadStats();
+                await loadTeachers();
+                initEventListeners();
+                hideLoading();
+            }
 
-        async function loadStats() {
-            try {
-                let res = await fetch('/api/teachers/stats/summary', { headers: { 'Authorization': `Bearer ${token}` } });
-                if(res.status === 403) { showToast('Session expired', true); localStorage.clear(); window.location.href = '/login.html'; return; }
-                let data = await res.json();
-                if(data.success) {
-                    document.getElementById('totalTeachers').textContent = data.data.total || 0;
-                    document.getElementById('pendingTeachers').textContent = data.data.pending || 0;
-                    document.getElementById('approvedTeachers').textContent = data.data.approved || 0;
-                }
-            } catch(e) { console.error('Stats error:', e); }
-        }
-
-        async function loadTeachers() {
-            try {
-                let res = await fetch('/api/teachers?status=all', { headers: { 'Authorization': `Bearer ${token}` } });
-                if(res.status === 403) { showToast('Session expired', true); localStorage.clear(); window.location.href = '/login.html'; return; }
-                let data = await res.json();
-                if(data.success) {
-                    teachersData = data.data || [];
-                    populateTeacherSelect(teachersData);
-                    displayTeachers(teachersData);
-                    updateOverallChart();
-                }
-            } catch(e) { console.error('Teachers error:', e); showToast('Failed to load teachers', true); }
-        }
-
-        function populateTeacherSelect(teachers) {
-            let select = document.getElementById('teacherSelect');
-            select.innerHTML = '<option value="">-- Choose a Teacher --</option>';
-            teachers.forEach(t => {
-                let opt = document.createElement('option');
-                opt.value = t.teacherId;
-                opt.textContent = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''} (${t.teacherId})`;
-                select.appendChild(opt);
-            });
-        }
-
-        function displayTeachers(teachers) {
-            let tbody = document.getElementById('teachersTableBody');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            let filtered = teachers.filter(t => currentFilter === 'all' || t.status === currentFilter);
-            filtered.forEach(t => {
-                let statusClass = t.status === 'pending' ? 'pending' : t.status === 'approved' ? 'approved' : 'rejected';
-                let statusText = t.status ? t.status.toUpperCase() : 'PENDING';
-                let photoUrl = t.photo && t.photo !== '' ? t.photo : PLACEHOLDER_IMAGE;
-                let row = tbody.insertRow();
-                row.innerHTML = `
-                    <td><img src="${photoUrl}" class="teacher-photo" onerror="this.src='${PLACEHOLDER_IMAGE}'"></td>
-                    <td>${t.teacherId || '-'}</td>
-                    <td>${t.teacherName?.first || ''} ${t.teacherName?.last || ''}</td>
-                    <td>${t.mobile || '-'}</td>
-                    <td>${t.subject || '-'}</td>
-                    <td>₹${t.salary?.toLocaleString() || 0}</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td><div class="action-buttons">
-                        <button class="btn-icon view" data-id="${t.teacherId}" data-action="view"><i class="fas fa-eye"></i></button>
-                        ${t.status === 'pending' ? `<button class="btn-icon approve" data-id="${t.teacherId}" data-action="approve"><i class="fas fa-check"></i></button><button class="btn-icon reject" data-id="${t.teacherId}" data-action="reject"><i class="fas fa-times"></i></button>` : ''}
-                        ${t.status === 'approved' ? `<button class="btn-icon salary" data-id="${t.teacherId}" data-action="salary"><i class="fas fa-rupee-sign"></i></button>` : ''}
-                        <button class="btn-icon delete" data-id="${t.teacherId}" data-action="delete"><i class="fas fa-trash"></i></button>
-                    </div></td>
-                `;
-            });
-            attachTableButtons();
-        }
-
-        function attachTableButtons() {
-            document.querySelectorAll('.btn-icon').forEach(btn => {
-                btn.removeEventListener('click', handleButtonClick);
-                btn.addEventListener('click', handleButtonClick);
-            });
-        }
-
-        function handleButtonClick(e) {
-            e.stopPropagation();
-            let id = this.getAttribute('data-id');
-            let action = this.getAttribute('data-action');
-            if(!id) return;
-            if(action === 'view') viewTeacher(id);
-            else if(action === 'approve') openApproveModal(id);
-            else if(action === 'reject') openRejectModal(id);
-            else if(action === 'delete') openDeleteModal(id);
-            else if(action === 'salary') openSalaryModal(id);
-        }
-
-        async function viewTeacher(id) {
-            selectedTeacherId = id;
-            document.getElementById('teacherSelect').value = id;
-            await loadTeacherDetails(id);
-        }
-
-        async function loadTeacherDetails(id) {
-            showLoading();
-            try {
-                let res = await fetch(`/api/teachers/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-                let data = await res.json();
-                if(data.success) {
-                    let t = data.data;
-                    document.getElementById('selectedTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
-                    document.getElementById('detailsTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
-                    document.getElementById('salaryTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
-                    document.getElementById('detailsPhoto').src = t.photo && t.photo !== '' ? t.photo : PLACEHOLDER_LARGE;
-                    document.getElementById('detailsFullName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.middle || ''} ${t.teacherName?.last || ''}`;
-                    document.getElementById('detailsTeacherId').innerText = `ID: ${t.teacherId}`;
-                    let statusClass = t.status || 'pending';
-                    document.getElementById('detailsStatus').innerText = statusClass.toUpperCase();
-                    document.getElementById('detailsStatus').className = `status-badge ${statusClass}`;
-                    document.getElementById('detailFirstName').innerText = t.teacherName?.first || '-';
-                    document.getElementById('detailMiddleName').innerText = t.teacherName?.middle || '-';
-                    document.getElementById('detailLastName').innerText = t.teacherName?.last || '-';
-                    document.getElementById('detailFatherFirst').innerText = t.fatherName?.first || '-';
-                    document.getElementById('detailFatherMiddle').innerText = t.fatherName?.middle || '-';
-                    document.getElementById('detailFatherLast').innerText = t.fatherName?.last || '-';
-                    document.getElementById('detailMobile').innerText = t.mobile || '-';
-                    document.getElementById('detailAltMobile').innerText = t.altMobile || '-';
-                    document.getElementById('detailDob').innerText = t.dob ? new Date(t.dob).toLocaleDateString() : '-';
-                    document.getElementById('detailAadhar').innerText = t.aadharNumber || '-';
-                    document.getElementById('detailQualification').innerText = t.lastQualification || '-';
-                    document.getElementById('detailSubject').innerText = t.subject || '-';
-                    document.getElementById('detailSalary').innerText = t.salary?.toLocaleString() || '0';
-                    document.getElementById('detailJoining').innerText = t.joiningDate ? new Date(t.joiningDate).toLocaleDateString() : '-';
-                    
-                    if(t.aadharDoc && t.aadharDoc !== '') {
-                        document.getElementById('aadharDocPreview').src = t.aadharDoc;
-                        document.getElementById('aadharDocPreview').style.display = 'inline-block';
-                        document.getElementById('aadharDocLink').href = t.aadharDoc;
-                        document.getElementById('aadharDocLink').style.display = 'inline-flex';
-                        document.getElementById('aadharNoDoc').style.display = 'none';
-                    } else {
-                        document.getElementById('aadharDocPreview').style.display = 'none';
-                        document.getElementById('aadharDocLink').style.display = 'none';
-                        document.getElementById('aadharNoDoc').style.display = 'inline';
+            async function loadStats() {
+                try {
+                    let res = await fetch('/api/teachers/stats/summary', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if(res.status === 403) { showToast('Session expired', true); localStorage.clear(); window.location.href = '/login.html'; return; }
+                    let data = await res.json();
+                    if(data.success) {
+                        document.getElementById('totalTeachers').textContent = data.data.total || 0;
+                        document.getElementById('pendingTeachers').textContent = data.data.pending || 0;
+                        document.getElementById('approvedTeachers').textContent = data.data.approved || 0;
                     }
-                    if(t.qualificationDoc && t.qualificationDoc !== '') {
-                        document.getElementById('qualificationDocPreview').src = t.qualificationDoc;
-                        document.getElementById('qualificationDocPreview').style.display = 'inline-block';
-                        document.getElementById('qualificationDocLink').href = t.qualificationDoc;
-                        document.getElementById('qualificationDocLink').style.display = 'inline-flex';
-                        document.getElementById('qualNoDoc').style.display = 'none';
-                    } else {
-                        document.getElementById('qualificationDocPreview').style.display = 'none';
-                        document.getElementById('qualificationDocLink').style.display = 'none';
-                        document.getElementById('qualNoDoc').style.display = 'inline';
-                    }
-                    
-                    document.getElementById('teacherDetailsCard').style.display = 'block';
-                    document.getElementById('salaryAttendanceCard').style.display = 'block';
-                    loadSalaryData(t);
-                    await loadAttendanceData(t);
-                }
-            } catch(e) { console.error(e); showToast('Failed to load teacher details', true); }
-            hideLoading();
-        }
+                } catch(e) { console.error('Stats error:', e); }
+            }
 
-        function loadSalaryData(teacher) {
-            let tbody = document.getElementById('salaryTableBody');
-            tbody.innerHTML = '';
-            let months = [], paidData = [], dueData = [];
-            if(teacher.salaryHistory && teacher.salaryHistory.length) {
-                teacher.salaryHistory.forEach(r => {
-                    months.push(r.month);
-                    paidData.push(r.paidAmount || 0);
-                    dueData.push(r.dueAmount || 0);
-                    let statusClass = r.status === 'paid' ? 'salary-paid' : r.status === 'partial' ? 'salary-partial' : 'salary-unpaid';
+            async function loadTeachers() {
+                try {
+                    let res = await fetch('/api/teachers', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if(res.status === 403) { showToast('Session expired', true); localStorage.clear(); window.location.href = '/login.html'; return; }
+                    let data = await res.json();
+                    if(data.success) {
+                        teachersData = data.data || [];
+                        populateTeacherSelect(teachersData);
+                        displayTeachers(teachersData);
+                        updateOverallChart();
+                    }
+                } catch(e) { console.error('Teachers error:', e); showToast('Failed to load teachers', true); }
+            }
+
+            function populateTeacherSelect(teachers) {
+                let select = document.getElementById('teacherSelect');
+                select.innerHTML = '<option value="">-- Choose a Teacher --</option>';
+                teachers.forEach(t => {
+                    let opt = document.createElement('option');
+                    opt.value = t.teacherId;
+                    opt.textContent = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''} (${t.teacherId})`;
+                    select.appendChild(opt);
+                });
+            }
+
+            function displayTeachers(teachers) {
+                let tbody = document.getElementById('teachersTableBody');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                let filtered = teachers.filter(t => currentFilter === 'all' || t.status === currentFilter);
+                filtered.forEach(t => {
+                    let statusClass = t.status === 'pending' ? 'pending' : t.status === 'approved' ? 'approved' : 'rejected';
+                    let statusText = t.status ? t.status.toUpperCase() : 'PENDING';
+                    let photoUrl = t.photo && t.photo !== '' ? t.photo : PLACEHOLDER_LARGE;
                     let row = tbody.insertRow();
                     row.innerHTML = `
-                        <td>${r.month}</td>
-                        <td>₹${r.salary?.toLocaleString() || 0}</td>
-                        <td>₹${r.paidAmount?.toLocaleString() || 0}</td>
-                        <td>₹${r.dueAmount?.toLocaleString() || 0}</td>
-                        <td><span class="${statusClass}">${r.status?.toUpperCase() || 'UNPAID'}</span></td>
-                        <td><button class="btn btn-sm btn-warning pay-salary-btn" data-id="${teacher.teacherId}" data-month="${r.month}"><i class="fas fa-rupee-sign"></i> Pay</button></td>
+                        <td><img src="${photoUrl}" class="teacher-photo" onerror="this.src='${PLACEHOLDER_LARGE}'" style="width:35px;height:35px;border-radius:50%;object-fit:cover;"></td>
+                        <td>${t.teacherId || '-'}</td>
+                        <td>${t.teacherName?.first || ''} ${t.teacherName?.last || ''}</td>
+                        <td>${t.mobile || '-'}</td>
+                        <td>${t.subject || '-'}</td>
+                        <td>₹${t.salary?.toLocaleString() || 0}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td><div class="action-buttons">
+                            <button class="btn-icon view" data-id="${t.teacherId}" data-action="view" title="View"><i class="fas fa-eye"></i></button>
+                            ${t.status === 'pending' ? `<button class="btn-icon approve" data-id="${t.teacherId}" data-action="approve" title="Approve"><i class="fas fa-check"></i></button><button class="btn-icon reject" data-id="${t.teacherId}" data-action="reject" title="Reject"><i class="fas fa-times"></i></button>` : ''}
+                            ${t.status === 'approved' ? `<button class="btn-icon salary" data-id="${t.teacherId}" data-action="salary" title="Pay Salary"><i class="fas fa-rupee-sign"></i></button>` : ''}
+                            <button class="btn-icon delete" data-id="${t.teacherId}" data-action="delete" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div></td>
                     `;
                 });
-                updateTeacherCharts(months, paidData, dueData);
-            } else {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No salary records</td></tr>';
+                attachTableButtons();
             }
-            document.querySelectorAll('.pay-salary-btn').forEach(btn => {
-                btn.removeEventListener('click', handlePaySalary);
-                btn.addEventListener('click', handlePaySalary);
-            });
-        }
 
-        function handlePaySalary(e) {
-            let teacherId = this.getAttribute('data-id');
-            let month = this.getAttribute('data-month');
-            openSalaryModal(teacherId, month);
-        }
-
-        function updateTeacherCharts(months, paidData, dueData) {
-            let totalPaid = paidData.reduce((a,b)=>a+b,0);
-            let totalDue = dueData.reduce((a,b)=>a+b,0);
-            let ctx = document.getElementById('mainSalaryChart').getContext('2d');
-            if(mainChart) mainChart.destroy();
-            if(currentChartType === 'bar') {
-                mainChart = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label: 'Paid', data: paidData, backgroundColor: '#2ecc71' }, { label: 'Due', data: dueData, backgroundColor: '#e74c3c' }] }, options: { responsive: true, maintainAspectRatio: false } });
-            } else if(currentChartType === 'line') {
-                mainChart = new Chart(ctx, { type: 'line', data: { labels: months, datasets: [{ label: 'Paid', data: paidData, borderColor: '#2ecc71', tension: 0.4 }, { label: 'Due', data: dueData, borderColor: '#e74c3c', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-            } else if(currentChartType === 'pie') {
-                mainChart = new Chart(ctx, { type: 'pie', data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaid, totalDue], backgroundColor: ['#2ecc71', '#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-            } else {
-                mainChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaid, totalDue], backgroundColor: ['#2ecc71', '#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+            function attachTableButtons() {
+                document.querySelectorAll('.btn-icon').forEach(btn => {
+                    btn.removeEventListener('click', handleButtonClick);
+                    btn.addEventListener('click', handleButtonClick);
+                });
             }
-        }
 
-        async function loadAttendanceData(teacher) {
-            let tbody = document.getElementById('attendanceTableBody');
-            try {
-                let res = await fetch(`/api/teachers/${teacher.teacherId}/attendance`, { headers: { 'Authorization': `Bearer ${token}` } });
-                let data = await res.json();
-                if(data.success && data.data.length) {
-                    let att = data.data.sort((a,b)=>b.date.localeCompare(a.date));
-                    tbody.innerHTML = '';
-                    att.forEach(a => {
+            function handleButtonClick(e) {
+                e.stopPropagation();
+                let id = this.getAttribute('data-id');
+                let action = this.getAttribute('data-action');
+                if(!id) return;
+                if(action === 'view') viewTeacher(id);
+                else if(action === 'approve') openApproveModal(id);
+                else if(action === 'reject') openRejectModal(id);
+                else if(action === 'delete') openDeleteModal(id);
+                else if(action === 'salary') openSalaryModal(id);
+            }
+
+            async function viewTeacher(id) {
+                selectedTeacherId = id;
+                document.getElementById('teacherSelect').value = id;
+                await loadTeacherDetails(id);
+            }
+
+            async function loadTeacherDetails(id) {
+                showLoading();
+                try {
+                    let res = await fetch(`/api/teachers/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    let data = await res.json();
+                    if(data.success) {
+                        let t = data.data;
+                        document.getElementById('selectedTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
+                        document.getElementById('detailsTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
+                        document.getElementById('salaryTeacherName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.last || ''}`;
+                        document.getElementById('detailsPhoto').src = t.photo && t.photo !== '' ? t.photo : PLACEHOLDER_LARGE;
+                        document.getElementById('detailsFullName').innerText = `${t.teacherName?.first || ''} ${t.teacherName?.middle || ''} ${t.teacherName?.last || ''}`.trim();
+                        document.getElementById('detailsTeacherId').innerText = `ID: ${t.teacherId}`;
+                        let statusClass = t.status || 'pending';
+                        let statusSpan = document.getElementById('detailsStatus');
+                        statusSpan.innerText = statusClass.toUpperCase();
+                        statusSpan.className = `status-badge ${statusClass}`;
+                        document.getElementById('detailFirstName').innerText = t.teacherName?.first || '-';
+                        document.getElementById('detailMiddleName').innerText = t.teacherName?.middle || '-';
+                        document.getElementById('detailLastName').innerText = t.teacherName?.last || '-';
+                        document.getElementById('detailFatherFirst').innerText = t.fatherName?.first || '-';
+                        document.getElementById('detailFatherMiddle').innerText = t.fatherName?.middle || '-';
+                        document.getElementById('detailFatherLast').innerText = t.fatherName?.last || '-';
+                        document.getElementById('detailMobile').innerText = t.mobile || '-';
+                        document.getElementById('detailAltMobile').innerText = t.altMobile || '-';
+                        document.getElementById('detailDob').innerText = t.dob ? new Date(t.dob).toLocaleDateString() : '-';
+                        document.getElementById('detailAadhar').innerText = t.aadharNumber || '-';
+                        document.getElementById('detailQualification').innerText = t.lastQualification || '-';
+                        document.getElementById('detailSubject').innerText = t.subject || '-';
+                        document.getElementById('detailSalary').innerText = t.salary?.toLocaleString() || '0';
+                        document.getElementById('detailJoining').innerText = t.joiningDate ? new Date(t.joiningDate).toLocaleDateString() : '-';
+                        
+                        if(t.aadharDoc && t.aadharDoc !== '') {
+                            let aadharPreview = document.getElementById('aadharDocPreview');
+                            aadharPreview.src = t.aadharDoc;
+                            aadharPreview.style.display = 'inline-block';
+                            let aadharLink = document.getElementById('aadharDocLink');
+                            aadharLink.href = '#';
+                            aadharLink.style.display = 'inline-flex';
+                            document.getElementById('aadharNoDoc').style.display = 'none';
+                        } else {
+                            document.getElementById('aadharDocPreview').style.display = 'none';
+                            document.getElementById('aadharDocLink').style.display = 'none';
+                            document.getElementById('aadharNoDoc').style.display = 'inline';
+                        }
+                        if(t.qualificationDoc && t.qualificationDoc !== '') {
+                            let qualPreview = document.getElementById('qualificationDocPreview');
+                            qualPreview.src = t.qualificationDoc;
+                            qualPreview.style.display = 'inline-block';
+                            let qualLink = document.getElementById('qualificationDocLink');
+                            qualLink.href = '#';
+                            qualLink.style.display = 'inline-flex';
+                            document.getElementById('qualNoDoc').style.display = 'none';
+                        } else {
+                            document.getElementById('qualificationDocPreview').style.display = 'none';
+                            document.getElementById('qualificationDocLink').style.display = 'none';
+                            document.getElementById('qualNoDoc').style.display = 'inline';
+                        }
+                        
+                        document.getElementById('teacherDetailsCard').style.display = 'block';
+                        document.getElementById('salaryAttendanceCard').style.display = 'block';
+                        loadSalaryData(t);
+                        await loadAttendanceData(t);
+                    }
+                } catch(e) { console.error(e); showToast('Failed to load teacher details', true); }
+                hideLoading();
+            }
+
+            function loadSalaryData(teacher) {
+                let tbody = document.getElementById('salaryTableBody');
+                tbody.innerHTML = '';
+                let months = [], paidData = [], dueData = [];
+                if(teacher.salaryHistory && teacher.salaryHistory.length) {
+                    teacher.salaryHistory.forEach(r => {
+                        months.push(r.month);
+                        paidData.push(r.paidAmount || 0);
+                        dueData.push(r.dueAmount || 0);
+                        let statusClass = r.status === 'paid' ? 'salary-paid' : r.status === 'partial' ? 'salary-partial' : 'salary-unpaid';
                         let row = tbody.insertRow();
                         row.innerHTML = `
-                            <td>${new Date(a.date).toLocaleDateString()}</td>
-                            <td><span class="badge bg-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning'}">${a.status?.toUpperCase()}</span></td>
-                            <td>${a.photo ? `<img src="${a.photo}" style="width:35px;height:35px;border-radius:5px;cursor:pointer;" class="view-photo">` : '-'}</td>
-                            <td><button class="btn btn-sm btn-warning edit-att" data-date="${a.date}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger delete-att" data-date="${a.date}"><i class="fas fa-trash"></i></button></td>
+                            <td>${r.month}</td>
+                            <td>₹${r.salary?.toLocaleString() || 0}</td>
+                            <td>₹${r.paidAmount?.toLocaleString() || 0}</td>
+                            <td>₹${r.dueAmount?.toLocaleString() || 0}</td>
+                            <td><span class="${statusClass}">${r.status?.toUpperCase() || 'UNPAID'}</span></td>
+                            <td><button class="btn btn-sm btn-warning pay-salary-btn" data-id="${teacher.teacherId}" data-month="${r.month}"><i class="fas fa-rupee-sign"></i> Pay</button></td>
                         `;
                     });
-                    document.querySelectorAll('.edit-att').forEach(btn => { btn.addEventListener('click', () => editAttendance(teacher.teacherId, btn.getAttribute('data-date'))); });
-                    document.querySelectorAll('.delete-att').forEach(btn => { btn.addEventListener('click', () => deleteAttendance(teacher.teacherId, btn.getAttribute('data-date'))); });
-                    document.querySelectorAll('.view-photo').forEach(img => { img.addEventListener('click', () => window.open(img.src)); });
+                    updateTeacherCharts(months, paidData, dueData);
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No attendance records</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No salary records</td></tr>';
                 }
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading attendance</td></tr>'; }
-        }
-
-        async function editAttendance(teacherId, date) {
-            showLoading();
-            try {
-                let res = await fetch(`/api/teachers/${teacherId}/attendance`, { headers: { 'Authorization': `Bearer ${token}` } });
-                let data = await res.json();
-                if(data.success) {
-                    let record = data.data.find(a => a.date === date);
-                    if(record) {
-                        document.getElementById('editAttendanceTeacherId').value = teacherId;
-                        document.getElementById('editAttendanceOriginalDate').value = date;
-                        document.getElementById('editAttendanceDate').value = date;
-                        document.getElementById('editAttendanceStatus').value = record.status;
-                        document.getElementById('editAttendanceRemarks').value = record.remarks || '';
-                        new bootstrap.Modal(document.getElementById('editAttendanceModal')).show();
-                    }
-                }
-            } catch(e) { showToast('Error loading attendance record', true); }
-            hideLoading();
-        }
-
-        async function deleteAttendance(teacherId, date) {
-            if(confirm('Delete this attendance record?')) {
-                showLoading();
-                try {
-                    let res = await fetch(`/api/teachers/${teacherId}/attendance`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date }) });
-                    let data = await res.json();
-                    if(data.success) { showToast('Attendance deleted!'); loadTeacherDetails(teacherId); }
-                    else showToast(data.message, true);
-                } catch(e) { showToast('Delete failed', true); }
-                hideLoading();
-            }
-        }
-
-        function updateOverallChart() {
-            let ctx = document.getElementById('salaryChart').getContext('2d');
-            if(salaryChart) salaryChart.destroy();
-            salaryChart = new Chart(ctx, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], datasets: [{ label: 'Total Salary', data: [0,0,0,0,0,0], borderColor: '#0f172a', backgroundColor: 'rgba(15,23,42,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-        }
-
-        function openApproveModal(id) { document.getElementById('approveTeacherId').value = id; document.getElementById('approveJoiningDate').value = new Date().toISOString().split('T')[0]; new bootstrap.Modal(document.getElementById('approveTeacherModal')).show(); }
-        function openRejectModal(id) { document.getElementById('rejectTeacherId').value = id; new bootstrap.Modal(document.getElementById('rejectTeacherModal')).show(); }
-        function openDeleteModal(id) { document.getElementById('deleteTeacherId').value = id; new bootstrap.Modal(document.getElementById('deleteModal')).show(); }
-        
-        function openSalaryModal(id, month) {
-            let teacher = teachersData.find(t=>t.teacherId===id);
-            if(teacher) {
-                document.getElementById('salaryTeacherId').value = id;
-                document.getElementById('salaryTeacherNameModal').innerText = `${teacher.teacherName?.first} ${teacher.teacherName?.last}`;
-                let currentMonth = month || (new Date().toLocaleString('default', {month:'long'}) + ' ' + new Date().getFullYear());
-                document.getElementById('salaryMonth').value = currentMonth;
-                document.getElementById('salaryMonthDisplay').innerText = currentMonth;
-                document.getElementById('salaryAmount').value = '₹'+(teacher.salary||0).toLocaleString();
-                document.getElementById('paidAmount').value = 0;
-                document.getElementById('dueAmount').value = '₹'+(teacher.salary||0).toLocaleString();
-                new bootstrap.Modal(document.getElementById('salaryModal')).show();
-            }
-        }
-
-        async function updateTeacherWithNewData(id, updatedData) {
-            try {
-                let res = await fetch(`/api/teachers/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(updatedData)
+                document.querySelectorAll('.pay-salary-btn').forEach(btn => {
+                    btn.removeEventListener('click', handlePaySalary);
+                    btn.addEventListener('click', handlePaySalary);
                 });
-                let data = await res.json();
-                if(data.success) {
-                    showToast('Teacher updated successfully!');
-                    await loadTeachers();
-                    if(selectedTeacherId === id) await loadTeacherDetails(id);
-                    return true;
-                } else {
-                    showToast(data.message || 'Update failed', true);
-                    return false;
-                }
-            } catch(e) { showToast('Update failed', true); return false; }
-        }
+            }
 
-        function initEventListeners() {
-            document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.href = '/index.html'; });
-            document.getElementById('refreshBtn').addEventListener('click', () => { loadTeachers(); loadStats(); });
-            document.getElementById('teacherSelect').addEventListener('change', (e) => { if(e.target.value) viewTeacher(e.target.value); else { selectedTeacherId=null; document.getElementById('teacherDetailsCard').style.display='none'; document.getElementById('salaryAttendanceCard').style.display='none'; document.getElementById('selectedTeacherName').innerText='None'; } });
-            document.getElementById('searchInput').addEventListener('input', () => filterTeachers());
-            document.querySelectorAll('.filter-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); currentFilter=btn.getAttribute('data-filter'); filterTeachers(); }); });
-            
-            document.getElementById('editTeacherBtn').addEventListener('click', () => editTeacher());
-            document.getElementById('quickApproveBtn').addEventListener('click', () => { if(selectedTeacherId) openApproveModal(selectedTeacherId); });
-            document.getElementById('quickRejectBtn').addEventListener('click', () => { if(selectedTeacherId) openRejectModal(selectedTeacherId); });
-            document.getElementById('quickSalaryBtn').addEventListener('click', () => { if(selectedTeacherId) openSalaryModal(selectedTeacherId); });
-            document.getElementById('quickAttendanceBtn').addEventListener('click', () => openAttendanceModal());
-            document.getElementById('quickDeleteBtn').addEventListener('click', () => { if(selectedTeacherId) openDeleteModal(selectedTeacherId); });
-            document.getElementById('markAttendanceBtn').addEventListener('click', () => openAttendanceModal());
-            
-            // Photo upload
-            document.getElementById('changePhotoBtn').addEventListener('click', () => document.getElementById('photoFileInput').click());
-            document.getElementById('photoFileInput').addEventListener('change', async (e) => {
-                if(e.target.files && e.target.files[0] && selectedTeacherId) {
-                    showLoading();
-                    try {
-                        let compressed = await compressImage(e.target.files[0]);
-                        let teacher = teachersData.find(t=>t.teacherId===selectedTeacherId);
-                        if(teacher) {
-                            let updatedData = { ...teacher, photo: compressed };
-                            await updateTeacherWithNewData(selectedTeacherId, updatedData);
-                        }
-                    } catch(err) { showToast('Photo upload failed', true); }
-                    hideLoading();
+            function handlePaySalary(e) {
+                let teacherId = this.getAttribute('data-id');
+                let month = this.getAttribute('data-month');
+                openSalaryModal(teacherId, month);
+            }
+
+            function updateTeacherCharts(months, paidData, dueData) {
+                let totalPaid = paidData.reduce((a,b)=>a+b,0);
+                let totalDue = dueData.reduce((a,b)=>a+b,0);
+                let ctx = document.getElementById('mainSalaryChart').getContext('2d');
+                if(mainChart) mainChart.destroy();
+                if(currentChartType === 'bar') {
+                    mainChart = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label: 'Paid', data: paidData, backgroundColor: '#2ecc71' }, { label: 'Due', data: dueData, backgroundColor: '#e74c3c' }] }, options: { responsive: true, maintainAspectRatio: false } });
+                } else if(currentChartType === 'line') {
+                    mainChart = new Chart(ctx, { type: 'line', data: { labels: months, datasets: [{ label: 'Paid', data: paidData, borderColor: '#2ecc71', tension: 0.4 }, { label: 'Due', data: dueData, borderColor: '#e74c3c', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+                } else if(currentChartType === 'pie') {
+                    mainChart = new Chart(ctx, { type: 'pie', data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaid, totalDue], backgroundColor: ['#2ecc71', '#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+                } else {
+                    mainChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Paid', 'Due'], datasets: [{ data: [totalPaid, totalDue], backgroundColor: ['#2ecc71', '#e74c3c'] }] }, options: { responsive: true, maintainAspectRatio: false } });
                 }
-            });
-            
-            // Aadhar document upload
-            document.getElementById('changeAadharBtn').addEventListener('click', () => document.getElementById('aadharFileInput').click());
-            document.getElementById('aadharFileInput').addEventListener('change', async (e) => {
-                if(e.target.files && e.target.files[0] && selectedTeacherId) {
-                    showLoading();
-                    try {
-                        let file = e.target.files[0];
-                        let docData = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
-                        let teacher = teachersData.find(t=>t.teacherId===selectedTeacherId);
-                        if(teacher) {
-                            let updatedData = { ...teacher, aadharDoc: docData };
-                            await updateTeacherWithNewData(selectedTeacherId, updatedData);
-                        }
-                    } catch(err) { showToast('Document upload failed', true); }
-                    hideLoading();
-                }
-            });
-            
-            // Qualification document upload
-            document.getElementById('changeQualificationBtn').addEventListener('click', () => document.getElementById('qualificationFileInput').click());
-            document.getElementById('qualificationFileInput').addEventListener('change', async (e) => {
-                if(e.target.files && e.target.files[0] && selectedTeacherId) {
-                    showLoading();
-                    try {
-                        let file = e.target.files[0];
-                        let docData = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
-                        let teacher = teachersData.find(t=>t.teacherId===selectedTeacherId);
-                        if(teacher) {
-                            let updatedData = { ...teacher, qualificationDoc: docData };
-                            await updateTeacherWithNewData(selectedTeacherId, updatedData);
-                        }
-                    } catch(err) { showToast('Document upload failed', true); }
-                    hideLoading();
-                }
-            });
-            
-            document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
-                let id=document.getElementById('approveTeacherId').value, subject=document.getElementById('approveSubject').value, salary=document.getElementById('approveSalary').value, joining=document.getElementById('approveJoiningDate').value;
-                if(!subject||!salary) { showToast('Fill all fields', true); return; }
-                showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'approved',subject,salary:parseInt(salary),joiningDate:joining})});
-                let data=await res.json(); if(data.success){showToast('Teacher approved!');bootstrap.Modal.getInstance(document.getElementById('approveTeacherModal')).hide();loadTeachers();loadStats();if(selectedTeacherId===id)loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
-            });
-            document.getElementById('confirmRejectBtn').addEventListener('click', async () => {
-                let id=document.getElementById('rejectTeacherId').value, reason=document.getElementById('rejectReason').value;
-                if(!reason) { showToast('Enter reason', true); return; }
-                showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'rejected',rejectionReason:reason})});
-                let data=await res.json(); if(data.success){showToast('Teacher rejected!');bootstrap.Modal.getInstance(document.getElementById('rejectTeacherModal')).hide();loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
-            });
-            document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
-                let id=document.getElementById('deleteTeacherId').value;
-                showLoading(); let res=await fetch(`/api/teachers/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
-                let data=await res.json(); if(data.success){showToast('Teacher deleted!');bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();loadTeachers();if(selectedTeacherId===id){selectedTeacherId=null;document.getElementById('teacherDetailsCard').style.display='none';document.getElementById('salaryAttendanceCard').style.display='none';document.getElementById('selectedTeacherName').innerText='None';}}else showToast(data.message,true); hideLoading();
-            });
-            document.getElementById('saveSalaryBtn').addEventListener('click', async () => {
-                let id=document.getElementById('salaryTeacherId').value, month=document.getElementById('salaryMonth').value, paid=parseInt(document.getElementById('paidAmount').value)||0;
-                if(!id||!month) return;
-                showLoading(); let res=await fetch(`/api/teachers/${id}/salary`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({month,paidAmount:paid})});
-                let data=await res.json(); if(data.success){showToast('Salary saved!');bootstrap.Modal.getInstance(document.getElementById('salaryModal')).hide();loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
-            });
-            document.getElementById('saveAttendanceBtn').addEventListener('click', async () => {
-                let id=document.getElementById('attendanceTeacherId').value, date=document.getElementById('attendanceDateInput').value, status=document.getElementById('attendanceStatus').value, remarks=document.getElementById('attendanceRemarks').value;
-                if(!id||!date||!status) return;
-                showLoading(); let res=await fetch(`/api/teachers/${id}/attendance`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({date,status,remarks})});
-                let data=await res.json(); if(data.success){showToast('Attendance saved!');bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
-            });
-            document.getElementById('updateAttendanceBtn').addEventListener('click', async () => {
-                let id=document.getElementById('editAttendanceTeacherId').value, originalDate=document.getElementById('editAttendanceOriginalDate').value, newDate=document.getElementById('editAttendanceDate').value, status=document.getElementById('editAttendanceStatus').value, remarks=document.getElementById('editAttendanceRemarks').value;
-                if(!id||!newDate||!status) return;
+            }
+
+            async function loadAttendanceData(teacher) {
+                let tbody = document.getElementById('attendanceTableBody');
+                try {
+                    let res = await fetch(`/api/teachers/${teacher.teacherId}/attendance`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    let data = await res.json();
+                    if(data.success && data.data && data.data.length) {
+                        let att = data.data.sort((a,b)=>b.date.localeCompare(a.date));
+                        tbody.innerHTML = '';
+                        att.forEach(a => {
+                            let statusBg = a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : 'warning';
+                            let row = tbody.insertRow();
+                            row.innerHTML = `
+                                <td>${new Date(a.date).toLocaleDateString()}</td>
+                                <td><span class="badge bg-${statusBg}">${a.status?.toUpperCase()}</span></td>
+                                <td>${a.photo ? `<img src="${a.photo}" style="width:35px;height:35px;border-radius:5px;cursor:pointer;" class="view-photo" title="View Photo">` : '-'}</td>
+                                <td><button class="btn btn-sm btn-warning edit-att" data-date="${a.date}" title="Edit"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger delete-att" data-date="${a.date}" title="Delete"><i class="fas fa-trash"></i></button></td>
+                            `;
+                        });
+                        document.querySelectorAll('.edit-att').forEach(btn => { btn.addEventListener('click', () => editAttendance(teacher.teacherId, btn.getAttribute('data-date'))); });
+                        document.querySelectorAll('.delete-att').forEach(btn => { btn.addEventListener('click', () => deleteAttendance(teacher.teacherId, btn.getAttribute('data-date'))); });
+                        document.querySelectorAll('.view-photo').forEach(img => { img.addEventListener('click', () => window.open(img.src)); });
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No attendance records</td></tr>';
+                    }
+                } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading attendance</td></tr>'; }
+            }
+
+            async function editAttendance(teacherId, date) {
                 showLoading();
                 try {
-                    if(originalDate !== newDate) {
-                        await fetch(`/api/teachers/${id}/attendance`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date: originalDate }) });
-                    }
-                    let res = await fetch(`/api/teachers/${id}/attendance`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date: newDate, status, remarks }) });
+                    let res = await fetch(`/api/teachers/${teacherId}/attendance`, { headers: { 'Authorization': `Bearer ${token}` } });
                     let data = await res.json();
-                    if(data.success) { showToast('Attendance updated!'); bootstrap.Modal.getInstance(document.getElementById('editAttendanceModal')).hide(); loadTeacherDetails(id); }
-                    else showToast(data.message, true);
-                } catch(e) { showToast('Update failed', true); }
+                    if(data.success) {
+                        let record = data.data.find(a => a.date === date);
+                        if(record) {
+                            document.getElementById('editAttendanceTeacherId').value = teacherId;
+                            document.getElementById('editAttendanceOriginalDate').value = date;
+                            document.getElementById('editAttendanceDate').value = date;
+                            document.getElementById('editAttendanceStatus').value = record.status;
+                            document.getElementById('editAttendanceRemarks').value = record.remarks || '';
+                            new bootstrap.Modal(document.getElementById('editAttendanceModal')).show();
+                        }
+                    }
+                } catch(e) { showToast('Error loading attendance record', true); }
                 hideLoading();
-            });
-            document.getElementById('saveEditBtn').addEventListener('click', async () => {
-                let id = document.getElementById('editTeacherId').value;
-                let updatedData = {
-                    teacherName: { first: document.getElementById('editFirstName').value, middle: document.getElementById('editMiddleName').value, last: document.getElementById('editLastName').value },
-                    fatherName: { first: document.getElementById('editFatherFirst').value, middle: document.getElementById('editFatherMiddle').value, last: document.getElementById('editFatherLast').value },
-                    mobile: document.getElementById('editMobile').value,
-                    altMobile: document.getElementById('editAltMobile').value,
-                    dob: document.getElementById('editDob').value,
-                    aadharNumber: document.getElementById('editAadhar').value,
-                    lastQualification: document.getElementById('editQualification').value,
-                    subject: document.getElementById('editSubject').value,
-                    salary: parseInt(document.getElementById('editSalary').value) || 0,
-                    status: document.getElementById('editStatus').value,
-                    joiningDate: document.getElementById('editJoiningDate').value,
-                    address: {
-                        current: document.getElementById('editCurrentAddress').value,
-                        permanent: document.getElementById('editPermanentAddress').value,
-                        city: document.getElementById('editCity').value,
-                        state: document.getElementById('editState').value,
-                        pincode: document.getElementById('editPincode').value
-                    },
-                    bankDetails: {
-                        accountHolder: document.getElementById('editAccountHolder').value,
-                        accountNumber: document.getElementById('editAccountNumber').value,
-                        ifscCode: document.getElementById('editIfscCode').value,
-                        bankName: document.getElementById('editBankName').value
-                    },
-                    emergencyContact: {
-                        name: document.getElementById('editEmergencyName').value,
-                        relation: document.getElementById('editEmergencyRelation').value,
-                        phone: document.getElementById('editEmergencyPhone').value
-                    },
-                    experience: parseInt(document.getElementById('editExperience').value) || 0,
-                    previousSchool: document.getElementById('editPreviousSchool').value,
-                    remarks: document.getElementById('editRemarks').value
-                };
-                let success = await updateTeacherWithNewData(id, updatedData);
-                if(success) bootstrap.Modal.getInstance(document.getElementById('editTeacherModal')).hide();
-            });
-            
-            document.querySelectorAll('.chart-type-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.chart-type-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); currentChartType=btn.getAttribute('data-chart'); let t = teachersData.find(t=>t.teacherId===selectedTeacherId); if(t && t.salaryHistory) { let m=[], p=[], d=[]; t.salaryHistory.forEach(r=>{ m.push(r.month); p.push(r.paidAmount); d.push(r.dueAmount); }); updateTeacherCharts(m,p,d); } }); });
-            
-            document.getElementById('aadharDocLink')?.addEventListener('click', (e) => { e.preventDefault(); if(document.getElementById('aadharDocLink').href) window.open(document.getElementById('aadharDocLink').href); });
-            document.getElementById('qualificationDocLink')?.addEventListener('click', (e) => { e.preventDefault(); if(document.getElementById('qualificationDocLink').href) window.open(document.getElementById('qualificationDocLink').href); });
-        }
-
-        function openAttendanceModal() {
-            if(!selectedTeacherId) { showToast('Select a teacher first', true); return; }
-            document.getElementById('attendanceTeacherId').value = selectedTeacherId;
-            document.getElementById('attendanceDateInput').value = new Date().toISOString().split('T')[0];
-            document.getElementById('attendanceTeacherNameModal').innerText = document.getElementById('detailsFullName').innerText;
-            new bootstrap.Modal(document.getElementById('attendanceModal')).show();
-        }
-
-        function editTeacher() {
-            if(!selectedTeacherId) return;
-            let t = teachersData.find(t=>t.teacherId===selectedTeacherId);
-            if(t){
-                document.getElementById('editTeacherId').value = t.teacherId;
-                document.getElementById('editFirstName').value = t.teacherName?.first||'';
-                document.getElementById('editMiddleName').value = t.teacherName?.middle||'';
-                document.getElementById('editLastName').value = t.teacherName?.last||'';
-                document.getElementById('editFatherFirst').value = t.fatherName?.first||'';
-                document.getElementById('editFatherMiddle').value = t.fatherName?.middle||'';
-                document.getElementById('editFatherLast').value = t.fatherName?.last||'';
-                document.getElementById('editMobile').value = t.mobile||'';
-                document.getElementById('editAltMobile').value = t.altMobile||'';
-                if(t.dob) document.getElementById('editDob').value = t.dob.split('T')[0];
-                document.getElementById('editAadhar').value = t.aadharNumber||'';
-                document.getElementById('editQualification').value = t.lastQualification||'';
-                document.getElementById('editSubject').value = t.subject||'';
-                document.getElementById('editSalary').value = t.salary||0;
-                document.getElementById('editStatus').value = t.status||'pending';
-                if(t.joiningDate) document.getElementById('editJoiningDate').value = t.joiningDate.split('T')[0];
-                document.getElementById('editCurrentAddress').value = t.address?.current||'';
-                document.getElementById('editPermanentAddress').value = t.address?.permanent||'';
-                document.getElementById('editCity').value = t.address?.city||'';
-                document.getElementById('editState').value = t.address?.state||'';
-                document.getElementById('editPincode').value = t.address?.pincode||'';
-                document.getElementById('editAccountHolder').value = t.bankDetails?.accountHolder||'';
-                document.getElementById('editAccountNumber').value = t.bankDetails?.accountNumber||'';
-                document.getElementById('editIfscCode').value = t.bankDetails?.ifscCode||'';
-                document.getElementById('editBankName').value = t.bankDetails?.bankName||'';
-                document.getElementById('editEmergencyName').value = t.emergencyContact?.name||'';
-                document.getElementById('editEmergencyRelation').value = t.emergencyContact?.relation||'';
-                document.getElementById('editEmergencyPhone').value = t.emergencyContact?.phone||'';
-                document.getElementById('editExperience').value = t.experience||0;
-                document.getElementById('editPreviousSchool').value = t.previousSchool||'';
-                document.getElementById('editRemarks').value = t.remarks||'';
-                new bootstrap.Modal(document.getElementById('editTeacherModal')).show();
             }
-        }
 
-        function filterTeachers() {
-            let term = document.getElementById('searchInput').value.toLowerCase();
-            let filtered = teachersData.filter(t => (currentFilter === 'all' || t.status === currentFilter) && (t.teacherId?.toLowerCase().includes(term) || `${t.teacherName?.first} ${t.teacherName?.last}`.toLowerCase().includes(term) || t.mobile?.includes(term)));
-            displayTeachers(filtered);
-        }
+            async function deleteAttendance(teacherId, date) {
+                if(confirm('Delete this attendance record?')) {
+                    showLoading();
+                    try {
+                        let res = await fetch(`/api/teachers/${teacherId}/attendance`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date }) });
+                        let data = await res.json();
+                        if(data.success) { showToast('Attendance deleted!'); loadTeacherDetails(teacherId); }
+                        else showToast(data.message, true);
+                    } catch(e) { showToast('Delete failed', true); }
+                    hideLoading();
+                }
+            }
+
+            function updateOverallChart() {
+                let ctx = document.getElementById('salaryChart').getContext('2d');
+                if(salaryChart) salaryChart.destroy();
+                salaryChart = new Chart(ctx, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], datasets: [{ label: 'Total Salary', data: [0,0,0,0,0,0], borderColor: '#0f172a', backgroundColor: 'rgba(15,23,42,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            }
+
+            function openApproveModal(id) { document.getElementById('approveTeacherId').value = id; document.getElementById('approveJoiningDate').value = new Date().toISOString().split('T')[0]; new bootstrap.Modal(document.getElementById('approveTeacherModal')).show(); }
+            function openRejectModal(id) { document.getElementById('rejectTeacherId').value = id; new bootstrap.Modal(document.getElementById('rejectTeacherModal')).show(); }
+            function openDeleteModal(id) { document.getElementById('deleteTeacherId').value = id; new bootstrap.Modal(document.getElementById('deleteModal')).show(); }
+            
+            function openSalaryModal(id, month) {
+                let teacher = teachersData.find(t=>t.teacherId===id);
+                if(teacher) {
+                    document.getElementById('salaryTeacherId').value = id;
+                    document.getElementById('salaryTeacherNameModal').innerText = `${teacher.teacherName?.first} ${teacher.teacherName?.last}`;
+                    let currentMonth = month || (new Date().toLocaleString('default', {month:'long'}) + ' ' + new Date().getFullYear());
+                    document.getElementById('salaryMonth').value = currentMonth;
+                    document.getElementById('salaryMonthDisplay').innerText = currentMonth;
+                    document.getElementById('salaryAmount').value = '₹'+(teacher.salary||0).toLocaleString();
+                    document.getElementById('paidAmount').value = 0;
+                    document.getElementById('dueAmount').value = '₹'+(teacher.salary||0).toLocaleString();
+                    new bootstrap.Modal(document.getElementById('salaryModal')).show();
+                }
+            }
+
+            async function updateTeacherWithNewData(id, updatedData) {
+                try {
+                    let res = await fetch(`/api/teachers/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify(updatedData)
+                    });
+                    let data = await res.json();
+                    if(data.success) {
+                        showToast('Teacher updated successfully!');
+                        await loadTeachers();
+                        if(selectedTeacherId === id) await loadTeacherDetails(id);
+                        return true;
+                    } else {
+                        showToast(data.message || 'Update failed', true);
+                        return false;
+                    }
+                } catch(e) { showToast('Update failed', true); return false; }
+            }
+
+            function initEventListeners() {
+                document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.href = '/index.html'; });
+                document.getElementById('refreshBtn').addEventListener('click', () => { loadTeachers(); loadStats(); });
+                document.getElementById('teacherSelect').addEventListener('change', (e) => { if(e.target.value) viewTeacher(e.target.value); else { selectedTeacherId=null; document.getElementById('teacherDetailsCard').style.display='none'; document.getElementById('salaryAttendanceCard').style.display='none'; document.getElementById('selectedTeacherName').innerText='None'; } });
+                document.getElementById('searchInput').addEventListener('input', () => filterTeachers());
+                document.querySelectorAll('.filter-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); currentFilter=btn.getAttribute('data-filter'); filterTeachers(); }); });
+                
+                document.getElementById('editTeacherBtn').addEventListener('click', () => editTeacher());
+                document.getElementById('quickApproveBtn').addEventListener('click', () => { if(selectedTeacherId) openApproveModal(selectedTeacherId); });
+                document.getElementById('quickRejectBtn').addEventListener('click', () => { if(selectedTeacherId) openRejectModal(selectedTeacherId); });
+                document.getElementById('quickSalaryBtn').addEventListener('click', () => { if(selectedTeacherId) openSalaryModal(selectedTeacherId); });
+                document.getElementById('quickAttendanceBtn').addEventListener('click', () => openAttendanceModal());
+                document.getElementById('quickDeleteBtn').addEventListener('click', () => { if(selectedTeacherId) openDeleteModal(selectedTeacherId); });
+                document.getElementById('markAttendanceBtn').addEventListener('click', () => openAttendanceModal());
+                
+                document.getElementById('changePhotoBtn').addEventListener('click', () => document.getElementById('photoFileInput').click());
+                document.getElementById('photoFileInput').addEventListener('change', async (e) => {
+                    if(e.target.files && e.target.files[0] && selectedTeacherId) {
+                        showLoading();
+                        try {
+                            let compressed = await compressImage(e.target.files[0]);
+                            let teacher = teachersData.find(t=>t.teacherId===selectedTeacherId);
+                            if(teacher) {
+                                let updatedData = { ...teacher, photo: compressed };
+                                await updateTeacherWithNewData(selectedTeacherId, updatedData);
+                            }
+                        } catch(err) { showToast('Photo upload failed', true); }
+                        hideLoading();
+                    }
+                });
+                
+                document.getElementById('changeAadharBtn').addEventListener('click', () => document.getElementById('aadharFileInput').click());
+                document.getElementById('aadharFileInput').addEventListener('change', async (e) => {
+                    if(e.target.files && e.target.files[0] && selectedTeacherId) {
+                        showLoading();
+                        try {
+                            let file = e.target.files[0];
+                            let docData = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                            let teacher = teachersData.find(t=>t.teacherId===selectedTeacherId);
+                            if(teacher) {
+                                let updatedData = { ...teacher, aadharDoc: docData };
+                                await updateTeacherWithNewData(selectedTeacherId, updatedData);
+                            }
+                        } catch(err) { showToast('Document upload failed', true); }
+                        hideLoading();
+                    }
+                });
+                
+                document.getElementById('changeQualificationBtn').addEventListener('click', () => document.getElementById('qualificationFileInput').click());
+                document.getElementById('qualificationFileInput').addEventListener('change', async (e) => {
+                    if(e.target.files && e.target.files[0] && selectedTeacherId) {
+                        showLoading();
+                        try {
+                            let file = e.target.files[0];
+                            let docData = file.type === 'application/pdf' ? await compressPDF(file) : await compressImage(file);
+                            let teacher = teachersData.find(t=>t.teacherId===selectedTeacherId);
+                            if(teacher) {
+                                let updatedData = { ...teacher, qualificationDoc: docData };
+                                await updateTeacherWithNewData(selectedTeacherId, updatedData);
+                            }
+                        } catch(err) { showToast('Document upload failed', true); }
+                        hideLoading();
+                    }
+                });
+                
+                document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
+                    let id=document.getElementById('approveTeacherId').value, subject=document.getElementById('approveSubject').value, salary=document.getElementById('approveSalary').value, joining=document.getElementById('approveJoiningDate').value;
+                    if(!subject||!salary) { showToast('Fill all fields', true); return; }
+                    showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'approved',subject,salary:parseInt(salary),joiningDate:joining})});
+                    let data=await res.json(); if(data.success){showToast('Teacher approved!');bootstrap.Modal.getInstance(document.getElementById('approveTeacherModal')).hide();loadTeachers();loadStats();if(selectedTeacherId===id)loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
+                });
+                document.getElementById('confirmRejectBtn').addEventListener('click', async () => {
+                    let id=document.getElementById('rejectTeacherId').value, reason=document.getElementById('rejectReason').value;
+                    if(!reason) { showToast('Enter reason', true); return; }
+                    showLoading(); let res=await fetch(`/api/teachers/${id}/status`,{method:'PUT',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status:'rejected',rejectionReason:reason})});
+                    let data=await res.json(); if(data.success){showToast('Teacher rejected!');bootstrap.Modal.getInstance(document.getElementById('rejectTeacherModal')).hide();loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
+                });
+                document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+                    let id=document.getElementById('deleteTeacherId').value;
+                    showLoading(); let res=await fetch(`/api/teachers/${id}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});
+                    let data=await res.json(); if(data.success){showToast('Teacher deleted!');bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();loadTeachers();if(selectedTeacherId===id){selectedTeacherId=null;document.getElementById('teacherDetailsCard').style.display='none';document.getElementById('salaryAttendanceCard').style.display='none';document.getElementById('selectedTeacherName').innerText='None';}}else showToast(data.message,true); hideLoading();
+                });
+                document.getElementById('saveSalaryBtn').addEventListener('click', async () => {
+                    let id=document.getElementById('salaryTeacherId').value, month=document.getElementById('salaryMonth').value, paid=parseInt(document.getElementById('paidAmount').value)||0;
+                    if(!id||!month) return;
+                    showLoading(); let res=await fetch(`/api/teachers/${id}/salary`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({month,paidAmount:paid})});
+                    let data=await res.json(); if(data.success){showToast('Salary saved!');bootstrap.Modal.getInstance(document.getElementById('salaryModal')).hide();loadTeachers();if(selectedTeacherId===id)loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
+                });
+                document.getElementById('saveAttendanceBtn').addEventListener('click', async () => {
+                    let id=document.getElementById('attendanceTeacherId').value, date=document.getElementById('attendanceDateInput').value, status=document.getElementById('attendanceStatus').value, remarks=document.getElementById('attendanceRemarks').value;
+                    if(!id||!date||!status) return;
+                    showLoading(); let res=await fetch(`/api/teachers/${id}/attendance`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({date,status,remarks})});
+                    let data=await res.json(); if(data.success){showToast('Attendance saved!');bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();loadTeacherDetails(id);}else showToast(data.message,true); hideLoading();
+                });
+                document.getElementById('updateAttendanceBtn').addEventListener('click', async () => {
+                    let id=document.getElementById('editAttendanceTeacherId').value, originalDate=document.getElementById('editAttendanceOriginalDate').value, newDate=document.getElementById('editAttendanceDate').value, status=document.getElementById('editAttendanceStatus').value, remarks=document.getElementById('editAttendanceRemarks').value;
+                    if(!id||!newDate||!status) return;
+                    showLoading();
+                    try {
+                        if(originalDate !== newDate) {
+                            await fetch(`/api/teachers/${id}/attendance`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date: originalDate }) });
+                        }
+                        let res = await fetch(`/api/teachers/${id}/attendance`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ date: newDate, status, remarks }) });
+                        let data = await res.json();
+                        if(data.success) { showToast('Attendance updated!'); bootstrap.Modal.getInstance(document.getElementById('editAttendanceModal')).hide(); loadTeacherDetails(id); }
+                        else showToast(data.message, true);
+                    } catch(e) { showToast('Update failed', true); }
+                    hideLoading();
+                });
+                document.getElementById('saveEditBtn').addEventListener('click', async () => {
+                    let id = document.getElementById('editTeacherId').value;
+                    let updatedData = {
+                        teacherName: { first: document.getElementById('editFirstName').value, middle: document.getElementById('editMiddleName').value, last: document.getElementById('editLastName').value },
+                        fatherName: { first: document.getElementById('editFatherFirst').value, middle: document.getElementById('editFatherMiddle').value, last: document.getElementById('editFatherLast').value },
+                        mobile: document.getElementById('editMobile').value,
+                        altMobile: document.getElementById('editAltMobile').value,
+                        dob: document.getElementById('editDob').value,
+                        aadharNumber: document.getElementById('editAadhar').value,
+                        lastQualification: document.getElementById('editQualification').value,
+                        subject: document.getElementById('editSubject').value,
+                        salary: parseInt(document.getElementById('editSalary').value) || 0,
+                        status: document.getElementById('editStatus').value,
+                        joiningDate: document.getElementById('editJoiningDate').value,
+                        address: {
+                            current: document.getElementById('editCurrentAddress').value,
+                            permanent: document.getElementById('editPermanentAddress').value,
+                            city: document.getElementById('editCity').value,
+                            state: document.getElementById('editState').value,
+                            pincode: document.getElementById('editPincode').value
+                        },
+                        bankDetails: {
+                            accountHolder: document.getElementById('editAccountHolder').value,
+                            accountNumber: document.getElementById('editAccountNumber').value,
+                            ifscCode: document.getElementById('editIfscCode').value,
+                            bankName: document.getElementById('editBankName').value
+                        },
+                        emergencyContact: {
+                            name: document.getElementById('editEmergencyName').value,
+                            relation: document.getElementById('editEmergencyRelation').value,
+                            phone: document.getElementById('editEmergencyPhone').value
+                        },
+                        experience: parseInt(document.getElementById('editExperience').value) || 0,
+                        previousSchool: document.getElementById('editPreviousSchool').value,
+                        remarks: document.getElementById('editRemarks').value
+                    };
+                    let success = await updateTeacherWithNewData(id, updatedData);
+                    if(success) bootstrap.Modal.getInstance(document.getElementById('editTeacherModal')).hide();
+                });
+                
+                document.querySelectorAll('.chart-type-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.chart-type-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); currentChartType=btn.getAttribute('data-chart'); let t = teachersData.find(t=>t.teacherId===selectedTeacherId); if(t && t.salaryHistory) { let m=[], p=[], d=[]; t.salaryHistory.forEach(r=>{ m.push(r.month); p.push(r.paidAmount); d.push(r.dueAmount); }); updateTeacherCharts(m,p,d); } }); });
+                
+                document.getElementById('aadharDocLink')?.addEventListener('click', (e) => { e.preventDefault(); let img = document.getElementById('aadharDocPreview'); if(img.src) window.open(img.src); });
+                document.getElementById('qualificationDocLink')?.addEventListener('click', (e) => { e.preventDefault(); let img = document.getElementById('qualificationDocPreview'); if(img.src) window.open(img.src); });
+            }
+
+            function openAttendanceModal() {
+                if(!selectedTeacherId) { showToast('Select a teacher first', true); return; }
+                document.getElementById('attendanceTeacherId').value = selectedTeacherId;
+                document.getElementById('attendanceDateInput').value = new Date().toISOString().split('T')[0];
+                document.getElementById('attendanceTeacherNameModal').innerText = document.getElementById('detailsFullName').innerText;
+                new bootstrap.Modal(document.getElementById('attendanceModal')).show();
+            }
+
+            function editTeacher() {
+                if(!selectedTeacherId) return;
+                let t = teachersData.find(t=>t.teacherId===selectedTeacherId);
+                if(t){
+                    document.getElementById('editTeacherId').value = t.teacherId;
+                    document.getElementById('editFirstName').value = t.teacherName?.first||'';
+                    document.getElementById('editMiddleName').value = t.teacherName?.middle||'';
+                    document.getElementById('editLastName').value = t.teacherName?.last||'';
+                    document.getElementById('editFatherFirst').value = t.fatherName?.first||'';
+                    document.getElementById('editFatherMiddle').value = t.fatherName?.middle||'';
+                    document.getElementById('editFatherLast').value = t.fatherName?.last||'';
+                    document.getElementById('editMobile').value = t.mobile||'';
+                    document.getElementById('editAltMobile').value = t.altMobile||'';
+                    if(t.dob) document.getElementById('editDob').value = t.dob.split('T')[0];
+                    document.getElementById('editAadhar').value = t.aadharNumber||'';
+                    document.getElementById('editQualification').value = t.lastQualification||'';
+                    document.getElementById('editSubject').value = t.subject||'';
+                    document.getElementById('editSalary').value = t.salary||0;
+                    document.getElementById('editStatus').value = t.status||'pending';
+                    if(t.joiningDate) document.getElementById('editJoiningDate').value = t.joiningDate.split('T')[0];
+                    document.getElementById('editCurrentAddress').value = t.address?.current||'';
+                    document.getElementById('editPermanentAddress').value = t.address?.permanent||'';
+                    document.getElementById('editCity').value = t.address?.city||'';
+                    document.getElementById('editState').value = t.address?.state||'';
+                    document.getElementById('editPincode').value = t.address?.pincode||'';
+                    document.getElementById('editAccountHolder').value = t.bankDetails?.accountHolder||'';
+                    document.getElementById('editAccountNumber').value = t.bankDetails?.accountNumber||'';
+                    document.getElementById('editIfscCode').value = t.bankDetails?.ifscCode||'';
+                    document.getElementById('editBankName').value = t.bankDetails?.bankName||'';
+                    document.getElementById('editEmergencyName').value = t.emergencyContact?.name||'';
+                    document.getElementById('editEmergencyRelation').value = t.emergencyContact?.relation||'';
+                    document.getElementById('editEmergencyPhone').value = t.emergencyContact?.phone||'';
+                    document.getElementById('editExperience').value = t.experience||0;
+                    document.getElementById('editPreviousSchool').value = t.previousSchool||'';
+                    document.getElementById('editRemarks').value = t.remarks||'';
+                    new bootstrap.Modal(document.getElementById('editTeacherModal')).show();
+                }
+            }
+
+            function filterTeachers() {
+                let term = document.getElementById('searchInput').value.toLowerCase();
+                let filtered = teachersData.filter(t => (currentFilter === 'all' || t.status === currentFilter) && (t.teacherId?.toLowerCase().includes(term) || `${t.teacherName?.first} ${t.teacherName?.last}`.toLowerCase().includes(term) || t.mobile?.includes(term)));
+                displayTeachers(filtered);
+            }
+        })();
     </script>
 </body>
 </html>
