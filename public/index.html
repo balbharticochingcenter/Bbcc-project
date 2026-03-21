@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Bal Bharti Coaching - Ultimate Learning Experience</title>
+    <title id="pageTitle">Bal Bharti Coaching - Ultimate Learning Experience</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -84,7 +84,6 @@
             padding-bottom: 75px;
         }
 
-        /* Mobile padding for bottom nav */
         @media (max-width: 768px) {
             body { padding-bottom: 70px; }
         }
@@ -165,7 +164,7 @@
         @media (max-width: 768px) { .theme-toggle { bottom: 85px; right: 15px; width: 45px; height: 45px; } }
         .theme-toggle:active { transform: scale(0.95); }
 
-        /* VIP Navbar - Mobile Optimized */
+        /* VIP Navbar */
         .vip-nav {
             background: rgba(var(--bg-primary), 0.98);
             backdrop-filter: blur(10px);
@@ -201,7 +200,6 @@
         .header-center small { font-size: 0.7rem; color: var(--text-secondary); display: block; margin-top: 2px; }
         @media (min-width: 768px) { .header-center small { font-size: 0.75rem; } }
 
-        /* Menu Button */
         .menu-toggle {
             background: var(--gradient-1);
             border: none;
@@ -214,7 +212,6 @@
         }
         @media (min-width: 992px) { .menu-toggle { display: none; } }
 
-        /* Navigation Links - Mobile Sheet */
         .nav-links {
             position: fixed;
             top: 70px;
@@ -253,7 +250,6 @@
         .nav-link-item:active { background: var(--primary); color: white; transform: scale(0.98); }
         .btn-vip-nav { background: var(--gradient-2); color: white !important; }
 
-        /* Hero Section */
         .hero-section { padding: 30px 16px 40px; }
         .swiper-container {
             width: 100%;
@@ -265,7 +261,6 @@
         @media (min-width: 768px) { .swiper-container { height: 380px; } }
         .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Action Cards Grid - Mobile Optimized */
         .actions-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -303,7 +298,6 @@
         .action-desc { font-size: 0.65rem; color: var(--text-secondary); display: none; }
         @media (min-width: 768px) { .action-desc { display: block; } }
 
-        /* Voice Bar */
         .voice-bar {
             background: var(--gradient-3);
             border-radius: 60px;
@@ -330,7 +324,6 @@
         }
         .voice-controls button:active { transform: scale(0.95); }
 
-        /* About Card */
         .about-card {
             background: var(--card-bg);
             border-radius: 24px;
@@ -344,7 +337,6 @@
         .about-text { text-align: center; font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); }
         @media (min-width: 768px) { .about-text { font-size: 1rem; } }
 
-        /* Features Section */
         .features-section { padding: 30px 16px; }
         .section-title { text-align: center; font-size: 1.5rem; font-weight: 800; margin-bottom: 16px; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         @media (min-width: 768px) { .section-title { font-size: 2rem; } }
@@ -380,7 +372,6 @@
         .feature-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
         .feature-desc { font-size: 0.8rem; color: var(--text-secondary); }
 
-        /* Stats Section */
         .stats-section {
             background: var(--gradient-1);
             padding: 40px 16px;
@@ -397,7 +388,6 @@
         @media (min-width: 768px) { .stat-number { font-size: 2.5rem; } }
         .stat-label { font-size: 0.75rem; opacity: 0.9; }
 
-        /* Testimonials */
         .testimonials-section { padding: 30px 16px; background: var(--bg-secondary); }
         .testimonials-grid {
             display: grid;
@@ -419,7 +409,6 @@
         .author-name { font-weight: 700; font-size: 0.85rem; }
         .author-rating { font-size: 0.7rem; color: var(--accent); }
 
-        /* CTA Section */
         .cta-section {
             background: var(--gradient-2);
             padding: 40px 20px;
@@ -443,7 +432,6 @@
         }
         .cta-btn:active { transform: scale(0.96); }
 
-        /* Footer */
         .footer {
             background: var(--bg-secondary);
             padding: 30px 16px 20px;
@@ -469,11 +457,11 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            color: var(--text-secondary);
         }
         .social-links a:active { background: var(--primary); color: white; transform: scale(0.95); }
         .footer-bottom { text-align: center; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-secondary); }
 
-        /* Mobile Bottom Navigation - Smooth */
         .mobile-bottom-nav {
             position: fixed;
             bottom: 0;
@@ -506,7 +494,6 @@
         .mobile-nav-item.active { background: var(--primary); color: white; }
         .mobile-nav-item:active { transform: scale(0.95); }
 
-        /* Back to Top */
         .back-to-top {
             position: fixed;
             bottom: 85px;
@@ -529,7 +516,6 @@
         .back-to-top.show { opacity: 1; visibility: visible; }
         .back-to-top:active { transform: scale(0.95); }
 
-        /* Toast */
         .toast-message {
             position: fixed;
             bottom: 90px;
@@ -546,71 +532,119 @@
             animation: slideUp 0.3s ease;
         }
         @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        .loading-spinner i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <!-- Page Loader -->
     <div class="page-loader" id="pageLoader"><div class="loader"><i class="fas fa-graduation-cap"></i></div></div>
-
-    <!-- Theme Toggle -->
     <button class="theme-toggle" id="themeToggle"><i class="fas fa-palette"></i></button>
-
-    <!-- Back to Top -->
     <div class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></div>
-
-    <!-- Particles -->
     <div class="particles" id="particles"></div>
 
-    <!-- Navbar -->
     <header class="vip-nav">
         <div class="logo-container">
             <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
             <div class="logo-text-wrapper">
-                <span class="logo-main-text">BBCC</span>
-                <span class="logo-sub-text">Since 2010</span>
+                <span class="logo-main-text" id="logoText">BBCC</span>
+                <span class="logo-sub-text" id="logoSubText">Since 2010</span>
             </div>
         </div>
         <div class="header-center">
-            <h1 id="dbTitle">Bal Bharti Coaching</h1>
-            <small id="dbSubtitle">Excellence in Education</small>
+            <h1 id="siteTitle">Bal Bharti Coaching</h1>
+            <small id="siteSubtitle">Excellence in Education</small>
         </div>
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <div class="nav-links" id="navLinks">
             <a href="#" class="nav-link-item" data-page="home"><i class="fas fa-home"></i>Home</a>
             <a href="#" class="nav-link-item" data-page="about"><i class="fas fa-info-circle"></i>About</a>
             <a href="#" class="nav-link-item" data-page="features"><i class="fas fa-star"></i>Features</a>
-            <a href="#" class="nav-link-item btn-vip-nav" data-page="teacher-reg"><i class="fas fa-chalkboard-teacher"></i>Teacher Reg</a>
-            <a href="#" class="nav-link-item" data-page="teacher-dashboard"><i class="fas fa-sign-in-alt"></i>Teacher Login</a>
-            <a href="#" class="nav-link-item" data-page="student-reg"><i class="fas fa-user-plus"></i>Student Reg</a>
-            <a href="#" class="nav-link-item" data-page="student-attendance"><i class="fas fa-user-graduate"></i>Student</a>
-            <a href="#" class="nav-link-item" data-page="admin-login"><i class="fas fa-user-tie"></i>Admin</a>
+            <a href="#" class="nav-link-item btn-vip-nav" data-page="teacher-reg"><i class="fas fa-chalkboard-teacher"></i>Teacher Registration</a>
+            <a href="#" class="nav-link-item" data-page="teacher-login"><i class="fas fa-sign-in-alt"></i>Teacher Login</a>
+            <a href="#" class="nav-link-item" data-page="student-reg"><i class="fas fa-user-plus"></i>Student Registration</a>
+            <a href="#" class="nav-link-item" data-page="student-attendance"><i class="fas fa-user-graduate"></i>Student Attendance</a>
+            <a href="#" class="nav-link-item" data-page="admin-login"><i class="fas fa-user-tie"></i>Admin Login</a>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div id="mainContent"></div>
+    <div id="mainContent">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-pulse"></i>
+            <p>Loading content...</p>
+        </div>
+    </div>
 
-    <!-- Mobile Bottom Navigation -->
     <div class="mobile-bottom-nav">
         <div class="mobile-nav-item" data-page="home"><i class="fas fa-home"></i><span>Home</span></div>
-        <div class="mobile-nav-item" data-page="teacher-reg"><i class="fas fa-chalkboard-teacher"></i><span>Teacher</span></div>
-        <div class="mobile-nav-item" data-page="student-reg"><i class="fas fa-user-plus"></i><span>Student</span></div>
-        <div class="mobile-nav-item" data-page="teacher-dashboard"><i class="fas fa-sign-in-alt"></i><span>Login</span></div>
+        <div class="mobile-nav-item" data-page="teacher-reg"><i class="fas fa-chalkboard-teacher"></i><span>Teacher Reg</span></div>
+        <div class="mobile-nav-item" data-page="student-reg"><i class="fas fa-user-plus"></i><span>Student Reg</span></div>
+        <div class="mobile-nav-item" data-page="teacher-login"><i class="fas fa-sign-in-alt"></i><span>Login</span></div>
         <div class="mobile-nav-item" data-page="about"><i class="fas fa-info-circle"></i><span>About</span></div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" id="footer">
         <div class="footer-content">
-            <div class="footer-section"><h5>About Us</h5><p>Bal Bharti Coaching Center is dedicated to providing quality education with modern technology integration.</p><div class="social-links" id="dbSocials"><a href="#"><i class="fab fa-whatsapp"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-facebook"></i></a></div></div>
-            <div class="footer-section"><h5>Quick Links</h5><a href="#" data-page="home"><i class="fas fa-angle-right"></i> Home</a><a href="#" data-page="about"><i class="fas fa-angle-right"></i> About</a><a href="#" data-page="features"><i class="fas fa-angle-right"></i> Features</a><a href="#" data-page="teacher-reg"><i class="fas fa-angle-right"></i> Teacher Registration</a><a href="#" data-page="student-reg"><i class="fas fa-angle-right"></i> Student Registration</a></div>
-            <div class="footer-section"><h5>Contact Info</h5><p><i class="fas fa-map-marker-alt"></i> 123 Education Street, City</p><p><i class="fas fa-phone"></i> +91 98765 43210</p><p><i class="fas fa-envelope"></i> info@balbharti.com</p><p><i class="fas fa-clock"></i> Mon-Sat: 9 AM - 8 PM</p></div>
+            <div class="footer-section">
+                <h5>About Us</h5>
+                <p id="footerAboutText">Bal Bharti Coaching Center is dedicated to providing quality education with modern technology integration.</p>
+                <div class="social-links" id="socialLinks">
+                    <a href="#" id="whatsappLink" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" id="instagramLink" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="#" id="facebookLink" target="_blank"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h5>Quick Links</h5>
+                <a href="#" data-page="home"><i class="fas fa-angle-right"></i> Home</a>
+                <a href="#" data-page="about"><i class="fas fa-angle-right"></i> About</a>
+                <a href="#" data-page="features"><i class="fas fa-angle-right"></i> Features</a>
+                <a href="#" data-page="teacher-reg"><i class="fas fa-angle-right"></i> Teacher Registration</a>
+                <a href="#" data-page="student-reg"><i class="fas fa-angle-right"></i> Student Registration</a>
+            </div>
+            <div class="footer-section">
+                <h5>Contact Info</h5>
+                <p><i class="fas fa-map-marker-alt"></i> <span id="contactAddress">123 Education Street, City</span></p>
+                <p><i class="fas fa-phone"></i> <span id="contactPhone">+91 98765 43210</span></p>
+                <p><i class="fas fa-envelope"></i> <span id="contactEmail">info@balbharti.com</span></p>
+                <p><i class="fas fa-clock"></i> Mon-Sat: 9 AM - 8 PM</p>
+            </div>
+            <div class="footer-section">
+                <h5>Institute Info</h5>
+                <p><i class="fas fa-calendar-alt"></i> Established: 2010</p>
+                <p><i class="fas fa-trophy"></i> 5000+ Students Trained</p>
+                <p><i class="fas fa-chalkboard-teacher"></i> 25+ Expert Faculty</p>
+            </div>
         </div>
-        <div class="footer-bottom"><p><i class="far fa-copyright"></i> 2024 Bal Bharti Coaching | <i class="fas fa-heart" style="color:var(--accent);"></i> Built with Excellence</p></div>
+        <div class="footer-bottom">
+            <p><i class="far fa-copyright"></i> 2024 Bal Bharti Coaching | <i class="fas fa-heart" style="color:var(--accent);"></i> Built with Excellence</p>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
+        let swiper = null;
+        let voiceEnabled = true;
+        let configData = null;
+        let statsData = null;
+        let testimonialsData = null;
+        
+        const API_BASE_URL = window.location.origin;
+        
         // ============================================
         // THEME MANAGEMENT
         // ============================================
@@ -648,104 +682,396 @@
                 container.appendChild(p);
             }
         }
-
+        
         // ============================================
-        // HOME PAGE
+        // FETCH CONFIG FROM DATABASE
         // ============================================
-        function renderHome() {
+        async function fetchConfig() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/config`);
+                const data = await response.json();
+                configData = data;
+                updateUIWithConfig(data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching config:', error);
+                return getDefaultConfig();
+            }
+        }
+        
+        function getDefaultConfig() {
+            return {
+                logoText: 'BBCC',
+                title: 'Bal Bharti Coaching',
+                subTitle: 'Excellence in Education',
+                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty. Join us for excellence in education.',
+                slides: [
+                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
+                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800',
+                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=800'
+                ],
+                whatsapp: '#',
+                insta: '#',
+                fb: '#',
+                contactAddress: '123 Education Street, City',
+                contactPhone: '+91 98765 43210',
+                contactEmail: 'info@balbharti.com'
+            };
+        }
+        
+        function updateUIWithConfig(config) {
+            if (config.logoText) document.getElementById('logoText').textContent = config.logoText;
+            if (config.title) {
+                document.getElementById('siteTitle').textContent = config.title;
+                document.getElementById('pageTitle').textContent = config.title;
+            }
+            if (config.subTitle) document.getElementById('siteSubtitle').textContent = config.subTitle;
+            if (config.aboutText) document.getElementById('footerAboutText').textContent = config.aboutText;
+            if (config.contactAddress) document.getElementById('contactAddress').textContent = config.contactAddress;
+            if (config.contactPhone) document.getElementById('contactPhone').textContent = config.contactPhone;
+            if (config.contactEmail) document.getElementById('contactEmail').textContent = config.contactEmail;
+            if (config.whatsapp) document.getElementById('whatsappLink').href = config.whatsapp;
+            if (config.insta) document.getElementById('instagramLink').href = config.insta;
+            if (config.fb) document.getElementById('facebookLink').href = config.fb;
+        }
+        
+        // ============================================
+        // FETCH STATS FROM DATABASE
+        // ============================================
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/stats`);
+                if (response.ok) {
+                    const data = await response.json();
+                    statsData = data.data;
+                    return statsData;
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+            return {
+                totalStudents: 542,
+                totalTeachers: 28,
+                totalCourses: 12,
+                successRate: 96,
+                totalBatches: 15,
+                totalSubjects: 8
+            };
+        }
+        
+        // ============================================
+        // FETCH TESTIMONIALS FROM DATABASE
+        // ============================================
+        async function fetchTestimonials() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/testimonials`);
+                if (response.ok) {
+                    const data = await response.json();
+                    testimonialsData = data.data;
+                    return testimonialsData;
+                }
+            } catch (error) {
+                console.error('Error fetching testimonials:', error);
+            }
+            return [
+                {
+                    name: "Priya Sharma",
+                    role: "Parent",
+                    text: "Bal Bharti Coaching has transformed my child's academic performance. The teachers are dedicated and use modern teaching methods.",
+                    rating: 5,
+                    image: "https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100"
+                },
+                {
+                    name: "Rajesh Kumar",
+                    role: "Teacher",
+                    text: "As a teacher, I love the dashboard. Marking attendance with photo has become so easy. The salary tracking system is excellent.",
+                    rating: 5,
+                    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
+                },
+                {
+                    name: "Amit Patel",
+                    role: "Student",
+                    text: "The attendance system is very efficient. I can check my history anytime. The teaching quality is outstanding.",
+                    rating: 5,
+                    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100"
+                }
+            ];
+        }
+        
+        // ============================================
+        // RENDER HOME PAGE WITH DYNAMIC DATA
+        // ============================================
+        async function renderHome() {
+            const config = configData || await fetchConfig();
+            const stats = statsData || await fetchStats();
+            const testimonials = testimonialsData || await fetchTestimonials();
+            
+            let slidesHtml = '';
+            const slides = config.slides || getDefaultConfig().slides;
+            slides.forEach(slide => {
+                slidesHtml += `<div class="swiper-slide"><img src="${slide}" alt="Slide"></div>`;
+            });
+            
+            let statsHtml = `
+                <div class="stat-item">
+                    <div class="stat-number">${stats.totalStudents}+</div>
+                    <div class="stat-label">Happy Students</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.totalTeachers}+</div>
+                    <div class="stat-label">Expert Teachers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.totalCourses}+</div>
+                    <div class="stat-label">Courses Offered</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.successRate}%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            `;
+            
+            let testimonialsHtml = '';
+            testimonials.forEach(t => {
+                let stars = '';
+                for (let i = 0; i < t.rating; i++) {
+                    stars += '<i class="fas fa-star"></i>';
+                }
+                testimonialsHtml += `
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"${t.text}"</p>
+                        <div class="testimonial-author">
+                            <img src="${t.image}" alt="${t.name}">
+                            <div>
+                                <div class="author-name">${t.name}</div>
+                                <div class="author-rating">${stars}</div>
+                                <small style="color:var(--text-secondary)">${t.role}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
             return `
                 <section class="hero-section">
                     <div class="container-fluid px-0">
                         <div class="swiper-container mySwiper">
-                            <div class="swiper-wrapper" id="dbSlides">
-                                <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800" alt="Slide"></div>
-                                <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800" alt="Slide"></div>
-                                <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1503676260728-5177806628cb?w=800" alt="Slide"></div>
-                            </div>
+                            <div class="swiper-wrapper">${slidesHtml}</div>
                             <div class="swiper-pagination"></div>
                         </div>
                         <div class="actions-grid">
-                            <a href="#" class="action-card" data-page="teacher-reg"><div class="action-icon"><i class="fas fa-chalkboard-teacher"></i></div><div class="action-title">Teacher Reg</div><div class="action-desc">Join as teacher</div></a>
-                            <a href="#" class="action-card" data-page="teacher-dashboard"><div class="action-icon"><i class="fas fa-sign-in-alt"></i></div><div class="action-title">Teacher Login</div><div class="action-desc">Access dashboard</div></a>
-                            <a href="#" class="action-card" data-page="student-reg"><div class="action-icon"><i class="fas fa-user-plus"></i></div><div class="action-title">Student Reg</div><div class="action-desc">New admission</div></a>
-                            <a href="#" class="action-card" data-page="student-attendance"><div class="action-icon"><i class="fas fa-user-graduate"></i></div><div class="action-title">Attendance</div><div class="action-desc">Mark attendance</div></a>
-                            <a href="#" class="action-card" data-page="admin-login"><div class="action-icon"><i class="fas fa-user-tie"></i></div><div class="action-title">Admin Login</div><div class="action-desc">Admin panel</div></a>
+                            <a href="#" class="action-card" data-page="teacher-reg"><div class="action-icon"><i class="fas fa-chalkboard-teacher"></i></div><div class="action-title">Teacher Registration</div><div class="action-desc">Join our teaching faculty</div></a>
+                            <a href="#" class="action-card" data-page="teacher-login"><div class="action-icon"><i class="fas fa-sign-in-alt"></i></div><div class="action-title">Teacher Login</div><div class="action-desc">Access teacher dashboard</div></a>
+                            <a href="#" class="action-card" data-page="student-reg"><div class="action-icon"><i class="fas fa-user-plus"></i></div><div class="action-title">Student Registration</div><div class="action-desc">New admission form</div></a>
+                            <a href="#" class="action-card" data-page="student-attendance"><div class="action-icon"><i class="fas fa-user-graduate"></i></div><div class="action-title">Student Attendance</div><div class="action-desc">Mark attendance</div></a>
+                            <a href="#" class="action-card" data-page="admin-login"><div class="action-icon"><i class="fas fa-user-tie"></i></div><div class="action-title">Admin Login</div><div class="action-desc">Admin panel access</div></a>
                         </div>
                     </div>
                 </section>
-                <div class="voice-bar"><div class="voice-message"><i class="fas fa-microphone-alt"></i><span id="voiceMessage">Welcome to Bal Bharti Coaching Center</span></div><div class="voice-controls"><button id="repeatVoice"><i class="fas fa-volume-up"></i></button><button id="toggleVoice"><i class="fas fa-microphone"></i></button></div></div>
-                <div class="about-card" id="about"><h2><i class="fas fa-chalkboard-teacher"></i> About Us</h2><div id="dbAbout" class="about-text">Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty. Join us for excellence in education.</div></div>
-                <section class="features-section" id="features"><div class="container-fluid px-0"><h2 class="section-title"><i class="fas fa-star"></i> Why Choose Us</h2><p class="section-subtitle">The best educational experience with modern technology</p><div class="features-grid"><div class="feature-card"><div class="feature-icon"><i class="fas fa-user-graduate"></i></div><h3 class="feature-title">Expert Teachers</h3><p class="feature-desc">Experienced faculty with personalized attention</p></div><div class="feature-card"><div class="feature-icon"><i class="fas fa-calendar-check"></i></div><h3 class="feature-title">Smart Attendance</h3><p class="feature-desc">Digital attendance with photo capture</p></div><div class="feature-card"><div class="feature-icon"><i class="fas fa-rupee-sign"></i></div><h3 class="feature-title">Fee Management</h3><p class="feature-desc">Automated tracking and reminders</p></div><div class="feature-card"><div class="feature-icon"><i class="fas fa-chart-line"></i></div><h3 class="feature-title">Performance Tracking</h3><p class="feature-desc">Detailed analytics and reports</p></div></div></div></section>
-                <section class="stats-section"><div class="container-fluid px-0"><div class="stats-grid"><div class="stat-item"><div class="stat-number">500+</div><div class="stat-label">Happy Students</div></div><div class="stat-item"><div class="stat-number">25+</div><div class="stat-label">Expert Teachers</div></div><div class="stat-item"><div class="stat-number">10+</div><div class="stat-label">Years Experience</div></div><div class="stat-item"><div class="stat-number">100%</div><div class="stat-label">Success Rate</div></div></div></div></section>
-                <section class="testimonials-section"><div class="container-fluid px-0"><h2 class="section-title"><i class="fas fa-quote-right"></i> What People Say</h2><div class="testimonials-grid"><div class="testimonial-card"><p class="testimonial-text">"Bal Bharti Coaching has transformed my child's academic performance. The teachers are dedicated!"</p><div class="testimonial-author"><img src="https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100"><div><div class="author-name">Priya Sharma</div><div class="author-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div></div></div><div class="testimonial-card"><p class="testimonial-text">"As a teacher, I love the dashboard. Marking attendance with photo has become so easy."</p><div class="testimonial-author"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"><div><div class="author-name">Rajesh Kumar</div><div class="author-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div></div></div><div class="testimonial-card"><p class="testimonial-text">"The attendance system is very efficient. I can check my history anytime."</p><div class="testimonial-author"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100"><div><div class="author-name">Amit Patel</div><div class="author-rating"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div></div></div></div></div></div></section>
-                <div class="cta-section"><h2 class="cta-title">Ready to Start Your Journey?</h2><a href="#" class="cta-btn" data-page="student-reg"><i class="fas fa-user-plus"></i> Register Now</a></div>
+                <div class="voice-bar">
+                    <div class="voice-message">
+                        <i class="fas fa-microphone-alt"></i>
+                        <span id="voiceMessage">Welcome to ${config.title || 'Bal Bharti Coaching Center'}</span>
+                    </div>
+                    <div class="voice-controls">
+                        <button id="repeatVoice"><i class="fas fa-volume-up"></i></button>
+                        <button id="toggleVoice"><i class="fas fa-microphone"></i></button>
+                    </div>
+                </div>
+                <div class="about-card" id="about">
+                    <h2><i class="fas fa-chalkboard-teacher"></i> About ${config.title || 'Bal Bharti Coaching'}</h2>
+                    <div class="about-text">${config.aboutText || getDefaultConfig().aboutText}</div>
+                </div>
+                <section class="features-section" id="features">
+                    <div class="container-fluid px-0">
+                        <h2 class="section-title"><i class="fas fa-star"></i> Why Choose Us</h2>
+                        <p class="section-subtitle">The best educational experience with modern technology</p>
+                        <div class="features-grid">
+                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-user-graduate"></i></div><h3 class="feature-title">Expert Teachers</h3><p class="feature-desc">Experienced faculty with personalized attention</p></div>
+                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-calendar-check"></i></div><h3 class="feature-title">Smart Attendance</h3><p class="feature-desc">Digital attendance with photo capture</p></div>
+                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-rupee-sign"></i></div><h3 class="feature-title">Fee Management</h3><p class="feature-desc">Automated tracking and reminders</p></div>
+                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-chart-line"></i></div><h3 class="feature-title">Performance Tracking</h3><p class="feature-desc">Detailed analytics and reports</p></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="stats-section">
+                    <div class="container-fluid px-0">
+                        <div class="stats-grid">${statsHtml}</div>
+                    </div>
+                </section>
+                <section class="testimonials-section">
+                    <div class="container-fluid px-0">
+                        <h2 class="section-title"><i class="fas fa-quote-right"></i> What People Say</h2>
+                        <div class="testimonials-grid">${testimonialsHtml}</div>
+                    </div>
+                </section>
+                <div class="cta-section">
+                    <h2 class="cta-title">Ready to Start Your Journey?</h2>
+                    <a href="#" class="cta-btn" data-page="student-reg"><i class="fas fa-user-plus"></i> Register Now</a>
+                </div>
             `;
         }
-
-        function redirectPage(page) {
-            const urls = {
-                'teacher-reg': 'teacher-reg.html',
-                'student-reg': 'register.html',
-                'teacher-dashboard': 'Teacher-Self-Dashboard.html',
-                'student-attendance': 'studentats.html',
-                'admin-login': 'login.html'
-            };
-            if (urls[page]) window.location.href = urls[page];
-            else loadPage(page);
-        }
-
-        let swiper = null;
-        function initSwiper() { if (swiper) swiper.destroy(); swiper = new Swiper(".mySwiper", { effect: "cube", grabCursor: true, cubeEffect: { shadow: true }, pagination: { el: ".swiper-pagination", clickable: true }, autoplay: { delay: 3000, disableOnInteraction: false }, loop: true }); }
-
-        let voiceEnabled = true;
-        function initVoice() {
-            document.getElementById('repeatVoice')?.addEventListener('click', () => speak(document.getElementById('voiceMessage')?.textContent));
-            document.getElementById('toggleVoice')?.addEventListener('click', () => { voiceEnabled = !voiceEnabled; speak(voiceEnabled ? 'Voice enabled' : 'Voice disabled'); });
-        }
-
+        
+        // ============================================
+        // VOICE FUNCTIONS
+        // ============================================
         function speak(text) {
             if (!voiceEnabled) return;
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'hi-IN';
             window.speechSynthesis.speak(utterance);
         }
-
+        
+        function initVoice() {
+            const repeatBtn = document.getElementById('repeatVoice');
+            const toggleBtn = document.getElementById('toggleVoice');
+            if (repeatBtn) repeatBtn.addEventListener('click', () => {
+                const msgEl = document.getElementById('voiceMessage');
+                if (msgEl) speak(msgEl.textContent);
+            });
+            if (toggleBtn) toggleBtn.addEventListener('click', () => {
+                voiceEnabled = !voiceEnabled;
+                speak(voiceEnabled ? 'Voice enabled' : 'Voice disabled');
+            });
+        }
+        
+        // ============================================
+        // SWIPER INITIALIZATION
+        // ============================================
+        function initSwiper() {
+            if (swiper) swiper.destroy();
+            swiper = new Swiper(".mySwiper", {
+                effect: "cube",
+                grabCursor: true,
+                cubeEffect: { shadow: true },
+                pagination: { el: ".swiper-pagination", clickable: true },
+                autoplay: { delay: 3000, disableOnInteraction: false },
+                loop: true
+            });
+        }
+        
+        // ============================================
+        // PAGE NAVIGATION - BUTTON MAPPING
+        // ============================================
+        // Button Name | Button Function | Page Opens
+        // ---------------------------------------------------------------
+        // Home | Returns to main homepage | Home Page
+        // About | Scrolls to About section | About Section
+        // Features | Scrolls to Features section | Features Section
+        // Teacher Registration | Teacher registration form | teacher-reg.html
+        // Teacher Login | Teacher dashboard login | teacher-self-dashboard.html
+        // Student Registration | Student admission form | register.html
+        // Student Attendance | Mark attendance page | studentats.html
+        // Admin Login | Admin panel login | login.html
+        
+        function redirectPage(page) {
+            const pageMapping = {
+                'home': 'home',
+                'about': 'about',
+                'features': 'features',
+                'teacher-reg': 'teacher-reg.html',
+                'teacher-login': 'teacher-self-dashboard.html',
+                'student-reg': 'register.html',
+                'student-attendance': 'studentats.html',
+                'admin-login': 'login.html'
+            };
+            
+            const target = pageMapping[page];
+            if (target && (target.endsWith('.html') || target === 'home' || target === 'about' || target === 'features')) {
+                if (target === 'home' || target === 'about' || target === 'features') {
+                    loadPage(target);
+                } else {
+                    window.location.href = target;
+                }
+            } else {
+                loadPage('home');
+            }
+        }
+        
         async function loadPage(page) {
             const content = document.getElementById('mainContent');
-            if (page === 'home' || page === 'about' || page === 'features') {
-                content.innerHTML = renderHome();
+            
+            if (page === 'home') {
+                content.innerHTML = await renderHome();
                 initSwiper();
                 initVoice();
-                if (page === 'about') setTimeout(() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                if (page === 'features') setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); redirectPage(el.getAttribute('data-page')); }));
-            } else { redirectPage(page); }
+            } else if (page === 'about') {
+                content.innerHTML = await renderHome();
+                initSwiper();
+                initVoice();
+                setTimeout(() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }), 200);
+            } else if (page === 'features') {
+                content.innerHTML = await renderHome();
+                initSwiper();
+                initVoice();
+                setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 200);
+            }
+            
+            attachEventListeners();
         }
-
+        
+        function attachEventListeners() {
+            document.querySelectorAll('[data-page]').forEach(el => {
+                el.removeEventListener('click', handlePageClick);
+                el.addEventListener('click', handlePageClick);
+            });
+        }
+        
+        function handlePageClick(e) {
+            e.preventDefault();
+            const page = e.currentTarget.getAttribute('data-page');
+            redirectPage(page);
+        }
+        
         // ============================================
-        // INITIALIZE
+        // INITIALIZE EVERYTHING
         // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
+        async function initialize() {
             createParticles();
-            loadPage('home');
-            setTimeout(() => document.getElementById('pageLoader')?.classList.add('fade-out'), 500);
+            await fetchConfig();
+            await fetchStats();
+            await fetchTestimonials();
+            await loadPage('home');
             
-            // Menu toggle
-            document.getElementById('menuToggle')?.addEventListener('click', () => document.getElementById('navLinks')?.classList.toggle('show'));
+            setTimeout(() => {
+                const loader = document.getElementById('pageLoader');
+                if (loader) loader.classList.add('fade-out');
+            }, 500);
             
-            // Back to top
-            window.addEventListener('scroll', () => { const btn = document.getElementById('backToTop'); if (window.scrollY > 300) btn?.classList.add('show'); else btn?.classList.remove('show'); });
-            document.getElementById('backToTop')?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+            }
             
-            // Mobile nav
-            document.querySelectorAll('.mobile-nav-item').forEach(el => el.addEventListener('click', () => { redirectPage(el.getAttribute('data-page')); }));
-            document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); redirectPage(el.getAttribute('data-page')); }));
+            window.addEventListener('scroll', () => {
+                const btn = document.getElementById('backToTop');
+                if (window.scrollY > 300) btn.classList.add('show');
+                else btn.classList.remove('show');
+            });
             
-            // Close menu on click outside
-            document.addEventListener('click', (e) => { const nav = document.getElementById('navLinks'); if (nav && nav.classList.contains('show') && !nav.contains(e.target) && !e.target.closest('.menu-toggle')) nav.classList.remove('show'); });
+            document.getElementById('backToTop')?.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
             
-            setTimeout(() => speak('Welcome to Bal Bharti Coaching Center'), 1000);
-        });
+            document.querySelectorAll('.mobile-nav-item').forEach(el => {
+                el.addEventListener('click', () => redirectPage(el.getAttribute('data-page')));
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (navLinks && navLinks.classList.contains('show') && 
+                    !navLinks.contains(e.target) && !e.target.closest('.menu-toggle')) {
+                    navLinks.classList.remove('show');
+                }
+            });
+            
+            setTimeout(() => {
+                const welcomeMsg = document.getElementById('voiceMessage');
+                if (welcomeMsg) speak(welcomeMsg.textContent);
+            }, 1500);
+        }
+        
+        initialize();
     </script>
 </body>
 </html>
