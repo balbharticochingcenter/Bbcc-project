@@ -20,20 +20,12 @@
         })();
     </script>
 
-    <!-- Bootstrap CSS (Lightweight) -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts - Inter for modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
     
-    <!-- Animate.css for smooth animations -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    
     <style>
-        /* ===== MODERN VARIABLES ===== */
         :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
@@ -44,677 +36,196 @@
             --light: #f8f9fa;
             --accent: #ffd700;
             --gradient-primary: linear-gradient(135deg, #4361ee, #3a0ca3);
-            --gradient-success: linear-gradient(135deg, #4cc9f0, #4895ef);
-            --gradient-warning: linear-gradient(135deg, #f8961e, #f3722c);
-            --gradient-danger: linear-gradient(135deg, #f94144, #f72585);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
             --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
             --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
-            --border-radius-xs: 8px;
-            --border-radius-sm: 12px;
-            --border-radius-md: 16px;
-            --border-radius-lg: 24px;
-            --border-radius-xl: 32px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fa;
-            min-height: 100vh;
-            color: #1e293b;
-            overflow-x: hidden;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f7fa; min-height: 100vh; color: #1e293b; overflow-x: hidden; }
 
         /* Loading Overlay */
         .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            flex-direction: column;
-            gap: 20px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center; z-index: 99999;
+            flex-direction: column; gap: 20px;
         }
-
         .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #eef2f6;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            width: 50px; height: 50px;
+            border: 4px solid #eef2f6; border-top: 4px solid var(--primary);
+            border-radius: 50%; animation: spin 0.8s infinite;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .loading-text {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--primary);
-            letter-spacing: 0.5px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Toast Notifications */
+        /* Toast */
         .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 16px;
-            right: 16px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
+            position: fixed; top: 20px; left: 16px; right: 16px; z-index: 10000;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
         }
-
         .toast-message {
-            background: white;
-            border-radius: 16px;
-            padding: 16px 20px;
-            box-shadow: var(--shadow-xl);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateY(-100px);
-            animation: slideDown 0.3s forwards;
-            border-left: 5px solid;
-            pointer-events: auto;
-            max-width: 400px;
-            margin: 0 auto;
-            width: 100%;
+            background: white; border-radius: 16px; padding: 16px 20px;
+            box-shadow: var(--shadow-xl); display: flex; align-items: center; gap: 12px;
+            animation: slideDown 0.3s forwards; border-left: 5px solid;
+            pointer-events: auto; max-width: 400px; margin: 0 auto; width: 100%;
         }
-
         .toast-message.success { border-left-color: var(--success); }
         .toast-message.error { border-left-color: var(--danger); }
         .toast-message.warning { border-left-color: var(--warning); }
-        .toast-message.info { border-left-color: var(--accent); }
-
         .toast-message i { font-size: 1.3rem; }
         .toast-message.success i { color: var(--success); }
         .toast-message.error i { color: var(--danger); }
-        .toast-message.warning i { color: var(--warning); }
-        .toast-message.info i { color: var(--accent); }
-
-        .toast-message span { flex: 1; font-weight: 500; }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
+        @keyframes slideDown { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .toast-message.fade-out { animation: fadeOut 0.3s forwards; }
         @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
 
-        /* Admin Header */
+        /* Header */
         .admin-header {
-            background: white;
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            background: rgba(255,255,255,0.95);
+            background: white; padding: 16px 20px; display: flex; flex-direction: column;
+            gap: 12px; box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 1000;
+            backdrop-filter: blur(10px); background: rgba(255,255,255,0.95);
         }
-
-        @media (min-width: 768px) {
-            .admin-header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                padding: 16px 5%;
-            }
-        }
-
+        @media (min-width: 768px) { .admin-header { flex-direction: row; justify-content: space-between; align-items: center; padding: 16px 5%; } }
         .header-left { display: flex; align-items: center; gap: 12px; }
-        .logo-wrapper {
-            width: 45px; height: 45px;
-            background: var(--gradient-primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: var(--shadow-md);
-        }
-        .header-title h5 { font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--dark); }
+        .logo-wrapper { width: 45px; height: 45px; background: var(--gradient-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; }
+        .header-title h5 { font-size: 1.1rem; font-weight: 700; margin: 0; }
         .header-title small { font-size: 0.75rem; color: #64748b; }
-        .header-right { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
-        .refresh-btn {
-            width: 45px; height: 45px;
-            border-radius: 12px;
-            background: #f1f5f9;
-            border: none;
-            color: var(--dark);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .refresh-btn:active { transform: scale(0.95); background: #e2e8f0; }
-        .logout-btn {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 10px rgba(249, 65, 68, 0.3);
-        }
-        .logout-btn:active { transform: scale(0.95); }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .refresh-btn { width: 45px; height: 45px; border-radius: 12px; background: #f1f5f9; border: none; color: var(--dark); font-size: 1.2rem; cursor: pointer; }
+        .logout-btn { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; }
 
         /* Main Container */
         .main-container { padding: 16px 16px 30px; max-width: 1600px; margin: 0 auto; }
         @media (min-width: 768px) { .main-container { padding: 24px 5%; } }
 
         /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
         @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
-        .stat-card {
-            background: white;
-            border-radius: 20px;
-            padding: 16px 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s;
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-        .stat-icon {
-            width: 45px; height: 45px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-        .stat-info { min-width: 0; }
-        .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--dark); line-height: 1.2; margin-bottom: 2px; }
-        .stat-label { font-size: 0.7rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+        .stat-card { background: white; border-radius: 20px; padding: 16px 12px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-md); }
+        .stat-icon { width: 45px; height: 45px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--dark); line-height: 1.2; }
+        .stat-label { font-size: 0.7rem; color: #64748b; font-weight: 500; }
 
         /* Tabs */
         .tabs-wrapper {
-            background: white;
-            border-radius: 30px;
-            padding: 6px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-md);
-            display: flex;
-            gap: 4px;
-            overflow-x: auto;
-            scrollbar-width: none;
+            background: white; border-radius: 30px; padding: 6px; margin-bottom: 24px;
+            box-shadow: var(--shadow-md); display: flex; gap: 4px; overflow-x: auto;
         }
         .tabs-wrapper::-webkit-scrollbar { display: none; }
         .tab-btn {
-            flex: 1;
-            min-width: max-content;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 25px;
-            background: transparent;
-            color: #64748b;
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
+            flex: 1; min-width: max-content; padding: 12px 16px; border: none;
+            border-radius: 25px; background: transparent; color: #64748b;
+            font-weight: 600; font-size: 0.85rem; display: flex; align-items: center;
+            justify-content: center; gap: 8px; cursor: pointer; white-space: nowrap;
         }
-        .tab-btn.active {
-            background: var(--gradient-primary);
-            color: white;
-            box-shadow: var(--shadow-md);
-        }
+        .tab-btn.active { background: var(--gradient-primary); color: white; }
 
-        /* Split Layout for Website Tab */
-        .split-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-        @media (min-width: 1024px) {
-            .split-layout {
-                flex-direction: row;
-            }
-            .split-left {
-                flex: 1;
-                min-width: 0;
-            }
-            .split-right {
-                width: 450px;
-                flex-shrink: 0;
-                position: sticky;
-                top: 90px;
-                height: fit-content;
-            }
-        }
+        /* Split Layout */
+        .split-layout { display: flex; flex-direction: column; gap: 24px; }
+        @media (min-width: 1024px) { .split-layout { flex-direction: row; } .split-left { flex: 1; } .split-right { width: 450px; position: sticky; top: 90px; height: fit-content; } }
 
-        /* Live Website Preview */
-        .live-preview {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-        .preview-header {
-            background: #f8fafc;
-            padding: 12px 16px;
-            border-bottom: 1px solid #eef2f6;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .preview-header h4 {
-            font-size: 1rem;
-            font-weight: 700;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .preview-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .preview-iframe {
-            background: white;
-            height: 500px;
-            overflow: auto;
-        }
-        .preview-iframe iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: white;
-        }
-        .refresh-preview {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .refresh-preview:active { transform: scale(0.95); }
+        /* Live Preview */
+        .live-preview { background: white; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); }
+        .preview-header { background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #eef2f6; display: flex; align-items: center; justify-content: space-between; }
+        .preview-header h4 { font-size: 1rem; font-weight: 700; margin: 0; }
+        .preview-iframe { background: white; height: 500px; overflow: auto; }
+        .preview-iframe iframe { width: 100%; height: 100%; border: none; }
+        .refresh-preview { background: var(--primary); color: white; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
 
         /* Logo Type Toggle */
-        .logo-type-toggle {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
+        .logo-type-toggle { display: flex; gap: 12px; margin-bottom: 16px; }
         .logo-type-btn {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #eef2f6;
-            border-radius: 14px;
-            background: white;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex: 1; padding: 10px; border: 2px solid #eef2f6; border-radius: 14px;
+            background: white; font-weight: 600; color: #64748b; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .logo-type-btn.active {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-        }
-        .logo-type-btn:active { transform: scale(0.98); }
+        .logo-type-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
 
-        /* Logo Preview Area */
-        .logo-preview-wrapper {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 20px;
-            border: 3px dashed #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            background: white;
-        }
+        /* Logo Preview */
+        .logo-preview-wrapper { background: #f8fafc; border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .logo-preview { width: 100px; height: 100px; border-radius: 20px; border: 3px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; overflow: hidden; background: white; }
         .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .logo-preview .logo-text-preview {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #6366f1, #ec489a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .preview-text {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 0.85rem;
-        }
+        .logo-preview .logo-text-preview { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #ec489a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         /* Content Card */
-        .content-card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            margin-bottom: 24px;
-            border: 1px solid rgba(0,0,0,0.03);
-            animation: fadeIn 0.4s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .card-header-custom {
-            padding: 18px 20px;
-            border-bottom: 1px solid #eef2f6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+        .content-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); margin-bottom: 24px; }
+        .card-header-custom { padding: 18px 20px; border-bottom: 1px solid #eef2f6; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
         .card-header-custom h3 { font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
         .card-body-custom { padding: 20px; }
 
         /* Form Elements */
-        .form-label { font-weight: 600; font-size: 0.85rem; color: var(--dark); margin-bottom: 6px; }
+        .form-label { font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; }
         .form-control, .form-select {
-            border-radius: 14px;
-            border: 2px solid #eef2f6;
-            padding: 12px 16px;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            background: white;
+            border-radius: 14px; border: 2px solid #eef2f6; padding: 12px 16px;
+            font-size: 0.95rem; transition: all 0.2s; background: white;
         }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
-            outline: none;
-        }
-        .input-group-custom { position: relative; }
-        .input-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-        }
-        .input-with-icon { padding-left: 45px !important; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(67,97,238,0.1); }
 
         /* Buttons */
         .btn-primary-custom {
-            background: var(--gradient-primary);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            padding: 14px 24px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+            background: var(--gradient-primary); color: white; border: none;
+            border-radius: 14px; padding: 14px 24px; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 4px 12px rgba(67,97,238,0.3);
         }
         .btn-primary-custom:active { transform: scale(0.96); }
         .btn-primary-custom.loading { opacity: 0.7; pointer-events: none; color: transparent; position: relative; }
         .btn-primary-custom.loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            top: 50%;
-            left: 50%;
-            margin-left: -10px;
-            margin-top: -10px;
-            border: 2px solid white;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            content: ''; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%;
+            margin-left: -10px; margin-top: -10px; border: 2px solid white;
+            border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;
         }
         .btn-outline-custom {
-            background: transparent;
-            border: 2px solid #eef2f6;
-            border-radius: 14px;
-            padding: 12px 20px;
-            font-weight: 600;
-            color: var(--dark);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: transparent; border: 2px solid #eef2f6; border-radius: 14px;
+            padding: 12px 20px; font-weight: 600; color: var(--dark);
+            display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
         }
-        .btn-outline-custom:active { background: #f1f5f9; transform: scale(0.96); }
-        .btn-sm { padding: 8px 16px; font-size: 0.85rem; border-radius: 12px; }
 
-        /* Slides Container */
-        .slides-container {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .slide-item {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            align-items: center;
-            background: white;
-            padding: 8px;
-            border-radius: 14px;
-            box-shadow: var(--shadow-sm);
-        }
-        .slide-item input { flex: 1; }
-        .btn-remove-slide {
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-remove-slide:active { transform: scale(0.9); }
-        .btn-add-slide {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 40px;
-            padding: 12px 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .btn-add-slide:active { transform: scale(0.96); }
+        /* Slides */
+        .slides-container { background: #f8fafc; border-radius: 20px; padding: 20px; margin: 20px 0; }
+        .slide-item { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; background: white; padding: 8px; border-radius: 14px; }
+        .btn-remove-slide { background: var(--danger); color: white; border: none; border-radius: 10px; width: 40px; height: 40px; cursor: pointer; }
+        .btn-add-slide { background: var(--primary); color: white; border: none; border-radius: 40px; padding: 12px 20px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px; }
 
         /* Tables */
-        .table-responsive { border-radius: 16px; overflow-x: auto; margin: 0 -5px; padding: 0 5px; }
+        .table-responsive { border-radius: 16px; overflow-x: auto; }
         .table { margin-bottom: 0; min-width: 900px; }
-        .table th { background: #f8fafc; font-weight: 600; font-size: 0.8rem; color: #475569; border-bottom: 2px solid #e2e8f0; padding: 12px 8px; white-space: nowrap; }
+        .table th { background: #f8fafc; font-weight: 600; font-size: 0.8rem; padding: 12px 8px; white-space: nowrap; }
         .table td { vertical-align: middle; padding: 12px 8px; font-size: 0.85rem; }
         .student-photo, .teacher-photo { width: 40px; height: 40px; border-radius: 12px; object-fit: cover; border: 2px solid var(--primary); }
-        .action-group { display: flex; gap: 6px; flex-wrap: wrap; }
-        .action-btn {
-            width: 36px; height: 36px;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .action-btn:active { transform: scale(0.9); }
+        .action-group { display: flex; gap: 6px; }
+        .action-btn { width: 36px; height: 36px; border: none; border-radius: 10px; color: white; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
         .action-btn.approve { background: var(--success); }
         .action-btn.edit { background: var(--primary); }
         .action-btn.view { background: #8b5cf6; }
 
         /* Status Badges */
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            display: inline-block;
-            white-space: nowrap;
-        }
+        .status-badge { padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
         .status-badge.pending { background: #fff3cd; color: #856404; }
         .status-badge.approved { background: #d4edda; color: #155724; }
         .status-badge.rejected { background: #f8d7da; color: #721c24; }
 
-        /* Filter Buttons */
+        /* Filter & Search */
         .filter-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-        .filter-btn {
-            padding: 8px 16px;
-            border: 2px solid #eef2f6;
-            border-radius: 30px;
-            background: white;
-            color: #64748b;
-            font-weight: 600;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .filter-btn:active { transform: scale(0.95); }
-
-        /* Search Box */
-        .search-box { position: relative; width: 100%; }
+        .filter-btn { padding: 8px 16px; border: 2px solid #eef2f6; border-radius: 30px; background: white; font-weight: 600; cursor: pointer; }
+        .filter-btn.active { background: var(--primary); color: white; }
+        .search-box { position: relative; }
         .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        .search-box input {
-            width: 100%;
-            padding: 12px 16px 12px 45px;
-            border: 2px solid #eef2f6;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            background: white;
-        }
-        .search-box input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1); }
+        .search-box input { width: 100%; padding: 12px 16px 12px 45px; border: 2px solid #eef2f6; border-radius: 40px; }
 
         /* Password Toggle */
         .password-wrapper { position: relative; }
-        .toggle-password {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 1.1rem;
-            padding: 5px;
-            z-index: 10;
-        }
+        .toggle-password { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; }
 
         /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 16px 20px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-            z-index: 999;
-            border-radius: 30px 30px 0 0;
-            backdrop-filter: blur(10px);
-            background: rgba(255,255,255,0.95);
-        }
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: #64748b;
-            font-size: 0.7rem;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 30px;
-            transition: all 0.2s;
-        }
-        .bottom-nav-item i { font-size: 1.2rem; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 16px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 999; border-radius: 30px 30px 0 0; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #64748b; font-size: 0.7rem; cursor: pointer; padding: 8px 12px; border-radius: 30px; }
         .bottom-nav-item.active { background: var(--primary); color: white; }
         @media (min-width: 768px) { .bottom-nav { display: none; } }
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #64748b;
-            font-size: 0.8rem;
-            border-top: 1px solid #eef2f6;
-            background: white;
-            margin-top: 30px;
-        }
-
-        .security-badge {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 8px 12px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
+        footer { text-align: center; padding: 20px; color: #64748b; font-size: 0.8rem; border-top: 1px solid #eef2f6; background: white; margin-top: 30px; }
+        .security-badge { background: #e8f5e9; color: #2e7d32; padding: 8px 12px; border-radius: 30px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
@@ -755,10 +266,9 @@
         </div>
 
         <div class="tab-content" id="myTabContent">
-            <!-- TAB 1: WEBSITE SETTINGS with LIVE PREVIEW -->
+            <!-- TAB 1: WEBSITE SETTINGS -->
             <div class="tab-pane active" id="website" data-tab-content="website">
                 <div class="split-layout">
-                    <!-- LEFT SIDE: Edit Form -->
                     <div class="split-left">
                         <div class="content-card">
                             <div class="card-header-custom">
@@ -779,34 +289,32 @@
                                         </div>
                                     </div>
 
-                                    <!-- Text Logo Section -->
                                     <div id="textLogoSection" class="mb-4">
                                         <label class="form-label">Logo Text</label>
                                         <input type="text" id="edit-logo-text" class="form-control" placeholder="Enter logo text (e.g., BBCC)">
                                     </div>
 
-                                    <!-- Image Logo Section -->
                                     <div id="imageLogoSection" class="mb-4" style="display: none;">
                                         <label class="form-label">Logo Image</label>
                                         <input type="file" id="logoUpload" class="form-control" accept="image/*">
-                                        <small class="text-muted">Max size: 5KB (Auto-compress)</small>
+                                        <small class="text-muted">Auto compress to <5KB</small>
                                         <input type="hidden" id="edit-logo-image" value="">
                                     </div>
 
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
                                             <label class="form-label">Main Title</label>
-                                            <input type="text" id="edit-title" class="form-control" placeholder="Enter website title" required>
+                                            <input type="text" id="edit-title" class="form-control" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Sub-Title</label>
-                                            <input type="text" id="edit-subtitle" class="form-control" placeholder="Enter subtitle">
+                                            <input type="text" id="edit-subtitle" class="form-control">
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
                                         <label class="form-label">About Text</label>
-                                        <textarea id="edit-about" class="form-control" rows="4" placeholder="Enter about description"></textarea>
+                                        <textarea id="edit-about" class="form-control" rows="4"></textarea>
                                     </div>
 
                                     <div class="slides-container">
@@ -821,15 +329,15 @@
                                     <div class="row g-3">
                                         <div class="col-md-4">
                                             <label class="form-label text-success">WhatsApp URL</label>
-                                            <input type="url" id="edit-whatsapp" class="form-control" placeholder="https://wa.me/...">
+                                            <input type="url" id="edit-whatsapp" class="form-control">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label text-danger">Instagram URL</label>
-                                            <input type="url" id="edit-insta" class="form-control" placeholder="https://instagram.com/...">
+                                            <input type="url" id="edit-insta" class="form-control">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label text-primary">Facebook URL</label>
-                                            <input type="url" id="edit-fb" class="form-control" placeholder="https://facebook.com/...">
+                                            <input type="url" id="edit-fb" class="form-control">
                                         </div>
                                     </div>
 
@@ -839,15 +347,15 @@
                                     <div class="row g-3">
                                         <div class="col-md-4">
                                             <label class="form-label">Address</label>
-                                            <input type="text" id="edit-address" class="form-control" placeholder="Institute Address">
+                                            <input type="text" id="edit-address" class="form-control">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Phone</label>
-                                            <input type="text" id="edit-phone" class="form-control" placeholder="Contact Number">
+                                            <input type="text" id="edit-phone" class="form-control">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Email</label>
-                                            <input type="email" id="edit-email" class="form-control" placeholder="Email Address">
+                                            <input type="email" id="edit-email" class="form-control">
                                         </div>
                                     </div>
 
@@ -860,20 +368,17 @@
                         </div>
                     </div>
 
-                    <!-- RIGHT SIDE: LIVE WEBSITE PREVIEW -->
                     <div class="split-right">
                         <div class="live-preview">
                             <div class="preview-header">
                                 <h4><i class="fas fa-mobile-alt me-2"></i>Live Website Preview</h4>
-                                <div class="preview-actions">
-                                    <button class="refresh-preview" id="refreshPreviewBtn"><i class="fas fa-sync-alt"></i></button>
-                                </div>
+                                <button class="refresh-preview" id="refreshPreviewBtn"><i class="fas fa-sync-alt"></i></button>
                             </div>
-                            <div class="preview-iframe" id="previewIframeContainer">
+                            <div class="preview-iframe">
                                 <iframe id="livePreviewFrame" src="about:blank" title="Live Preview"></iframe>
                             </div>
                             <div class="preview-header" style="border-top: 1px solid #eef2f6;">
-                                <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Changes appear after clicking "Update Website"</small>
+                                <small><i class="fas fa-info-circle me-1"></i>Changes appear after clicking "Update Website"</small>
                             </div>
                         </div>
                     </div>
@@ -884,15 +389,15 @@
             <div class="tab-pane" id="students" data-tab-content="students" style="display: none;">
                 <div class="content-card">
                     <div class="card-header-custom">
-                        <h3><i class="fas fa-users" style="color: var(--primary);"></i>Student Management</h3>
+                        <h3><i class="fas fa-users"></i>Student Management</h3>
                         <button class="btn-sm btn-outline-custom" id="refreshStudentsBtn"><i class="fas fa-sync-alt me-2"></i>Refresh</button>
                     </div>
                     <div class="card-body-custom">
                         <div class="row g-3 mb-4">
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #e8f4fd; color: var(--primary); width: 40px; height: 40px;"><i class="fas fa-users"></i></div><div><div class="stat-value" id="studentTotal" style="font-size: 1.3rem;">0</div><div class="stat-label">Total</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #d4edda; color: var(--success); width: 40px; height: 40px;"><i class="fas fa-rupee-sign"></i></div><div><div class="stat-value" id="studentFeesTotal" style="font-size: 1.3rem;">₹0</div><div class="stat-label">Fees</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #fff3cd; color: var(--warning); width: 40px; height: 40px;"><i class="fas fa-check-circle"></i></div><div><div class="stat-value" id="studentPresent" style="font-size: 1.3rem;">0</div><div class="stat-label">Present</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #f8d7da; color: var(--danger); width: 40px; height: 40px;"><i class="fas fa-times-circle"></i></div><div><div class="stat-value" id="studentAbsent" style="font-size: 1.3rem;">0</div><div class="stat-label">Absent</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #e8f4fd; width: 40px; height: 40px;"><i class="fas fa-users"></i></div><div><div class="stat-value" id="studentTotal">0</div><div class="stat-label">Total</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #d4edda; width: 40px; height: 40px;"><i class="fas fa-rupee-sign"></i></div><div><div class="stat-value" id="studentFeesTotal">₹0</div><div class="stat-label">Fees</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #fff3cd; width: 40px; height: 40px;"><i class="fas fa-check-circle"></i></div><div><div class="stat-value" id="studentPresent">0</div><div class="stat-label">Present</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #f8d7da; width: 40px; height: 40px;"><i class="fas fa-times-circle"></i></div><div><div class="stat-value" id="studentAbsent">0</div><div class="stat-label">Absent</div></div></div></div>
                         </div>
 
                         <div class="row g-3 mb-4">
@@ -916,15 +421,15 @@
             <div class="tab-pane" id="teachers" data-tab-content="teachers" style="display: none;">
                 <div class="content-card">
                     <div class="card-header-custom">
-                        <h3><i class="fas fa-chalkboard-teacher" style="color: var(--success);"></i>Teacher Management</h3>
+                        <h3><i class="fas fa-chalkboard-teacher"></i>Teacher Management</h3>
                         <button class="btn-sm btn-outline-custom" id="refreshTeachersBtn"><i class="fas fa-sync-alt me-2"></i>Refresh</button>
                     </div>
                     <div class="card-body-custom">
                         <div class="row g-3 mb-4">
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #e8f4fd; color: var(--primary); width: 40px; height: 40px;"><i class="fas fa-users"></i></div><div><div class="stat-value" id="teacherTotal" style="font-size: 1.3rem;">0</div><div class="stat-label">Total</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #fff3cd; color: var(--warning); width: 40px; height: 40px;"><i class="fas fa-clock"></i></div><div><div class="stat-value" id="teacherPending" style="font-size: 1.3rem;">0</div><div class="stat-label">Pending</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #d4edda; color: var(--success); width: 40px; height: 40px;"><i class="fas fa-check-circle"></i></div><div><div class="stat-value" id="teacherApproved" style="font-size: 1.3rem;">0</div><div class="stat-label">Approved</div></div></div></div>
-                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #f8d7da; color: var(--danger); width: 40px; height: 40px;"><i class="fas fa-rupee-sign"></i></div><div><div class="stat-value" id="teacherSalary" style="font-size: 1.3rem;">₹0</div><div class="stat-label">Salary</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #e8f4fd; width: 40px; height: 40px;"><i class="fas fa-users"></i></div><div><div class="stat-value" id="teacherTotal">0</div><div class="stat-label">Total</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #fff3cd; width: 40px; height: 40px;"><i class="fas fa-clock"></i></div><div><div class="stat-value" id="teacherPending">0</div><div class="stat-label">Pending</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #d4edda; width: 40px; height: 40px;"><i class="fas fa-check-circle"></i></div><div><div class="stat-value" id="teacherApproved">0</div><div class="stat-label">Approved</div></div></div></div>
+                            <div class="col-6 col-md-3"><div class="stat-card p-3"><div class="stat-icon" style="background: #f8d7da; width: 40px; height: 40px;"><i class="fas fa-rupee-sign"></i></div><div><div class="stat-value" id="teacherSalary">₹0</div><div class="stat-label">Salary</div></div></div></div>
                         </div>
 
                         <div class="filter-buttons">
@@ -940,7 +445,7 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table"><thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Subject</th><th>Mobile</th><th>Salary</th><th>Status</th><th>Actions</th></tr></thead><tbody id="teachersTableBody"><tr><td colspan="8" class="text-center py-5">Loading...</td></tr></tbody></table>
+                            <table class="table"><thead><tr><th>Photo</th><th>ID</th><th>Name</th><th>Subject</th><th>Mobile</th><th>Salary</th><th>Status</th><th>Actions</th> </thead><tbody id="teachersTableBody">发展<td colspan="8" class="text-center py-5">Loading...</td> </tbody> </table>
                         </div>
                     </div>
                 </div>
@@ -953,13 +458,65 @@
                         <div class="content-card">
                             <div class="card-header-custom"><h3><i class="fas fa-user-shield"></i>Admin Settings</h3></div>
                             <div class="card-body-custom">
+                                <!-- Admin Profile Section -->
+                                <h5 class="mb-3 fw-bold"><i class="fas fa-user-circle me-2"></i>Admin Profile</h5>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Admin Name</label>
+                                        <input type="text" class="form-control" id="adminName" placeholder="Admin Name">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Admin Photo</label>
+                                        <input type="file" class="form-control" id="adminPhoto" accept="image/*">
+                                        <small class="text-muted">Upload profile photo (auto compress to <5KB)</small>
+                                        <input type="hidden" id="adminPhotoData">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Aadhar Number</label>
+                                        <input type="text" class="form-control" id="adminAadhar" maxlength="12" placeholder="12 digit Aadhar number">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label">Aadhar Document</label>
+                                        <input type="file" class="form-control" id="adminAadharDoc" accept=".pdf,image/*">
+                                        <small class="text-muted">PDF or Image (auto compress to <5KB)</small>
+                                        <input type="hidden" id="adminAadharDocData">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn-primary-custom w-100" id="updateProfileBtn">
+                                            <i class="fas fa-save me-2"></i>Update Profile
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <h5 class="mb-3 fw-bold"><i class="fas fa-key me-2"></i>Change Password</h5>
                                 <form id="adminSettingsForm">
-                                    <div class="mb-4"><label class="form-label">Current Admin ID</label><input type="text" class="form-control" id="currentAdminId" readonly></div>
-                                    <hr class="my-4"><h5 class="mb-3 fw-bold">Change Password</h5>
-                                    <div class="mb-3"><label class="form-label">Current Password</label><div class="password-wrapper"><input type="password" class="form-control" id="oldPassword" required><i class="fas fa-eye toggle-password" data-target="oldPassword"></i></div></div>
-                                    <div class="mb-3"><label class="form-label">New Password</label><div class="password-wrapper"><input type="password" class="form-control" id="newPassword" required><i class="fas fa-eye toggle-password" data-target="newPassword"></i></div><small class="text-muted">Minimum 6 characters</small></div>
-                                    <div class="mb-4"><label class="form-label">Confirm New Password</label><div class="password-wrapper"><input type="password" class="form-control" id="confirmPassword" required><i class="fas fa-eye toggle-password" data-target="confirmPassword"></i></div></div>
-                                    <button type="submit" class="btn-primary-custom w-100" id="changePasswordBtn"><i class="fas fa-sync-alt me-2"></i>Change Password</button>
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Password</label>
+                                        <div class="password-wrapper">
+                                            <input type="password" class="form-control" id="oldPassword" required>
+                                            <i class="fas fa-eye toggle-password" data-target="oldPassword"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">New Password</label>
+                                        <div class="password-wrapper">
+                                            <input type="password" class="form-control" id="newPassword" required>
+                                            <i class="fas fa-eye toggle-password" data-target="newPassword"></i>
+                                        </div>
+                                        <small class="text-muted">Minimum 6 characters</small>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <div class="password-wrapper">
+                                            <input type="password" class="form-control" id="confirmPassword" required>
+                                            <i class="fas fa-eye toggle-password" data-target="confirmPassword"></i>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn-primary-custom w-100" id="changePasswordBtn">
+                                        <i class="fas fa-sync-alt me-2"></i>Change Password
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -976,7 +533,7 @@
         <div class="bottom-nav-item" data-tab="admin"><i class="fas fa-user-shield"></i><span>Admin</span></div>
     </div>
 
-    <footer><small><i class="far fa-copyright me-1"></i>2026 Bal Bharti Coaching | <i class="fas fa-shield-alt me-1"></i>Complete Management System</small></footer>
+    <footer><small><i class="far fa-copyright me-1"></i>2026 Bal Bharti Coaching | Complete Management System</small></footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -986,7 +543,7 @@
         // ============================================
         let currentData = {};
         let slideCount = 0;
-        let logoType = 'text'; // 'text' or 'image'
+        let logoType = 'text';
         const token = localStorage.getItem('token');
         const toastContainer = document.getElementById('toastContainer');
         let students = [];
@@ -998,7 +555,7 @@
         function showToast(message, type = 'success', duration = 3000) {
             const toast = document.createElement('div');
             toast.className = `toast-message ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i><span>${message}</span>`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><span>${message}</span>`;
             toastContainer.appendChild(toast);
             setTimeout(() => { toast.classList.add('fade-out'); setTimeout(() => toast.remove(), 300); }, duration);
         }
@@ -1006,7 +563,7 @@
         function showLoading(show) { document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; }
 
         // ============================================
-        // COMPRESS IMAGE
+        // COMPRESS IMAGE (to <5KB)
         // ============================================
         function compressImage(file) {
             return new Promise((resolve, reject) => {
@@ -1070,7 +627,6 @@
                 updateLivePreview();
                 showToast('Logo compressed to <5KB!', 'success');
             } catch (err) {
-                console.error('Compression error:', err);
                 showToast('Error compressing image', 'error');
             } finally { showLoading(false); }
         });
@@ -1103,9 +659,7 @@
             </body></html>`;
             
             const iframe = document.getElementById('livePreviewFrame');
-            if (iframe) {
-                iframe.srcdoc = previewHtml;
-            }
+            if (iframe) iframe.srcdoc = previewHtml;
         }
 
         // ============================================
@@ -1136,9 +690,10 @@
                 currentData = data;
                 
                 // Detect logo type
-                if (data.logoText && data.logoText.startsWith('data:image')) {
+                if (data.logoImage && data.logoImage.startsWith('data:image')) {
                     setLogoType('image');
-                    document.getElementById('edit-logo-image').value = data.logoText;
+                    document.getElementById('edit-logo-image').value = data.logoImage;
+                    document.getElementById('edit-logo-text').value = data.logoText || 'BBCC';
                 } else {
                     setLogoType('text');
                     document.getElementById('edit-logo-text').value = data.logoText || 'BBCC';
@@ -1160,12 +715,123 @@
         }
 
         // ============================================
+        // FETCH ADMIN PROFILE
+        // ============================================
+        async function fetchAdminProfile() {
+            try {
+                const response = await fetch('/api/admin/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('adminName').value = data.data.name || '';
+                    document.getElementById('adminAadhar').value = data.data.aadharNumber || '';
+                }
+            } catch (err) {
+                console.error('Error fetching admin profile:', err);
+            }
+        }
+
+        // ============================================
+        // UPDATE ADMIN PROFILE
+        // ============================================
+        document.getElementById('updateProfileBtn').addEventListener('click', async () => {
+            const name = document.getElementById('adminName').value;
+            const aadharNumber = document.getElementById('adminAadhar').value;
+            const photo = document.getElementById('adminPhotoData').value;
+            const aadharDoc = document.getElementById('adminAadharDocData').value;
+            
+            const updateData = {};
+            if (name) updateData.name = name;
+            if (aadharNumber && aadharNumber.length === 12) updateData.aadharNumber = aadharNumber;
+            if (photo) updateData.photo = photo;
+            if (aadharDoc) updateData.aadharDoc = aadharDoc;
+            
+            if (Object.keys(updateData).length === 0) {
+                showToast('No changes to update', 'warning');
+                return;
+            }
+            
+            const btn = document.getElementById('updateProfileBtn');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/admin/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Profile updated successfully!', 'success');
+                    document.getElementById('adminPhotoData').value = '';
+                    document.getElementById('adminAadharDocData').value = '';
+                    document.getElementById('adminPhoto').value = '';
+                    document.getElementById('adminAadharDoc').value = '';
+                } else {
+                    showToast(result.message || 'Update failed', 'error');
+                }
+            } catch (err) {
+                showToast('Server error', 'error');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                showLoading(false);
+            }
+        });
+
+        // Admin Photo Upload
+        document.getElementById('adminPhoto').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                showToast('Compressing photo...', 'info');
+                const compressed = await compressImage(file);
+                document.getElementById('adminPhotoData').value = compressed;
+                showToast('Photo ready!', 'success');
+            } catch (err) {
+                showToast('Error compressing photo', 'error');
+            }
+        });
+
+        // Admin Aadhar Doc Upload
+        document.getElementById('adminAadharDoc').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                showToast('Processing document...', 'info');
+                if (file.type === 'application/pdf') {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('adminAadharDocData').value = e.target.result;
+                        showToast('PDF ready!', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type.startsWith('image/')) {
+                    const compressed = await compressImage(file);
+                    document.getElementById('adminAadharDocData').value = compressed;
+                    showToast('Document ready!', 'success');
+                } else {
+                    showToast('Unsupported file type', 'error');
+                }
+            } catch (err) {
+                showToast('Error processing document', 'error');
+            }
+        });
+
+        // ============================================
         // RESET FORM
         // ============================================
         function resetForm() {
-            if (currentData.logoText && currentData.logoText.startsWith('data:image')) {
+            if (currentData.logoImage && currentData.logoImage.startsWith('data:image')) {
                 setLogoType('image');
-                document.getElementById('edit-logo-image').value = currentData.logoText;
+                document.getElementById('edit-logo-image').value = currentData.logoImage;
+                document.getElementById('edit-logo-text').value = currentData.logoText || 'BBCC';
             } else {
                 setLogoType('text');
                 document.getElementById('edit-logo-text').value = currentData.logoText || 'BBCC';
@@ -1190,10 +856,10 @@
         document.getElementById('updateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const logoValue = logoType === 'text' ? document.getElementById('edit-logo-text').value.trim() : document.getElementById('edit-logo-image').value.trim();
-            
             const updatedConfig = {
-                logoText: logoValue,
+                logoText: document.getElementById('edit-logo-text').value.trim(),
+                logoType: logoType,
+                logoImage: logoType === 'image' ? document.getElementById('edit-logo-image').value.trim() : '',
                 title: document.getElementById('edit-title').value.trim(),
                 subTitle: document.getElementById('edit-subtitle').value.trim(),
                 aboutText: document.getElementById('edit-about').value.trim(),
@@ -1206,7 +872,7 @@
                 slides: getSlidesArray()
             };
 
-            if (!updatedConfig.title) { showToast('Title is required', 'warning'); document.getElementById('edit-title').focus(); return; }
+            if (!updatedConfig.title) { showToast('Title is required', 'warning'); return; }
 
             const saveBtn = document.getElementById('saveBtn');
             saveBtn.classList.add('loading');
@@ -1248,7 +914,12 @@
                 const today = new Date().toISOString().split('T')[0];
                 const attendanceToday = student.attendance?.find(a => a.date === today);
                 const attendanceStatus = attendanceToday ? (attendanceToday.status === 'present' ? '✅' : '❌') : '⏳';
-                return `<tr><td><img src="${student.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td><td>${student.studentId || '-'}</td><td>${name || '-'}</td><td>${student.education?.board || '-'}</td><td>${student.education?.class || '-'}</td><td>${student.mobile || '-'}</td><td>₹${student.classMonthlyFees || 0}</td><td>${attendanceStatus}</td><td><div class="action-group"><button class="action-btn edit" data-student-id="${student.studentId}"><i class="fas fa-edit"></i></button><button class="action-btn view" data-student-id="${student.studentId}"><i class="fas fa-eye"></i></button></div></td></tr>`;
+                return `<tr><td><img src="${student.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
+                        <td>${student.studentId || '-'}</td><td>${name || '-'}</td>
+                        <td>${student.education?.board || '-'}</td><td>${student.education?.class || '-'}</td>
+                        <td>${student.mobile || '-'}</td><td>₹${student.classMonthlyFees || 0}</td>
+                        <td>${attendanceStatus}</td>
+                        <td><div class="action-group"><button class="action-btn edit" data-student-id="${student.studentId}"><i class="fas fa-edit"></i></button><button class="action-btn view" data-student-id="${student.studentId}"><i class="fas fa-eye"></i></button></div></td></tr>`;
             }).join('');
         }
 
@@ -1275,7 +946,12 @@
             tbody.innerHTML = teacherList.map(teacher => {
                 const name = `${teacher.teacherName?.first || ''} ${teacher.teacherName?.last || ''}`;
                 const statusClass = teacher.status === 'approved' ? 'approved' : teacher.status === 'pending' ? 'pending' : 'rejected';
-                return `<tr><td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td><td>${teacher.teacherId || '-'}</td><td>${name || '-'}</td><td>${teacher.subject || '-'}</td><td>${teacher.mobile || '-'}</td><td>₹${teacher.salary || 0}</td><td><span class="status-badge ${statusClass}">${teacher.status || 'pending'}</span></td><td><div class="action-group"><button class="action-btn approve" data-teacher-id="${teacher.teacherId}"><i class="fas fa-check"></i></button><button class="action-btn edit" data-teacher-id="${teacher.teacherId}"><i class="fas fa-edit"></i></button><button class="action-btn view" data-teacher-id="${teacher.teacherId}"><i class="fas fa-eye"></i></button></div></td></tr>`;
+                return `<tr><td><img src="${teacher.photo || 'https://via.placeholder.com/40'}" class="student-photo" onerror="this.src='https://via.placeholder.com/40'"></td>
+                        <td>${teacher.teacherId || '-'}</td><td>${name || '-'}</td>
+                        <td>${teacher.subject || '-'}</td><td>${teacher.mobile || '-'}</td>
+                        <td>₹${teacher.salary || 0}</td>
+                        <td><span class="status-badge ${statusClass}">${teacher.status || 'pending'}</span></td>
+                        <td><div class="action-group"><button class="action-btn approve" data-teacher-id="${teacher.teacherId}"><i class="fas fa-check"></i></button><button class="action-btn edit" data-teacher-id="${teacher.teacherId}"><i class="fas fa-edit"></i></button><button class="action-btn view" data-teacher-id="${teacher.teacherId}"><i class="fas fa-eye"></i></button></div></td></tr>`;
             }).join('');
         }
 
@@ -1300,7 +976,7 @@
             fetch(`/api/teachers/${teacherId}/status`, {
                 method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ status: 'approved', subject: subject, salary: parseInt(salary), joiningDate: joiningDate })
-            }).then(res => res.json()).then(data => { if (data.success) { showToast('Teacher approved successfully', 'success'); fetchTeachers(); } else { showToast('Error: ' + data.message, 'error'); } }).catch(err => { console.error('Error:', err); showToast('Server error', 'error'); }).finally(() => showLoading(false));
+            }).then(res => res.json()).then(data => { if (data.success) { showToast('Teacher approved successfully', 'success'); fetchTeachers(); } else { showToast('Error: ' + data.message, 'error'); } }).catch(err => { showToast('Server error', 'error'); }).finally(() => showLoading(false));
         }
 
         // ============================================
@@ -1311,7 +987,6 @@
                 const response = await fetch('/api/verify-token', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await response.json();
                 if (!data.success) { showToast('Session expired. Please login again.', 'warning'); setTimeout(() => logout(), 2000); }
-                else { document.getElementById('currentAdminId').value = data.user.adminID || 'admin'; }
             } catch (err) { console.log('Token verification failed:', err); }
         }
 
@@ -1339,6 +1014,7 @@
             fetchCurrentData();
             fetchStudents();
             fetchTeachers();
+            fetchAdminProfile();
 
             document.querySelectorAll('#desktopTabs .tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
             document.querySelectorAll('.bottom-nav-item').forEach(item => item.addEventListener('click', () => switchTab(item.dataset.tab)));
