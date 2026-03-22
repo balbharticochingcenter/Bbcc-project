@@ -2658,6 +2658,427 @@ window.openTeacherAttendance = async function(teacherId) {
 };
 
 console.log('✅ Attendance photo system loaded successfully!');
+
+    // ============================================
+// COMPLETE WEBSITE CONFIGURATION WITH ALL FIELDS
+// ============================================
+
+// Add this code to your existing JavaScript file
+// This will add all missing fields to the website configuration form
+
+// Function to add missing fields to the website form
+function addMissingWebsiteFields() {
+    const websiteForm = document.getElementById('websiteForm');
+    if (!websiteForm) return;
+    
+    // Find the location where to insert new fields (after about text)
+    const aboutTextDiv = document.querySelector('#aboutText').closest('.mb-4');
+    
+    // Create new sections HTML
+    const newFieldsHTML = `
+        <!-- Statistics Section -->
+        <hr class="my-4">
+        <h5 class="mb-3 fw-bold"><i class="fas fa-chart-line me-2"></i> Statistics</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label>Established Year</label>
+                <input type="number" class="form-control" id="establishedYear" placeholder="e.g., 2010" min="1900" max="2026">
+            </div>
+            <div class="col-md-4">
+                <label>Total Students Trained</label>
+                <input type="number" class="form-control" id="totalStudentsTrained" placeholder="e.g., 5000" min="0">
+            </div>
+            <div class="col-md-4">
+                <label>Total Faculty</label>
+                <input type="number" class="form-control" id="totalFaculty" placeholder="e.g., 25" min="0">
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        <h5 class="mb-3 fw-bold"><i class="fas fa-images me-2"></i> Slideshow Images</h5>
+        <div class="mb-3">
+            <p class="text-muted small">You can add image URLs OR upload images directly from your device</p>
+            <div class="d-flex gap-2 mb-3">
+                <button type="button" class="btn-secondary-premium" id="addSlideByUrlBtn" style="flex:1">
+                    <i class="fas fa-link"></i> Add by URL
+                </button>
+                <button type="button" class="btn-secondary-premium" id="addSlideByUploadBtn" style="flex:1">
+                    <i class="fas fa-upload"></i> Upload Image
+                </button>
+            </div>
+        </div>
+        <div id="slidesContainer"></div>
+        
+        <hr class="my-4">
+        <h5 class="mb-3 fw-bold"><i class="fas fa-share-alt me-2"></i> Social Media Links</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label><i class="fab fa-whatsapp text-success me-1"></i> WhatsApp</label>
+                <input type="url" class="form-control" id="whatsappUrl" placeholder="https://wa.me/...">
+            </div>
+            <div class="col-md-3">
+                <label><i class="fab fa-instagram text-danger me-1"></i> Instagram</label>
+                <input type="url" class="form-control" id="instagramUrl" placeholder="https://instagram.com/...">
+            </div>
+            <div class="col-md-3">
+                <label><i class="fab fa-facebook text-primary me-1"></i> Facebook</label>
+                <input type="url" class="form-control" id="facebookUrl" placeholder="https://facebook.com/...">
+            </div>
+            <div class="col-md-3">
+                <label><i class="fab fa-twitter text-info me-1"></i> Twitter/X</label>
+                <input type="url" class="form-control" id="twitterUrl" placeholder="https://twitter.com/...">
+            </div>
+        </div>
+        
+        <hr class="my-4">
+        <h5 class="mb-3 fw-bold"><i class="fas fa-address-card me-2"></i> Contact Information</h5>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label><i class="fas fa-map-marker-alt text-danger me-1"></i> Address</label>
+                <textarea class="form-control" id="contactAddress" rows="2" placeholder="Full address"></textarea>
+            </div>
+            <div class="col-md-4">
+                <label><i class="fas fa-phone-alt text-success me-1"></i> Phone</label>
+                <input type="tel" class="form-control" id="contactPhone" placeholder="+91 98765 43210">
+            </div>
+            <div class="col-md-4">
+                <label><i class="fas fa-envelope text-primary me-1"></i> Email</label>
+                <input type="email" class="form-control" id="contactEmail" placeholder="info@balbharti.com">
+            </div>
+        </div>
+    `;
+    
+    // Insert after about text section
+    aboutTextDiv.insertAdjacentHTML('afterend', newFieldsHTML);
+    
+    // Add CSS for image upload area if not exists
+    if (!document.getElementById('slideUploadStyles')) {
+        const style = document.createElement('style');
+        style.id = 'slideUploadStyles';
+        style.textContent = `
+            .slide-upload-area {
+                border: 2px dashed #4361ee;
+                border-radius: 12px;
+                padding: 12px;
+                text-align: center;
+                cursor: pointer;
+                background: rgba(67,97,238,0.05);
+                transition: all 0.3s;
+                margin-bottom: 8px;
+            }
+            .slide-upload-area:hover {
+                background: rgba(67,97,238,0.1);
+                border-color: #7209b7;
+            }
+            .slide-item {
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 12px;
+                border: 1px solid #eef2f6;
+            }
+            .slide-image-preview {
+                max-width: 100%;
+                max-height: 150px;
+                border-radius: 8px;
+                margin-top: 8px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Enhanced slides management with image upload support
+let slideCounter = 0;
+
+function addSlideField(url = '', imageData = null) {
+    const container = document.getElementById('slidesContainer');
+    const id = 'slide_' + Date.now() + '_' + slideCounter++;
+    
+    const div = document.createElement('div');
+    div.className = 'slide-item';
+    div.id = id;
+    
+    if (imageData) {
+        // Image uploaded directly
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div style="flex:1">
+                    <input type="hidden" class="slide-image-data" value="${imageData}">
+                    <div class="slide-upload-area" onclick="document.getElementById('${id}_file').click()">
+                        <i class="fas fa-camera"></i> Change Image
+                    </div>
+                    <input type="file" id="${id}_file" style="display:none" accept="image/*">
+                    <div class="slide-preview-container mt-2">
+                        <img src="${imageData}" class="slide-image-preview" alt="Slide preview">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm remove-slide" data-id="${id}" style="border-radius: 8px;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        // Add file upload handler
+        setTimeout(() => {
+            const fileInput = document.getElementById(`${id}_file`);
+            if (fileInput) {
+                fileInput.onchange = async (e) => {
+                    if (e.target.files[0]) {
+                        const compressed = await compressImage(e.target.files[0]);
+                        const hiddenInput = div.querySelector('.slide-image-data');
+                        if (hiddenInput) hiddenInput.value = compressed;
+                        const preview = div.querySelector('.slide-preview-container');
+                        if (preview) preview.innerHTML = `<img src="${compressed}" class="slide-image-preview" alt="Slide preview">`;
+                    }
+                };
+            }
+        }, 0);
+        
+    } else {
+        // URL input
+        div.innerHTML = `
+            <div class="d-flex gap-2 align-items-start">
+                <input type="url" class="form-control slide-input" value="${url}" placeholder="https://example.com/image.jpg">
+                <button type="button" class="btn btn-danger btn-sm remove-slide" data-id="${id}" style="border-radius: 8px;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            ${url ? `<div class="mt-2"><img src="${url}" style="max-width:100%; max-height:100px; border-radius:8px;" onerror="this.style.display='none'"></div>` : ''}
+        `;
+        
+        // Add preview on URL change
+        const urlInput = div.querySelector('.slide-input');
+        if (urlInput) {
+            urlInput.addEventListener('input', function() {
+                let previewDiv = div.querySelector('.mt-2');
+                if (!previewDiv) {
+                    previewDiv = document.createElement('div');
+                    previewDiv.className = 'mt-2';
+                    div.appendChild(previewDiv);
+                }
+                if (this.value) {
+                    previewDiv.innerHTML = `<img src="${this.value}" style="max-width:100%; max-height:100px; border-radius:8px;" onerror="this.style.display='none'">`;
+                } else {
+                    previewDiv.innerHTML = '';
+                }
+            });
+        }
+    }
+    
+    container.appendChild(div);
+}
+
+function getSlides() {
+    const slides = [];
+    document.querySelectorAll('.slide-item').forEach(item => {
+        const urlInput = item.querySelector('.slide-input');
+        const imageData = item.querySelector('.slide-image-data');
+        
+        if (urlInput && urlInput.value.trim()) {
+            slides.push(urlInput.value.trim());
+        } else if (imageData && imageData.value) {
+            slides.push(imageData.value);
+        }
+    });
+    return slides;
+}
+
+function loadSlides(slides) {
+    const container = document.getElementById('slidesContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    slideCounter = 0;
+    
+    if (slides && slides.length) {
+        slides.forEach(slide => {
+            // Check if it's base64 image or URL
+            if (slide.startsWith('data:image')) {
+                addSlideField('', slide);
+            } else {
+                addSlideField(slide);
+            }
+        });
+    } else {
+        // Add default empty slides
+        addSlideField('');
+        addSlideField('');
+    }
+}
+
+// Enhanced loadWebsiteConfig to include all fields
+const originalLoadWebsiteConfig = window.loadWebsiteConfig;
+window.loadWebsiteConfig = async function() {
+    try {
+        const res = await fetch('/api/config');
+        const data = await res.json();
+        
+        // Logo fields
+        if (document.getElementById('logoText')) document.getElementById('logoText').value = data.logoText || 'BBCC';
+        if (document.getElementById('logoImageData')) document.getElementById('logoImageData').value = data.logoImage || '';
+        
+        // Title and description
+        if (document.getElementById('siteTitle')) document.getElementById('siteTitle').value = data.title || '';
+        if (document.getElementById('siteSubtitle')) document.getElementById('siteSubtitle').value = data.subTitle || '';
+        if (document.getElementById('aboutText')) document.getElementById('aboutText').value = data.aboutText || '';
+        
+        // Statistics fields
+        if (document.getElementById('establishedYear')) document.getElementById('establishedYear').value = data.establishedYear || '';
+        if (document.getElementById('totalStudentsTrained')) document.getElementById('totalStudentsTrained').value = data.totalStudentsTrained || '';
+        if (document.getElementById('totalFaculty')) document.getElementById('totalFaculty').value = data.totalFaculty || '';
+        
+        // Social media
+        if (document.getElementById('whatsappUrl')) document.getElementById('whatsappUrl').value = data.whatsapp || '';
+        if (document.getElementById('instagramUrl')) document.getElementById('instagramUrl').value = data.insta || '';
+        if (document.getElementById('facebookUrl')) document.getElementById('facebookUrl').value = data.fb || '';
+        if (document.getElementById('twitterUrl')) document.getElementById('twitterUrl').value = data.twitter || '';
+        
+        // Contact
+        if (document.getElementById('contactAddress')) document.getElementById('contactAddress').value = data.contactAddress || '';
+        if (document.getElementById('contactPhone')) document.getElementById('contactPhone').value = data.contactPhone || '';
+        if (document.getElementById('contactEmail')) document.getElementById('contactEmail').value = data.contactEmail || '';
+        
+        // Load slides
+        loadSlides(data.slides || []);
+        
+        // Logo type UI
+        const logoType = data.logoType || 'text';
+        document.querySelectorAll('.logo-type-select').forEach(btn => {
+            if (btn.dataset.type === logoType) {
+                btn.style.background = 'var(--gradient-primary)';
+                btn.style.color = 'white';
+            } else {
+                btn.style.background = '';
+                btn.style.color = '';
+            }
+        });
+        
+        // Show/hide logo sections
+        const textLogoDiv = document.getElementById('textLogoDiv');
+        const imageLogoDiv = document.getElementById('imageLogoDiv');
+        if (textLogoDiv && imageLogoDiv) {
+            textLogoDiv.style.display = logoType === 'text' ? 'block' : 'none';
+            imageLogoDiv.style.display = logoType === 'image' ? 'block' : 'none';
+        }
+        
+        // Preview
+        if (typeof updatePreview === 'function') updatePreview();
+        
+    } catch(e) { 
+        console.error('Error loading config:', e);
+    }
+};
+
+// Enhanced save website configuration
+const originalWebsiteSubmit = document.getElementById('websiteForm')?.onsubmit;
+if (document.getElementById('websiteForm')) {
+    document.getElementById('websiteForm').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        showLoader(true);
+        
+        const configData = {
+            logoText: document.getElementById('logoText')?.value || 'BBCC',
+            logoType: logoType || 'text',
+            logoImage: document.getElementById('logoImageData')?.value || '',
+            title: document.getElementById('siteTitle')?.value || 'Bal Bharti Coaching',
+            subTitle: document.getElementById('siteSubtitle')?.value || '',
+            aboutText: document.getElementById('aboutText')?.value || '',
+            establishedYear: parseInt(document.getElementById('establishedYear')?.value) || 2010,
+            totalStudentsTrained: parseInt(document.getElementById('totalStudentsTrained')?.value) || 5000,
+            totalFaculty: parseInt(document.getElementById('totalFaculty')?.value) || 25,
+            whatsapp: document.getElementById('whatsappUrl')?.value || '',
+            insta: document.getElementById('instagramUrl')?.value || '',
+            fb: document.getElementById('facebookUrl')?.value || '',
+            twitter: document.getElementById('twitterUrl')?.value || '',
+            contactAddress: document.getElementById('contactAddress')?.value || '',
+            contactPhone: document.getElementById('contactPhone')?.value || '',
+            contactEmail: document.getElementById('contactEmail')?.value || '',
+            slides: getSlides()
+        };
+        
+        try {
+            const res = await fetch('/api/update-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(configData)
+            });
+            
+            const result = await res.json();
+            
+            if (result.success) {
+                showToast('✅ Website configuration saved successfully!', 'success');
+                if (typeof updatePreview === 'function') updatePreview();
+            } else {
+                showToast(result.message || 'Save failed', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to save configuration', 'error');
+        }
+        
+        showLoader(false);
+    };
+}
+
+// Add event listeners for upload buttons
+function addUploadEventListeners() {
+    const addByUrlBtn = document.getElementById('addSlideByUrlBtn');
+    const addByUploadBtn = document.getElementById('addSlideByUploadBtn');
+    
+    if (addByUrlBtn) {
+        addByUrlBtn.onclick = () => addSlideField('');
+    }
+    
+    if (addByUploadBtn) {
+        addByUploadBtn.onclick = () => {
+            // Create hidden file input
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = async (e) => {
+                if (e.target.files[0]) {
+                    showLoader(true);
+                    const compressed = await compressImage(e.target.files[0]);
+                    addSlideField('', compressed);
+                    showLoader(false);
+                    showToast('Image added!', 'success');
+                }
+            };
+            fileInput.click();
+        };
+    }
+}
+
+// Remove slide handler
+document.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.remove-slide');
+    if (removeBtn && removeBtn.dataset.id) {
+        const slideDiv = document.getElementById(removeBtn.dataset.id);
+        if (slideDiv) slideDiv.remove();
+    }
+});
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Add missing fields first
+    addMissingWebsiteFields();
+    
+    // Then load config
+    if (typeof window.loadWebsiteConfig === 'function') {
+        window.loadWebsiteConfig();
+    } else if (typeof loadWebsiteConfig === 'function') {
+        loadWebsiteConfig();
+    }
+    
+    // Add upload event listeners
+    setTimeout(addUploadEventListeners, 100);
+});
+
+console.log('✅ All website fields added successfully!');
 </script>
 </body>
 </html>
