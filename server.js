@@ -1098,7 +1098,11 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
 
 app.get('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        // Teacher sirf apna profile dekh sakta hai
+        if (req.user.role === 'teacher' && req.user.teacherId !== req.params.id) {
+            return res.status(403).json({ success: false, message: "You can only view your own profile" });
+        }
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         const teacher = await Teacher.findOne({ teacherId: req.params.id }).select('-password');
@@ -1108,23 +1112,34 @@ app.get('/api/teachers/:id', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-
 app.put('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        // Teacher sirf apna profile update kar sakta hai
+        if (req.user.role === 'teacher' && req.user.teacherId !== req.params.id) {
+            return res.status(403).json({ success: false, message: "You can only update your own profile" });
+        }
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
+        
         const teacher = await Teacher.findOne({ teacherId: req.params.id });
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         
         const updateData = req.body;
+        // Teacher status change nahi kar sakta
+        if (req.user.role === 'teacher') {
+            delete updateData.status;
+            delete updateData.salary;
+            delete updateData.salaryHistory;
+        }
+        
         Object.assign(teacher, updateData);
         await teacher.save();
         
         const teacherData = teacher.toObject();
         delete teacherData.password;
         
-        res.json({ success: true, message: "Teacher updated", data: teacherData });
+        res.json({ success: true, message: "Profile updated", data: teacherData });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -1209,7 +1224,10 @@ app.get('/api/teachers/stats/summary', verifyToken, async (req, res) => {
 
 app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        if (req.user.role === 'teacher' && req.user.teacherId !== req.params.id) {
+            return res.status(403).json({ success: false, message: "You can only view your own attendance" });
+        }
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         const teacher = await Teacher.findOne({ teacherId: req.params.id });
@@ -1222,7 +1240,10 @@ app.get('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
 
 app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        if (req.user.role === 'teacher' && req.user.teacherId !== req.params.id) {
+            return res.status(403).json({ success: false, message: "You can only mark your own attendance" });
+        }
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         const { date, status, remarks, photo } = req.body;
