@@ -2659,20 +2659,22 @@ window.openTeacherAttendance = async function(teacherId) {
 
 console.log('✅ Attendance photo system loaded successfully!');
 
-    // ============================================
-// COMPLETE WEBSITE CONFIGURATION WITH ALL FIELDS
+   // ============================================
+// ADD MISSING WEBSITE FIELDS ONLY
+// This code ADDS to existing functionality, does NOT replace
 // ============================================
-
-// Add this code to your existing JavaScript file
-// This will add all missing fields to the website configuration form
 
 // Function to add missing fields to the website form
 function addMissingWebsiteFields() {
     const websiteForm = document.getElementById('websiteForm');
     if (!websiteForm) return;
     
+    // Check if already added to avoid duplicates
+    if (document.getElementById('establishedYear')) return;
+    
     // Find the location where to insert new fields (after about text)
     const aboutTextDiv = document.querySelector('#aboutText').closest('.mb-4');
+    if (!aboutTextDiv) return;
     
     // Create new sections HTML
     const newFieldsHTML = `
@@ -2783,17 +2785,53 @@ function addMissingWebsiteFields() {
                 border-radius: 8px;
                 margin-top: 8px;
             }
+            .remove-slide {
+                background: #dc2626;
+                color: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .remove-slide:hover {
+                background: #b91c1c;
+                transform: scale(1.05);
+            }
         `;
         document.head.appendChild(style);
     }
 }
 
 // Enhanced slides management with image upload support
-let slideCounter = 0;
+// This OVERRIDES the existing functions to add image upload capability
+// But preserves existing functionality
 
-function addSlideField(url = '', imageData = null) {
+// Store original functions if they exist
+const originalAddSlideField = window.addSlideField || null;
+const originalGetSlides = window.getSlides || null;
+const originalLoadSlides = window.loadSlides || null;
+
+// New slideCounter (preserve existing if any)
+if (typeof slideCounter === 'undefined') {
+    var slideCounter = 0;
+}
+
+// Enhanced addSlideField with image upload support
+window.addSlideField = function(url = '', imageData = null) {
     const container = document.getElementById('slidesContainer');
-    const id = 'slide_' + Date.now() + '_' + slideCounter++;
+    if (!container) return;
+    
+    // If using old style (just URL), call original or create new
+    if (imageData === null && typeof url === 'string' && !url.startsWith('data:image')) {
+        // Check if original function exists and use it
+        if (originalAddSlideField && typeof originalAddSlideField === 'function') {
+            originalAddSlideField(url);
+            return;
+        }
+    }
+    
+    const id = 'slide_' + Date.now() + '_' + (slideCounter++);
     
     const div = document.createElement('div');
     div.className = 'slide-item';
@@ -2813,13 +2851,12 @@ function addSlideField(url = '', imageData = null) {
                         <img src="${imageData}" class="slide-image-preview" alt="Slide preview">
                     </div>
                 </div>
-                <button type="button" class="btn btn-danger btn-sm remove-slide" data-id="${id}" style="border-radius: 8px;">
+                <button type="button" class="remove-slide" data-id="${id}">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         `;
         
-        // Add file upload handler
         setTimeout(() => {
             const fileInput = document.getElementById(`${id}_file`);
             if (fileInput) {
@@ -2830,24 +2867,60 @@ function addSlideField(url = '', imageData = null) {
                         if (hiddenInput) hiddenInput.value = compressed;
                         const preview = div.querySelector('.slide-preview-container');
                         if (preview) preview.innerHTML = `<img src="${compressed}" class="slide-image-preview" alt="Slide preview">`;
+                        showToast('Image updated!', 'success');
+                    }
+                };
+            }
+        }, 0);
+        
+    } else if (url && url.startsWith('data:image')) {
+        // This is a base64 image from original function
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div style="flex:1">
+                    <input type="hidden" class="slide-image-data" value="${url}">
+                    <div class="slide-upload-area" onclick="document.getElementById('${id}_file').click()">
+                        <i class="fas fa-camera"></i> Change Image
+                    </div>
+                    <input type="file" id="${id}_file" style="display:none" accept="image/*">
+                    <div class="slide-preview-container mt-2">
+                        <img src="${url}" class="slide-image-preview" alt="Slide preview">
+                    </div>
+                </div>
+                <button type="button" class="remove-slide" data-id="${id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            const fileInput = document.getElementById(`${id}_file`);
+            if (fileInput) {
+                fileInput.onchange = async (e) => {
+                    if (e.target.files[0]) {
+                        const compressed = await compressImage(e.target.files[0]);
+                        const hiddenInput = div.querySelector('.slide-image-data');
+                        if (hiddenInput) hiddenInput.value = compressed;
+                        const preview = div.querySelector('.slide-preview-container');
+                        if (preview) preview.innerHTML = `<img src="${compressed}" class="slide-image-preview" alt="Slide preview">`;
+                        showToast('Image updated!', 'success');
                     }
                 };
             }
         }, 0);
         
     } else {
-        // URL input
+        // URL input (original style)
         div.innerHTML = `
             <div class="d-flex gap-2 align-items-start">
                 <input type="url" class="form-control slide-input" value="${url}" placeholder="https://example.com/image.jpg">
-                <button type="button" class="btn btn-danger btn-sm remove-slide" data-id="${id}" style="border-radius: 8px;">
+                <button type="button" class="remove-slide" data-id="${id}">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
             ${url ? `<div class="mt-2"><img src="${url}" style="max-width:100%; max-height:100px; border-radius:8px;" onerror="this.style.display='none'"></div>` : ''}
         `;
         
-        // Add preview on URL change
         const urlInput = div.querySelector('.slide-input');
         if (urlInput) {
             urlInput.addEventListener('input', function() {
@@ -2867,9 +2940,10 @@ function addSlideField(url = '', imageData = null) {
     }
     
     container.appendChild(div);
-}
+};
 
-function getSlides() {
+// Enhanced getSlides to include both URL and uploaded images
+window.getSlides = function() {
     const slides = [];
     document.querySelectorAll('.slide-item').forEach(item => {
         const urlInput = item.querySelector('.slide-input');
@@ -2882,87 +2956,71 @@ function getSlides() {
         }
     });
     return slides;
-}
+};
 
-function loadSlides(slides) {
+// Enhanced loadSlides to handle both types
+window.loadSlides = function(slides) {
     const container = document.getElementById('slidesContainer');
     if (!container) return;
     
     container.innerHTML = '';
-    slideCounter = 0;
+    if (typeof slideCounter !== 'undefined') slideCounter = 0;
     
     if (slides && slides.length) {
         slides.forEach(slide => {
-            // Check if it's base64 image or URL
-            if (slide.startsWith('data:image')) {
-                addSlideField('', slide);
-            } else {
-                addSlideField(slide);
+            if (slide && slide.startsWith('data:image')) {
+                window.addSlideField('', slide);
+            } else if (slide) {
+                window.addSlideField(slide);
             }
         });
     } else {
-        // Add default empty slides
-        addSlideField('');
-        addSlideField('');
+        window.addSlideField('');
+        window.addSlideField('');
     }
-}
+};
 
-// Enhanced loadWebsiteConfig to include all fields
+// Enhanced loadWebsiteConfig to include new fields (without breaking existing)
 const originalLoadWebsiteConfig = window.loadWebsiteConfig;
 window.loadWebsiteConfig = async function() {
     try {
         const res = await fetch('/api/config');
         const data = await res.json();
         
-        // Logo fields
-        if (document.getElementById('logoText')) document.getElementById('logoText').value = data.logoText || 'BBCC';
-        if (document.getElementById('logoImageData')) document.getElementById('logoImageData').value = data.logoImage || '';
+        // Load existing fields (preserve original behavior)
+        if (originalLoadWebsiteConfig && typeof originalLoadWebsiteConfig === 'function') {
+            await originalLoadWebsiteConfig();
+        } else {
+            // Fallback: load basic fields
+            if (document.getElementById('logoText')) document.getElementById('logoText').value = data.logoText || 'BBCC';
+            if (document.getElementById('logoImageData')) document.getElementById('logoImageData').value = data.logoImage || '';
+            if (document.getElementById('siteTitle')) document.getElementById('siteTitle').value = data.title || '';
+            if (document.getElementById('siteSubtitle')) document.getElementById('siteSubtitle').value = data.subTitle || '';
+            if (document.getElementById('aboutText')) document.getElementById('aboutText').value = data.aboutText || '';
+        }
         
-        // Title and description
-        if (document.getElementById('siteTitle')) document.getElementById('siteTitle').value = data.title || '';
-        if (document.getElementById('siteSubtitle')) document.getElementById('siteSubtitle').value = data.subTitle || '';
-        if (document.getElementById('aboutText')) document.getElementById('aboutText').value = data.aboutText || '';
-        
-        // Statistics fields
+        // Load NEW statistics fields
         if (document.getElementById('establishedYear')) document.getElementById('establishedYear').value = data.establishedYear || '';
         if (document.getElementById('totalStudentsTrained')) document.getElementById('totalStudentsTrained').value = data.totalStudentsTrained || '';
         if (document.getElementById('totalFaculty')) document.getElementById('totalFaculty').value = data.totalFaculty || '';
         
-        // Social media
+        // Load NEW social media fields
         if (document.getElementById('whatsappUrl')) document.getElementById('whatsappUrl').value = data.whatsapp || '';
         if (document.getElementById('instagramUrl')) document.getElementById('instagramUrl').value = data.insta || '';
         if (document.getElementById('facebookUrl')) document.getElementById('facebookUrl').value = data.fb || '';
         if (document.getElementById('twitterUrl')) document.getElementById('twitterUrl').value = data.twitter || '';
         
-        // Contact
+        // Load NEW contact fields
         if (document.getElementById('contactAddress')) document.getElementById('contactAddress').value = data.contactAddress || '';
         if (document.getElementById('contactPhone')) document.getElementById('contactPhone').value = data.contactPhone || '';
         if (document.getElementById('contactEmail')) document.getElementById('contactEmail').value = data.contactEmail || '';
         
-        // Load slides
-        loadSlides(data.slides || []);
-        
-        // Logo type UI
-        const logoType = data.logoType || 'text';
-        document.querySelectorAll('.logo-type-select').forEach(btn => {
-            if (btn.dataset.type === logoType) {
-                btn.style.background = 'var(--gradient-primary)';
-                btn.style.color = 'white';
-            } else {
-                btn.style.background = '';
-                btn.style.color = '';
-            }
-        });
-        
-        // Show/hide logo sections
-        const textLogoDiv = document.getElementById('textLogoDiv');
-        const imageLogoDiv = document.getElementById('imageLogoDiv');
-        if (textLogoDiv && imageLogoDiv) {
-            textLogoDiv.style.display = logoType === 'text' ? 'block' : 'none';
-            imageLogoDiv.style.display = logoType === 'image' ? 'block' : 'none';
+        // Load slides with enhanced function
+        if (window.loadSlides && typeof window.loadSlides === 'function') {
+            window.loadSlides(data.slides || []);
         }
         
-        // Preview
+        // Update preview if function exists
         if (typeof updatePreview === 'function') updatePreview();
         
     } catch(e) { 
@@ -2970,13 +3028,14 @@ window.loadWebsiteConfig = async function() {
     }
 };
 
-// Enhanced save website configuration
-const originalWebsiteSubmit = document.getElementById('websiteForm')?.onsubmit;
+// Enhanced save website configuration to include new fields
 if (document.getElementById('websiteForm')) {
+    const originalFormSubmit = document.getElementById('websiteForm').onsubmit;
+    
     document.getElementById('websiteForm').onsubmit = async (e) => {
         e.preventDefault();
         
-        showLoader(true);
+        if (typeof showLoader === 'function') showLoader(true);
         
         const configData = {
             logoText: document.getElementById('logoText')?.value || 'BBCC',
@@ -2985,6 +3044,7 @@ if (document.getElementById('websiteForm')) {
             title: document.getElementById('siteTitle')?.value || 'Bal Bharti Coaching',
             subTitle: document.getElementById('siteSubtitle')?.value || '',
             aboutText: document.getElementById('aboutText')?.value || '',
+            // NEW fields
             establishedYear: parseInt(document.getElementById('establishedYear')?.value) || 2010,
             totalStudentsTrained: parseInt(document.getElementById('totalStudentsTrained')?.value) || 5000,
             totalFaculty: parseInt(document.getElementById('totalFaculty')?.value) || 25,
@@ -2995,7 +3055,7 @@ if (document.getElementById('websiteForm')) {
             contactAddress: document.getElementById('contactAddress')?.value || '',
             contactPhone: document.getElementById('contactPhone')?.value || '',
             contactEmail: document.getElementById('contactEmail')?.value || '',
-            slides: getSlides()
+            slides: window.getSlides ? window.getSlides() : []
         };
         
         try {
@@ -3011,41 +3071,42 @@ if (document.getElementById('websiteForm')) {
             const result = await res.json();
             
             if (result.success) {
-                showToast('✅ Website configuration saved successfully!', 'success');
+                if (typeof showToast === 'function') showToast('✅ Website configuration saved successfully!', 'success');
                 if (typeof updatePreview === 'function') updatePreview();
             } else {
-                showToast(result.message || 'Save failed', 'error');
+                if (typeof showToast === 'function') showToast(result.message || 'Save failed', 'error');
             }
         } catch (err) {
-            showToast('Failed to save configuration', 'error');
+            if (typeof showToast === 'function') showToast('Failed to save configuration', 'error');
         }
         
-        showLoader(false);
+        if (typeof showLoader === 'function') showLoader(false);
     };
 }
 
-// Add event listeners for upload buttons
+// Add event listeners for new upload buttons
 function addUploadEventListeners() {
     const addByUrlBtn = document.getElementById('addSlideByUrlBtn');
     const addByUploadBtn = document.getElementById('addSlideByUploadBtn');
     
     if (addByUrlBtn) {
-        addByUrlBtn.onclick = () => addSlideField('');
+        addByUrlBtn.onclick = () => {
+            if (window.addSlideField) window.addSlideField('');
+        };
     }
     
     if (addByUploadBtn) {
         addByUploadBtn.onclick = () => {
-            // Create hidden file input
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = 'image/*';
             fileInput.onchange = async (e) => {
                 if (e.target.files[0]) {
-                    showLoader(true);
+                    if (typeof showLoader === 'function') showLoader(true);
                     const compressed = await compressImage(e.target.files[0]);
-                    addSlideField('', compressed);
-                    showLoader(false);
-                    showToast('Image added!', 'success');
+                    if (window.addSlideField) window.addSlideField('', compressed);
+                    if (typeof showLoader === 'function') showLoader(false);
+                    if (typeof showToast === 'function') showToast('Image added!', 'success');
                 }
             };
             fileInput.click();
@@ -3053,7 +3114,7 @@ function addUploadEventListeners() {
     }
 }
 
-// Remove slide handler
+// Enhanced remove slide handler
 document.addEventListener('click', (e) => {
     const removeBtn = e.target.closest('.remove-slide');
     if (removeBtn && removeBtn.dataset.id) {
@@ -3067,18 +3128,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add missing fields first
     addMissingWebsiteFields();
     
-    // Then load config
-    if (typeof window.loadWebsiteConfig === 'function') {
-        window.loadWebsiteConfig();
-    } else if (typeof loadWebsiteConfig === 'function') {
-        loadWebsiteConfig();
-    }
-    
     // Add upload event listeners
-    setTimeout(addUploadEventListeners, 100);
+    setTimeout(addUploadEventListeners, 500);
 });
 
-console.log('✅ All website fields added successfully!');
+console.log('✅ Missing website fields added successfully!');
 </script>
 </body>
 </html>
