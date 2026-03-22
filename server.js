@@ -1326,7 +1326,179 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
     res.status(404).json({ success: false, message: "API endpoint not found", path: req.path });
 });
+// ============================================
+// SALARY DUE REMINDER SCHEMA
+// ============================================
 
+const SalaryDueReminderSchema = new mongoose.Schema({
+    teacherId: { type: String, required: true, index: true },
+    teacherName: { type: String, required: true },
+    mobile: { type: String, required: true },
+    totalDue: { type: Number, required: true },
+    dueCount: { type: Number, default: 0 },
+    dueMonths: [{
+        month: String,
+        year: Number,
+        dueAmount: Number
+    }],
+    message: String,
+    reminderDate: { type: Date, default: Date.now },
+    status: { type: String, enum: ['pending', 'sent', 'resolved'], default: 'pending' },
+    resolvedDate: Date,
+    resolvedBy: String,
+    notes: String
+});
+
+const SalaryDueReminder = mongoose.model('SalaryDueReminder', SalaryDueReminderSchema);
+
+// ============================================
+// SALARY DUE REMINDER API
+// ============================================
+
+// Teacher sends reminder (saves in database)
+app.post('/api/salary-due-reminder', verifyToken, async (req, res) => {
+    try {
+        // Allow teacher to send reminder
+        if (req.user.role !== 'teacher' && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        
+        const { teacherId, teacherName, mobile, totalDue, dueMonths, dueCount, message } = req.body;
+        
+        // Validate teacher is requesting own data
+        if (req.user.role === 'teacher' && req.user.teacherId !== teacherId) {
+            return res.status(403).json({ success: false, message: "You can only send reminder for yourself" });
+        }
+        
+        // Check if reminder already sent today
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        
+        const existingReminder = await SalaryDueReminder.findOne({
+            teacherId: teacherId,
+            reminderDate: { $gte: todayStart },
+            status: 'pending'
+        });
+        
+        if (existingReminder) {
+            return res.json({ 
+                success: false, 
+                message: "Reminder already sent today. Admin will contact you soon." 
+            });
+        }
+        
+        // Save reminder in database
+        const reminder = new SalaryDueReminder({
+            teacherId: teacherId,
+            teacherName: teacherName,
+            mobile: mobile,
+            totalDue: totalDue,
+            dueCount: dueCount,
+            dueMonths: dueMonths,
+            message: message,
+            status: 'pending'
+        });
+        
+        await reminder.save();
+        
+        // Log for admin (console)
+        console.log(`📢 Salary Due Reminder #${reminder._id}`);
+        console.log(`👨‍🏫 Teacher: ${teacherName} (${teacherId})`);
+        console.log(`📱 Mobile: ${mobile}`);
+        console.log(`💰 Total Due: ₹${totalDue}`);
+        console.log(`📅 Due Months: ${dueMonths.map(m => `${m.month} ${m.year}`).join(', ')}`);
+        
+        res.json({ 
+            success: true, 
+            message: "Reminder sent successfully! Admin has been notified.",
+            reminderId: reminder._id,
+            reminder: reminder
+        });
+        
+    } catch (err) {
+        console.error('Salary reminder error:', err);
+        res.status(500).json({ success: false, message: "Failed to send reminder" });
+    }
+});
+
+// Admin API: Get all pending due reminders
+app.get('/api/admin/due-reminders', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const reminders = await SalaryDueReminder.find({ status: 'pending' })
+            .sort({ reminderDate: -1 });
+        
+        res.json({ success: true, data: reminders });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Admin API: Mark reminder as resolved
+app.put('/api/admin/due-reminders/:id/resolve', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { notes } = req.body;
+        
+        const reminder = await SalaryDueReminder.findByIdAndUpdate(
+            req.params.id,
+            {
+                status: 'resolved',
+                resolvedDate: new Date(),
+                resolvedBy: req.user.adminID,
+                notes: notes
+            },
+            { new: true }
+        );
+        
+        if (!reminder) {
+            return res.status(404).json({ success: false, message: "Reminder not found" });
+        }
+        
+        res.json({ success: true, message: "Reminder marked as resolved", data: reminder });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Admin API: Get all teachers with due salary
+app.get('/api/admin/teachers-with-due', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        // Find teachers with unpaid salary in history
+        const teachers = await Teacher.find({
+            'salaryHistory.status': { $in: ['unpaid', 'partial'] }
+        }).select('teacherId teacherName mobile salary salaryHistory');
+        
+        const dueTeachers = teachers.map(teacher => {
+            const dueMonths = teacher.salaryHistory.filter(r => r.status !== 'paid');
+            const totalDue = dueMonths.reduce((sum, r) => sum + (r.dueAmount || 0), 0);
+            
+            return {
+                teacherId: teacher.teacherId,
+                teacherName: `${teacher.teacherName.first} ${teacher.teacherName.last}`,
+                mobile: teacher.mobile,
+                monthlySalary: teacher.salary,
+                totalDue: totalDue,
+                dueCount: dueMonths.length,
+                dueMonths: dueMonths.map(m => ({ month: m.month, year: m.year, dueAmount: m.dueAmount }))
+            };
+        }).filter(t => t.totalDue > 0);
+        
+        res.json({ success: true, data: dueTeachers });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 // ============================================
 // START SERVER
 // ============================================
