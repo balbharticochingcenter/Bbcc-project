@@ -2,362 +2,1127 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Admin Dashboard - Bal Bharti Coaching Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Teacher Dashboard - Bal Bharti Coaching Center</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Same styles as teacher dashboard with admin-specific colors */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fb;
-            padding-bottom: 70px;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        
-        .navbar {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 15px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 15px;
+
+        /* Login Page Styles */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
         }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 100%;
+            animation: slideUp 0.5s ease;
         }
-        
-        .attendance-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            border: none;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-        }
-        
-        @media (min-width: 768px) {
-            .container-fluid {
-                max-width: 1200px;
-                margin: 0 auto;
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
-            
-            body {
-                padding-bottom: 0;
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .login-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .login-tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: -2px;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-container {
+            display: none;
+            background: #f5f7fa;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 20px;
+            font-weight: 600;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #667eea;
+        }
+
+        .student-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .attendance-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .attendance-present { background: #d4edda; color: #155724; }
+        .attendance-absent { background: #f8d7da; color: #721c24; }
+        .attendance-late { background: #fff3cd; color: #856404; }
+        .attendance-half { background: #d1ecf1; color: #0c5460; }
+
+        .voice-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .voice-indicator.speaking {
+            animation: pulse 1s infinite;
+            background: #ff6b6b;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .face-scan-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .face-scan-box {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .video-preview {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            border-radius: 10px;
+            transform: scaleX(-1);
+        }
+
+        .filter-input {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                padding: 10px;
+            }
+            .sidebar .nav {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            .main-content {
+                margin-bottom: 70px;
+                height: calc(100vh - 70px);
+            }
+            .sidebar .nav-link span {
+                display: none;
+            }
+            .sidebar .nav-link i {
+                margin-right: 0;
+                font-size: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="navbar-brand">
-            <i class="fas fa-chalkboard-teacher"></i> Admin Dashboard
+
+<!-- Login Page -->
+<div id="loginPage" class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-chalkboard-teacher" style="font-size: 50px; color: #667eea;"></i>
+            <h2 class="mt-3">Teacher Login</h2>
+            <p class="text-muted">Bal Bharti Coaching Center</p>
         </div>
-        <div>
-            <span id="adminName"></span>
-            <button class="btn btn-sm btn-light ms-2" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
+        
+        <div class="login-tabs">
+            <button class="login-tab active" onclick="switchLoginTab('idpass')">ID + Password</button>
+            <button class="login-tab" onclick="switchLoginTab('aadhardob')">Aadhar + DOB</button>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div id="idpassFields">
+                <div class="mb-3">
+                    <label class="form-label">Teacher ID</label>
+                    <input type="text" class="form-control" id="teacherId" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+            </div>
+            <div id="aadhardobFields" style="display:none;">
+                <div class="mb-3">
+                    <label class="form-label">Aadhar Number</label>
+                    <input type="text" class="form-control" id="aadharNumber" pattern="\d{12}" maxlength="12">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="dob">
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label">Remember Me</label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+        </form>
+    </div>
+</div>
+
+<!-- Dashboard Container -->
+<div id="dashboard" class="dashboard-container" style="display:none;">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="p-3 text-center">
+                    <i class="fas fa-chalkboard-teacher" style="font-size: 40px;"></i>
+                    <h5 class="mt-2" id="teacherNameDisplay">Teacher Name</h5>
+                    <small id="teacherIdDisplay">ID: ---</small>
+                </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" onclick="showTab('attendance')">
+                        <i class="fas fa-calendar-check"></i> <span>Attendance Management</span>
+                    </a>
+                    <a class="nav-link" href="#" onclick="showTab('profile')">
+                        <i class="fas fa-user"></i> <span>My Profile</span>
+                    </a>
+                    <a class="nav-link" href="#" onclick="showTab('history')">
+                        <i class="fas fa-history"></i> <span>Attendance History</span>
+                    </a>
+                    <a class="nav-link" href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Attendance Management Tab -->
+                <div id="attendanceTab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-users me-2"></i> Student Attendance Management
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <input type="text" class="filter-input" id="searchStudent" placeholder="🔍 Search by ID or Name...">
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="filter-input" id="filterBoard">
+                                        <option value="">All Boards</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="filter-input" id="filterClass">
+                                        <option value="">All Classes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-primary w-100" onclick="loadStudents()">
+                                        <i class="fas fa-sync-alt"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="studentsList" class="students-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Tab -->
+                <div id="profileTab" class="tab-content" style="display:none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-id-card me-2"></i> My Profile
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm" onsubmit="updateProfile(event)">
+                                <div class="row">
+                                    <div class="col-md-4 text-center">
+                                        <img id="profilePhoto" src="" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                                        <input type="file" id="photoUpload" accept="image/*" class="form-control mt-2" onchange="uploadPhoto(this)">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label>Full Name</label>
+                                                <input type="text" class="form-control" id="profileName" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Teacher ID</label>
+                                                <input type="text" class="form-control" id="profileTeacherId" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Mobile Number</label>
+                                                <input type="text" class="form-control" id="profileMobile" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Alternate Mobile</label>
+                                                <input type="text" class="form-control" id="profileAltMobile">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Date of Birth</label>
+                                                <input type="date" class="form-control" id="profileDob" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Highest Qualification</label>
+                                                <input type="text" class="form-control" id="profileQualification" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Aadhar Number</label>
+                                                <input type="text" class="form-control" id="profileAadhar" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Teaching Subject</label>
+                                                <input type="text" class="form-control" id="profileSubject" readonly>
+                                            </div>
+                                            <div class="col-md-12 mb-3">
+                                                <label>Father's Name</label>
+                                                <input type="text" class="form-control" id="profileFatherName" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Current Address</label>
+                                                <textarea class="form-control" id="profileCurrentAddress" rows="2"></textarea>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Permanent Address</label>
+                                                <textarea class="form-control" id="profilePermanentAddress" rows="2"></textarea>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label>City</label>
+                                                <input type="text" class="form-control" id="profileCity">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label>State</label>
+                                                <input type="text" class="form-control" id="profileState">
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <label>Pincode</label>
+                                                <input type="text" class="form-control" id="profilePincode">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Bank Account Holder</label>
+                                                <input type="text" class="form-control" id="profileAccountHolder">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Account Number</label>
+                                                <input type="text" class="form-control" id="profileAccountNumber">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>IFSC Code</label>
+                                                <input type="text" class="form-control" id="profileIfsc">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Bank Name</label>
+                                                <input type="text" class="form-control" id="profileBankName">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Emergency Contact Name</label>
+                                                <input type="text" class="form-control" id="profileEmergencyName">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Emergency Contact Relation</label>
+                                                <input type="text" class="form-control" id="profileEmergencyRelation">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Emergency Contact Phone</label>
+                                                <input type="text" class="form-control" id="profileEmergencyPhone">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Years of Experience</label>
+                                                <input type="number" class="form-control" id="profileExperience">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Last Workplace</label>
+                                                <input type="text" class="form-control" id="profileLastWorkplace">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Joining Date</label>
+                                                <input type="text" class="form-control" id="profileJoiningDate" readonly>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label>Status</label>
+                                                <input type="text" class="form-control" id="profileStatus" readonly>
+                                            </div>
+                                            <div class="col-md-12 mb-3">
+                                                <label>New Password (leave blank to keep current)</label>
+                                                <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+                                            </div>
+                                            <div class="col-12">
+                                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Make Attendance Section -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-camera me-2"></i> Today's Attendance
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <button class="btn btn-success btn-lg" onclick="startFaceScan()">
+                                    <i class="fas fa-camera"></i> Scan Face & Mark Attendance
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Tab -->
+                <div id="historyTab" class="tab-content" style="display:none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fas fa-history me-2"></i> Attendance History
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <input type="text" class="filter-input" id="historySearchStudent" placeholder="🔍 Search by Student ID or Name">
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="month" class="filter-input" id="historyMonth">
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary w-100" onclick="loadAttendanceHistory()">Search</button>
+                                </div>
+                            </div>
+                            <div id="attendanceHistoryList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="container-fluid">
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 col-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #e3f2fd; color: #1976d2;">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-value" id="totalStudents">0</div>
-                    <div>Total Students</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #e8f5e9; color: #388e3c;">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                    </div>
-                    <div class="stat-value" id="totalTeachers">0</div>
-                    <div>Total Teachers</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #fff3e0; color: #f57c00;">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-value" id="pendingTeachers">0</div>
-                    <div>Pending Teachers</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #fce4ec; color: #c2185b;">
-                        <i class="fas fa-percent"></i>
-                    </div>
-                    <div class="stat-value" id="attendanceRate">0%</div>
-                    <div>Today's Attendance</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="attendance-card">
-            <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
-            <div class="row">
-                <div class="col-md-3 col-6 mb-2">
-                    <a href="/studentats.html" class="btn btn-primary w-100">
-                        <i class="fas fa-user-graduate"></i> Mark Student Attendance
-                    </a>
-                </div>
-                <div class="col-md-3 col-6 mb-2">
-                    <a href="/register.html" class="btn btn-primary w-100">
-                        <i class="fas fa-user-plus"></i> Add Student
-                    </a>
-                </div>
-                <div class="col-md-3 col-6 mb-2">
-                    <a href="/teacher-reg.html" class="btn btn-primary w-100">
-                        <i class="fas fa-chalkboard-teacher"></i> Add Teacher
-                    </a>
-                </div>
-                <div class="col-md-3 col-6 mb-2">
-                    <button class="btn btn-primary w-100" onclick="location.reload()">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Charts -->
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="attendance-card">
-                    <h5><i class="fas fa-chart-line"></i> Monthly Attendance Trend</h5>
-                    <canvas id="attendanceTrendChart" style="height: 300px;"></canvas>
-                </div>
-            </div>
-            <div class="col-md-6 mb-4">
-                <div class="attendance-card">
-                    <h5><i class="fas fa-chart-pie"></i> Student Distribution</h5>
-                    <canvas id="studentDistributionChart" style="height: 300px;"></canvas>
-                </div>
-            </div>
+</div>
+
+<!-- Face Scan Overlay -->
+<div id="faceScanOverlay" class="face-scan-overlay">
+    <div class="face-scan-box">
+        <h4><i class="fas fa-camera"></i> Face Scan</h4>
+        <video id="video" class="video-preview" autoplay playsinline></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <div class="mt-3">
+            <select id="attendanceStatus" class="form-select mb-2">
+                <option value="present">Present</option>
+                <option value="late">Late</option>
+                <option value="half-day">Half Day</option>
+                <option value="absent">Absent</option>
+            </select>
+            <textarea id="attendanceRemarks" class="form-control mb-2" rows="2" placeholder="Remarks (optional)"></textarea>
+            <button class="btn btn-primary" onclick="captureAndMark()">Capture & Mark Attendance</button>
+            <button class="btn btn-secondary" onclick="closeFaceScan()">Cancel</button>
         </div>
     </div>
-    
-    <script>
-        let attendanceChart = null;
-        let distributionChart = null;
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Global variables
+    let currentTeacher = null;
+    let allStudents = [];
+    let stream = null;
+    let voiceEnabled = true;
+    let speechSynthesis = window.speechSynthesis;
+    let currentUtterance = null;
+
+    // Voice Guidance Function
+    function speak(text, withBGM = true) {
+        if (!voiceEnabled) return;
         
-        // Check authentication
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login.html';
-                return false;
-            }
-            return true;
+        if (currentUtterance) {
+            speechSynthesis.cancel();
         }
         
-        // Load admin data
-        async function loadAdminData() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch('/api/admin/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('adminName').innerHTML = `<i class="fas fa-user-shield"></i> ${data.data.name}`;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'hi-IN';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.2;
+        
+        // Try to get Hindi female voice
+        const voices = speechSynthesis.getVoices();
+        const hindiVoice = voices.find(voice => voice.lang === 'hi-IN' && voice.name.includes('Female'));
+        if (hindiVoice) {
+            utterance.voice = hindiVoice;
+        }
+        
+        utterance.onstart = () => {
+            document.querySelector('.voice-indicator')?.classList.add('speaking');
+        };
+        
+        utterance.onend = () => {
+            document.querySelector('.voice-indicator')?.classList.remove('speaking');
+        };
+        
+        currentUtterance = utterance;
+        speechSynthesis.speak(utterance);
+    }
+
+    // Load voices
+    speechSynthesis.onvoiceschanged = () => {
+        speechSynthesis.getVoices();
+    };
+
+    // Switch login tabs
+    function switchLoginTab(tab) {
+        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+        if (tab === 'idpass') {
+            document.querySelector('.login-tab:first-child').classList.add('active');
+            document.getElementById('idpassFields').style.display = 'block';
+            document.getElementById('aadhardobFields').style.display = 'none';
+        } else {
+            document.querySelector('.login-tab:last-child').classList.add('active');
+            document.getElementById('idpassFields').style.display = 'none';
+            document.getElementById('aadhardobFields').style.display = 'block';
+        }
+    }
+
+    // Handle login
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        let loginData = {};
+        const activeTab = document.querySelector('.login-tab.active').innerText;
+        
+        if (activeTab.includes('ID')) {
+            loginData = {
+                teacherId: document.getElementById('teacherId').value,
+                password: document.getElementById('password').value
+            };
+        } else {
+            loginData = {
+                aadharNumber: document.getElementById('aadharNumber').value,
+                dob: document.getElementById('dob').value
+            };
+        }
+        
+        speak("लॉगिन हो रहा है, कृपया प्रतीक्षा करें...");
+        
+        try {
+            const response = await fetch('/api/teacher-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(loginData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                currentTeacher = data.data;
+                if (document.getElementById('rememberMe').checked) {
+                    localStorage.setItem('teacherToken', data.token);
+                    localStorage.setItem('teacherData', JSON.stringify(currentTeacher));
                 }
-            } catch (error) {
-                console.error('Error loading admin data:', error);
+                sessionStorage.setItem('teacherToken', data.token);
+                
+                speak("लॉगिन सफल हुआ। स्वागत है, " + currentTeacher.teacherName.first);
+                loadDashboard();
+            } else {
+                speak("लॉगिन विफल। कृपया सही जानकारी दर्ज करें।");
+                alert('Login Failed: ' + data.message);
             }
+        } catch (error) {
+            console.error('Login error:', error);
+            speak("सर्वर से कनेक्ट नहीं हो पाया।");
+            alert('Connection error');
+        }
+    }
+
+    // Load dashboard
+    function loadDashboard() {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        
+        document.getElementById('teacherNameDisplay').innerHTML = `${currentTeacher.teacherName.first} ${currentTeacher.teacherName.last}`;
+        document.getElementById('teacherIdDisplay').innerHTML = `ID: ${currentTeacher.teacherId}`;
+        
+        loadProfile();
+        loadStudents();
+        loadFilters();
+        
+        // Add voice indicator
+        const voiceIndicator = document.createElement('div');
+        voiceIndicator.className = 'voice-indicator';
+        voiceIndicator.innerHTML = '<i class="fas fa-volume-up"></i>';
+        voiceIndicator.onclick = () => {
+            voiceEnabled = !voiceEnabled;
+            voiceIndicator.style.opacity = voiceEnabled ? '1' : '0.5';
+            if (voiceEnabled) speak("ध्वनि मार्गदर्शन सक्रिय है।");
+        };
+        document.body.appendChild(voiceIndicator);
+        
+        speak("डैशबोर्ड लोड हो गया है। आप अटेंडेंस मैनेजमेंट, प्रोफाइल और हिस्ट्री देख सकते हैं।");
+    }
+
+    // Load profile data
+    function loadProfile() {
+        document.getElementById('profilePhoto').src = currentTeacher.photo || 'https://via.placeholder.com/150';
+        document.getElementById('profileName').value = `${currentTeacher.teacherName.first} ${currentTeacher.teacherName.middle || ''} ${currentTeacher.teacherName.last}`.trim();
+        document.getElementById('profileTeacherId').value = currentTeacher.teacherId;
+        document.getElementById('profileMobile').value = currentTeacher.mobile || '';
+        document.getElementById('profileAltMobile').value = currentTeacher.altMobile || '';
+        document.getElementById('profileDob').value = currentTeacher.dob ? new Date(currentTeacher.dob).toISOString().split('T')[0] : '';
+        document.getElementById('profileQualification').value = currentTeacher.lastQualification || '';
+        document.getElementById('profileAadhar').value = currentTeacher.aadharNumber || '';
+        document.getElementById('profileSubject').value = currentTeacher.subject || '';
+        document.getElementById('profileFatherName').value = `${currentTeacher.fatherName?.first || ''} ${currentTeacher.fatherName?.middle || ''} ${currentTeacher.fatherName?.last || ''}`.trim();
+        document.getElementById('profileCurrentAddress').value = currentTeacher.address?.current || '';
+        document.getElementById('profilePermanentAddress').value = currentTeacher.address?.permanent || '';
+        document.getElementById('profileCity').value = currentTeacher.address?.city || '';
+        document.getElementById('profileState').value = currentTeacher.address?.state || '';
+        document.getElementById('profilePincode').value = currentTeacher.address?.pincode || '';
+        document.getElementById('profileAccountHolder').value = currentTeacher.bankDetails?.accountHolder || '';
+        document.getElementById('profileAccountNumber').value = currentTeacher.bankDetails?.accountNumber || '';
+        document.getElementById('profileIfsc').value = currentTeacher.bankDetails?.ifscCode || '';
+        document.getElementById('profileBankName').value = currentTeacher.bankDetails?.bankName || '';
+        document.getElementById('profileEmergencyName').value = currentTeacher.emergencyContact?.name || '';
+        document.getElementById('profileEmergencyRelation').value = currentTeacher.emergencyContact?.relation || '';
+        document.getElementById('profileEmergencyPhone').value = currentTeacher.emergencyContact?.phone || '';
+        document.getElementById('profileExperience').value = currentTeacher.experience || 0;
+        document.getElementById('profileLastWorkplace').value = currentTeacher.previousSchool || '';
+        document.getElementById('profileJoiningDate').value = currentTeacher.joiningDate ? new Date(currentTeacher.joiningDate).toLocaleDateString() : 'N/A';
+        document.getElementById('profileStatus').value = currentTeacher.status || 'pending';
+    }
+
+    // Update profile
+    async function updateProfile(event) {
+        event.preventDefault();
+        
+        const nameParts = document.getElementById('profileName').value.trim().split(' ');
+        const updateData = {
+            teacherName: {
+                first: nameParts[0] || '',
+                middle: nameParts.slice(1, -1).join(' ') || '',
+                last: nameParts[nameParts.length - 1] || ''
+            },
+            mobile: document.getElementById('profileMobile').value,
+            altMobile: document.getElementById('profileAltMobile').value,
+            fatherName: {
+                first: document.getElementById('profileFatherName').value.split(' ')[0] || '',
+                last: document.getElementById('profileFatherName').value.split(' ').slice(1).join(' ') || ''
+            },
+            address: {
+                current: document.getElementById('profileCurrentAddress').value,
+                permanent: document.getElementById('profilePermanentAddress').value,
+                city: document.getElementById('profileCity').value,
+                state: document.getElementById('profileState').value,
+                pincode: document.getElementById('profilePincode').value
+            },
+            bankDetails: {
+                accountHolder: document.getElementById('profileAccountHolder').value,
+                accountNumber: document.getElementById('profileAccountNumber').value,
+                ifscCode: document.getElementById('profileIfsc').value,
+                bankName: document.getElementById('profileBankName').value
+            },
+            emergencyContact: {
+                name: document.getElementById('profileEmergencyName').value,
+                relation: document.getElementById('profileEmergencyRelation').value,
+                phone: document.getElementById('profileEmergencyPhone').value
+            },
+            experience: parseInt(document.getElementById('profileExperience').value),
+            previousSchool: document.getElementById('profileLastWorkplace').value
+        };
+        
+        const newPassword = document.getElementById('newPassword').value;
+        if (newPassword) {
+            updateData.password = newPassword;
         }
         
-        // Load stats
-        async function loadStats() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch('/api/stats', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('totalStudents').innerHTML = data.data.totalStudents;
-                    document.getElementById('totalTeachers').innerHTML = data.data.totalTeachers;
-                    document.getElementById('pendingTeachers').innerHTML = data.data.pendingTeachers;
-                    
-                    // Calculate today's attendance
-                    await loadTodayAttendance();
-                }
-            } catch (error) {
-                console.error('Error loading stats:', error);
+        try {
+            const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
+            const response = await fetch(`/api/teachers/${currentTeacher.teacherId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updateData)
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                speak("प्रोफाइल अपडेट हो गया है।");
+                alert('Profile updated successfully!');
+                currentTeacher = data.data;
+                loadProfile();
+            } else {
+                speak("प्रोफाइल अपडेट नहीं हो पाया।");
+                alert('Update failed: ' + data.message);
             }
+        } catch (error) {
+            console.error('Update error:', error);
+            speak("सर्वर त्रुटि।");
         }
-        
-        // Load today's attendance rate
-        async function loadTodayAttendance() {
-            try {
-                const token = localStorage.getItem('token');
-                const today = new Date().toISOString().split('T')[0];
-                const response = await fetch('/api/students', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const students = data.data;
-                    let presentCount = 0;
-                    
-                    students.forEach(student => {
-                        const todayAttendance = student.attendance?.find(a => a.date === today);
-                        if (todayAttendance && todayAttendance.status === 'present') {
-                            presentCount++;
-                        }
+    }
+
+    // Upload photo
+    async function uploadPhoto(input) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const photoData = e.target.result;
+                try {
+                    const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
+                    const response = await fetch(`/api/teachers/${currentTeacher.teacherId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ photo: photoData })
                     });
                     
-                    const rate = students.length > 0 ? ((presentCount / students.length) * 100).toFixed(1) : 0;
-                    document.getElementById('attendanceRate').innerHTML = `${rate}%`;
-                }
-            } catch (error) {
-                console.error('Error loading today attendance:', error);
-            }
-        }
-        
-        // Load charts
-        async function loadCharts() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch('/api/students', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
                     const data = await response.json();
-                    const students = data.data;
-                    
-                    // Calculate monthly attendance trend (last 6 months)
-                    const months = [];
-                    const attendanceData = [];
-                    const today = new Date();
-                    
-                    for (let i = 5; i >= 0; i--) {
-                        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                        const monthName = date.toLocaleString('default', { month: 'short' });
-                        months.push(monthName);
-                        
-                        // Count present students for this month
-                        let presentCount = 0;
-                        students.forEach(student => {
-                            const monthAttendance = student.attendance?.filter(a => {
-                                const aDate = new Date(a.date);
-                                return aDate.getMonth() === date.getMonth() && 
-                                       aDate.getFullYear() === date.getFullYear() &&
-                                       a.status === 'present';
-                            });
-                            if (monthAttendance && monthAttendance.length > 0) {
-                                presentCount++;
-                            }
-                        });
-                        
-                        attendanceData.push(students.length > 0 ? ((presentCount / students.length) * 100).toFixed(1) : 0);
+                    if (data.success) {
+                        speak("फोटो अपडेट हो गई है।");
+                        document.getElementById('profilePhoto').src = photoData;
+                        currentTeacher.photo = photoData;
                     }
-                    
-                    // Create attendance trend chart
-                    const ctx1 = document.getElementById('attendanceTrendChart').getContext('2d');
-                    if (attendanceChart) attendanceChart.destroy();
-                    attendanceChart = new Chart(ctx1, {
-                        type: 'line',
-                        data: {
-                            labels: months,
-                            datasets: [{
-                                label: 'Attendance Rate (%)',
-                                data: attendanceData,
-                                borderColor: '#1e3c72',
-                                backgroundColor: 'rgba(30,60,114,0.1)',
-                                tension: 0.4,
-                                fill: true
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: { position: 'top' }
-                            }
-                        }
-                    });
-                    
-                    // Calculate class distribution
-                    const classCount = {};
-                    students.forEach(student => {
-                        const className = student.education?.class || 'Unknown';
-                        classCount[className] = (classCount[className] || 0) + 1;
-                    });
-                    
-                    // Create distribution chart
-                    const ctx2 = document.getElementById('studentDistributionChart').getContext('2d');
-                    if (distributionChart) distributionChart.destroy();
-                    distributionChart = new Chart(ctx2, {
-                        type: 'pie',
-                        data: {
-                            labels: Object.keys(classCount),
-                            datasets: [{
-                                data: Object.values(classCount),
-                                backgroundColor: ['#1e3c72', '#2a5298', '#3a6ea5', '#4a8ac2', '#5aa6df']
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            plugins: {
-                                legend: { position: 'bottom' }
-                            }
-                        }
-                    });
+                } catch (error) {
+                    console.error('Photo upload error:', error);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Load students
+    async function loadStudents() {
+        try {
+            const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
+            const response = await fetch('/api/students', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                allStudents = data.data;
+                filterAndDisplayStudents();
+                speak(`${allStudents.length} छात्र मिले।`);
+            }
+        } catch (error) {
+            console.error('Load students error:', error);
+        }
+    }
+
+    // Filter and display students
+    function filterAndDisplayStudents() {
+        const searchTerm = document.getElementById('searchStudent').value.toLowerCase();
+        const board = document.getElementById('filterBoard').value;
+        const cls = document.getElementById('filterClass').value;
+        
+        let filtered = allStudents.filter(s => {
+            const name = `${s.studentName.first} ${s.studentName.last}`.toLowerCase();
+            const id = s.studentId.toLowerCase();
+            const matchesSearch = name.includes(searchTerm) || id.includes(searchTerm);
+            const matchesBoard = !board || s.education?.board === board;
+            const matchesClass = !cls || s.education?.class === cls;
+            return matchesSearch && matchesBoard && matchesClass;
+        });
+        
+        displayStudents(filtered);
+    }
+
+    // Display students
+    function displayStudents(students) {
+        const container = document.getElementById('studentsList');
+        if (students.length === 0) {
+            container.innerHTML = '<div class="text-center p-5">No students found</div>';
+            return;
+        }
+        
+        container.innerHTML = students.map(s => `
+            <div class="student-card" onclick="markStudentAttendance('${s.studentId}', '${s.studentName.first} ${s.studentName.last}')">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <strong>${s.studentName.first} ${s.studentName.last}</strong><br>
+                        <small class="text-muted">ID: ${s.studentId}</small>
+                    </div>
+                    <div class="col-md-3">
+                        <small>${s.education?.board || 'N/A'} - ${s.education?.class || 'N/A'}</small>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); markStudentAttendance('${s.studentId}', '${s.studentName.first} ${s.studentName.last}')">
+                            <i class="fas fa-check"></i> Mark Attendance
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Mark student attendance
+    async function markStudentAttendance(studentId, studentName) {
+        const status = prompt(`Mark attendance for ${studentName}\nEnter: present, absent, late, half-day`, 'present');
+        if (status && ['present', 'absent', 'late', 'half-day'].includes(status.toLowerCase())) {
+            const remarks = prompt('Remarks (optional):', '');
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
+                const response = await fetch(`/api/students/${studentId}/attendance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        date: today,
+                        status: status.toLowerCase(),
+                        remarks: remarks || ''
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    speak(`${studentName} का अटेंडेंस ${status} मार्क किया गया।`);
+                    alert(`Attendance marked as ${status} for ${studentName}`);
+                } else {
+                    alert('Failed to mark attendance');
                 }
             } catch (error) {
-                console.error('Error loading charts:', error);
+                console.error('Attendance error:', error);
+                alert('Error marking attendance');
             }
         }
+    }
+
+    // Load filters (boards and classes)
+    async function loadFilters() {
+        try {
+            const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
+            const response = await fetch('/api/boards', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                const boardSelect = document.getElementById('filterBoard');
+                const classSelect = document.getElementById('filterClass');
+                
+                boardSelect.innerHTML = '<option value="">All Boards</option>' + 
+                    data.data.boards.map(b => `<option value="${b}">${b}</option>`).join('');
+                classSelect.innerHTML = '<option value="">All Classes</option>' + 
+                    data.data.classes.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Load filters error:', error);
+        }
+    }
+
+    // Start face scan
+    async function startFaceScan() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+            document.getElementById('faceScanOverlay').style.display = 'flex';
+            speak("कृपया अपना चेहरा कैमरे के सामने रखें।");
+        } catch (err) {
+            console.error('Camera error:', err);
+            speak("कैमरा एक्सेस नहीं हो पाया।");
+            alert('Camera access denied');
+        }
+    }
+
+    // Capture and mark teacher attendance
+    async function captureAndMark() {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
         
-        // Logout
-        function logout() {
-            localStorage.clear();
-            window.location.href = '/login.html';
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const photoData = canvas.toDataURL('image/jpeg');
+        const status = document.getElementById('attendanceStatus').value;
+        const remarks = document.getElementById('attendanceRemarks').value;
+        const today = new Date().toISOString().split('T')[0];
+        
+        try {
+            const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
+            const response = await fetch(`/api/teachers/${currentTeacher.teacherId}/attendance`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    date: today,
+                    status: status,
+                    remarks: remarks,
+                    photo: photoData
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                speak(`आज का अटेंडेंस ${status} मार्क किया गया।`);
+                alert(`Attendance marked as ${status} for today`);
+                closeFaceScan();
+            } else {
+                alert('Failed to mark attendance');
+            }
+        } catch (error) {
+            console.error('Attendance error:', error);
+            alert('Error marking attendance');
+        }
+    }
+
+    // Close face scan
+    function closeFaceScan() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        document.getElementById('faceScanOverlay').style.display = 'none';
+    }
+
+    // Load attendance history
+    async function loadAttendanceHistory() {
+        const searchTerm = document.getElementById('historySearchStudent').value.toLowerCase();
+        const month = document.getElementById('historyMonth').value;
+        
+        let filtered = allStudents;
+        
+        if (searchTerm) {
+            filtered = filtered.filter(s => {
+                const name = `${s.studentName.first} ${s.studentName.last}`.toLowerCase();
+                const id = s.studentId.toLowerCase();
+                return name.includes(searchTerm) || id.includes(searchTerm);
+            });
         }
         
-        // Initialize
-        if (checkAuth()) {
-            loadAdminData();
-            loadStats();
-            loadCharts();
-            setInterval(() => {
-                loadStats();
-            }, 30000); // Refresh every 30 seconds
+        const container = document.getElementById('attendanceHistoryList');
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="text-center p-5">No students found</div>';
+            return;
         }
-    </script>
+        
+        container.innerHTML = '<div class="row">';
+        for (const student of filtered) {
+            const attendanceRecords = student.attendance || [];
+            let filteredRecords = attendanceRecords;
+            
+            if (month) {
+                const [year, monthNum] = month.split('-');
+                filteredRecords = attendanceRecords.filter(a => {
+                    const [aYear, aMonth] = a.date.split('-');
+                    return aYear === year && aMonth === monthNum;
+                });
+            }
+            
+            container.innerHTML += `
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>${student.studentName.first} ${student.studentName.last}</h6>
+                            <small class="text-muted">ID: ${student.studentId}</small>
+                            <hr>
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${filteredRecords.length ? filteredRecords.map(a => `
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>${a.date}</span>
+                                        <span class="attendance-badge attendance-${a.status}">${a.status}</span>
+                                    </div>
+                                `).join('') : '<p class="text-muted">No records found</p>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML += '</div>';
+        
+        speak(`${filtered.length} छात्रों का अटेंडेंस हिस्ट्री लोड हुआ।`);
+    }
+
+    // Show tab
+    function showTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.getElementById(`${tab}Tab`).style.display = 'block';
+        
+        document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+        event.target.closest('.nav-link').classList.add('active');
+        
+        if (tab === 'attendance') {
+            loadStudents();
+            speak("अटेंडेंस मैनेजमेंट पेज। यहां आप छात्रों की उपस्थिति दर्ज कर सकते हैं।");
+        } else if (tab === 'profile') {
+            loadProfile();
+            speak("प्रोफाइल पेज। यहां आप अपनी जानकारी देख और अपडेट कर सकते हैं।");
+        } else if (tab === 'history') {
+            loadAttendanceHistory();
+            speak("अटेंडेंस हिस्ट्री पेज। यहां आप छात्रों की उपस्थिति का इतिहास देख सकते हैं।");
+        }
+    }
+
+    // Logout
+    function logout() {
+        sessionStorage.clear();
+        localStorage.removeItem('teacherToken');
+        localStorage.removeItem('teacherData');
+        speak("लॉगआउट हो रहा है।");
+        location.reload();
+    }
+
+    // Event listeners for filters
+    document.getElementById('searchStudent')?.addEventListener('input', filterAndDisplayStudents);
+    document.getElementById('filterBoard')?.addEventListener('change', filterAndDisplayStudents);
+    document.getElementById('filterClass')?.addEventListener('change', filterAndDisplayStudents);
+
+    // Check for saved login
+    const savedToken = localStorage.getItem('teacherToken');
+    const savedData = localStorage.getItem('teacherData');
+    if (savedToken && savedData) {
+        currentTeacher = JSON.parse(savedData);
+        loadDashboard();
+    }
+</script>
 </body>
 </html>
