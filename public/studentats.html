@@ -420,6 +420,7 @@
         
         // Initialize new features
         initAadharSearch();
+        initSalarySystem();
         
         speak("डैशबोर्ड लोड हो गया है। आप छात्रों की सूची देख सकते हैं, आधार से सर्च कर सकते हैं और अटेंडेंस मार्क कर सकते हैं।");
     }
@@ -840,6 +841,429 @@
     }
     
     document.addEventListener('DOMContentLoaded', init);
+    // ============================================
+// SALARY DUE REMINDER SYSTEM - COMPLETE
+// ============================================
+
+// Global variable for salary data
+let teacherSalaryHistory = [];
+let dueReminders = [];
+
+// ============================================
+// 1. ADD SALARY TAB TO SIDEBAR
+// ============================================
+function addSalaryTab() {
+    if (document.querySelector('.nav-link[data-tab="salary"]')) return;
+    
+    const sidebarNav = document.querySelector('.sidebar .nav');
+    const historyTab = document.querySelector('.sidebar .nav-link[data-tab="history"]');
+    
+    const salaryNavLink = document.createElement('a');
+    salaryNavLink.className = 'nav-link';
+    salaryNavLink.setAttribute('data-tab', 'salary');
+    salaryNavLink.innerHTML = '<i class="fas fa-rupee-sign"></i> <span>Salary Due</span>';
+    salaryNavLink.addEventListener('click', () => showSalaryTab());
+    
+    if (historyTab && historyTab.nextSibling) {
+        sidebarNav.insertBefore(salaryNavLink, historyTab.nextSibling);
+    } else {
+        sidebarNav.appendChild(salaryNavLink);
+    }
+    
+    // Create Salary Tab Content
+    createSalaryTabContent();
+}
+
+function createSalaryTabContent() {
+    const mainContent = document.querySelector('.main-content');
+    if (document.getElementById('salaryTab')) return;
+    
+    const salaryTabDiv = document.createElement('div');
+    salaryTabDiv.id = 'salaryTab';
+    salaryTabDiv.className = 'tab-content';
+    salaryTabDiv.style.display = 'none';
+    salaryTabDiv.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-rupee-sign"></i> Salary Due Management
+                <span class="badge bg-danger ms-2" id="dueCountBadge" style="display:none;">0</span>
+            </div>
+            <div class="card-body">
+                <!-- Due Alert Banner -->
+                <div id="salaryDueAlert" style="display:none;" class="mb-4">
+                    <div class="alert alert-danger">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">⚠️ Salary Due Alert!</h5>
+                                <p id="dueAlertText" class="mb-2"></p>
+                                <button class="btn btn-warning btn-sm" id="sendDueReminderBtn">
+                                    <i class="fas fa-bell"></i> Send Reminder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Salary Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h6>Monthly Salary</h6>
+                                <h3 id="monthlySalary">₹0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h6>Total Paid</h6>
+                                <h3 id="totalPaid">₹0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body text-center">
+                                <h6>Total Due</h6>
+                                <h3 id="totalDue">₹0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h6>Due Months</h6>
+                                <h3 id="dueMonthsCount">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Due Months List -->
+                <h6><i class="fas fa-calendar-times"></i> Pending Due Months</h6>
+                <div id="dueMonthsList" class="mb-4"></div>
+                
+                <!-- Full Salary History -->
+                <h6><i class="fas fa-history"></i> Complete Salary History</h6>
+                <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr><th>Month</th><th>Year</th><th>Salary</th><th>Paid</th><th>Due</th><th>Status</th><th>Payment Date</th></tr>
+                        </thead>
+                        <tbody id="salaryHistoryTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    mainContent.appendChild(salaryTabDiv);
+}
+
+// ============================================
+// 2. LOAD SALARY DATA AND CHECK DUE
+// ============================================
+async function loadSalaryData() {
+    showLoading(true);
+    try {
+        const response = await apiRequest(`/api/teachers/${currentTeacher.teacherId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const teacher = data.data;
+            const monthlySalary = teacher.salary || 0;
+            const salaryHistory = teacher.salaryHistory || [];
+            
+            teacherSalaryHistory = salaryHistory;
+            
+            // Calculate due amounts
+            let totalPaid = 0, totalDue = 0;
+            const dueMonths = [];
+            
+            salaryHistory.forEach(record => {
+                totalPaid += record.paidAmount || 0;
+                totalDue += record.dueAmount || 0;
+                if (record.status !== 'paid' && record.dueAmount > 0) {
+                    dueMonths.push({
+                        month: record.month,
+                        year: record.year,
+                        amount: record.dueAmount,
+                        status: record.status
+                    });
+                }
+            });
+            
+            // Update UI
+            document.getElementById('monthlySalary').innerHTML = `₹${monthlySalary.toLocaleString()}`;
+            document.getElementById('totalPaid').innerHTML = `₹${totalPaid.toLocaleString()}`;
+            document.getElementById('totalDue').innerHTML = `₹${totalDue.toLocaleString()}`;
+            document.getElementById('dueMonthsCount').innerHTML = dueMonths.length;
+            document.getElementById('dueCountBadge').innerHTML = dueMonths.length;
+            
+            // Show/hide due alert
+            if (totalDue > 0) {
+                document.getElementById('salaryDueAlert').style.display = 'block';
+                document.getElementById('dueCountBadge').style.display = 'inline-block';
+                
+                const dueText = dueMonths.map(m => `${m.month} ${m.year} (₹${m.amount.toLocaleString()})`).join(', ');
+                document.getElementById('dueAlertText').innerHTML = `You have pending salary for: ${dueText}. Total due: ₹${totalDue.toLocaleString()}`;
+                
+                // Display due months list
+                displayDueMonthsList(dueMonths);
+                
+                speak(`आपकी सैलरी पर ₹${totalDue.toLocaleString()} बकाया है। ${dueMonths.length} महीने का भुगतान बाकी है।`);
+            } else {
+                document.getElementById('salaryDueAlert').style.display = 'none';
+                document.getElementById('dueCountBadge').style.display = 'none';
+                document.getElementById('dueMonthsList').innerHTML = '<div class="alert alert-success">✅ No pending dues! All salary payments are up to date.</div>';
+            }
+            
+            // Display full salary history
+            displaySalaryHistoryTable(salaryHistory, monthlySalary);
+            
+            // Check if reminder already sent today
+            checkReminderStatus();
+        }
+    } catch (error) {
+        console.error('Load salary error:', error);
+        showToast("Failed to load salary data", true);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function displayDueMonthsList(dueMonths) {
+    const container = document.getElementById('dueMonthsList');
+    if (dueMonths.length === 0) {
+        container.innerHTML = '<div class="alert alert-success">✅ No pending dues!</div>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="list-group">
+            ${dueMonths.map(m => `
+                <div class="list-group-item list-group-item-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${m.month} ${m.year}</strong>
+                            <span class="badge bg-danger ms-2">Due: ₹${m.amount.toLocaleString()}</span>
+                            <span class="badge bg-warning ms-2">${m.status === 'partial' ? 'Partial Paid' : 'Unpaid'}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger remind-month-btn" 
+                                data-month="${m.month}" 
+                                data-year="${m.year}"
+                                data-amount="${m.amount}">
+                            <i class="fas fa-bell"></i> Remind
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    // Add event listeners to remind buttons
+    document.querySelectorAll('.remind-month-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const month = btn.getAttribute('data-month');
+            const year = btn.getAttribute('data-year');
+            const amount = btn.getAttribute('data-amount');
+            sendSpecificMonthReminder(month, year, amount);
+        });
+    });
+}
+
+function displaySalaryHistoryTable(salaryHistory, monthlySalary) {
+    const tbody = document.getElementById('salaryHistoryTable');
+    
+    if (!salaryHistory || salaryHistory.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No records found</td></tr>';
+        return;
+    }
+    
+    const sorted = [...salaryHistory].sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.monthIndex - a.monthIndex;
+    });
+    
+    tbody.innerHTML = sorted.map(record => {
+        let statusClass = '', statusText = '';
+        switch(record.status) {
+            case 'paid': statusClass = 'attendance-present'; statusText = '✅ Paid'; break;
+            case 'partial': statusClass = 'attendance-late'; statusText = '⚠️ Partial'; break;
+            default: statusClass = 'attendance-absent'; statusText = '❌ Unpaid';
+        }
+        
+        return `
+            <tr class="${record.status !== 'paid' ? 'table-warning' : ''}">
+                <td><strong>${record.month}</strong></td>
+                <td>${record.year}</td>
+                <td>₹${(record.salary || monthlySalary).toLocaleString()}</td>
+                <td>₹${(record.paidAmount || 0).toLocaleString()}</td>
+                <td class="${record.status !== 'paid' ? 'text-danger fw-bold' : ''}">₹${(record.dueAmount || 0).toLocaleString()}</td>
+                <td><span class="attendance-badge ${statusClass}">${statusText}</span></td>
+                <td><small>${record.paymentDate ? new Date(record.paymentDate).toLocaleDateString() : '-'}</small></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ============================================
+// 3. SEND REMINDER TO SERVER (SAVE IN DATABASE)
+// ============================================
+async function sendDueReminder() {
+    const totalDue = parseInt(document.getElementById('totalDue').innerText.replace('₹', '').replace(/,/g, '')) || 0;
+    
+    if (totalDue === 0) {
+        showToast("No due amount to remind!", true);
+        speak("कोई बकाया राशि नहीं है");
+        return;
+    }
+    
+    const dueMonths = teacherSalaryHistory.filter(r => r.status !== 'paid').map(r => ({
+        month: r.month,
+        year: r.year,
+        dueAmount: r.dueAmount
+    }));
+    
+    showLoading(true);
+    
+    try {
+        const reminderData = {
+            teacherId: currentTeacher.teacherId,
+            teacherName: `${currentTeacher.teacherName.first} ${currentTeacher.teacherName.last}`,
+            mobile: currentTeacher.mobile,
+            totalDue: totalDue,
+            dueMonths: dueMonths,
+            dueCount: dueMonths.length,
+            message: `Salary due: ₹${totalDue} for ${dueMonths.map(m => `${m.month} ${m.year}`).join(', ')}`
+        };
+        
+        const response = await apiRequest('/api/salary-due-reminder', {
+            method: 'POST',
+            body: JSON.stringify(reminderData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(data.message || "Reminder sent successfully! Admin will contact you.");
+            speak("बकाया सैलरी की सूचना भेज दी गई है। एडमिन जल्द संपर्क करेंगे।");
+            
+            // Save reminder sent time
+            localStorage.setItem(`salaryReminder_${currentTeacher.teacherId}`, new Date().toISOString());
+            
+            // Update reminder status display
+            updateReminderStatus(data.reminderId);
+        } else {
+            showToast(data.message || "Failed to send reminder", true);
+        }
+    } catch (error) {
+        console.error('Reminder error:', error);
+        showToast("Error sending reminder", true);
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function sendSpecificMonthReminder(month, year, amount) {
+    showLoading(true);
+    
+    try {
+        const reminderData = {
+            teacherId: currentTeacher.teacherId,
+            teacherName: `${currentTeacher.teacherName.first} ${currentTeacher.teacherName.last}`,
+            mobile: currentTeacher.mobile,
+            totalDue: amount,
+            dueMonths: [{ month: month, year: year, dueAmount: amount }],
+            dueCount: 1,
+            message: `Salary due: ₹${amount} for ${month} ${year}`
+        };
+        
+        const response = await apiRequest('/api/salary-due-reminder', {
+            method: 'POST',
+            body: JSON.stringify(reminderData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Reminder sent for ${month} ${year}!`);
+            speak(`${month} ${year} की बकाया सैलरी की सूचना भेज दी गई है।`);
+        } else {
+            showToast("Failed to send reminder", true);
+        }
+    } catch (error) {
+        showToast("Error sending reminder", true);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function checkReminderStatus() {
+    const lastReminder = localStorage.getItem(`salaryReminder_${currentTeacher.teacherId}`);
+    const reminderBtn = document.getElementById('sendDueReminderBtn');
+    
+    if (lastReminder) {
+        const lastDate = new Date(lastReminder);
+        const today = new Date();
+        const daysDiff = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff < 1) {
+            if (reminderBtn) {
+                reminderBtn.disabled = true;
+                reminderBtn.innerHTML = '<i class="fas fa-check"></i> Reminder Sent Today';
+            }
+        }
+    }
+}
+
+function updateReminderStatus(reminderId) {
+    const reminderBtn = document.getElementById('sendDueReminderBtn');
+    if (reminderBtn) {
+        reminderBtn.disabled = true;
+        reminderBtn.innerHTML = '<i class="fas fa-check"></i> Reminder Sent';
+        setTimeout(() => {
+            reminderBtn.disabled = false;
+            reminderBtn.innerHTML = '<i class="fas fa-bell"></i> Send Reminder';
+        }, 24 * 60 * 60 * 1000); // Reset after 24 hours
+    }
+}
+
+// ============================================
+// 4. SHOW SALARY TAB
+// ============================================
+function showSalaryTab() {
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.getElementById('salaryTab').style.display = 'block';
+    
+    document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+    document.querySelector('.sidebar .nav-link[data-tab="salary"]').classList.add('active');
+    
+    loadSalaryData();
+    speak("सैलरी ड्यू पेज। यहां आप अपनी बकाया सैलरी देख सकते हैं और रिमाइंडर भेज सकते हैं।");
+}
+
+// ============================================
+// 5. INITIALIZE SALARY TAB
+// ============================================
+function initSalarySystem() {
+    addSalaryTab();
+    
+    // Add event listener for reminder button (will be available after DOM load)
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'sendDueReminderBtn') {
+            sendDueReminder();
+        }
+    });
+}
+
+// Call this when dashboard loads
+// Add this line in your loadDashboard() function:
+// initSalarySystem();
 </script>
+    
 </body>
 </html>
