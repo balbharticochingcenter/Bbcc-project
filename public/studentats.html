@@ -21,7 +21,6 @@
             overflow-x: hidden;
         }
 
-        /* Login Page Styles */
         .login-container {
             min-height: 100vh;
             display: flex;
@@ -87,7 +86,6 @@
             margin-bottom: -2px;
         }
 
-        /* Dashboard Styles */
         .dashboard-container {
             display: none;
             background: #f5f7fa;
@@ -106,6 +104,7 @@
             margin: 5px 0;
             border-radius: 10px;
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .sidebar .nav-link:hover,
@@ -165,7 +164,7 @@
         .attendance-present { background: #d4edda; color: #155724; }
         .attendance-absent { background: #f8d7da; color: #721c24; }
         .attendance-late { background: #fff3cd; color: #856404; }
-        .attendance-half { background: #d1ecf1; color: #0c5460; }
+        .attendance-half-day { background: #d1ecf1; color: #0c5460; }
 
         .voice-indicator {
             position: fixed;
@@ -230,6 +229,17 @@
             border-radius: 10px;
             padding: 10px 15px;
             margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
         @media (max-width: 768px) {
@@ -258,6 +268,24 @@
                 font-size: 20px;
             }
         }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .form-control:focus, .filter-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #667eea;
+        }
     </style>
 </head>
 <body>
@@ -272,11 +300,11 @@
         </div>
         
         <div class="login-tabs">
-            <button class="login-tab active" onclick="switchLoginTab('idpass')">ID + Password</button>
-            <button class="login-tab" onclick="switchLoginTab('aadhardob')">Aadhar + DOB</button>
+            <button class="login-tab active" data-tab="idpass">ID + Password</button>
+            <button class="login-tab" data-tab="aadhardob">Aadhar + DOB</button>
         </div>
 
-        <form id="loginForm" onsubmit="handleLogin(event)">
+        <form id="loginForm">
             <div id="idpassFields">
                 <div class="mb-3">
                     <label class="form-label">Teacher ID</label>
@@ -309,7 +337,7 @@
 </div>
 
 <!-- Dashboard Container -->
-<div id="dashboard" class="dashboard-container" style="display:none;">
+<div id="dashboard" class="dashboard-container">
     <div class="container-fluid p-0">
         <div class="row g-0">
             <!-- Sidebar -->
@@ -320,16 +348,16 @@
                     <small id="teacherIdDisplay">ID: ---</small>
                 </div>
                 <nav class="nav flex-column">
-                    <a class="nav-link active" href="#" onclick="showTab('attendance')">
+                    <a class="nav-link active" data-tab="attendance">
                         <i class="fas fa-calendar-check"></i> <span>Attendance Management</span>
                     </a>
-                    <a class="nav-link" href="#" onclick="showTab('profile')">
+                    <a class="nav-link" data-tab="profile">
                         <i class="fas fa-user"></i> <span>My Profile</span>
                     </a>
-                    <a class="nav-link" href="#" onclick="showTab('history')">
+                    <a class="nav-link" data-tab="history">
                         <i class="fas fa-history"></i> <span>Attendance History</span>
                     </a>
-                    <a class="nav-link" href="#" onclick="logout()">
+                    <a class="nav-link" data-tab="logout">
                         <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                     </a>
                 </nav>
@@ -359,7 +387,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <button class="btn btn-primary w-100" onclick="loadStudents()">
+                                    <button class="btn btn-primary w-100" id="refreshStudentsBtn">
                                         <i class="fas fa-sync-alt"></i> Refresh
                                     </button>
                                 </div>
@@ -376,11 +404,11 @@
                             <i class="fas fa-id-card me-2"></i> My Profile
                         </div>
                         <div class="card-body">
-                            <form id="profileForm" onsubmit="updateProfile(event)">
+                            <form id="profileForm">
                                 <div class="row">
                                     <div class="col-md-4 text-center">
-                                        <img id="profilePhoto" src="" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                                        <input type="file" id="photoUpload" accept="image/*" class="form-control mt-2" onchange="uploadPhoto(this)">
+                                        <img id="profilePhoto" src="" class="profile-img mb-3">
+                                        <input type="file" id="photoUpload" accept="image/*" class="form-control mt-2">
                                     </div>
                                     <div class="col-md-8">
                                         <div class="row">
@@ -456,15 +484,15 @@
                                                 <label>Bank Name</label>
                                                 <input type="text" class="form-control" id="profileBankName">
                                             </div>
-                                            <div class="col-md-6 mb-3">
+                                            <div class="col-md-4 mb-3">
                                                 <label>Emergency Contact Name</label>
                                                 <input type="text" class="form-control" id="profileEmergencyName">
                                             </div>
-                                            <div class="col-md-6 mb-3">
+                                            <div class="col-md-4 mb-3">
                                                 <label>Emergency Contact Relation</label>
                                                 <input type="text" class="form-control" id="profileEmergencyRelation">
                                             </div>
-                                            <div class="col-md-6 mb-3">
+                                            <div class="col-md-4 mb-3">
                                                 <label>Emergency Contact Phone</label>
                                                 <input type="text" class="form-control" id="profileEmergencyPhone">
                                             </div>
@@ -505,7 +533,7 @@
                         </div>
                         <div class="card-body">
                             <div class="text-center">
-                                <button class="btn btn-success btn-lg" onclick="startFaceScan()">
+                                <button class="btn btn-success btn-lg" id="faceScanBtn">
                                     <i class="fas fa-camera"></i> Scan Face & Mark Attendance
                                 </button>
                             </div>
@@ -528,7 +556,7 @@
                                     <input type="month" class="filter-input" id="historyMonth">
                                 </div>
                                 <div class="col-md-3">
-                                    <button class="btn btn-primary w-100" onclick="loadAttendanceHistory()">Search</button>
+                                    <button class="btn btn-primary w-100" id="searchHistoryBtn">Search</button>
                                 </div>
                             </div>
                             <div id="attendanceHistoryList"></div>
@@ -554,13 +582,12 @@
                 <option value="absent">Absent</option>
             </select>
             <textarea id="attendanceRemarks" class="form-control mb-2" rows="2" placeholder="Remarks (optional)"></textarea>
-            <button class="btn btn-primary" onclick="captureAndMark()">Capture & Mark Attendance</button>
-            <button class="btn btn-secondary" onclick="closeFaceScan()">Cancel</button>
+            <button class="btn btn-primary" id="captureMarkBtn">Capture & Mark Attendance</button>
+            <button class="btn btn-secondary" id="closeFaceScanBtn">Cancel</button>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Global variables
     let currentTeacher = null;
@@ -591,11 +618,13 @@
         }
         
         utterance.onstart = () => {
-            document.querySelector('.voice-indicator')?.classList.add('speaking');
+            const indicator = document.querySelector('.voice-indicator');
+            if (indicator) indicator.classList.add('speaking');
         };
         
         utterance.onend = () => {
-            document.querySelector('.voice-indicator')?.classList.remove('speaking');
+            const indicator = document.querySelector('.voice-indicator');
+            if (indicator) indicator.classList.remove('speaking');
         };
         
         currentUtterance = utterance;
@@ -611,11 +640,11 @@
     function switchLoginTab(tab) {
         document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
         if (tab === 'idpass') {
-            document.querySelector('.login-tab:first-child').classList.add('active');
+            document.querySelector('.login-tab[data-tab="idpass"]').classList.add('active');
             document.getElementById('idpassFields').style.display = 'block';
             document.getElementById('aadhardobFields').style.display = 'none';
         } else {
-            document.querySelector('.login-tab:last-child').classList.add('active');
+            document.querySelector('.login-tab[data-tab="aadhardob"]').classList.add('active');
             document.getElementById('idpassFields').style.display = 'none';
             document.getElementById('aadhardobFields').style.display = 'block';
         }
@@ -626,9 +655,9 @@
         event.preventDefault();
         
         let loginData = {};
-        const activeTab = document.querySelector('.login-tab.active').innerText;
+        const activeTab = document.querySelector('.login-tab.active').getAttribute('data-tab');
         
-        if (activeTab.includes('ID')) {
+        if (activeTab === 'idpass') {
             loginData = {
                 teacherId: document.getElementById('teacherId').value,
                 password: document.getElementById('password').value
@@ -677,7 +706,8 @@
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
         
-        document.getElementById('teacherNameDisplay').innerHTML = `${currentTeacher.teacherName.first} ${currentTeacher.teacherName.last}`;
+        const teacherName = `${currentTeacher.teacherName.first} ${currentTeacher.teacherName.last}`;
+        document.getElementById('teacherNameDisplay').innerHTML = teacherName;
         document.getElementById('teacherIdDisplay').innerHTML = `ID: ${currentTeacher.teacherId}`;
         
         loadProfile();
@@ -698,18 +728,23 @@
         speak("डैशबोर्ड लोड हो गया है। आप अटेंडेंस मैनेजमेंट, प्रोफाइल और हिस्ट्री देख सकते हैं।");
     }
 
-    // Load profile data
+    // Load profile data - Only logged-in teacher's data
     function loadProfile() {
+        if (!currentTeacher) return;
+        
         document.getElementById('profilePhoto').src = currentTeacher.photo || 'https://via.placeholder.com/150';
-        document.getElementById('profileName').value = `${currentTeacher.teacherName.first} ${currentTeacher.teacherName.middle || ''} ${currentTeacher.teacherName.last}`.trim();
-        document.getElementById('profileTeacherId').value = currentTeacher.teacherId;
+        const fullName = `${currentTeacher.teacherName.first || ''} ${currentTeacher.teacherName.middle || ''} ${currentTeacher.teacherName.last || ''}`.trim();
+        document.getElementById('profileName').value = fullName;
+        document.getElementById('profileTeacherId').value = currentTeacher.teacherId || '';
         document.getElementById('profileMobile').value = currentTeacher.mobile || '';
         document.getElementById('profileAltMobile').value = currentTeacher.altMobile || '';
         document.getElementById('profileDob').value = currentTeacher.dob ? new Date(currentTeacher.dob).toISOString().split('T')[0] : '';
         document.getElementById('profileQualification').value = currentTeacher.lastQualification || '';
         document.getElementById('profileAadhar').value = currentTeacher.aadharNumber || '';
         document.getElementById('profileSubject').value = currentTeacher.subject || '';
-        document.getElementById('profileFatherName').value = `${currentTeacher.fatherName?.first || ''} ${currentTeacher.fatherName?.middle || ''} ${currentTeacher.fatherName?.last || ''}`.trim();
+        
+        const fatherName = `${currentTeacher.fatherName?.first || ''} ${currentTeacher.fatherName?.middle || ''} ${currentTeacher.fatherName?.last || ''}`.trim();
+        document.getElementById('profileFatherName').value = fatherName;
         document.getElementById('profileCurrentAddress').value = currentTeacher.address?.current || '';
         document.getElementById('profilePermanentAddress').value = currentTeacher.address?.permanent || '';
         document.getElementById('profileCity').value = currentTeacher.address?.city || '';
@@ -731,6 +766,8 @@
     // Update profile
     async function updateProfile(event) {
         event.preventDefault();
+        
+        if (!currentTeacher) return;
         
         const nameParts = document.getElementById('profileName').value.trim().split(' ');
         const updateData = {
@@ -800,35 +837,34 @@
     }
 
     // Upload photo
-    async function uploadPhoto(input) {
-        const file = input.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const photoData = e.target.result;
-                try {
-                    const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
-                    const response = await fetch(`/api/teachers/${currentTeacher.teacherId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ photo: photoData })
-                    });
-                    
-                    const data = await response.json();
-                    if (data.success) {
-                        speak("फोटो अपडेट हो गई है।");
-                        document.getElementById('profilePhoto').src = photoData;
-                        currentTeacher.photo = photoData;
-                    }
-                } catch (error) {
-                    console.error('Photo upload error:', error);
+    async function uploadPhoto(file) {
+        if (!file || !currentTeacher) return;
+        
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const photoData = e.target.result;
+            try {
+                const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
+                const response = await fetch(`/api/teachers/${currentTeacher.teacherId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ photo: photoData })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    speak("फोटो अपडेट हो गई है।");
+                    document.getElementById('profilePhoto').src = photoData;
+                    currentTeacher.photo = photoData;
                 }
-            };
-            reader.readAsDataURL(file);
-        }
+            } catch (error) {
+                console.error('Photo upload error:', error);
+            }
+        };
+        reader.readAsDataURL(file);
     }
 
     // Load students
@@ -877,23 +913,44 @@
         }
         
         container.innerHTML = students.map(s => `
-            <div class="student-card" onclick="markStudentAttendance('${s.studentId}', '${s.studentName.first} ${s.studentName.last}')">
+            <div class="student-card" data-student-id="${s.studentId}" data-student-name="${s.studentName.first} ${s.studentName.last}">
                 <div class="row align-items-center">
                     <div class="col-md-6">
-                        <strong>${s.studentName.first} ${s.studentName.last}</strong><br>
-                        <small class="text-muted">ID: ${s.studentId}</small>
+                        <strong>${escapeHtml(s.studentName.first)} ${escapeHtml(s.studentName.last)}</strong><br>
+                        <small class="text-muted">ID: ${escapeHtml(s.studentId)}</small>
                     </div>
                     <div class="col-md-3">
-                        <small>${s.education?.board || 'N/A'} - ${s.education?.class || 'N/A'}</small>
+                        <small>${escapeHtml(s.education?.board || 'N/A')} - ${escapeHtml(s.education?.class || 'N/A')}</small>
                     </div>
                     <div class="col-md-3 text-end">
-                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); markStudentAttendance('${s.studentId}', '${s.studentName.first} ${s.studentName.last}')">
+                        <button class="btn btn-sm btn-primary mark-attendance-btn" data-student-id="${s.studentId}" data-student-name="${s.studentName.first} ${s.studentName.last}">
                             <i class="fas fa-check"></i> Mark Attendance
                         </button>
                     </div>
                 </div>
             </div>
         `).join('');
+        
+        // Add event listeners to buttons
+        document.querySelectorAll('.mark-attendance-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const studentId = btn.getAttribute('data-student-id');
+                const studentName = btn.getAttribute('data-student-name');
+                markStudentAttendance(studentId, studentName);
+            });
+        });
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
     // Mark student attendance
@@ -946,9 +1003,9 @@
                 const classSelect = document.getElementById('filterClass');
                 
                 boardSelect.innerHTML = '<option value="">All Boards</option>' + 
-                    data.data.boards.map(b => `<option value="${b}">${b}</option>`).join('');
+                    data.data.boards.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
                 classSelect.innerHTML = '<option value="">All Classes</option>' + 
-                    data.data.classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                    data.data.classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
             }
         } catch (error) {
             console.error('Load filters error:', error);
@@ -1061,14 +1118,14 @@
                 <div class="col-md-6 mb-3">
                     <div class="card">
                         <div class="card-body">
-                            <h6>${student.studentName.first} ${student.studentName.last}</h6>
-                            <small class="text-muted">ID: ${student.studentId}</small>
+                            <h6>${escapeHtml(student.studentName.first)} ${escapeHtml(student.studentName.last)}</h6>
+                            <small class="text-muted">ID: ${escapeHtml(student.studentId)}</small>
                             <hr>
                             <div style="max-height: 200px; overflow-y: auto;">
                                 ${filteredRecords.length ? filteredRecords.map(a => `
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span>${a.date}</span>
-                                        <span class="attendance-badge attendance-${a.status}">${a.status}</span>
+                                        <span>${escapeHtml(a.date)}</span>
+                                        <span class="attendance-badge attendance-${escapeHtml(a.status)}">${escapeHtml(a.status)}</span>
                                     </div>
                                 `).join('') : '<p class="text-muted">No records found</p>'}
                             </div>
@@ -1088,7 +1145,7 @@
         document.getElementById(`${tab}Tab`).style.display = 'block';
         
         document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
-        event.target.closest('.nav-link').classList.add('active');
+        document.querySelector(`.sidebar .nav-link[data-tab="${tab}"]`).classList.add('active');
         
         if (tab === 'attendance') {
             loadStudents();
@@ -1111,10 +1168,64 @@
         location.reload();
     }
 
-    // Event listeners for filters
-    document.getElementById('searchStudent')?.addEventListener('input', filterAndDisplayStudents);
-    document.getElementById('filterBoard')?.addEventListener('change', filterAndDisplayStudents);
-    document.getElementById('filterClass')?.addEventListener('change', filterAndDisplayStudents);
+    // Initialize event listeners
+    function initEventListeners() {
+        // Login tabs
+        document.querySelectorAll('.login-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchLoginTab(tab.getAttribute('data-tab')));
+        });
+        
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        
+        // Dashboard navigation
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                const tab = link.getAttribute('data-tab');
+                if (tab === 'logout') {
+                    logout();
+                } else {
+                    showTab(tab);
+                }
+            });
+        });
+        
+        // Refresh students
+        const refreshBtn = document.getElementById('refreshStudentsBtn');
+        if (refreshBtn) refreshBtn.addEventListener('click', loadStudents);
+        
+        // Profile form
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) profileForm.addEventListener('submit', updateProfile);
+        
+        // Photo upload
+        const photoUpload = document.getElementById('photoUpload');
+        if (photoUpload) photoUpload.addEventListener('change', (e) => uploadPhoto(e.target.files[0]));
+        
+        // Face scan
+        const faceScanBtn = document.getElementById('faceScanBtn');
+        if (faceScanBtn) faceScanBtn.addEventListener('click', startFaceScan);
+        
+        const captureMarkBtn = document.getElementById('captureMarkBtn');
+        if (captureMarkBtn) captureMarkBtn.addEventListener('click', captureAndMark);
+        
+        const closeFaceScanBtn = document.getElementById('closeFaceScanBtn');
+        if (closeFaceScanBtn) closeFaceScanBtn.addEventListener('click', closeFaceScan);
+        
+        // History search
+        const searchHistoryBtn = document.getElementById('searchHistoryBtn');
+        if (searchHistoryBtn) searchHistoryBtn.addEventListener('click', loadAttendanceHistory);
+        
+        // Filter inputs
+        const searchStudent = document.getElementById('searchStudent');
+        if (searchStudent) searchStudent.addEventListener('input', filterAndDisplayStudents);
+        
+        const filterBoard = document.getElementById('filterBoard');
+        if (filterBoard) filterBoard.addEventListener('change', filterAndDisplayStudents);
+        
+        const filterClass = document.getElementById('filterClass');
+        if (filterClass) filterClass.addEventListener('change', filterAndDisplayStudents);
+    }
 
     // Check for saved login
     const savedToken = localStorage.getItem('teacherToken');
@@ -1123,6 +1234,9 @@
         currentTeacher = JSON.parse(savedData);
         loadDashboard();
     }
+    
+    // Initialize event listeners when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initEventListeners);
 </script>
 </body>
 </html>
