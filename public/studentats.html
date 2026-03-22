@@ -286,6 +286,10 @@
             border-radius: 50%;
             border: 3px solid #667eea;
         }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -308,21 +312,21 @@
             <div id="idpassFields">
                 <div class="mb-3">
                     <label class="form-label">Teacher ID</label>
-                    <input type="text" class="form-control" id="teacherId" required>
+                    <input type="text" class="form-control" id="teacherId" name="teacherId">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" required>
+                    <input type="password" class="form-control" id="password" name="password">
                 </div>
             </div>
             <div id="aadhardobFields" style="display:none;">
                 <div class="mb-3">
                     <label class="form-label">Aadhar Number</label>
-                    <input type="text" class="form-control" id="aadharNumber" pattern="\d{12}" maxlength="12">
+                    <input type="text" class="form-control" id="aadharNumber" name="aadharNumber" pattern="\d{12}" maxlength="12">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Date of Birth</label>
-                    <input type="date" class="form-control" id="dob">
+                    <input type="date" class="form-control" id="dob" name="dob">
                 </div>
             </div>
             <div class="mb-3">
@@ -414,7 +418,7 @@
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
                                                 <label>Full Name</label>
-                                                <input type="text" class="form-control" id="profileName" required>
+                                                <input type="text" class="form-control" id="profileName">
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label>Teacher ID</label>
@@ -422,7 +426,7 @@
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label>Mobile Number</label>
-                                                <input type="text" class="form-control" id="profileMobile" required>
+                                                <input type="text" class="form-control" id="profileMobile">
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label>Alternate Mobile</label>
@@ -446,7 +450,7 @@
                                             </div>
                                             <div class="col-md-12 mb-3">
                                                 <label>Father's Name</label>
-                                                <input type="text" class="form-control" id="profileFatherName" required>
+                                                <input type="text" class="form-control" id="profileFatherName">
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <label>Current Address</label>
@@ -610,7 +614,6 @@
         utterance.rate = 0.9;
         utterance.pitch = 1.2;
         
-        // Try to get Hindi female voice
         const voices = speechSynthesis.getVoices();
         const hindiVoice = voices.find(voice => voice.lang === 'hi-IN' && voice.name.includes('Female'));
         if (hindiVoice) {
@@ -631,22 +634,49 @@
         speechSynthesis.speak(utterance);
     }
 
-    // Load voices
     speechSynthesis.onvoiceschanged = () => {
         speechSynthesis.getVoices();
     };
 
-    // Switch login tabs
+    // Switch login tabs - Fix required attributes
     function switchLoginTab(tab) {
         document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+        
+        const idpassFields = document.getElementById('idpassFields');
+        const aadhardobFields = document.getElementById('aadhardobFields');
+        const teacherIdInput = document.getElementById('teacherId');
+        const passwordInput = document.getElementById('password');
+        const aadharInput = document.getElementById('aadharNumber');
+        const dobInput = document.getElementById('dob');
+        
         if (tab === 'idpass') {
             document.querySelector('.login-tab[data-tab="idpass"]').classList.add('active');
-            document.getElementById('idpassFields').style.display = 'block';
-            document.getElementById('aadhardobFields').style.display = 'none';
+            idpassFields.style.display = 'block';
+            aadhardobFields.style.display = 'none';
+            
+            // Enable required for ID/Password, disable for Aadhar/DOB
+            teacherIdInput.required = true;
+            passwordInput.required = true;
+            aadharInput.required = false;
+            dobInput.required = false;
+            
+            // Clear Aadhar/DOB values
+            aadharInput.value = '';
+            dobInput.value = '';
         } else {
             document.querySelector('.login-tab[data-tab="aadhardob"]').classList.add('active');
-            document.getElementById('idpassFields').style.display = 'none';
-            document.getElementById('aadhardobFields').style.display = 'block';
+            idpassFields.style.display = 'none';
+            aadhardobFields.style.display = 'block';
+            
+            // Enable required for Aadhar/DOB, disable for ID/Password
+            teacherIdInput.required = false;
+            passwordInput.required = false;
+            aadharInput.required = true;
+            dobInput.required = true;
+            
+            // Clear ID/Password values
+            teacherIdInput.value = '';
+            passwordInput.value = '';
         }
     }
 
@@ -658,15 +688,27 @@
         const activeTab = document.querySelector('.login-tab.active').getAttribute('data-tab');
         
         if (activeTab === 'idpass') {
-            loginData = {
-                teacherId: document.getElementById('teacherId').value,
-                password: document.getElementById('password').value
-            };
+            const teacherId = document.getElementById('teacherId').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!teacherId || !password) {
+                speak("कृपया टीचर आईडी और पासवर्ड दर्ज करें।");
+                alert('Please enter Teacher ID and Password');
+                return;
+            }
+            
+            loginData = { teacherId, password };
         } else {
-            loginData = {
-                aadharNumber: document.getElementById('aadharNumber').value,
-                dob: document.getElementById('dob').value
-            };
+            const aadharNumber = document.getElementById('aadharNumber').value.trim();
+            const dob = document.getElementById('dob').value;
+            
+            if (!aadharNumber || !dob) {
+                speak("कृपया आधार नंबर और जन्म तिथि दर्ज करें।");
+                alert('Please enter Aadhar Number and Date of Birth');
+                return;
+            }
+            
+            loginData = { aadharNumber, dob };
         }
         
         speak("लॉगिन हो रहा है, कृपया प्रतीक्षा करें...");
@@ -714,7 +756,6 @@
         loadStudents();
         loadFilters();
         
-        // Add voice indicator
         const voiceIndicator = document.createElement('div');
         voiceIndicator.className = 'voice-indicator';
         voiceIndicator.innerHTML = '<i class="fas fa-volume-up"></i>';
@@ -728,7 +769,7 @@
         speak("डैशबोर्ड लोड हो गया है। आप अटेंडेंस मैनेजमेंट, प्रोफाइल और हिस्ट्री देख सकते हैं।");
     }
 
-    // Load profile data - Only logged-in teacher's data
+    // Load profile data
     function loadProfile() {
         if (!currentTeacher) return;
         
@@ -800,7 +841,7 @@
                 relation: document.getElementById('profileEmergencyRelation').value,
                 phone: document.getElementById('profileEmergencyPhone').value
             },
-            experience: parseInt(document.getElementById('profileExperience').value),
+            experience: parseInt(document.getElementById('profileExperience').value) || 0,
             previousSchool: document.getElementById('profileLastWorkplace').value
         };
         
@@ -913,7 +954,7 @@
         }
         
         container.innerHTML = students.map(s => `
-            <div class="student-card" data-student-id="${s.studentId}" data-student-name="${s.studentName.first} ${s.studentName.last}">
+            <div class="student-card" data-student-id="${escapeHtml(s.studentId)}" data-student-name="${escapeHtml(s.studentName.first)} ${escapeHtml(s.studentName.last)}">
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <strong>${escapeHtml(s.studentName.first)} ${escapeHtml(s.studentName.last)}</strong><br>
@@ -923,7 +964,7 @@
                         <small>${escapeHtml(s.education?.board || 'N/A')} - ${escapeHtml(s.education?.class || 'N/A')}</small>
                     </div>
                     <div class="col-md-3 text-end">
-                        <button class="btn btn-sm btn-primary mark-attendance-btn" data-student-id="${s.studentId}" data-student-name="${s.studentName.first} ${s.studentName.last}">
+                        <button class="btn btn-sm btn-primary mark-attendance-btn" data-student-id="${escapeHtml(s.studentId)}" data-student-name="${escapeHtml(s.studentName.first)} ${escapeHtml(s.studentName.last)}">
                             <i class="fas fa-check"></i> Mark Attendance
                         </button>
                     </div>
@@ -931,7 +972,6 @@
             </div>
         `).join('');
         
-        // Add event listeners to buttons
         document.querySelectorAll('.mark-attendance-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -942,7 +982,6 @@
         });
     }
 
-    // Escape HTML to prevent XSS
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -989,7 +1028,7 @@
         }
     }
 
-    // Load filters (boards and classes)
+    // Load filters
     async function loadFilters() {
         try {
             const token = sessionStorage.getItem('teacherToken') || localStorage.getItem('teacherToken');
@@ -1072,7 +1111,6 @@
         }
     }
 
-    // Close face scan
     function closeFaceScan() {
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
@@ -1159,7 +1197,6 @@
         }
     }
 
-    // Logout
     function logout() {
         sessionStorage.clear();
         localStorage.removeItem('teacherToken');
@@ -1170,15 +1207,12 @@
 
     // Initialize event listeners
     function initEventListeners() {
-        // Login tabs
         document.querySelectorAll('.login-tab').forEach(tab => {
             tab.addEventListener('click', () => switchLoginTab(tab.getAttribute('data-tab')));
         });
         
-        // Login form
         document.getElementById('loginForm').addEventListener('submit', handleLogin);
         
-        // Dashboard navigation
         document.querySelectorAll('.sidebar .nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 const tab = link.getAttribute('data-tab');
@@ -1190,19 +1224,15 @@
             });
         });
         
-        // Refresh students
         const refreshBtn = document.getElementById('refreshStudentsBtn');
         if (refreshBtn) refreshBtn.addEventListener('click', loadStudents);
         
-        // Profile form
         const profileForm = document.getElementById('profileForm');
         if (profileForm) profileForm.addEventListener('submit', updateProfile);
         
-        // Photo upload
         const photoUpload = document.getElementById('photoUpload');
         if (photoUpload) photoUpload.addEventListener('change', (e) => uploadPhoto(e.target.files[0]));
         
-        // Face scan
         const faceScanBtn = document.getElementById('faceScanBtn');
         if (faceScanBtn) faceScanBtn.addEventListener('click', startFaceScan);
         
@@ -1212,11 +1242,9 @@
         const closeFaceScanBtn = document.getElementById('closeFaceScanBtn');
         if (closeFaceScanBtn) closeFaceScanBtn.addEventListener('click', closeFaceScan);
         
-        // History search
         const searchHistoryBtn = document.getElementById('searchHistoryBtn');
         if (searchHistoryBtn) searchHistoryBtn.addEventListener('click', loadAttendanceHistory);
         
-        // Filter inputs
         const searchStudent = document.getElementById('searchStudent');
         if (searchStudent) searchStudent.addEventListener('input', filterAndDisplayStudents);
         
@@ -1235,7 +1263,6 @@
         loadDashboard();
     }
     
-    // Initialize event listeners when DOM is loaded
     document.addEventListener('DOMContentLoaded', initEventListeners);
 </script>
 </body>
