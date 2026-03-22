@@ -2291,6 +2291,373 @@ function initDueTeachersSystem() {
     loadDueTeachersList();
     startDueTeachersAutoRefresh();
 }
+    // ============================================
+// ATTENDANCE PHOTO DISPLAY SYSTEM
+// ============================================
+
+// Store current teacher ID globally
+window.currentTeacherIdForAttendance = null;
+
+// Function to show photo modal
+function showAttendancePhotoModal(photoUrl, date, status, remarks) {
+    const modalHtml = `
+        <div class="modal-custom" id="attendancePhotoModal" style="display: flex; z-index: 10005;">
+            <div style="background: white; border-radius: 24px; max-width: 500px; width: 90%; margin: auto; overflow: hidden; animation: modalUp 0.3s ease;">
+                <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 16px 20px; color: white; display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;"><i class="fas fa-camera"></i> Attendance Photo</h4>
+                    <button id="closePhotoModalX" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+                </div>
+                <div style="padding: 24px; text-align: center;">
+                    <span class="badge bg-${status === 'present' ? 'success' : status === 'absent' ? 'danger' : status === 'late' ? 'warning' : 'info'}" style="font-size: 1rem; padding: 6px 14px;">${status.toUpperCase()}</span>
+                    <h5 style="margin: 12px 0;">${new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</h5>
+                    ${remarks ? `<p style="color: #64748b;"><i class="fas fa-comment"></i> ${remarks}</p>` : ''}
+                    <img src="${photoUrl}" style="max-width: 100%; max-height: 60vh; border-radius: 16px; margin: 16px 0; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2);" onclick="window.open(this.src, '_blank')">
+                    <p><small class="text-muted">Click image to open full size</small></p>
+                </div>
+                <div style="padding: 16px 24px; border-top: 1px solid #eef2f6; display: flex; gap: 12px; justify-content: flex-end;">
+                    <button id="downloadPhotoBtn" style="background: transparent; border: 2px solid #eef2f6; border-radius: 40px; padding: 8px 20px; font-weight: 600; cursor: pointer;">Download</button>
+                    <button id="closePhotoModalBtn" style="background: linear-gradient(135deg, #4361ee, #7209b7); border: none; border-radius: 40px; padding: 8px 24px; color: white; font-weight: 600; cursor: pointer;">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const existingModal = document.getElementById('attendancePhotoModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modalDiv = document.getElementById('attendancePhotoModal');
+    
+    const closeModal = () => modalDiv.remove();
+    document.getElementById('closePhotoModalX').onclick = closeModal;
+    document.getElementById('closePhotoModalBtn').onclick = closeModal;
+    modalDiv.onclick = (e) => { if (e.target === modalDiv) closeModal(); };
+    
+    document.getElementById('downloadPhotoBtn').onclick = () => {
+        const link = document.createElement('a');
+        link.href = photoUrl;
+        link.download = `attendance_${date}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Downloading photo...', 'success');
+    };
+}
+
+// Function to get attendance record by date and show photo
+async function showAttendancePhotoByDate(date, teacherId) {
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch(`/api/teachers/${teacherId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+            const record = data.data.attendance?.find(a => a.date === date);
+            if (record && record.photo) {
+                showAttendancePhotoModal(record.photo, record.date, record.status, record.remarks);
+            } else {
+                showToast('No photo available for this date', 'warning');
+            }
+        }
+    } catch (err) {
+        showToast('Error loading photo', 'error');
+    }
+}
+
+// OVERRIDE: Modified openTeacherAttendance function with photo support
+const originalOpenTeacherAttendance = window.openTeacherAttendance;
+window.openTeacherAttendance = async function(teacherId) {
+    window.currentTeacherIdForAttendance = teacherId;
+    
+    showLoader(true);
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await fetch(`/api/teachers/${teacherId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error('Failed to load');
+        
+        const teacher = data.data;
+        const attendance = teacher.attendance || [];
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Calculate stats
+        const present = attendance.filter(a => a.status === 'present').length;
+        const absent = attendance.filter(a => a.status === 'absent').length;
+        const late = attendance.filter(a => a.status === 'late').length;
+        const halfDay = attendance.filter(a => a.status === 'half-day').length;
+        const leave = attendance.filter(a => a.status === 'leave').length;
+        
+        // Calendar
+        const year = new Date().getFullYear();
+        const month = new Date().getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        let calendarHtml = '<div class="attendance-calendar">';
+        ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(d => calendarHtml += `<div class="text-center p-2 fw-bold">${d}</div>`);
+        for (let i = 0; i < firstDay.getDay(); i++) calendarHtml += '<div class="calendar-day"></div>';
+        
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const att = attendance.find(a => a.date === dateStr);
+            const hasPhoto = att && att.photo;
+            
+            calendarHtml += `
+                <div class="calendar-day ${att ? att.status : ''}" data-date="${dateStr}" style="${hasPhoto ? 'position: relative;' : ''}">
+                    ${d}
+                    ${hasPhoto ? '<i class="fas fa-camera" style="position: absolute; bottom: 2px; right: 2px; font-size: 8px; background: rgba(0,0,0,0.5); color: white; padding: 2px; border-radius: 4px;"></i>' : ''}
+                </div>
+            `;
+        }
+        calendarHtml += '</div>';
+        
+        // History with photos
+        let historyHtml = attendance.slice().reverse().slice(0, 30).map(a => `
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom" data-date="${a.date}">
+                <div class="d-flex align-items-center gap-3">
+                    ${a.photo ? `
+                        <div style="cursor: pointer;" onclick="showAttendancePhotoByDate('${a.date}', '${teacherId}')">
+                            <img src="${a.photo}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981;">
+                        </div>
+                    ` : `
+                        <div style="width: 50px; height: 50px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-camera-slash text-muted"></i>
+                        </div>
+                    `}
+                    <div>
+                        <div class="fw-bold">${new Date(a.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                        ${a.remarks ? `<small class="text-muted">${a.remarks}</small>` : ''}
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-${a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : a.status === 'late' ? 'warning' : a.status === 'half-day' ? 'info' : 'secondary'}">${a.status.toUpperCase()}</span>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-warning edit-attendance-btn" data-date="${a.date}" data-status="${a.status}" data-remarks="${a.remarks || ''}"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-outline-danger delete-attendance-btn" data-date="${a.date}"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        if (historyHtml === '') historyHtml = '<div class="text-center p-4 text-muted">No attendance records found</div>';
+        
+        // Chart data
+        const months = [...new Set(attendance.map(a => {
+            const d = new Date(a.date);
+            return d.toLocaleString('default', { month: 'short' }) + ' ' + d.getFullYear();
+        }))].slice(-6);
+        
+        const monthlyData = months.map(month => {
+            const monthAttendances = attendance.filter(a => {
+                const d = new Date(a.date);
+                return (d.toLocaleString('default', { month: 'short' }) + ' ' + d.getFullYear()) === month;
+            });
+            return {
+                present: monthAttendances.filter(a => a.status === 'present').length,
+                absent: monthAttendances.filter(a => a.status === 'absent').length,
+                late: monthAttendances.filter(a => a.status === 'late').length,
+                halfDay: monthAttendances.filter(a => a.status === 'half-day').length,
+                leave: monthAttendances.filter(a => a.status === 'leave').length
+            };
+        });
+        
+        const modalHtml = `
+            <div class="modal-custom" id="teacherAttendanceModal">
+                <div class="modal-content-custom" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header-custom">
+                        <h4><i class="fas fa-calendar-check"></i> Attendance Management - ${teacher.teacherName.first} ${teacher.teacherName.last}</h4>
+                        <button class="modal-close" id="closeAttendanceModal">&times;</button>
+                    </div>
+                    <div class="modal-body-custom">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-2 col-4 text-center"><div class="p-2 rounded-3" style="background: #10b98120;"><h4 class="text-success mb-0">${present}</h4><small>Present</small></div></div>
+                            <div class="col-md-2 col-4 text-center"><div class="p-2 rounded-3" style="background: #ef444420;"><h4 class="text-danger mb-0">${absent}</h4><small>Absent</small></div></div>
+                            <div class="col-md-2 col-4 text-center"><div class="p-2 rounded-3" style="background: #f59e0b20;"><h4 class="text-warning mb-0">${late}</h4><small>Late</small></div></div>
+                            <div class="col-md-2 col-4 text-center"><div class="p-2 rounded-3" style="background: #8b5cf620;"><h4 class="text-info mb-0">${halfDay}</h4><small>Half Day</small></div></div>
+                            <div class="col-md-2 col-4 text-center"><div class="p-2 rounded-3" style="background: #6c757d20;"><h4 class="text-secondary mb-0">${leave}</h4><small>Leave</small></div></div>
+                            <div class="col-md-2 col-4 text-center"><div class="p-2 rounded-3" style="background: #4361ee20;"><h4 class="text-primary mb-0">${attendance.length}</h4><small>Total Days</small></div></div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="teacherAttendanceChartCanvas"></canvas>
+                            <div class="chart-type-selector mt-3">
+                                <button class="chart-type-btn active" data-chart="bar">Bar Chart</button>
+                                <button class="chart-type-btn" data-chart="line">Line Chart</button>
+                                <button class="chart-type-btn" data-chart="radar">Radar Chart</button>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-plus-circle me-2"></i> Mark New Attendance</h6>
+                        <div class="row g-2 mb-4">
+                            <div class="col-md-3"><input type="date" id="attendanceDate" class="form-control" value="${today}"></div>
+                            <div class="col-md-3"><select id="attendanceStatus" class="form-select"><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option><option value="half-day">Half Day</option><option value="leave">Leave</option></select></div>
+                            <div class="col-md-4"><input type="text" id="attendanceRemarks" class="form-control" placeholder="Remarks (optional)"></div>
+                            <div class="col-md-2"><button class="btn-primary-premium w-100" id="markAttendanceBtn"><i class="fas fa-save"></i> Save</button></div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-calendar-alt me-2"></i> Attendance Calendar (${new Date().toLocaleString('default', { month: 'long' })} ${year})</h6>
+                        ${calendarHtml}
+                        
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-history me-2"></i> Attendance History <small class="text-muted">(Click photo to view full size)</small></h6>
+                        <div id="attendanceHistoryList" style="max-height: 400px; overflow-y: auto;">${historyHtml}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = document.getElementById('teacherAttendanceModal');
+        modal.style.display = 'block';
+        
+        // Close modal
+        document.getElementById('closeAttendanceModal').onclick = () => {
+            modal.remove();
+            if (window.currentTeacherAttendanceChart) window.currentTeacherAttendanceChart.destroy();
+        };
+        
+        // Initialize chart
+        const ctx = document.getElementById('teacherAttendanceChartCanvas').getContext('2d');
+        if (window.currentTeacherAttendanceChart) window.currentTeacherAttendanceChart.destroy();
+        
+        window.currentTeacherAttendanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    { label: 'Present', data: monthlyData.map(d => d.present), backgroundColor: '#10b981', borderRadius: 8 },
+                    { label: 'Absent', data: monthlyData.map(d => d.absent), backgroundColor: '#ef4444', borderRadius: 8 },
+                    { label: 'Late', data: monthlyData.map(d => d.late), backgroundColor: '#f59e0b', borderRadius: 8 },
+                    { label: 'Half Day', data: monthlyData.map(d => d.halfDay), backgroundColor: '#8b5cf6', borderRadius: 8 },
+                    { label: 'Leave', data: monthlyData.map(d => d.leave), backgroundColor: '#6c757d', borderRadius: 8 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+        
+        // Chart type switcher
+        document.querySelectorAll('.chart-type-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const type = btn.dataset.chart;
+                window.currentTeacherAttendanceChart.destroy();
+                window.currentTeacherAttendanceChart = new Chart(ctx, {
+                    type: type,
+                    data: {
+                        labels: months,
+                        datasets: [
+                            { label: 'Present', data: monthlyData.map(d => d.present), backgroundColor: '#10b981', borderColor: '#10b981', tension: 0.4 },
+                            { label: 'Absent', data: monthlyData.map(d => d.absent), backgroundColor: '#ef4444', borderColor: '#ef4444', tension: 0.4 },
+                            { label: 'Late', data: monthlyData.map(d => d.late), backgroundColor: '#f59e0b', borderColor: '#f59e0b', tension: 0.4 },
+                            { label: 'Half Day', data: monthlyData.map(d => d.halfDay), backgroundColor: '#8b5cf6', borderColor: '#8b5cf6', tension: 0.4 },
+                            { label: 'Leave', data: monthlyData.map(d => d.leave), backgroundColor: '#6c757d', borderColor: '#6c757d', tension: 0.4 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            };
+        });
+        
+        // Mark attendance button
+        document.getElementById('markAttendanceBtn').onclick = async () => {
+            const date = document.getElementById('attendanceDate').value;
+            const status = document.getElementById('attendanceStatus').value;
+            const remarks = document.getElementById('attendanceRemarks').value;
+            if (!date) { showToast('Select date', 'warning'); return; }
+            showLoader(true);
+            try {
+                const res = await fetch(`/api/teachers/${teacherId}/attendance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ date, status, remarks })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Attendance marked!', 'success');
+                    modal.remove();
+                    window.openTeacherAttendance(teacherId);
+                } else showToast(data.message || 'Failed', 'error');
+            } catch (err) { showToast('Failed', 'error'); }
+            showLoader(false);
+        };
+        
+        // Calendar day click - SHOW PHOTO IF EXISTS
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            if (day.dataset.date) {
+                day.onclick = async () => {
+                    const selectedDate = day.dataset.date;
+                    const record = attendance.find(a => a.date === selectedDate);
+                    if (record && record.photo) {
+                        showAttendancePhotoModal(record.photo, record.date, record.status, record.remarks);
+                    } else {
+                        document.getElementById('attendanceDate').value = selectedDate;
+                        document.getElementById('attendanceDate').scrollIntoView({ behavior: 'smooth' });
+                        if (record) {
+                            showToast(`${selectedDate}: ${record.status}. No photo.`, 'info');
+                        } else {
+                            showToast(`Select date: ${selectedDate}`, 'info');
+                        }
+                    }
+                };
+            }
+        });
+        
+        // Edit attendance
+        document.querySelectorAll('.edit-attendance-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const date = btn.dataset.date;
+                const newStatus = prompt('Edit status (present/absent/late/half-day/leave):', btn.dataset.status);
+                if (newStatus && ['present', 'absent', 'late', 'half-day', 'leave'].includes(newStatus)) {
+                    const newRemarks = prompt('Edit remarks:', btn.dataset.remarks);
+                    showLoader(true);
+                    try {
+                        await fetch(`/api/teachers/${teacherId}/attendance`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ date, status: newStatus, remarks: newRemarks || '' })
+                        });
+                        showToast('✅ Updated!', 'success');
+                        modal.remove();
+                        window.openTeacherAttendance(teacherId);
+                    } catch (err) { showToast('Update failed', 'error'); }
+                    showLoader(false);
+                }
+            };
+        });
+        
+        // Delete attendance
+        document.querySelectorAll('.delete-attendance-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const date = btn.dataset.date;
+                if (!confirm(`Delete attendance for ${date}?`)) return;
+                showLoader(true);
+                try {
+                    await fetch(`/api/teachers/${teacherId}/attendance`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ date })
+                    });
+                    showToast('✅ Deleted!', 'success');
+                    modal.remove();
+                    window.openTeacherAttendance(teacherId);
+                } catch (err) { showToast('Delete failed', 'error'); }
+                showLoader(false);
+            };
+        });
+        
+    } catch (err) {
+        showToast('Error loading attendance', 'error');
+    }
+    showLoader(false);
+};
+
+console.log('✅ Attendance photo system loaded successfully!');
 </script>
 </body>
 </html>
