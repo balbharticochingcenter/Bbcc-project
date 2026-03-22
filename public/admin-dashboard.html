@@ -1977,9 +1977,320 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('adminPhotoFile').addEventListener('change', async (e) => { if(e.target.files[0]) { const c = await compressImage(e.target.files[0]); document.getElementById('adminPhotoData').value = c; document.getElementById('adminPhotoPreview').innerHTML = `<img src="${c}" style="max-width:100px;">`; } });
     document.getElementById('adminDocFile').addEventListener('change', async (e) => { if(e.target.files[0]) { const f = e.target.files[0]; const d = f.type === 'application/pdf' ? await compressPDF(f) : await compressImage(f); document.getElementById('adminDocData').value = d; if(f.type === 'application/pdf') document.getElementById('adminDocPreview').innerHTML = '<i class="fas fa-file-pdf fa-3x"></i>'; else document.getElementById('adminDocPreview').innerHTML = `<img src="${d}" style="max-width:100px;">`; } });
     document.getElementById('updateAdminBtn').addEventListener('click', updateAdminProfile);
-    
+    initDueTeachersSystem();
     showLoader(false);
 });
+    // ============================================
+// DUE TEACHERS LIST - ADMIN DASHBOARD
+// ============================================
+
+// First, add the HTML container for due teachers (in the admin pane)
+function addDueTeachersContainer() {
+    const adminPane = document.getElementById('adminPane');
+    if (!adminPane) return;
+    
+    // Check if already added
+    if (document.getElementById('dueTeachersContainer')) return;
+    
+    // Create the due teachers card
+    const dueCard = document.createElement('div');
+    dueCard.className = 'premium-card mb-4';
+    dueCard.id = 'dueTeachersContainer';
+    dueCard.innerHTML = `
+        <div class="card-header" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white;">
+            <h3 class="mb-0"><i class="fas fa-rupee-sign me-2"></i> Teachers with Salary Due</h3>
+            <span class="badge bg-white text-danger ms-2" id="dueTeachersCount">0</span>
+        </div>
+        <div class="card-body">
+            <div id="dueTeachersList">
+                <div class="text-center p-4">
+                    <i class="fas fa-spinner fa-spin me-2"></i> Loading due teachers...
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Insert at the top of admin pane
+    adminPane.insertBefore(dueCard, adminPane.firstChild);
+}
+
+// Load due teachers list from server
+async function loadDueTeachersList() {
+    const container = document.getElementById('dueTeachersList');
+    if (!container) return;
+    
+    try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) {
+            container.innerHTML = '<div class="alert alert-warning">Please login to view due teachers.</div>';
+            return;
+        }
+        
+        const response = await fetch('/api/admin/teachers-with-due', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displayDueTeachers(data.data);
+            const count = data.data.length;
+            const countBadge = document.getElementById('dueTeachersCount');
+            if (countBadge) countBadge.textContent = count;
+            
+            if (count > 0) {
+                showToast(`${count} teacher(s) have salary due!`, 'warning');
+            }
+        } else {
+            container.innerHTML = '<div class="alert alert-danger">Failed to load due teachers list.</div>';
+        }
+    } catch (error) {
+        console.error('Error loading due teachers:', error);
+        container.innerHTML = '<div class="alert alert-danger">Error loading data. Please try again.</div>';
+    }
+}
+
+// Display due teachers in table
+function displayDueTeachers(teachers) {
+    const container = document.getElementById('dueTeachersList');
+    if (!container) return;
+    
+    if (!teachers || teachers.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-success text-center py-4">
+                <i class="fas fa-check-circle fa-3x mb-2"></i>
+                <h5 class="mb-0">No Pending Salary Dues!</h5>
+                <p class="mb-0 mt-2">All teachers have received their salary payments.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calculate total due amount
+    const totalDueAmount = teachers.reduce((sum, t) => sum + (t.totalDue || 0), 0);
+    
+    container.innerHTML = `
+        <div class="mb-3">
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-info-circle me-2"></i> <strong>Total Due Amount:</strong> ₹${totalDueAmount.toLocaleString()}</span>
+                <span><strong>Total Teachers:</strong> ${teachers.length}</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Teacher ID</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Monthly Salary</th>
+                        <th>Total Due</th>
+                        <th>Due Months</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${teachers.map((t, index) => `
+                        <tr class="table-warning">
+                            <td>${index + 1}</td>
+                            <td><strong>${escapeHtml(t.teacherId)}</strong></td>
+                            <td>${escapeHtml(t.teacherName)}</td>
+                            <td>
+                                <a href="tel:${t.mobile}" class="text-decoration-none">
+                                    <i class="fas fa-phone-alt"></i> ${t.mobile || 'N/A'}
+                                </a>
+                            </td>
+                            <td>₹${(t.monthlySalary || 0).toLocaleString()}</td>
+                            <td class="text-danger fw-bold">₹${(t.totalDue || 0).toLocaleString()}</td>
+                            <td>
+                                <small>
+                                    ${t.dueMonths.map(m => `<span class="badge bg-warning me-1 mb-1">${m.month} ${m.year}</span>`).join('')}
+                                </small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-success contact-teacher" data-mobile="${t.mobile}" data-name="${t.teacherName}" title="Call">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                    <button class="btn btn-primary whatsapp-teacher" data-mobile="${t.mobile}" data-name="${t.teacherName}" title="WhatsApp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </button>
+                                    <button class="btn btn-info view-details" data-teacher='${JSON.stringify(t)}' title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="5" class="text-end fw-bold">GRAND TOTAL:</td>
+                        <td class="text-danger fw-bold">₹${totalDueAmount.toLocaleString()}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    `;
+    
+    // Add event listeners for buttons
+    document.querySelectorAll('.contact-teacher').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mobile = btn.getAttribute('data-mobile');
+            const name = btn.getAttribute('data-name');
+            if (mobile) {
+                window.location.href = `tel:${mobile}`;
+                showToast(`Calling ${name}...`, 'info');
+            } else {
+                showToast('No mobile number available', 'error');
+            }
+        });
+    });
+    
+    document.querySelectorAll('.whatsapp-teacher').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mobile = btn.getAttribute('data-mobile');
+            const name = btn.getAttribute('data-name');
+            if (mobile) {
+                const message = encodeURIComponent(`Dear ${name},\n\nThis is a reminder that your salary payment is pending. Please contact the administration for further details.\n\nRegards,\nBal Bharti Coaching Center`);
+                window.open(`https://wa.me/91${mobile}?text=${message}`, '_blank');
+            } else {
+                showToast('No mobile number available', 'error');
+            }
+        });
+    });
+    
+    document.querySelectorAll('.view-details').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const teacher = JSON.parse(btn.getAttribute('data-teacher'));
+            showTeacherDueDetailsModal(teacher);
+        });
+    });
+}
+
+// Show teacher due details in modal
+function showTeacherDueDetailsModal(teacher) {
+    // Create modal if not exists
+    let modal = document.getElementById('teacherDueModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'teacherDueModal';
+        modal.className = 'modal-custom';
+        modal.innerHTML = `
+            <div class="modal-content-custom" style="max-width: 600px;">
+                <div class="modal-header-custom" style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+                    <h4><i class="fas fa-user"></i> Teacher Due Details</h4>
+                    <button class="modal-close" id="closeDueModalBtn">&times;</button>
+                </div>
+                <div class="modal-body-custom" id="teacherDueModalBody"></div>
+                <div class="modal-footer-custom">
+                    <button class="btn-secondary-premium" id="closeDueModalFooterBtn">Close</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Close modal functions
+        const closeModal = () => modal.style.display = 'none';
+        document.getElementById('closeDueModalBtn').onclick = closeModal;
+        document.getElementById('closeDueModalFooterBtn').onclick = closeModal;
+        modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+    }
+    
+    const body = document.getElementById('teacherDueModalBody');
+    const totalDue = teacher.totalDue || 0;
+    const monthlySalary = teacher.monthlySalary || 0;
+    
+    body.innerHTML = `
+        <div class="text-center mb-3">
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #ef4444); border-radius: 40px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                <i class="fas fa-user fa-3x text-white"></i>
+            </div>
+            <h5 class="mb-1">${escapeHtml(teacher.teacherName)}</h5>
+            <p class="text-muted mb-0">ID: ${escapeHtml(teacher.teacherId)}</p>
+        </div>
+        
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <div class="p-3 rounded-3" style="background: #f59e0b20;">
+                    <h4 class="text-warning mb-0">₹${monthlySalary.toLocaleString()}</h4>
+                    <small>Monthly Salary</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="p-3 rounded-3" style="background: #ef444420;">
+                    <h4 class="text-danger mb-0">₹${totalDue.toLocaleString()}</h4>
+                    <small>Total Due</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label class="fw-bold"><i class="fas fa-phone-alt me-2"></i> Contact</label>
+            <p><a href="tel:${teacher.mobile}" class="text-decoration-none">${teacher.mobile || 'N/A'}</a></p>
+        </div>
+        
+        <div class="mb-3">
+            <label class="fw-bold"><i class="fas fa-calendar-times me-2"></i> Due Months</label>
+            <div class="mt-2">
+                ${teacher.dueMonths.map(m => `
+                    <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                        <span><strong>${m.month} ${m.year}</strong></span>
+                        <span class="text-danger">Due: ₹${(m.dueAmount || 0).toLocaleString()}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <div class="d-flex gap-2">
+                <a href="tel:${teacher.mobile}" class="btn btn-success flex-grow-1">
+                    <i class="fas fa-phone"></i> Call
+                </a>
+                <a href="https://wa.me/91${teacher.mobile}?text=${encodeURIComponent(`Dear ${teacher.teacherName},\n\nYour salary payment is pending. Please contact the administration.`)}" 
+                   target="_blank" class="btn btn-primary flex-grow-1">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// Auto refresh every 5 minutes
+let dueTeachersRefreshInterval;
+
+function startDueTeachersAutoRefresh() {
+    if (dueTeachersRefreshInterval) clearInterval(dueTeachersRefreshInterval);
+    dueTeachersRefreshInterval = setInterval(() => {
+        // Only refresh if admin tab is visible
+        const adminPane = document.getElementById('adminPane');
+        if (adminPane && adminPane.style.display !== 'none') {
+            loadDueTeachersList();
+        }
+    }, 5 * 60 * 1000); // 5 minutes
+}
+
+// Initialize due teachers system
+function initDueTeachersSystem() {
+    addDueTeachersContainer();
+    loadDueTeachersList();
+    startDueTeachersAutoRefresh();
+}
 </script>
 </body>
 </html>
