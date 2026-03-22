@@ -795,8 +795,9 @@ app.post('/api/student-register', async (req, res) => {
 
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: "Access denied" });
+        // Allow both admin and teacher to view students
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+            return res.status(403).json({ success: false, message: "Access denied. Only admin and teachers can view students." });
         }
         const students = await Student.find().sort({ createdAt: -1 });
         res.json({ success: true, data: students });
@@ -805,9 +806,10 @@ app.get('/api/students', verifyToken, async (req, res) => {
     }
 });
 
+// GET single student - Allow both admin AND teacher
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         const student = await Student.findOne({ studentId: req.params.id });
@@ -817,7 +819,6 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-
 app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
@@ -954,7 +955,7 @@ app.post('/api/update-fees/:studentId', verifyToken, async (req, res) => {
 
 app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         const student = await Student.findOne({ studentId: req.params.id });
@@ -967,7 +968,8 @@ app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
 
 app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        // Allow both admin and teacher to mark attendance
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         const { date, status, remarks } = req.body;
@@ -976,7 +978,13 @@ app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
         if (!student.attendance) student.attendance = [];
         
         const existingIndex = student.attendance.findIndex(a => a.date === date);
-        const record = { date, status, remarks: remarks || '', markedBy: req.user.adminID, markedAt: new Date() };
+        const record = { 
+            date, 
+            status, 
+            remarks: remarks || '', 
+            markedBy: req.user.role === 'teacher' ? req.user.teacherId : req.user.adminID, 
+            markedAt: new Date() 
+        };
         
         if (existingIndex >= 0) student.attendance[existingIndex] = record;
         else student.attendance.push(record);
@@ -1016,7 +1024,7 @@ app.delete('/api/students/:id/attendance', verifyToken, async (req, res) => {
 
 app.get('/api/boards', verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'admin') {
+        if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         const students = await Student.find();
