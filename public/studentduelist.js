@@ -1,48 +1,119 @@
 // ============================================
-// STUDENT DUE LIST MANAGEMENT
+// STUDENT DUE LIST MANAGEMENT - FIXED VERSION
 // Due Fees Tracking + WhatsApp/SMS Messaging
 // ============================================
 
 let allStudentsData = [];
 let currentDueStudents = [];
-let selectedStudentForMessage = null;
+
+// ============================================
+// CHECK TOKEN FIRST
+// ============================================
+function isTokenValid() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        showToast('Please login again', 'error');
+        setTimeout(() => window.location.href = 'login.html', 1500);
+        return false;
+    }
+    return true;
+}
 
 // ============================================
 // INITIALIZE STUDENT DUE LIST TAB
 // ============================================
 async function initStudentDueListTab() {
+    if (!isTokenValid()) return;
+    
     showLoader(true);
-    await loadAllStudentsForDueList();
-    await loadBoardsAndClasses();
-    setupDueListEventListeners();
-    showLoader(false);
+    try {
+        await loadAllStudentsForDueList();
+        await loadBoardsAndClasses();
+        setupDueListEventListeners();
+    } catch (err) {
+        console.error('Init error:', err);
+        showToast('Failed to initialize due list', 'error');
+    } finally {
+        showLoader(false);
+    }
 }
 
 // ============================================
-// 1. LOAD ALL STUDENTS FROM SERVER
+// 1. LOAD ALL STUDENTS FROM SERVER - FIXED
 // ============================================
 async function loadAllStudentsForDueList() {
+    const container = document.getElementById('dueStudentsListContainer');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-3x text-muted"></i>
+                <p class="mt-3">Loading students data...</p>
+            </div>
+        `;
+    }
+    
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            showToast('Please login first', 'error');
+            throw new Error('No authentication token found');
+        }
+        
+        console.log('Fetching students from API...');
+        
+        const res = await fetch('/api/students', {
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('Response status:', res.status);
+        
+        if (res.status === 401) {
+            localStorage.removeItem('token');
+            showToast('Session expired. Please login again.', 'error');
+            setTimeout(() => window.location.href = 'login.html', 1500);
             return;
         }
         
-        const res = await fetch('/api/students', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        if (res.status === 403) {
+            showToast('You don\'t have permission to view students', 'error');
+            return;
+        }
+        
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
         
         const data = await res.json();
-        if (data.success) {
+        console.log('Students data received:', data.success ? 'Success' : 'Failed');
+        
+        if (data.success && data.data) {
             allStudentsData = data.data;
             calculateDueForAllStudents();
         } else {
-            showToast(data.message || 'Failed to load students', 'error');
+            throw new Error(data.message || 'Failed to load students');
         }
+        
     } catch (err) {
         console.error('Error loading students:', err);
-        showToast('Error loading students', 'error');
+        
+        const container = document.getElementById('dueStudentsListContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h5>Error Loading Students</h5>
+                    <p class="text-muted">${err.message}</p>
+                    <button class="btn-primary-premium mt-3" onclick="loadAllStudentsForDueList()">
+                        <i class="fas fa-sync-alt"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+        
+        showToast('Error loading students: ' + err.message, 'error');
     }
 }
 
@@ -50,6 +121,13 @@ async function loadAllStudentsForDueList() {
 // 2. CALCULATE DUE FOR EACH STUDENT
 // ============================================
 function calculateDueForAllStudents() {
+    if (!allStudentsData || allStudentsData.length === 0) {
+        currentDueStudents = [];
+        renderDueStudentsList();
+        updateDueStats();
+        return;
+    }
+    
     const currentDate = new Date();
     const currentMonth = currentDate.toLocaleString('default', { month: 'short' });
     const currentYear = currentDate.getFullYear();
@@ -60,13 +138,14 @@ function calculateDueForAllStudents() {
         let dueMonths = [];
         
         // Calculate due from feesHistory
-        if (student.feesHistory && student.feesHistory.length > 0) {
+        if (student.feesHistory && Array.isArray(student.feesHistory) && student.feesHistory.length > 0) {
             student.feesHistory.forEach(fee => {
                 if (fee.status === 'unpaid' || fee.status === 'partial') {
-                    totalDue += fee.dueAmount || 0;
+                    const dueAmount = fee.dueAmount || (student.classMonthlyFees - (fee.paidAmount || 0));
+                    totalDue += dueAmount;
                     dueMonths.push({
                         month: fee.month,
-                        dueAmount: fee.dueAmount || 0,
+                        dueAmount: dueAmount,
                         status: fee.status
                     });
                 }
@@ -75,7 +154,7 @@ function calculateDueForAllStudents() {
         
         // Calculate current month due if not paid
         const currentMonthFee = student.feesHistory?.find(f => f.month === currentMonthKey);
-        if (!currentMonthFee || currentMonthFee.status !== 'paid') {
+        if ((!currentMonthFee || currentMonthFee.status !== 'paid') && student.classMonthlyFees > 0) {
             const currentDue = (student.classMonthlyFees || 0) - (currentMonthFee?.paidAmount || 0);
             if (currentDue > 0) {
                 totalDue += currentDue;
@@ -91,31 +170,33 @@ function calculateDueForAllStudents() {
         
         return {
             _id: student._id,
-            studentId: student.studentId,
-            name: `${student.studentName.first} ${student.studentName.middle ? student.studentName.middle + ' ' : ''}${student.studentName.last}`,
-            photo: student.photo,
+            studentId: student.studentId || 'N/A',
+            name: `${student.studentName?.first || ''} ${student.studentName?.middle ? student.studentName.middle + ' ' : ''}${student.studentName?.last || ''}`.trim() || 'Unknown',
+            photo: student.photo || 'https://via.placeholder.com/60',
             joiningDate: student.joiningDate,
-            classMonthlyFees: student.classMonthlyFees,
+            classMonthlyFees: student.classMonthlyFees || 0,
             totalDue: totalDue,
             dueMonths: dueMonths,
             board: student.education?.board || 'N/A',
             class: student.education?.class || 'N/A',
-            studentMobile: student.mobile,
-            fatherName: `${student.fatherName.first} ${student.fatherName.last}`,
-            fatherMobile: student.fatherMobile,
-            motherName: student.motherName.first ? `${student.motherName.first} ${student.motherName.last}` : '',
+            studentMobile: student.mobile || '',
+            fatherName: `${student.fatherName?.first || ''} ${student.fatherName?.last || ''}`.trim() || 'N/A',
+            fatherMobile: student.fatherMobile || '',
+            motherName: student.motherName?.first ? `${student.motherName.first} ${student.motherName.last || ''}`.trim() : '',
             motherMobile: student.motherMobile || '',
-            email: student.email || '',
             address: student.address?.current || ''
         };
     }).filter(student => student.totalDue > 0); // Only show students with due
+    
+    // Sort by total due (highest first)
+    currentDueStudents.sort((a, b) => b.totalDue - a.totalDue);
     
     renderDueStudentsList();
     updateDueStats();
 }
 
 // ============================================
-// 3. RENDER DUE STUDENTS LIST
+// 3. RENDER DUE STUDENTS LIST - FIXED
 // ============================================
 function renderDueStudentsList() {
     const container = document.getElementById('dueStudentsListContainer');
@@ -145,47 +226,39 @@ function renderDueStudentsList() {
         );
     }
     
-    // Sort by total due (highest first)
-    filteredStudents.sort((a, b) => b.totalDue - a.totalDue);
-    
     if (filteredStudents.length === 0) {
         container.innerHTML = `
             <div class="text-center py-5">
                 <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
                 <h5>No Due Students Found!</h5>
                 <p class="text-muted">All students have cleared their fees.</p>
+                ${currentDueStudents.length === 0 ? '<p class="text-muted">Total students with due: 0</p>' : '<button class="btn-secondary-premium mt-2" onclick="clearDueFilters()">Clear Filters</button>'}
             </div>
         `;
-        document.getElementById('totalDueCount').textContent = '0';
-        document.getElementById('totalDueAmount').textContent = '₹0';
         return;
     }
-    
-    const totalDueSum = filteredStudents.reduce((sum, s) => sum + s.totalDue, 0);
-    document.getElementById('totalDueCount').textContent = filteredStudents.length;
-    document.getElementById('totalDueAmount').textContent = `₹${totalDueSum.toLocaleString()}`;
     
     container.innerHTML = filteredStudents.map(student => `
         <div class="due-student-card mb-3 p-3 border rounded-3" data-student-id="${student.studentId}" style="background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
             <div class="row align-items-center">
                 <div class="col-md-2 col-3 text-center">
-                    <img src="${student.photo || 'https://via.placeholder.com/70'}" 
+                    <img src="${student.photo}" 
                          class="rounded-circle" 
-                         style="width: 60px; height: 60px; object-fit: cover; border: 2px solid var(--danger);"
-                         onerror="this.src='https://via.placeholder.com/60'">
+                         style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #dc2626;"
+                         onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
                 </div>
                 <div class="col-md-4 col-9">
                     <h6 class="mb-1 fw-bold">${escapeHtml(student.name)}</h6>
                     <small class="text-muted">ID: ${student.studentId}</small><br>
-                    <small class="text-muted">Joining: ${new Date(student.joiningDate).toLocaleDateString()}</small><br>
-                    <small class="text-muted">${student.board} | ${student.class}</small>
+                    <small class="text-muted">Joining: ${student.joiningDate ? new Date(student.joiningDate).toLocaleDateString() : 'N/A'}</small><br>
+                    <small class="text-muted">${escapeHtml(student.board)} | ${escapeHtml(student.class)}</small>
                 </div>
                 <div class="col-md-3 col-6">
                     <div class="mb-2">
-                        <span class="badge bg-danger fs-6 p-2">Due: ₹${student.totalDue.toLocaleString()}</span>
+                        <span class="badge bg-danger fs-6 p-2">Due: ₹${(student.totalDue || 0).toLocaleString()}</span>
                     </div>
-                    <small class="text-muted">Monthly Fees: ₹${student.classMonthlyFees}</small>
-                    ${student.dueMonths.length > 0 ? `
+                    <small class="text-muted">Monthly Fees: ₹${(student.classMonthlyFees || 0).toLocaleString()}</small>
+                    ${student.dueMonths && student.dueMonths.length > 0 ? `
                         <div class="mt-1">
                             <small class="text-warning">Due Months:</small>
                             <small>${student.dueMonths.map(m => `${m.month} (₹${m.dueAmount})`).join(', ')}</small>
@@ -195,18 +268,14 @@ function renderDueStudentsList() {
                 <div class="col-md-3 col-6">
                     <div class="d-flex flex-column gap-2">
                         <button class="btn btn-sm btn-outline-primary send-message-btn" 
-                                data-student='${JSON.stringify(student).replace(/'/g, "&#39;")}'>
+                                data-student='${JSON.stringify(student).replace(/'/g, "&#39;").replace(/"/g, '&quot;')}'>
                             <i class="fas fa-envelope"></i> Send Message
                         </button>
                         <div class="btn-group">
-                            <a href="tel:${student.studentMobile}" class="btn btn-sm btn-success">
-                                <i class="fas fa-phone"></i> Call
-                            </a>
-                            <a href="https://wa.me/91${student.studentMobile}?text=${encodeURIComponent(getDefaultMessage(student))}" 
-                               target="_blank" class="btn btn-sm btn-success">
-                                <i class="fab fa-whatsapp"></i> WhatsApp
-                            </a>
+                            ${student.studentMobile ? `<a href="tel:${student.studentMobile}" class="btn btn-sm btn-success"><i class="fas fa-phone"></i> Call</a>` : ''}
+                            ${student.studentMobile ? `<a href="https://wa.me/91${student.studentMobile}?text=${encodeURIComponent(getDefaultMessage(student))}" target="_blank" class="btn btn-sm btn-success"><i class="fab fa-whatsapp"></i> WhatsApp</a>` : ''}
                         </div>
+                        ${student.fatherMobile ? `<small class="text-muted mt-1">Parent: ${student.fatherMobile}</small>` : ''}
                     </div>
                 </div>
             </div>
@@ -215,10 +284,17 @@ function renderDueStudentsList() {
     
     // Add event listeners for message buttons
     document.querySelectorAll('.send-message-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const studentData = JSON.parse(btn.getAttribute('data-student'));
-            openMessageModal(studentData);
-        });
+        btn.removeEventListener('click', btn._listener);
+        btn._listener = () => {
+            try {
+                const studentData = JSON.parse(btn.getAttribute('data-student'));
+                openMessageModal(studentData);
+            } catch (e) {
+                console.error('Parse error:', e);
+                showToast('Error loading student data', 'error');
+            }
+        };
+        btn.addEventListener('click', btn._listener);
     });
 }
 
@@ -227,61 +303,67 @@ function renderDueStudentsList() {
 // ============================================
 function updateDueStats() {
     const totalDueStudents = currentDueStudents.length;
-    const totalDueAmount = currentDueStudents.reduce((sum, s) => sum + s.totalDue, 0);
+    const totalDueAmount = currentDueStudents.reduce((sum, s) => sum + (s.totalDue || 0), 0);
     const avgDue = totalDueStudents > 0 ? Math.round(totalDueAmount / totalDueStudents) : 0;
     
-    const statsHtml = `
+    const statsContainer = document.getElementById('dueStatsContainer');
+    if (!statsContainer) return;
+    
+    statsContainer.innerHTML = `
         <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white;">
+                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; border-radius: 16px;">
                     <h2 class="mb-0">${totalDueStudents}</h2>
                     <small>Students with Due</small>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #f59e0b, #fb5607); color: white;">
+                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #f59e0b, #fb5607); color: white; border-radius: 16px;">
                     <h2 class="mb-0">₹${totalDueAmount.toLocaleString()}</h2>
                     <small>Total Due Amount</small>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white;">
+                <div class="stat-card text-center p-3" style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border-radius: 16px;">
                     <h2 class="mb-0">₹${avgDue.toLocaleString()}</h2>
                     <small>Average Due per Student</small>
                 </div>
             </div>
         </div>
     `;
-    
-    const statsContainer = document.getElementById('dueStatsContainer');
-    if (statsContainer) {
-        statsContainer.innerHTML = statsHtml;
-    }
 }
 
 // ============================================
-// 5. LOAD BOARDS AND CLASSES FOR FILTER
+// 5. LOAD BOARDS AND CLASSES FOR FILTER - FIXED
 // ============================================
 async function loadBoardsAndClasses() {
     try {
         const token = localStorage.getItem('token');
+        if (!token) return;
+        
         const res = await fetch('/api/boards', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!res.ok) {
+            console.warn('Failed to load boards/classes:', res.status);
+            return;
+        }
+        
         const data = await res.json();
         
-        if (data.success) {
+        if (data.success && data.data) {
             const boardSelect = document.getElementById('dueBoardFilter');
             const classSelect = document.getElementById('dueClassFilter');
             
-            if (boardSelect) {
+            if (boardSelect && data.data.boards) {
                 boardSelect.innerHTML = '<option value="">All Boards</option>' + 
-                    data.data.boards.map(b => `<option value="${b}">${b}</option>`).join('');
+                    data.data.boards.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
             }
             
-            if (classSelect) {
+            if (classSelect && data.data.classes) {
                 classSelect.innerHTML = '<option value="">All Classes</option>' + 
-                    data.data.classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                    data.data.classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
             }
         }
     } catch (err) {
@@ -290,29 +372,51 @@ async function loadBoardsAndClasses() {
 }
 
 // ============================================
-// 6. DEFAULT MESSAGE TEMPLATE
+// 6. CLEAR FILTERS
+// ============================================
+function clearDueFilters() {
+    const boardFilter = document.getElementById('dueBoardFilter');
+    const classFilter = document.getElementById('dueClassFilter');
+    const searchInput = document.getElementById('dueSearchInput');
+    
+    if (boardFilter) boardFilter.value = '';
+    if (classFilter) classFilter.value = '';
+    if (searchInput) searchInput.value = '';
+    
+    renderDueStudentsList();
+}
+
+// ============================================
+// 7. DEFAULT MESSAGE TEMPLATES
 // ============================================
 function getDefaultMessage(student) {
-    const currentDate = new Date();
-    const monthName = currentDate.toLocaleString('default', { month: 'long' });
-    const year = currentDate.getFullYear();
+    const dueMonthsText = student.dueMonths && student.dueMonths.length > 0 
+        ? student.dueMonths.map(m => m.month).join(', ') 
+        : 'previous months';
     
-    return `Dear ${student.name},\n\nThis is a gentle reminder that your fees of ₹${student.totalDue.toLocaleString()} is pending for ${student.dueMonths.map(m => m.month).join(', ')}.\n\nPlease clear the dues at the earliest to avoid any inconvenience.\n\nTotal Due: ₹${student.totalDue.toLocaleString()}\nMonthly Fees: ₹${student.classMonthlyFees}\n\nThank you,\nBal Bharti Coaching Center\n${new Date().toLocaleDateString()}`;
+    return `Dear ${student.name || 'Student'},\n\nThis is a gentle reminder that your fees of ₹${(student.totalDue || 0).toLocaleString()} is pending for ${dueMonthsText}.\n\nPlease clear the dues at the earliest to avoid any inconvenience.\n\nTotal Due: ₹${(student.totalDue || 0).toLocaleString()}\nMonthly Fees: ₹${(student.classMonthlyFees || 0).toLocaleString()}\n\nThank you,\nBal Bharti Coaching Center\n${new Date().toLocaleDateString()}`;
 }
 
 function getParentMessage(student) {
-    return `Respected Parent of ${student.name},\n\nThis is to inform you that fees of ₹${student.totalDue.toLocaleString()} is pending for ${student.dueMonths.map(m => m.month).join(', ')}.\n\nStudent ID: ${student.studentId}\nTotal Due: ₹${student.totalDue.toLocaleString()}\n\nPlease clear the dues at the earliest.\n\nRegards,\nBal Bharti Coaching Center`;
+    const dueMonthsText = student.dueMonths && student.dueMonths.length > 0 
+        ? student.dueMonths.map(m => m.month).join(', ') 
+        : 'previous months';
+    
+    return `Respected Parent of ${student.name},\n\nThis is to inform you that fees of ₹${(student.totalDue || 0).toLocaleString()} is pending for ${dueMonthsText}.\n\nStudent ID: ${student.studentId}\nTotal Due: ₹${(student.totalDue || 0).toLocaleString()}\n\nPlease clear the dues at the earliest.\n\nRegards,\nBal Bharti Coaching Center`;
 }
 
 function getShortMessage(student) {
-    return `Reminder: Fees due for ${student.name} (${student.studentId}) - ₹${student.totalDue.toLocaleString()}. Please clear at earliest.`;
+    return `Reminder: Fees due for ${student.name} (${student.studentId}) - ₹${(student.totalDue || 0).toLocaleString()}. Please clear at earliest.`;
 }
 
 // ============================================
-// 7. OPEN MESSAGE MODAL
+// 8. OPEN MESSAGE MODAL
 // ============================================
 function openMessageModal(student) {
-    selectedStudentForMessage = student;
+    if (!student) {
+        showToast('Invalid student data', 'error');
+        return;
+    }
     
     const modalHtml = `
         <div class="modal-custom" id="messageModal">
@@ -322,29 +426,22 @@ function openMessageModal(student) {
                     <button class="modal-close" id="closeMessageModal">&times;</button>
                 </div>
                 <div class="modal-body-custom">
-                    <!-- Student Info -->
                     <div class="d-flex align-items-center gap-3 mb-3 p-2 bg-light rounded-3">
-                        <img src="${student.photo || 'https://via.placeholder.com/50'}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                        <img src="${student.photo || 'https://via.placeholder.com/50'}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/50'">
                         <div>
                             <h6 class="mb-0">${escapeHtml(student.name)}</h6>
-                            <small>ID: ${student.studentId} | Due: ₹${student.totalDue.toLocaleString()}</small>
+                            <small>ID: ${student.studentId} | Due: ₹${(student.totalDue || 0).toLocaleString()}</small>
                         </div>
                     </div>
                     
-                    <!-- Message Type Selector -->
                     <div class="mb-3">
                         <label class="fw-bold mb-2">Send To:</label>
                         <div class="d-flex gap-3">
-                            <button type="button" class="btn-secondary-premium message-recipient active" data-recipient="student">
-                                <i class="fas fa-user-graduate"></i> Student (${student.studentMobile})
-                            </button>
-                            <button type="button" class="btn-secondary-premium message-recipient" data-recipient="parent">
-                                <i class="fas fa-user-friends"></i> Parent (${student.fatherMobile})
-                            </button>
+                            ${student.studentMobile ? `<button type="button" class="btn-secondary-premium message-recipient active" data-recipient="student" data-phone="${student.studentMobile}"><i class="fas fa-user-graduate"></i> Student (${student.studentMobile})</button>` : ''}
+                            ${student.fatherMobile ? `<button type="button" class="btn-secondary-premium message-recipient" data-recipient="parent" data-phone="${student.fatherMobile}"><i class="fas fa-user-friends"></i> Parent (${student.fatherMobile})</button>` : ''}
                         </div>
                     </div>
                     
-                    <!-- Message Template Selector -->
                     <div class="mb-3">
                         <label class="fw-bold mb-2">Message Template:</label>
                         <div class="d-flex flex-wrap gap-2">
@@ -355,53 +452,24 @@ function openMessageModal(student) {
                         </div>
                     </div>
                     
-                    <!-- Message Editor -->
                     <div class="mb-3">
                         <label class="fw-bold mb-2">Message:</label>
-                        <textarea id="messageText" class="form-control" rows="8" style="font-family: monospace;">${getDefaultMessage(student)}</textarea>
+                        <textarea id="messageText" class="form-control" rows="8" style="font-family: monospace;">${escapeHtml(getDefaultMessage(student))}</textarea>
                     </div>
                     
-                    <!-- Additional Options -->
-                    <div class="row g-2 mb-3">
-                        <div class="col-md-6">
-                            <label class="small">Include Due Details:</label>
-                            <select id="includeDueDetails" class="form-select form-select-sm">
-                                <option value="all">All Due Months</option>
-                                <option value="total">Total Only</option>
-                                <option value="current">Current Month Only</option>
-                            </select>
+                    ${student.dueMonths && student.dueMonths.length > 0 ? `
+                        <div class="mb-3">
+                            <label class="small fw-bold">Due Months:</label>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                ${student.dueMonths.map(m => `<span class="badge bg-warning">${m.month}: ₹${m.dueAmount}</span>`).join('')}
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="small">Message Language:</label>
-                            <select id="messageLanguage" class="form-select form-select-sm">
-                                <option value="english">English</option>
-                                <option value="hindi">Hindi (Roman)</option>
-                                <option value="bilingual">Bilingual</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Due Months List -->
-                    <div class="mb-3">
-                        <label class="small fw-bold">Due Months:</label>
-                        <div class="d-flex flex-wrap gap-1 mt-1">
-                            ${student.dueMonths.map(m => `
-                                <span class="badge bg-warning">${m.month}: ₹${m.dueAmount}</span>
-                            `).join('')}
-                        </div>
-                    </div>
+                    ` : ''}
                 </div>
                 <div class="modal-footer-custom">
-                    <button class="btn-secondary-premium" id="copyMessageBtn">
-                        <i class="fas fa-copy"></i> Copy Message
-                    </button>
-                    <a href="https://wa.me/91${student.studentMobile}?text=${encodeURIComponent(document.getElementById('messageText')?.value || getDefaultMessage(student))}" 
-                       id="whatsappLink" target="_blank" class="btn-success" style="padding: 10px 20px; border-radius: 40px; text-decoration: none; background: #25D366; color: white; display: inline-flex; align-items: center; gap: 8px;">
-                        <i class="fab fa-whatsapp"></i> Send WhatsApp
-                    </a>
-                    <a href="#" id="smsLink" class="btn-primary-premium" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-sms"></i> Send SMS
-                    </a>
+                    <button class="btn-secondary-premium" id="copyMessageBtn"><i class="fas fa-copy"></i> Copy</button>
+                    <a href="#" id="whatsappLink" target="_blank" class="btn-success" style="padding: 10px 20px; border-radius: 40px; text-decoration: none; background: #25D366; color: white; display: inline-flex; align-items: center; gap: 8px;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                    <a href="#" id="smsLink" class="btn-primary-premium" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-sms"></i> SMS</a>
                     <button class="btn-secondary-premium" id="closeMessageModalBtn">Close</button>
                 </div>
             </div>
@@ -412,42 +480,17 @@ function openMessageModal(student) {
     const modal = document.getElementById('messageModal');
     modal.style.display = 'block';
     
-    let currentRecipient = 'student';
     const messageText = document.getElementById('messageText');
     const whatsappLink = document.getElementById('whatsappLink');
     const smsLink = document.getElementById('smsLink');
-    
-    // Update message based on template
-    const updateMessage = (template, recipient) => {
-        let newMessage = '';
-        const phone = recipient === 'student' ? student.studentMobile : student.fatherMobile;
-        const name = recipient === 'student' ? student.name : `Parent of ${student.name}`;
-        
-        switch(template) {
-            case 'full':
-                newMessage = getDefaultMessage({...student, name});
-                break;
-            case 'parent':
-                newMessage = getParentMessage(student);
-                break;
-            case 'short':
-                newMessage = getShortMessage(student);
-                break;
-            case 'custom':
-                newMessage = messageText.value;
-                return;
-            default:
-                newMessage = getDefaultMessage({...student, name});
-        }
-        
-        messageText.value = newMessage;
-        updateLinks(phone, newMessage);
-    };
+    let currentPhone = student.studentMobile || student.fatherMobile;
     
     const updateLinks = (phone, message) => {
-        const encodedMsg = encodeURIComponent(message);
-        whatsappLink.href = `https://wa.me/91${phone}?text=${encodedMsg}`;
-        smsLink.href = `sms:${phone}?body=${encodedMsg}`;
+        if (phone) {
+            const encodedMsg = encodeURIComponent(message);
+            whatsappLink.href = `https://wa.me/91${phone}?text=${encodedMsg}`;
+            smsLink.href = `sms:${phone}?body=${encodedMsg}`;
+        }
     };
     
     // Recipient buttons
@@ -455,86 +498,36 @@ function openMessageModal(student) {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.message-recipient').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentRecipient = btn.dataset.recipient;
-            const phone = currentRecipient === 'student' ? student.studentMobile : student.fatherMobile;
-            updateLinks(phone, messageText.value);
+            currentPhone = btn.dataset.phone;
+            updateLinks(currentPhone, messageText.value);
         });
     });
     
     // Template buttons
     document.querySelectorAll('.template-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const template = btn.dataset.template;
-            updateMessage(template, currentRecipient);
+            let newMessage = '';
+            switch(btn.dataset.template) {
+                case 'full': newMessage = getDefaultMessage(student); break;
+                case 'parent': newMessage = getParentMessage(student); break;
+                case 'short': newMessage = getShortMessage(student); break;
+                default: return;
+            }
+            messageText.value = newMessage;
+            updateLinks(currentPhone, newMessage);
         });
     });
     
-    // Include due details change
-    const includeDueSelect = document.getElementById('includeDueDetails');
-    if (includeDueSelect) {
-        includeDueSelect.addEventListener('change', () => {
-            let currentMsg = messageText.value;
-            const dueMonthsText = student.dueMonths.map(m => `${m.month}: ₹${m.dueAmount}`).join(', ');
-            const totalDueText = `Total Due: ₹${student.totalDue.toLocaleString()}`;
-            
-            switch(includeDueSelect.value) {
-                case 'all':
-                    if (!currentMsg.includes(dueMonthsText)) {
-                        currentMsg = currentMsg.replace(/Total Due:.*\n/, `Due Months: ${dueMonthsText}\nTotal Due: ₹${student.totalDue.toLocaleString()}\n`);
-                        messageText.value = currentMsg;
-                    }
-                    break;
-                case 'total':
-                    currentMsg = currentMsg.replace(/Due Months:.*\n/, '');
-                    messageText.value = currentMsg;
-                    break;
-                case 'current':
-                    const currentMonthDue = student.dueMonths[student.dueMonths.length - 1];
-                    if (currentMonthDue) {
-                        currentMsg = currentMsg.replace(/Total Due:.*\n/, `Current Month Due: ${currentMonthDue.month} - ₹${currentMonthDue.dueAmount}\nTotal Due: ₹${student.totalDue.toLocaleString()}\n`);
-                        messageText.value = currentMsg;
-                    }
-                    break;
-            }
-            const phone = currentRecipient === 'student' ? student.studentMobile : student.fatherMobile;
-            updateLinks(phone, messageText.value);
-        });
-    }
-    
-    // Language change
-    const languageSelect = document.getElementById('messageLanguage');
-    if (languageSelect) {
-        languageSelect.addEventListener('change', () => {
-            let currentMsg = messageText.value;
-            if (languageSelect.value === 'hindi') {
-                currentMsg = currentMsg
-                    .replace(/Dear/g, 'प्रिय')
-                    .replace(/This is a gentle reminder/g, 'यह एक विनम्र स्मरण है')
-                    .replace(/pending/g, 'बकाया')
-                    .replace(/Please clear the dues/g, 'कृपया बकाया राशि जमा करें')
-                    .replace(/Thank you/g, 'धन्यवाद')
-                    .replace(/Regards/g, 'सादर');
-                messageText.value = currentMsg;
-            } else if (languageSelect.value === 'bilingual') {
-                currentMsg = currentMsg + '\n\n(कृपया बकाया राशि जल्द से जल्द जमा करें)';
-                messageText.value = currentMsg;
-            }
-            const phone = currentRecipient === 'student' ? student.studentMobile : student.fatherMobile;
-            updateLinks(phone, messageText.value);
-        });
-    }
-    
-    // Live update links on message change
+    // Live update
     messageText.addEventListener('input', () => {
-        const phone = currentRecipient === 'student' ? student.studentMobile : student.fatherMobile;
-        updateLinks(phone, messageText.value);
+        updateLinks(currentPhone, messageText.value);
     });
     
-    // Copy message button
+    // Copy button
     document.getElementById('copyMessageBtn').onclick = () => {
         messageText.select();
         document.execCommand('copy');
-        showToast('Message copied to clipboard!', 'success');
+        showToast('Message copied!', 'success');
     };
     
     // Close modal
@@ -543,12 +536,34 @@ function openMessageModal(student) {
     document.getElementById('closeMessageModalBtn').onclick = closeModal;
     modal.onclick = (e) => { if (e.target === modal) closeModal(); };
     
-    // Initial link update
-    updateLinks(student.studentMobile, messageText.value);
+    // Initial update
+    updateLinks(currentPhone, messageText.value);
 }
 
 // ============================================
-// 8. EXPORT DUE LIST (CSV)
+// 9. SETUP EVENT LISTENERS
+// ============================================
+function setupDueListEventListeners() {
+    const boardFilter = document.getElementById('dueBoardFilter');
+    const classFilter = document.getElementById('dueClassFilter');
+    const searchInput = document.getElementById('dueSearchInput');
+    
+    if (boardFilter) boardFilter.addEventListener('change', renderDueStudentsList);
+    if (classFilter) classFilter.addEventListener('change', renderDueStudentsList);
+    if (searchInput) searchInput.addEventListener('input', renderDueStudentsList);
+    
+    const exportBtn = document.getElementById('exportDueListBtn');
+    if (exportBtn) exportBtn.addEventListener('click', exportDueListToCSV);
+    
+    const refreshBtn = document.getElementById('refreshDueListBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', () => {
+        showLoader(true);
+        loadAllStudentsForDueList().finally(() => showLoader(false));
+    });
+}
+
+// ============================================
+// 10. EXPORT DUE LIST TO CSV
 // ============================================
 function exportDueListToCSV() {
     if (!currentDueStudents.length) {
@@ -563,58 +578,34 @@ function exportDueListToCSV() {
         s.name,
         s.board,
         s.class,
-        new Date(s.joiningDate).toLocaleDateString(),
-        s.classMonthlyFees,
-        s.totalDue,
-        s.dueMonths.map(m => m.month).join('; '),
-        s.studentMobile,
-        s.fatherName,
-        s.fatherMobile
+        s.joiningDate ? new Date(s.joiningDate).toLocaleDateString() : '',
+        s.classMonthlyFees || 0,
+        s.totalDue || 0,
+        (s.dueMonths || []).map(m => m.month).join('; '),
+        s.studentMobile || '',
+        s.fatherName || '',
+        s.fatherMobile || ''
     ]);
     
-    const csvContent = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csvContent = [headers, ...rows].map(row => 
+        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
     link.setAttribute('download', `student_due_list_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    showToast('Due list exported successfully!', 'success');
+    showToast('Due list exported!', 'success');
 }
 
 // ============================================
-// 9. SETUP EVENT LISTENERS
-// ============================================
-function setupDueListEventListeners() {
-    // Filter change events
-    const boardFilter = document.getElementById('dueBoardFilter');
-    const classFilter = document.getElementById('dueClassFilter');
-    const searchInput = document.getElementById('dueSearchInput');
-    
-    if (boardFilter) boardFilter.addEventListener('change', renderDueStudentsList);
-    if (classFilter) classFilter.addEventListener('change', renderDueStudentsList);
-    if (searchInput) searchInput.addEventListener('input', renderDueStudentsList);
-    
-    // Export button
-    const exportBtn = document.getElementById('exportDueListBtn');
-    if (exportBtn) exportBtn.addEventListener('click', exportDueListToCSV);
-    
-    // Refresh button
-    const refreshBtn = document.getElementById('refreshDueListBtn');
-    if (refreshBtn) refreshBtn.addEventListener('click', () => {
-        showLoader(true);
-        loadAllStudentsForDueList().then(() => showLoader(false));
-    });
-}
-
-// ============================================
-// 10. RENDER STUDENT DUE LIST TAB HTML
+// 11. RENDER STUDENT DUE LIST TAB HTML
 // ============================================
 function renderStudentDueListTab() {
     return `
@@ -631,19 +622,17 @@ function renderStudentDueListTab() {
                 </div>
             </div>
             <div class="card-body">
-                <!-- Stats Container -->
                 <div id="dueStatsContainer"></div>
                 
-                <!-- Filters -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-3">
-                        <label class="small fw-bold">Filter by Board</label>
+                        <label class="small fw-bold">Board</label>
                         <select id="dueBoardFilter" class="form-select">
                             <option value="">All Boards</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="small fw-bold">Filter by Class</label>
+                        <label class="small fw-bold">Class</label>
                         <select id="dueClassFilter" class="form-select">
                             <option value="">All Classes</option>
                         </select>
@@ -652,16 +641,15 @@ function renderStudentDueListTab() {
                         <label class="small fw-bold">Search</label>
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="dueSearchInput" class="form-control" placeholder="Search by name, ID, or mobile...">
+                            <input type="text" id="dueSearchInput" class="form-control" placeholder="Name, ID, or mobile...">
                         </div>
                     </div>
                 </div>
                 
-                <!-- Due Students List -->
                 <div id="dueStudentsListContainer">
                     <div class="text-center py-5">
                         <i class="fas fa-spinner fa-spin fa-3x text-muted"></i>
-                        <p class="mt-3">Loading due students...</p>
+                        <p class="mt-3">Loading students...</p>
                     </div>
                 </div>
             </div>
@@ -670,7 +658,7 @@ function renderStudentDueListTab() {
 }
 
 // ============================================
-// 11. INTEGRATION WITH MAIN DASHBOARD
+// 12. INTEGRATION WITH MAIN DASHBOARD
 // ============================================
 function integrateStudentDueListTab() {
     const checkElements = setInterval(() => {
@@ -681,24 +669,23 @@ function integrateStudentDueListTab() {
         if (desktopTabs && bottomNav && tabContents) {
             clearInterval(checkElements);
             
-            // Check if tab already exists
             if (document.querySelector('.tab-btn[data-tab="studentdue"]')) return;
             
-            // Add tab to desktop
+            // Desktop tab
             const dueTabBtn = document.createElement('button');
             dueTabBtn.className = 'tab-btn';
             dueTabBtn.setAttribute('data-tab', 'studentdue');
             dueTabBtn.innerHTML = '<i class="fas fa-rupee-sign text-danger"></i> Due List';
             desktopTabs.appendChild(dueTabBtn);
             
-            // Add to mobile bottom nav
+            // Mobile tab
             const dueMobileBtn = document.createElement('div');
             dueMobileBtn.className = 'bottom-nav-item';
             dueMobileBtn.setAttribute('data-tab', 'studentdue');
-            dueMobileBtn.innerHTML = '<i class="fas fa-rupee-sign"></i><span>Due List</span>';
+            dueMobileBtn.innerHTML = '<i class="fas fa-rupee-sign"></i><span>Due</span>';
             bottomNav.appendChild(dueMobileBtn);
             
-            // Create pane
+            // Pane
             const duePane = document.createElement('div');
             duePane.id = 'studentduePane';
             duePane.className = 'tab-pane';
@@ -706,7 +693,7 @@ function integrateStudentDueListTab() {
             duePane.innerHTML = renderStudentDueListTab();
             tabContents.appendChild(duePane);
             
-            // Add click handlers
+            // Click handlers
             document.querySelectorAll('.tab-btn, .bottom-nav-item').forEach(el => {
                 if (el.getAttribute('data-tab') === 'studentdue') {
                     el.addEventListener('click', () => {
@@ -727,18 +714,15 @@ function integrateStudentDueListTab() {
                 }
             });
             
-            // Override switchTab
             if (typeof window.switchTab === 'function') {
                 const originalSwitchTab = window.switchTab;
                 window.switchTab = function(tabId) {
                     originalSwitchTab(tabId);
-                    if (tabId === 'studentdue') {
-                        setTimeout(() => initStudentDueListTab(), 100);
-                    }
+                    if (tabId === 'studentdue') setTimeout(() => initStudentDueListTab(), 100);
                 };
             }
             
-            console.log('✅ Student Due List Tab integrated successfully!');
+            console.log('✅ Student Due List Tab integrated');
         }
     }, 100);
 }
@@ -748,10 +732,9 @@ function integrateStudentDueListTab() {
 // ============================================
 window.initStudentDueListTab = initStudentDueListTab;
 window.integrateStudentDueListTab = integrateStudentDueListTab;
-window.renderStudentDueListTab = renderStudentDueListTab;
-window.exportDueListToCSV = exportDueListToCSV;
+window.clearDueFilters = clearDueFilters;
 
-// Auto-integrate when DOM is ready
+// Auto-integrate
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', integrateStudentDueListTab);
 } else {
