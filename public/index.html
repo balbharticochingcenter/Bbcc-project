@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title id="pageTitle">Bal Bharti Coaching - Ultimate Learning Experience</title>
+    <title id="pageTitle">Bal Bharti Coaching | Excellence in Education</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,43 +15,47 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     
     <style>
-        /* ===== THEME VARIABLES ===== */
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #ec489a;
-            --accent: #f59e0b;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --card-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
-            --shadow-lg: 0 20px 40px -12px rgba(0,0,0,0.15);
-            --gradient-1: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            --gradient-2: linear-gradient(135deg, #ec489a 0%, #f97316 100%);
-            --gradient-3: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        /* Dark Theme */
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --secondary: #f72585;
+            --accent: #ffb703;
+            --success: #06d6a0;
+            --danger: #fb5607;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --gradient-primary: linear-gradient(135deg, #4361ee, #7209b7);
+            --gradient-secondary: linear-gradient(135deg, #f72585, #fb5607);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+        }
+        
         [data-theme="dark"] {
-            --primary: #818cf8;
-            --primary-dark: #6366f1;
-            --secondary: #f472b6;
-            --accent: #fbbf24;
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
+            --card-bg: #1e293b;
             --text-primary: #f1f5f9;
             --text-secondary: #cbd5e1;
-            --card-bg: #1e293b;
             --border-color: #334155;
         }
         
-        /* Neon Theme */
         [data-theme="neon"] {
             --primary: #00ff9d;
             --primary-dark: #00cc7d;
@@ -59,35 +63,161 @@
             --accent: #00f2fe;
             --bg-primary: #0a0a0a;
             --bg-secondary: #141414;
+            --card-bg: #1a1a1a;
             --text-primary: #ffffff;
             --text-secondary: #94a3b8;
-            --card-bg: #1a1a1a;
             --border-color: #2a2a2a;
-            --gradient-1: linear-gradient(135deg, #00ff9d 0%, #00f2fe 100%);
-            --gradient-2: linear-gradient(135deg, #ff006e 0%, #ff8c00 100%);
-            --gradient-3: linear-gradient(135deg, #00f2fe 0%, #00ff9d 100%);
+            --gradient-primary: linear-gradient(135deg, #00ff9d, #00f2fe);
+            --gradient-secondary: linear-gradient(135deg, #ff006e, #ff8c00);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             transition: all 0.3s ease;
             overflow-x: hidden;
-            padding-bottom: 75px;
         }
-
-        @media (max-width: 768px) {
-            body { padding-bottom: 70px; }
+        
+        /* ===== PREMIUM LOADER WITH RAIN DOTS ANIMATION ===== */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
         }
-
+        .page-loader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-container {
+            text-align: center;
+        }
+        .rain-logo {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .rain-letter {
+            font-size: 4rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            animation: letterFloat 0.5s ease infinite alternate;
+            animation-delay: calc(var(--i) * 0.1s);
+        }
+        @keyframes letterFloat {
+            0% { transform: translateY(0px); text-shadow: 0 0 0 rgba(67,97,238,0); }
+            100% { transform: translateY(-8px); text-shadow: 0 10px 20px rgba(67,97,238,0.3); }
+        }
+        .rain-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .rain-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: rainDrop 0.8s ease-in-out infinite;
+            animation-delay: calc(var(--d) * 0.1s);
+        }
+        @keyframes rainDrop {
+            0%, 100% {
+                transform: translateY(-10px);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(10px);
+                opacity: 1;
+                background: var(--accent);
+            }
+        }
+        .loader-text {
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+        .loader-text span {
+            display: inline-block;
+            animation: textPulse 1.5s infinite;
+        }
+        @keyframes textPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* ===== CONTINUOUS LOGO ANIMATION ===== */
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            animation: logoGlow 2s infinite, logoRotate 4s ease-in-out infinite;
+        }
+        @keyframes logoGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(67,97,238,0.4); }
+            50% { box-shadow: 0 0 0 12px rgba(67,97,238,0); }
+        }
+        @keyframes logoRotate {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            75% { transform: rotate(-5deg); }
+        }
+        .logo-text h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            animation: textShine 3s infinite;
+        }
+        @keyframes textShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .logo-text p {
+            font-size: 0.65rem;
+            color: var(--accent);
+            margin: 0;
+            animation: subtitlePulse 2s infinite;
+        }
+        @keyframes subtitlePulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; text-shadow: 0 0 5px var(--accent); }
+        }
+        
+        @media (min-width: 768px) {
+            .logo-text h1 { font-size: 1.5rem; }
+            .logo-text p { font-size: 0.7rem; }
+        }
+        
         /* Floating Particles */
         .particles {
             position: fixed;
@@ -110,398 +240,451 @@
             25% { transform: translateY(-20px) translateX(10px); }
             75% { transform: translateY(20px) translateX(-10px); }
         }
-
-        /* Page Loader */
-        .page-loader {
+        
+        /* Premium Header */
+        .premium-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(var(--bg-primary), 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid var(--primary);
+            padding: 12px 5%;
+        }
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Desktop Navigation */
+        .desktop-nav {
+            display: none;
+            gap: 8px;
+        }
+        @media (min-width: 992px) {
+            .desktop-nav { display: flex; }
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            color: var(--text-primary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .nav-btn-primary {
+            background: var(--gradient-secondary);
+            color: white;
+        }
+        .nav-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(247,37,133,0.3);
+        }
+        
+        /* Mobile Menu */
+        .menu-toggle {
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        @media (min-width: 992px) {
+            .menu-toggle { display: none; }
+        }
+        .mobile-nav-drawer {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            z-index: 1001;
+            padding: 80px 20px 30px;
+            transition: right 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            border-left: 3px solid var(--primary);
+        }
+        .mobile-nav-drawer.open { right: 0; }
+        .mobile-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        .mobile-nav-item:active {
+            background: var(--primary);
+            color: white;
+            transform: scale(0.98);
+        }
+        .drawer-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--bg-primary);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
         }
-        .page-loader.fade-out { opacity: 0; visibility: hidden; }
-        .loader {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: var(--gradient-1);
-            animation: pulse 1s infinite;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: white;
-            box-shadow: 0 0 30px rgba(99,102,241,0.5);
+        .drawer-overlay.show {
+            opacity: 1;
+            visibility: visible;
         }
-        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-
-        /* Theme Toggle Button */
-        .theme-toggle {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-1);
+        
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .theme-btn, .whatsapp-float {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--gradient-primary);
             border: none;
             color: white;
             cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
         }
-        @media (max-width: 768px) { .theme-toggle { bottom: 85px; right: 15px; width: 45px; height: 45px; } }
-        .theme-toggle:active { transform: scale(0.95); }
-
-        /* VIP Navbar */
-        .vip-nav {
-            background: rgba(var(--bg-primary), 0.98);
-            backdrop-filter: blur(10px);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: var(--text-primary);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 2px solid var(--primary);
-        }
-        .logo-container { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .logo-icon {
-            width: 42px;
-            height: 42px;
-            background: var(--gradient-2);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-        }
-        .logo-text-wrapper { display: none; }
-        @media (min-width: 768px) { .logo-text-wrapper { display: flex; flex-direction: column; } }
-        .logo-main-text { font-size: 1.2rem; font-weight: 800; background: var(--gradient-2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .logo-sub-text { font-size: 0.65rem; color: var(--accent); }
-        .header-center { text-align: center; flex: 1; }
-        .header-center h1 { font-size: 1.1rem; margin: 0; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-        @media (min-width: 768px) { .header-center h1 { font-size: 1.4rem; } }
-        .header-center small { font-size: 0.7rem; color: var(--text-secondary); display: block; margin-top: 2px; }
-        @media (min-width: 768px) { .header-center small { font-size: 0.75rem; } }
-
-        .menu-toggle {
-            background: var(--gradient-1);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        @media (min-width: 992px) { .menu-toggle { display: none; } }
-
-        .nav-links {
-            position: fixed;
-            top: 70px;
-            right: -100%;
-            width: 280px;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            flex-direction: column;
-            padding: 20px;
-            gap: 12px;
-            border-radius: 20px 0 0 20px;
-            box-shadow: var(--shadow-lg);
-            transition: right 0.3s ease;
-            z-index: 999;
-            border-left: 2px solid var(--primary);
-        }
-        .nav-links.show { right: 0; }
-        @media (min-width: 992px) {
-            .nav-links { position: static; width: auto; flex-direction: row; padding: 0; gap: 8px; background: transparent; box-shadow: none; border-left: none; }
-        }
-        .nav-link-item {
-            color: var(--text-primary);
-            text-decoration: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
-        @media (max-width: 992px) { .nav-link-item { white-space: normal; } }
-        .nav-link-item i { width: 20px; }
-        .nav-link-item:active { background: var(--primary); color: white; transform: scale(0.98); }
-        .btn-vip-nav { background: var(--gradient-2); color: white !important; }
-
-        .hero-section { padding: 30px 16px 40px; }
+        .whatsapp-float { background: #25D366; }
+        .theme-btn:active, .whatsapp-float:active { transform: scale(0.95); }
+        
+        /* Hero Slider */
+        .hero-section { padding: 30px 5%; }
         .swiper-container {
             width: 100%;
-            height: 240px;
-            border-radius: 24px;
+            height: 280px;
+            border-radius: 28px;
             overflow: hidden;
             box-shadow: var(--shadow-lg);
         }
-        @media (min-width: 768px) { .swiper-container { height: 380px; } }
-        .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
-
-        .actions-grid {
+        @media (min-width: 768px) { .swiper-container { height: 450px; } }
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Stats Section with Photo Slideshow */
+        .stats-section {
+            padding: 50px 5%;
+            background: var(--gradient-primary);
+        }
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 30px;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        @media (min-width: 768px) { .actions-grid { grid-template-columns: repeat(5, 1fr); gap: 20px; } }
-        .action-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 16px 12px;
+        @media (min-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .stat-card {
             text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid var(--border-color);
-            text-decoration: none;
-            display: block;
-        }
-        .action-card:active { transform: scale(0.96); }
-        .action-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--gradient-1);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            font-size: 1.3rem;
             color: white;
-        }
-        @media (min-width: 768px) { .action-icon { width: 55px; height: 55px; font-size: 1.5rem; } }
-        .action-title { font-size: 0.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-        @media (min-width: 768px) { .action-title { font-size: 0.85rem; } }
-        .action-desc { font-size: 0.65rem; color: var(--text-secondary); display: none; }
-        @media (min-width: 768px) { .action-desc { display: block; } }
-
-        .voice-bar {
-            background: var(--gradient-3);
-            border-radius: 60px;
-            padding: 12px 20px;
-            margin: 30px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow-lg);
-        }
-        .voice-message { display: flex; align-items: center; gap: 10px; color: white; font-size: 0.85rem; font-weight: 500; flex: 1; }
-        .voice-message i { font-size: 20px; animation: soundWave 1.5s infinite; }
-        @keyframes soundWave { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .voice-controls { display: flex; gap: 8px; }
-        .voice-controls button {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .voice-controls button:active { transform: scale(0.95); }
-
-        .about-card {
-            background: var(--card-bg);
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
             border-radius: 24px;
-            padding: 24px 20px;
-            margin: 20px 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
+            cursor: pointer;
         }
-        .about-card h2 { font-size: 1.4rem; font-weight: 800; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; margin-bottom: 16px; }
-        @media (min-width: 768px) { .about-card h2 { font-size: 2rem; } }
-        .about-text { text-align: center; font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); }
-        @media (min-width: 768px) { .about-text { font-size: 1rem; } }
-
-        .features-section { padding: 30px 16px; }
-        .section-title { text-align: center; font-size: 1.5rem; font-weight: 800; margin-bottom: 16px; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        @media (min-width: 768px) { .section-title { font-size: 2rem; } }
-        .section-subtitle { text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 30px; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        @media (min-width: 768px) { .stat-number { font-size: 2.5rem; } }
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        /* Photo Slideshow */
+        .photo-slideshow {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .photo-slideshow img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            animation: slideShow 8s infinite;
+        }
+        @keyframes slideShow {
+            0%, 25% { transform: translateY(0); }
+            33% { transform: translateY(-100%); }
+            58% { transform: translateY(-200%); }
+            83% { transform: translateY(-300%); }
+            100% { transform: translateY(0); }
+        }
+        
+        /* Why Choose Us */
+        .features-section {
+            padding: 60px 5%;
+            background: var(--bg-secondary);
+        }
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @media (min-width: 768px) { .section-title { font-size: 2.2rem; } }
         .features-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         @media (min-width: 768px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .features-grid { grid-template-columns: repeat(4, 1fr); } }
         .feature-card {
             background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 24px;
+            padding: 28px 20px;
             text-align: center;
-            transition: all 0.2s;
+            transition: all 0.3s;
             border: 1px solid var(--border-color);
+            cursor: pointer;
         }
-        .feature-card:active { transform: scale(0.98); }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
         .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-1);
-            border-radius: 20px;
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            border-radius: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 1.5rem;
+            margin: 0 auto 20px;
+            font-size: 1.8rem;
             color: white;
         }
-        .feature-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
-        .feature-desc { font-size: 0.8rem; color: var(--text-secondary); }
-
-        .stats-section {
-            background: var(--gradient-1);
-            padding: 40px 16px;
-            margin: 30px 0;
+        .feature-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+        .feature-desc { font-size: 0.85rem; color: var(--text-secondary); }
+        
+        /* Testimonials */
+        .testimonials-section {
+            padding: 60px 5%;
+            background: var(--bg-primary);
         }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
-        .stat-item { text-align: center; color: white; }
-        .stat-number { font-size: 1.8rem; font-weight: 800; }
-        @media (min-width: 768px) { .stat-number { font-size: 2.5rem; } }
-        .stat-label { font-size: 0.75rem; opacity: 0.9; }
-
-        .testimonials-section { padding: 30px 16px; background: var(--bg-secondary); }
         .testimonials-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         @media (min-width: 768px) { .testimonials-grid { grid-template-columns: repeat(3, 1fr); } }
         .testimonial-card {
             background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            position: relative;
+            border-radius: 24px;
+            padding: 24px;
             border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            position: relative;
         }
-        .testimonial-card::before { content: '"'; position: absolute; top: 10px; left: 15px; font-size: 2.5rem; color: var(--primary); opacity: 0.3; }
-        .testimonial-text { font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 15px; font-style: italic; }
-        .testimonial-author { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 15px; }
-        .testimonial-author img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .author-name { font-weight: 700; font-size: 0.85rem; }
-        .author-rating { font-size: 0.7rem; color: var(--accent); }
-
-        .cta-section {
-            background: var(--gradient-2);
-            padding: 40px 20px;
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 3rem;
+            color: var(--primary);
+            opacity: 0.3;
+            font-family: serif;
+        }
+        .testimonial-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+        .testimonial-author img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .author-name { font-weight: 700; font-size: 0.9rem; }
+        .author-rating { color: var(--accent); font-size: 0.7rem; }
+        
+        /* About Section */
+        .about-section {
+            padding: 60px 5%;
+            background: var(--bg-secondary);
+        }
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
             text-align: center;
-            margin: 30px 16px;
-            border-radius: 30px;
         }
-        .cta-title { font-size: 1.4rem; font-weight: 800; color: white; margin-bottom: 15px; }
-        @media (min-width: 768px) { .cta-title { font-size: 2rem; } }
+        .about-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        .about-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .about-stat { text-align: center; }
+        .about-stat h3 { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 60px 5%;
+            background: var(--gradient-secondary);
+            text-align: center;
+        }
+        .cta-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px) { .cta-title { font-size: 2.2rem; } }
         .cta-btn {
             background: white;
-            color: var(--primary);
-            padding: 12px 30px;
+            color: var(--secondary);
+            padding: 14px 32px;
             border-radius: 50px;
-            font-weight: 700;
             text-decoration: none;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
+            gap: 10px;
+            transition: all 0.3s;
         }
-        .cta-btn:active { transform: scale(0.96); }
-
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        /* Footer */
         .footer {
             background: var(--bg-secondary);
-            padding: 30px 16px 20px;
+            padding: 50px 5% 30px;
             border-top: 1px solid var(--border-color);
         }
         .footer-content {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 25px;
-            margin-bottom: 25px;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         @media (min-width: 768px) { .footer-content { grid-template-columns: repeat(4, 1fr); } }
-        .footer-section h5 { color: var(--primary); margin-bottom: 12px; font-size: 1rem; }
-        .footer-section p, .footer-section a { color: var(--text-secondary); text-decoration: none; display: block; margin-bottom: 8px; font-size: 0.8rem; transition: all 0.2s; }
-        .footer-section a:active { color: var(--primary); transform: translateX(3px); }
-        .social-links { display: flex; gap: 12px; margin-top: 12px; }
+        .footer-section h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        .footer-section p, .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .footer-section a:hover { color: var(--primary); transform: translateX(3px); }
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
         .social-links a {
-            width: 35px;
-            height: 35px;
+            width: 36px;
+            height: 36px;
             background: var(--border-color);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+        }
+        .social-links a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
-        .social-links a:active { background: var(--primary); color: white; transform: scale(0.95); }
-        .footer-bottom { text-align: center; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.7rem; color: var(--text-secondary); }
-
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            padding: 8px 12px 20px;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-            z-index: 1000;
-            border-top: 1px solid var(--primary);
-            display: flex;
-            justify-content: space-around;
-            transition: transform 0.3s;
-        }
-        @media (min-width: 768px) { .mobile-bottom-nav { display: none; } }
-        .mobile-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            color: var(--text-secondary);
-            font-size: 0.65rem;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 30px;
-            transition: all 0.2s;
-        }
-        .mobile-nav-item i { font-size: 1.2rem; }
-        .mobile-nav-item.active { background: var(--primary); color: white; }
-        .mobile-nav-item:active { transform: scale(0.95); }
-
+        
+        /* Back to Top */
         .back-to-top {
             position: fixed;
-            bottom: 85px;
+            bottom: 30px;
             left: 20px;
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: var(--gradient-1);
+            background: var(--gradient-primary);
             color: white;
             display: flex;
             align-items: center;
@@ -511,19 +694,19 @@
             visibility: hidden;
             transition: all 0.3s;
             z-index: 999;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-md);
         }
         .back-to-top.show { opacity: 1; visibility: visible; }
-        .back-to-top:active { transform: scale(0.95); }
-
+        
+        /* Toast Message */
         .toast-message {
             position: fixed;
-            bottom: 90px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--card-bg);
             color: var(--text-primary);
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 50px;
             box-shadow: var(--shadow-lg);
             z-index: 10000;
@@ -531,11 +714,14 @@
             font-size: 0.85rem;
             animation: slideUp 0.3s ease;
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
         
         .loading-spinner {
             text-align: center;
-            padding: 40px;
+            padding: 50px;
             color: var(--text-secondary);
         }
         .loading-spinner i {
@@ -549,146 +735,132 @@
     </style>
 </head>
 <body>
-    <div class="page-loader" id="pageLoader"><div class="loader"><i class="fas fa-graduation-cap"></i></div></div>
-    <button class="theme-toggle" id="themeToggle"><i class="fas fa-palette"></i></button>
-    <div class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></div>
-    <div class="particles" id="particles"></div>
-
-    <header class="vip-nav">
-        <div class="logo-container">
-            <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
-            <div class="logo-text-wrapper">
-                <span class="logo-main-text" id="logoText">BBCC</span>
-                <span class="logo-sub-text" id="logoSubText">Since 2010</span>
+    <!-- Premium Loader with Rain Dots Animation -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-container">
+            <div class="rain-logo">
+                <span class="rain-letter" style="--i:1">B</span>
+                <span class="rain-letter" style="--i:2">B</span>
+                <span class="rain-letter" style="--i:3">C</span>
+                <span class="rain-letter" style="--i:4">C</span>
+            </div>
+            <div class="rain-dots">
+                <div class="rain-dot" style="--d:1"></div>
+                <div class="rain-dot" style="--d:2"></div>
+                <div class="rain-dot" style="--d:3"></div>
+                <div class="rain-dot" style="--d:4"></div>
+                <div class="rain-dot" style="--d:5"></div>
+                <div class="rain-dot" style="--d:6"></div>
+                <div class="rain-dot" style="--d:7"></div>
+                <div class="rain-dot" style="--d:8"></div>
+            </div>
+            <div class="loader-text">
+                <span>Loading Excellence...</span>
             </div>
         </div>
-        <div class="header-center">
-            <h1 id="siteTitle">Bal Bharti Coaching</h1>
-            <small id="siteSubtitle">Excellence in Education</small>
-        </div>
-        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
-        <div class="nav-links" id="navLinks">
-            <a href="#" class="nav-link-item" data-page="home"><i class="fas fa-home"></i>Home</a>
-            <a href="#" class="nav-link-item" data-page="about"><i class="fas fa-info-circle"></i>About</a>
-            <a href="#" class="nav-link-item" data-page="features"><i class="fas fa-star"></i>Features</a>
-            <a href="#" class="nav-link-item btn-vip-nav" data-page="teacher-reg"><i class="fas fa-chalkboard-teacher"></i>Teacher Registration</a>
-            <a href="#" class="nav-link-item" data-page="teacher-login"><i class="fas fa-sign-in-alt"></i>Teacher Login</a>
-            <a href="#" class="nav-link-item" data-page="student-reg"><i class="fas fa-user-plus"></i>Student Registration</a>
-            <a href="#" class="nav-link-item" data-page="student-attendance"><i class="fas fa-user-graduate"></i>Student Attendance</a>
-            <a href="#" class="nav-link-item" data-page="admin-login"><i class="fas fa-user-tie"></i>Admin Login</a>
+    </div>
+    
+    <div class="particles" id="particles"></div>
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="mobile-nav-drawer" id="mobileDrawer">
+        <div class="mobile-nav-item" data-page="home"><i class="fas fa-home"></i> Home</div>
+        <div class="mobile-nav-item" data-page="features"><i class="fas fa-star"></i> Features</div>
+        <div class="mobile-nav-item" data-page="teacher-reg"><i class="fas fa-chalkboard-user"></i> Teacher Registration</div>
+        <div class="mobile-nav-item" data-page="student-reg"><i class="fas fa-user-graduate"></i> Student Registration</div>
+        <div class="mobile-nav-item" data-page="ats"><i class="fas fa-fingerprint"></i> ATS (Attendance)</div>
+        <div class="mobile-nav-item" data-page="admin-login"><i class="fas fa-user-tie"></i> Admin Login</div>
+    </div>
+    
+    <header class="premium-header">
+        <div class="header-container">
+            <div class="logo-wrapper" data-page="home">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <h1 id="siteTitle">Bal Bharti Coaching</h1>
+                    <p id="siteSubtitle">Excellence in Education</p>
+                </div>
+            </div>
+            <div class="desktop-nav">
+                <button class="nav-btn" data-page="home"><i class="fas fa-home"></i> Home</button>
+                <button class="nav-btn" data-page="features"><i class="fas fa-star"></i> Features</button>
+                <button class="nav-btn nav-btn-primary" data-page="teacher-reg"><i class="fas fa-chalkboard-user"></i> Teacher Registration</button>
+                <button class="nav-btn" data-page="student-reg"><i class="fas fa-user-graduate"></i> Student Registration</button>
+                <button class="nav-btn" data-page="ats"><i class="fas fa-fingerprint"></i> ATS</button>
+                <button class="nav-btn" data-page="admin-login"><i class="fas fa-user-tie"></i> Admin Login</button>
+            </div>
+            <div class="header-actions">
+                <a href="#" class="whatsapp-float" id="whatsappBtn" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                <button class="theme-btn" id="themeToggle"><i class="fas fa-palette"></i></button>
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            </div>
         </div>
     </header>
-
+    
     <div id="mainContent">
         <div class="loading-spinner">
             <i class="fas fa-spinner fa-pulse"></i>
-            <p>Loading content...</p>
+            <p>Loading...</p>
         </div>
     </div>
-
-    <div class="mobile-bottom-nav">
-        <div class="mobile-nav-item" data-page="home"><i class="fas fa-home"></i><span>Home</span></div>
-        <div class="mobile-nav-item" data-page="teacher-reg"><i class="fas fa-chalkboard-teacher"></i><span>Teacher Reg</span></div>
-        <div class="mobile-nav-item" data-page="student-reg"><i class="fas fa-user-plus"></i><span>Student Reg</span></div>
-        <div class="mobile-nav-item" data-page="teacher-login"><i class="fas fa-sign-in-alt"></i><span>Login</span></div>
-        <div class="mobile-nav-item" data-page="about"><i class="fas fa-info-circle"></i><span>About</span></div>
-    </div>
-
+    
+    <div class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></div>
+    
     <footer class="footer" id="footer">
         <div class="footer-content">
             <div class="footer-section">
-                <h5>About Us</h5>
+                <h4>About Us</h4>
                 <p id="footerAboutText">Bal Bharti Coaching Center is dedicated to providing quality education with modern technology integration.</p>
-                <div class="social-links" id="socialLinks">
+                <div class="social-links">
                     <a href="#" id="whatsappLink" target="_blank"><i class="fab fa-whatsapp"></i></a>
                     <a href="#" id="instagramLink" target="_blank"><i class="fab fa-instagram"></i></a>
                     <a href="#" id="facebookLink" target="_blank"><i class="fab fa-facebook"></i></a>
                 </div>
             </div>
             <div class="footer-section">
-                <h5>Quick Links</h5>
+                <h4>Quick Links</h4>
                 <a href="#" data-page="home"><i class="fas fa-angle-right"></i> Home</a>
-                <a href="#" data-page="about"><i class="fas fa-angle-right"></i> About</a>
                 <a href="#" data-page="features"><i class="fas fa-angle-right"></i> Features</a>
                 <a href="#" data-page="teacher-reg"><i class="fas fa-angle-right"></i> Teacher Registration</a>
                 <a href="#" data-page="student-reg"><i class="fas fa-angle-right"></i> Student Registration</a>
+                <a href="#" data-page="ats"><i class="fas fa-angle-right"></i> ATS</a>
             </div>
             <div class="footer-section">
-                <h5>Contact Info</h5>
+                <h4>Contact Info</h4>
                 <p><i class="fas fa-map-marker-alt"></i> <span id="contactAddress">123 Education Street, City</span></p>
                 <p><i class="fas fa-phone"></i> <span id="contactPhone">+91 98765 43210</span></p>
                 <p><i class="fas fa-envelope"></i> <span id="contactEmail">info@balbharti.com</span></p>
                 <p><i class="fas fa-clock"></i> Mon-Sat: 9 AM - 8 PM</p>
             </div>
             <div class="footer-section">
-                <h5>Institute Info</h5>
-                <p><i class="fas fa-calendar-alt"></i> Established: 2010</p>
-                <p><i class="fas fa-trophy"></i> 5000+ Students Trained</p>
-                <p><i class="fas fa-chalkboard-teacher"></i> 25+ Expert Faculty</p>
+                <h4>Institute Info</h4>
+                <p><i class="fas fa-calendar-alt"></i> Established: <span id="establishedYear">2010</span></p>
+                <p><i class="fas fa-trophy"></i> <span id="totalStudentsTrained">5000</span>+ Students Trained</p>
+                <p><i class="fas fa-chalkboard-user"></i> <span id="totalFaculty">25</span>+ Expert Faculty</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p><i class="far fa-copyright"></i> 2024 Bal Bharti Coaching | <i class="fas fa-heart" style="color:var(--accent);"></i> Built with Excellence</p>
+            <p><i class="far fa-copyright"></i> 2024 Bal Bharti Coaching | <i class="fas fa-heart" style="color:var(--accent);"></i> Excellence in Education</p>
         </div>
     </footer>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         // ============================================
         // GLOBAL VARIABLES
         // ============================================
         let swiper = null;
-        let voiceEnabled = true;
         let configData = null;
         let statsData = null;
         let testimonialsData = null;
-        
-        const API_BASE_URL = window.location.origin;
-        
-        // ============================================
-        // THEME MANAGEMENT
-        // ============================================
-        let currentTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            const themes = ['light', 'dark', 'neon'];
-            let nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
-            currentTheme = themes[nextIndex];
-            document.documentElement.setAttribute('data-theme', currentTheme);
-            localStorage.setItem('theme', currentTheme);
-            showToast(`${currentTheme.toUpperCase()} theme activated!`);
-        });
-
-        function showToast(msg) {
-            const toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.innerHTML = `<i class="fas fa-check-circle" style="color:var(--primary);margin-right:8px;"></i>${msg}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2500);
-        }
-
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 25; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.style.width = Math.random() * 6 + 2 + 'px';
-                p.style.height = p.style.width;
-                p.style.left = Math.random() * 100 + '%';
-                p.style.top = Math.random() * 100 + '%';
-                p.style.animationDelay = Math.random() * 10 + 's';
-                p.style.animationDuration = Math.random() * 15 + 10 + 's';
-                container.appendChild(p);
-            }
-        }
+        let allStudents = [];
+        let allTeachers = [];
         
         // ============================================
         // FETCH CONFIG FROM DATABASE
         // ============================================
         async function fetchConfig() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/config`);
+                const response = await fetch('/api/config');
                 const data = await response.json();
                 configData = data;
                 updateUIWithConfig(data);
@@ -704,23 +876,25 @@
                 logoText: 'BBCC',
                 title: 'Bal Bharti Coaching',
                 subTitle: 'Excellence in Education',
-                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty. Join us for excellence in education.',
+                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty.',
                 slides: [
-                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800',
-                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800',
-                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=800'
+                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200',
+                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200',
+                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=1200'
                 ],
                 whatsapp: '#',
                 insta: '#',
                 fb: '#',
                 contactAddress: '123 Education Street, City',
                 contactPhone: '+91 98765 43210',
-                contactEmail: 'info@balbharti.com'
+                contactEmail: 'info@balbharti.com',
+                establishedYear: 2010,
+                totalStudentsTrained: 5000,
+                totalFaculty: 25
             };
         }
         
         function updateUIWithConfig(config) {
-            if (config.logoText) document.getElementById('logoText').textContent = config.logoText;
             if (config.title) {
                 document.getElementById('siteTitle').textContent = config.title;
                 document.getElementById('pageTitle').textContent = config.title;
@@ -730,9 +904,91 @@
             if (config.contactAddress) document.getElementById('contactAddress').textContent = config.contactAddress;
             if (config.contactPhone) document.getElementById('contactPhone').textContent = config.contactPhone;
             if (config.contactEmail) document.getElementById('contactEmail').textContent = config.contactEmail;
-            if (config.whatsapp) document.getElementById('whatsappLink').href = config.whatsapp;
+            if (config.establishedYear) document.getElementById('establishedYear').textContent = config.establishedYear;
+            if (config.totalStudentsTrained) document.getElementById('totalStudentsTrained').textContent = config.totalStudentsTrained;
+            if (config.totalFaculty) document.getElementById('totalFaculty').textContent = config.totalFaculty;
+            if (config.whatsapp) {
+                document.getElementById('whatsappLink').href = config.whatsapp;
+                document.getElementById('whatsappBtn').href = config.whatsapp;
+            }
             if (config.insta) document.getElementById('instagramLink').href = config.insta;
             if (config.fb) document.getElementById('facebookLink').href = config.fb;
+        }
+        
+        // ============================================
+        // FETCH STUDENTS FOR PHOTO SLIDESHOW
+        // ============================================
+        async function fetchStudents() {
+            try {
+                const token = localStorage.getItem('token');
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch('/api/students', { headers });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        allStudents = data.data;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching students:', error);
+            }
+            // Default student images if no data
+            if (allStudents.length === 0) {
+                allStudents = [
+                    { photo: 'https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100', studentName: { first: 'Priya' } },
+                    { photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100', studentName: { first: 'Amit' } },
+                    { photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', studentName: { first: 'Rajesh' } },
+                    { photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100', studentName: { first: 'Neha' } }
+                ];
+            }
+        }
+        
+        // ============================================
+        // FETCH TEACHERS FOR PHOTO SLIDESHOW
+        // ============================================
+        async function fetchTeachers() {
+            try {
+                const token = localStorage.getItem('token');
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch('/api/teachers', { headers });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        allTeachers = data.data.filter(t => t.status === 'approved');
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching teachers:', error);
+            }
+            // Default teacher images if no data
+            if (allTeachers.length === 0) {
+                allTeachers = [
+                    { photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', teacherName: { first: 'Mr. Sharma' } },
+                    { photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', teacherName: { first: 'Mr. Verma' } },
+                    { photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100', teacherName: { first: 'Ms. Gupta' } },
+                    { photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100', teacherName: { first: 'Mr. Singh' } }
+                ];
+            }
+        }
+        
+        // ============================================
+        // GENERATE PHOTO SLIDESHOW HTML
+        // ============================================
+        function generatePhotoSlideshow(photos, names, type) {
+            if (!photos.length) return '';
+            
+            let imagesHtml = '';
+            // Take first 8 photos for slideshow
+            const displayPhotos = photos.slice(0, 8);
+            displayPhotos.forEach(photo => {
+                imagesHtml += `<img src="${photo}" alt="Student">`;
+            });
+            
+            return `
+                <div class="photo-slideshow">
+                    ${imagesHtml}
+                </div>
+            `;
         }
         
         // ============================================
@@ -740,7 +996,7 @@
         // ============================================
         async function fetchStats() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/stats`);
+                const response = await fetch('/api/stats');
                 if (response.ok) {
                     const data = await response.json();
                     statsData = data.data;
@@ -749,14 +1005,7 @@
             } catch (error) {
                 console.error('Error fetching stats:', error);
             }
-            return {
-                totalStudents: 542,
-                totalTeachers: 28,
-                totalCourses: 12,
-                successRate: 96,
-                totalBatches: 15,
-                totalSubjects: 8
-            };
+            return { totalStudents: 542, totalTeachers: 28, totalCourses: 12, successRate: 96 };
         }
         
         // ============================================
@@ -764,7 +1013,7 @@
         // ============================================
         async function fetchTestimonials() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/testimonials`);
+                const response = await fetch('/api/testimonials');
                 if (response.ok) {
                     const data = await response.json();
                     testimonialsData = data.data;
@@ -774,37 +1023,72 @@
                 console.error('Error fetching testimonials:', error);
             }
             return [
-                {
-                    name: "Priya Sharma",
-                    role: "Parent",
-                    text: "Bal Bharti Coaching has transformed my child's academic performance. The teachers are dedicated and use modern teaching methods.",
-                    rating: 5,
-                    image: "https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100"
-                },
-                {
-                    name: "Rajesh Kumar",
-                    role: "Teacher",
-                    text: "As a teacher, I love the dashboard. Marking attendance with photo has become so easy. The salary tracking system is excellent.",
-                    rating: 5,
-                    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
-                },
-                {
-                    name: "Amit Patel",
-                    role: "Student",
-                    text: "The attendance system is very efficient. I can check my history anytime. The teaching quality is outstanding.",
-                    rating: 5,
-                    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100"
-                }
+                { name: "Priya Sharma", role: "Parent", text: "Bal Bharti Coaching has transformed my child's academic performance.", rating: 5, image: "https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100" },
+                { name: "Rajesh Kumar", role: "Teacher", text: "As a teacher, I love the dashboard. Marking attendance has become so easy.", rating: 5, image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" },
+                { name: "Amit Patel", role: "Student", text: "The attendance system is very efficient. I can check my history anytime.", rating: 5, image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" }
             ];
         }
         
         // ============================================
-        // RENDER HOME PAGE WITH DYNAMIC DATA
+        // GENERATE STUDENT PHOTO SLIDESHOW
+        // ============================================
+        function getStudentPhotos() {
+            return allStudents.map(s => s.photo || 'https://via.placeholder.com/100').filter(p => p);
+        }
+        
+        function getTeacherPhotos() {
+            return allTeachers.map(t => t.photo || 'https://via.placeholder.com/100').filter(p => p);
+        }
+        
+        function generateStudentSlideshow() {
+            const photos = getStudentPhotos();
+            if (photos.length === 0) {
+                return '<div class="photo-slideshow"><img src="https://via.placeholder.com/70"></div>';
+            }
+            
+            let imagesHtml = '';
+            const displayPhotos = photos.slice(0, 8);
+            displayPhotos.forEach(photo => {
+                imagesHtml += `<img src="${photo}" alt="Student">`;
+            });
+            
+            return `
+                <div class="photo-slideshow" style="animation: slideShow ${Math.max(displayPhotos.length * 1.5, 6)}s infinite;">
+                    ${imagesHtml}
+                </div>
+            `;
+        }
+        
+        function generateTeacherSlideshow() {
+            const photos = getTeacherPhotos();
+            if (photos.length === 0) {
+                return '<div class="photo-slideshow"><img src="https://via.placeholder.com/70"></div>';
+            }
+            
+            let imagesHtml = '';
+            const displayPhotos = photos.slice(0, 8);
+            displayPhotos.forEach(photo => {
+                imagesHtml += `<img src="${photo}" alt="Teacher">`;
+            });
+            
+            return `
+                <div class="photo-slideshow" style="animation: slideShow ${Math.max(displayPhotos.length * 1.5, 6)}s infinite;">
+                    ${imagesHtml}
+                </div>
+            `;
+        }
+        
+        // ============================================
+        // RENDER HOME PAGE
         // ============================================
         async function renderHome() {
             const config = configData || await fetchConfig();
             const stats = statsData || await fetchStats();
             const testimonials = testimonialsData || await fetchTestimonials();
+            
+            // Get photos for slideshows
+            const studentPhotos = getStudentPhotos();
+            const teacherPhotos = getTeacherPhotos();
             
             let slidesHtml = '';
             const slides = config.slides || getDefaultConfig().slides;
@@ -812,34 +1096,13 @@
                 slidesHtml += `<div class="swiper-slide"><img src="${slide}" alt="Slide"></div>`;
             });
             
-            let statsHtml = `
-                <div class="stat-item">
-                    <div class="stat-number">${stats.totalStudents}+</div>
-                    <div class="stat-label">Happy Students</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">${stats.totalTeachers}+</div>
-                    <div class="stat-label">Expert Teachers</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">${stats.totalCourses}+</div>
-                    <div class="stat-label">Courses Offered</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">${stats.successRate}%</div>
-                    <div class="stat-label">Success Rate</div>
-                </div>
-            `;
-            
             let testimonialsHtml = '';
             testimonials.forEach(t => {
                 let stars = '';
-                for (let i = 0; i < t.rating; i++) {
-                    stars += '<i class="fas fa-star"></i>';
-                }
+                for (let i = 0; i < t.rating; i++) stars += '<i class="fas fa-star"></i>';
                 testimonialsHtml += `
                     <div class="testimonial-card">
-                        <p class="testimonial-text">"${t.text}"</p>
+                        <p class="testimonial-text">${t.text}</p>
                         <div class="testimonial-author">
                             <img src="${t.image}" alt="${t.name}">
                             <div>
@@ -854,137 +1117,93 @@
             
             return `
                 <section class="hero-section">
-                    <div class="container-fluid px-0">
-                        <div class="swiper-container mySwiper">
-                            <div class="swiper-wrapper">${slidesHtml}</div>
-                            <div class="swiper-pagination"></div>
-                        </div>
-                        <div class="actions-grid">
-                            <a href="#" class="action-card" data-page="teacher-reg"><div class="action-icon"><i class="fas fa-chalkboard-teacher"></i></div><div class="action-title">Teacher Registration</div><div class="action-desc">Join our teaching faculty</div></a>
-                            <a href="#" class="action-card" data-page="teacher-login"><div class="action-icon"><i class="fas fa-sign-in-alt"></i></div><div class="action-title">Teacher Login</div><div class="action-desc">Access teacher dashboard</div></a>
-                            <a href="#" class="action-card" data-page="student-reg"><div class="action-icon"><i class="fas fa-user-plus"></i></div><div class="action-title">Student Registration</div><div class="action-desc">New admission form</div></a>
-                            <a href="#" class="action-card" data-page="student-attendance"><div class="action-icon"><i class="fas fa-user-graduate"></i></div><div class="action-title">Student Attendance</div><div class="action-desc">Mark attendance</div></a>
-                            <a href="#" class="action-card" data-page="admin-login"><div class="action-icon"><i class="fas fa-user-tie"></i></div><div class="action-title">Admin Login</div><div class="action-desc">Admin panel access</div></a>
-                        </div>
+                    <div class="swiper-container mySwiper">
+                        <div class="swiper-wrapper">${slidesHtml}</div>
+                        <div class="swiper-pagination"></div>
                     </div>
                 </section>
-                <div class="voice-bar">
-                    <div class="voice-message">
-                        <i class="fas fa-microphone-alt"></i>
-                        <span id="voiceMessage">Welcome to ${config.title || 'Bal Bharti Coaching Center'}</span>
-                    </div>
-                    <div class="voice-controls">
-                        <button id="repeatVoice"><i class="fas fa-volume-up"></i></button>
-                        <button id="toggleVoice"><i class="fas fa-microphone"></i></button>
-                    </div>
-                </div>
-                <div class="about-card" id="about">
-                    <h2><i class="fas fa-chalkboard-teacher"></i> About ${config.title || 'Bal Bharti Coaching'}</h2>
-                    <div class="about-text">${config.aboutText || getDefaultConfig().aboutText}</div>
-                </div>
-                <section class="features-section" id="features">
-                    <div class="container-fluid px-0">
-                        <h2 class="section-title"><i class="fas fa-star"></i> Why Choose Us</h2>
-                        <p class="section-subtitle">The best educational experience with modern technology</p>
-                        <div class="features-grid">
-                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-user-graduate"></i></div><h3 class="feature-title">Expert Teachers</h3><p class="feature-desc">Experienced faculty with personalized attention</p></div>
-                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-calendar-check"></i></div><h3 class="feature-title">Smart Attendance</h3><p class="feature-desc">Digital attendance with photo capture</p></div>
-                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-rupee-sign"></i></div><h3 class="feature-title">Fee Management</h3><p class="feature-desc">Automated tracking and reminders</p></div>
-                            <div class="feature-card"><div class="feature-icon"><i class="fas fa-chart-line"></i></div><h3 class="feature-title">Performance Tracking</h3><p class="feature-desc">Detailed analytics and reports</p></div>
-                        </div>
-                    </div>
-                </section>
+                
                 <section class="stats-section">
-                    <div class="container-fluid px-0">
-                        <div class="stats-grid">${statsHtml}</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            ${generateStudentSlideshow()}
+                            <div class="stat-number" id="statStudents">${stats.totalStudents}+</div>
+                            <div class="stat-label">Happy Students</div>
+                        </div>
+                        <div class="stat-card">
+                            ${generateTeacherSlideshow()}
+                            <div class="stat-number" id="statTeachers">${stats.totalTeachers}+</div>
+                            <div class="stat-label">Expert Teachers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="photo-slideshow" style="animation: none; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-book-open fa-2x"></i>
+                            </div>
+                            <div class="stat-number" id="statCourses">${stats.totalCourses}+</div>
+                            <div class="stat-label">Courses Offered</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="photo-slideshow" style="animation: none; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                            <div class="stat-number" id="statSuccess">${stats.successRate}%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
                     </div>
                 </section>
+                
+                <section class="features-section" id="features">
+                    <h2 class="section-title"><i class="fas fa-star"></i> Why Choose Us</h2>
+                    <div class="features-grid">
+                        <div class="feature-card"><div class="feature-icon"><i class="fas fa-user-graduate"></i></div><h3 class="feature-title">Expert Teachers</h3><p class="feature-desc">Experienced faculty with personalized attention</p></div>
+                        <div class="feature-card"><div class="feature-icon"><i class="fas fa-fingerprint"></i></div><h3 class="feature-title">Smart Attendance</h3><p class="feature-desc">Digital attendance with photo capture</p></div>
+                        <div class="feature-card"><div class="feature-icon"><i class="fas fa-rupee-sign"></i></div><h3 class="feature-title">Fee Management</h3><p class="feature-desc">Automated tracking and reminders</p></div>
+                        <div class="feature-card"><div class="feature-icon"><i class="fas fa-chart-line"></i></div><h3 class="feature-title">Performance Tracking</h3><p class="feature-desc">Detailed analytics and reports</p></div>
+                    </div>
+                </section>
+                
                 <section class="testimonials-section">
-                    <div class="container-fluid px-0">
-                        <h2 class="section-title"><i class="fas fa-quote-right"></i> What People Say</h2>
-                        <div class="testimonials-grid">${testimonialsHtml}</div>
+                    <h2 class="section-title"><i class="fas fa-quote-right"></i> What People Say</h2>
+                    <div class="testimonials-grid">${testimonialsHtml}</div>
+                </section>
+                
+                <section class="about-section" id="about">
+                    <div class="about-content">
+                        <h2 class="section-title"><i class="fas fa-chalkboard-user"></i> About Us</h2>
+                        <p class="about-text">${config.aboutText || getDefaultConfig().aboutText}</p>
+                        <div class="about-stats">
+                            <div class="about-stat"><h3>${config.establishedYear || 2010}</h3><p>Established</p></div>
+                            <div class="about-stat"><h3>${config.totalStudentsTrained || 5000}+</h3><p>Students Trained</p></div>
+                            <div class="about-stat"><h3>${config.totalFaculty || 25}+</h3><p>Expert Faculty</p></div>
+                        </div>
                     </div>
                 </section>
-                <div class="cta-section">
+                
+                <section class="cta-section">
                     <h2 class="cta-title">Ready to Start Your Journey?</h2>
                     <a href="#" class="cta-btn" data-page="student-reg"><i class="fas fa-user-plus"></i> Register Now</a>
-                </div>
+                </section>
             `;
         }
         
         // ============================================
-        // VOICE FUNCTIONS
+        // PAGE NAVIGATION
         // ============================================
-        function speak(text) {
-            if (!voiceEnabled) return;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'hi-IN';
-            window.speechSynthesis.speak(utterance);
-        }
-        
-        function initVoice() {
-            const repeatBtn = document.getElementById('repeatVoice');
-            const toggleBtn = document.getElementById('toggleVoice');
-            if (repeatBtn) repeatBtn.addEventListener('click', () => {
-                const msgEl = document.getElementById('voiceMessage');
-                if (msgEl) speak(msgEl.textContent);
-            });
-            if (toggleBtn) toggleBtn.addEventListener('click', () => {
-                voiceEnabled = !voiceEnabled;
-                speak(voiceEnabled ? 'Voice enabled' : 'Voice disabled');
-            });
-        }
-        
-        // ============================================
-        // SWIPER INITIALIZATION
-        // ============================================
-        function initSwiper() {
-            if (swiper) swiper.destroy();
-            swiper = new Swiper(".mySwiper", {
-                effect: "cube",
-                grabCursor: true,
-                cubeEffect: { shadow: true },
-                pagination: { el: ".swiper-pagination", clickable: true },
-                autoplay: { delay: 3000, disableOnInteraction: false },
-                loop: true
-            });
-        }
-        
-        // ============================================
-        // PAGE NAVIGATION - BUTTON MAPPING
-        // ============================================
-        // Button Name | Button Function | Page Opens
-        // ---------------------------------------------------------------
-        // Home | Returns to main homepage | Home Page
-        // About | Scrolls to About section | About Section
-        // Features | Scrolls to Features section | Features Section
-        // Teacher Registration | Teacher registration form | teacher-reg.html
-        // Teacher Login | Teacher dashboard login | teacher-self-dashboard.html
-        // Student Registration | Student admission form | register.html
-        // Student Attendance | Mark attendance page | studentats.html
-        // Admin Login | Admin panel login | login.html
-        
         function redirectPage(page) {
             const pageMapping = {
                 'home': 'home',
-                'about': 'about',
                 'features': 'features',
                 'teacher-reg': 'teacher-reg.html',
-                'teacher-login': 'teacher-self-dashboard.html',
                 'student-reg': 'register.html',
-                'student-attendance': 'studentats.html',
+                'ats': 'studentats.html',
                 'admin-login': 'login.html'
             };
             
             const target = pageMapping[page];
-            if (target && (target.endsWith('.html') || target === 'home' || target === 'about' || target === 'features')) {
-                if (target === 'home' || target === 'about' || target === 'features') {
-                    loadPage(target);
-                } else {
-                    window.location.href = target;
-                }
-            } else {
-                loadPage('home');
+            if (target === 'home' || target === 'features') {
+                loadPage(target);
+            } else if (target) {
+                window.location.href = target;
             }
         }
         
@@ -994,16 +1213,9 @@
             if (page === 'home') {
                 content.innerHTML = await renderHome();
                 initSwiper();
-                initVoice();
-            } else if (page === 'about') {
-                content.innerHTML = await renderHome();
-                initSwiper();
-                initVoice();
-                setTimeout(() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }), 200);
             } else if (page === 'features') {
                 content.innerHTML = await renderHome();
                 initSwiper();
-                initVoice();
                 setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 200);
             }
             
@@ -1021,54 +1233,145 @@
             e.preventDefault();
             const page = e.currentTarget.getAttribute('data-page');
             redirectPage(page);
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('drawerOverlay')?.classList.remove('show');
         }
         
         // ============================================
-        // INITIALIZE EVERYTHING
+        // SWIPER INITIALIZATION
+        // ============================================
+        function initSwiper() {
+            if (swiper) swiper.destroy();
+            swiper = new Swiper(".mySwiper", {
+                effect: "slide",
+                grabCursor: true,
+                pagination: { el: ".swiper-pagination", clickable: true },
+                autoplay: { delay: 4000, disableOnInteraction: false },
+                loop: true
+            });
+        }
+        
+        // ============================================
+        // THEME MANAGEMENT
+        // ============================================
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.innerHTML = `<i class="fas fa-check-circle" style="color:var(--primary);margin-right:8px;"></i>${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+        
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            const themes = ['light', 'dark', 'neon'];
+            let nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
+            currentTheme = themes[nextIndex];
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            showToast(`${currentTheme.toUpperCase()} theme activated!`);
+        });
+        
+        // ============================================
+        // PARTICLES
+        // ============================================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.width = Math.random() * 6 + 2 + 'px';
+                p.style.height = p.style.width;
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.animationDuration = Math.random() * 15 + 10 + 's';
+                container.appendChild(p);
+            }
+        }
+        
+        // ============================================
+        // CONTINUOUS LOGO ANIMATION UPDATE
+        // ============================================
+        function startLogoAnimation() {
+            const logoIcon = document.querySelector('.logo-icon');
+            const logoText = document.querySelector('.logo-text h1');
+            
+            if (logoIcon) {
+                logoIcon.style.animation = 'logoGlow 2s infinite, logoRotate 4s ease-in-out infinite';
+            }
+            if (logoText) {
+                logoText.style.animation = 'textShine 3s infinite';
+            }
+        }
+        
+        // ============================================
+        // INITIALIZE
         // ============================================
         async function initialize() {
             createParticles();
+            
+            // Show loader with rain animation
+            const loader = document.getElementById('pageLoader');
+            
+            // Fetch all data
             await fetchConfig();
             await fetchStats();
+            await fetchStudents();
+            await fetchTeachers();
             await fetchTestimonials();
+            
+            // Load home page
             await loadPage('home');
             
+            // Start continuous logo animation
+            startLogoAnimation();
+            
+            // Hide loader with fade out
             setTimeout(() => {
-                const loader = document.getElementById('pageLoader');
                 if (loader) loader.classList.add('fade-out');
-            }, 500);
+            }, 1500);
             
+            // Mobile Menu
             const menuToggle = document.getElementById('menuToggle');
-            const navLinks = document.getElementById('navLinks');
-            if (menuToggle) {
-                menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
-            }
+            const drawer = document.getElementById('mobileDrawer');
+            const overlay = document.getElementById('drawerOverlay');
             
+            menuToggle?.addEventListener('click', () => {
+                drawer.classList.add('open');
+                overlay.classList.add('show');
+            });
+            
+            const closeDrawer = () => {
+                drawer.classList.remove('open');
+                overlay.classList.remove('show');
+            };
+            overlay?.addEventListener('click', closeDrawer);
+            
+            // Back to Top
             window.addEventListener('scroll', () => {
                 const btn = document.getElementById('backToTop');
                 if (window.scrollY > 300) btn.classList.add('show');
                 else btn.classList.remove('show');
             });
-            
             document.getElementById('backToTop')?.addEventListener('click', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
             
-            document.querySelectorAll('.mobile-nav-item').forEach(el => {
-                el.addEventListener('click', () => redirectPage(el.getAttribute('data-page')));
-            });
-            
-            document.addEventListener('click', (e) => {
-                if (navLinks && navLinks.classList.contains('show') && 
-                    !navLinks.contains(e.target) && !e.target.closest('.menu-toggle')) {
-                    navLinks.classList.remove('show');
-                }
-            });
-            
-            setTimeout(() => {
-                const welcomeMsg = document.getElementById('voiceMessage');
-                if (welcomeMsg) speak(welcomeMsg.textContent);
-            }, 1500);
+            // Refresh slideshow animations periodically
+            setInterval(() => {
+                const statCards = document.querySelectorAll('.stat-card .photo-slideshow');
+                statCards.forEach(card => {
+                    if (card && card.style.animation) {
+                        // Refresh animation
+                        const anim = card.style.animation;
+                        card.style.animation = 'none';
+                        setTimeout(() => { card.style.animation = anim; }, 10);
+                    }
+                });
+            }, 30000);
         }
         
         initialize();
