@@ -484,6 +484,45 @@ app.get('/api/testimonials', async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// ============================================
+// PUBLIC APIs - NO TOKEN NEEDED (Website Visitors)
+// ============================================
+
+// Website ke liye Teachers ki photos (bina login ke)
+app.get('/api/public/teachers', async (req, res) => {
+    try {
+        const teachers = await Teacher.find({ status: 'approved' })
+            .select('photo teacherName')
+            .limit(8);
+        
+        const publicTeachers = teachers.map(t => ({
+            photo: t.photo || 'https://via.placeholder.com/100',
+            name: `${t.teacherName.first} ${t.teacherName.last}`
+        }));
+        
+        res.json({ success: true, data: publicTeachers });
+    } catch (err) {
+        res.json({ success: false, data: [] });
+    }
+});
+
+// Website ke liye Students ki photos (bina login ke)
+app.get('/api/public/students', async (req, res) => {
+    try {
+        const students = await Student.find()
+            .select('photo studentName')
+            .limit(8);
+        
+        const publicStudents = students.map(s => ({
+            photo: s.photo || 'https://via.placeholder.com/100',
+            name: `${s.studentName.first} ${s.studentName.last}`
+        }));
+        
+        res.json({ success: true, data: publicStudents });
+    } catch (err) {
+        res.json({ success: false, data: [] });
+    }
+});
 
 // ============================================
 // ENHANCED LOGIN APIs with account locking
@@ -1652,45 +1691,6 @@ app.use((err, req, res, next) => {
 
 app.use((req, res) => {
     res.status(404).json({ success: false, message: "API endpoint not found", path: req.path });
-});
-// ============================================
-// PUBLIC APIs - NO TOKEN NEEDED (Website Visitors)
-// ============================================
-
-// Website ke liye Teachers ki photos (bina login ke)
-app.get('/api/public/teachers', async (req, res) => {
-    try {
-        const teachers = await Teacher.find({ status: 'approved' })
-            .select('photo teacherName')
-            .limit(8);
-        
-        const publicTeachers = teachers.map(t => ({
-            photo: t.photo || 'https://via.placeholder.com/100',
-            name: `${t.teacherName.first} ${t.teacherName.last}`
-        }));
-        
-        res.json({ success: true, data: publicTeachers });
-    } catch (err) {
-        res.json({ success: false, data: [] });
-    }
-});
-
-// Website ke liye Students ki photos (bina login ke)
-app.get('/api/public/students', async (req, res) => {
-    try {
-        const students = await Student.find()
-            .select('photo studentName')
-            .limit(8);
-        
-        const publicStudents = students.map(s => ({
-            photo: s.photo || 'https://via.placeholder.com/100',
-            name: `${s.studentName.first} ${s.studentName.last}`
-        }));
-        
-        res.json({ success: true, data: publicStudents });
-    } catch (err) {
-        res.json({ success: false, data: [] });
-    }
 });
 
 // ============================================
