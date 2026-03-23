@@ -5,6 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title id="pageTitle">Bal Bharti Coaching </title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234361ee'/%3E%3Cstop offset='100%25' stop-color='%237209b7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grad)' rx='20'/%3E%3Ctext x='50' y='68' font-size='20' text-anchor='middle' fill='white' font-weight='bold'%3EBBCC%3C/text%3E%3C/svg%3E">
+
+<script>
+// Spinning/rotating effect
+let spinAngle = 0;
+let spinInterval;
+
+function startSpin() {
+    const favicon = document.querySelector('link[rel="icon"]');
+    if (!favicon) return;
+    
+    spinInterval = setInterval(() => {
+        spinAngle = (spinAngle + 45) % 360;
+        // Different colors for different angles
+        const colors = ['#4361ee', '#5a4dff', '#7209b7', '#9f4dff'];
+        const colorIndex = Math.floor(spinAngle / 90) % colors.length;
+        const color = colors[colorIndex];
+        
+        const newFavicon = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='${color}' rx='20'/%3E%3Ctext x='50' y='68' font-size='20' text-anchor='middle' fill='white' font-weight='bold'%3EBBCC%3C/text%3E%3C/svg%3E`;
+        favicon.href = newFavicon;
+    }, 300);
+}
+
+function stopSpin() {
+    clearInterval(spinInterval);
+    const favicon = document.querySelector('link[rel="icon"]');
+    if (favicon) {
+        favicon.href = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234361ee'/%3E%3Cstop offset='100%25' stop-color='%237209b7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grad)' rx='20'/%3E%3Ctext x='50' y='68' font-size='20' text-anchor='middle' fill='white' font-weight='bold'%3EBBCC%3C/text%3E%3C/svg%3E";
+    }
+}
+
+// Start after 2 seconds, stop after 10 seconds
+setTimeout(startSpin, 2000);
+setTimeout(stopSpin, 10000);
+</script>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
