@@ -919,40 +919,49 @@
         // ============================================
         // FETCH STUDENTS & TEACHERS (No Auth Error)
         // ============================================
-        async function fetchStudentsPublic() {
-            try {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    const response = await fetch('/api/students', { headers: { 'Authorization': `Bearer ${token}` } });
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success && data.data && data.data.length > 0) {
-                            allStudents = data.data;
-                            return;
-                        }
-                    }
-                }
-            } catch (e) {}
-            allStudents = getDefaultStudentImages();
+      
+// NEW CODE (JO PUBLIC API USE KAREGA)
+async function fetchStudentsPublic() {
+    try {
+        // Public endpoint use kar rahe hain - NO TOKEN NEEDED!
+        const response = await fetch('/api/public/students');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data && data.data.length > 0) {
+                allStudents = data.data;
+                return;
+            }
         }
-        
-        async function fetchTeachersPublic() {
-            try {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    const response = await fetch('/api/teachers', { headers: { 'Authorization': `Bearer ${token}` } });
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.success && data.data && data.data.length > 0) {
-                            allTeachers = data.data.filter(t => t.status === 'approved');
-                            if (allTeachers.length > 0) return;
-                        }
-                    }
-                }
-            } catch (e) {}
-            allTeachers = getDefaultTeacherImages();
+    } catch (error) {
+        console.error('Error fetching students:', error);
+    }
+    // Agar API fail ho toh default images dikhao
+    allStudents = [
+        { photo: 'https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100', name: 'Priya' },
+        { photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100', name: 'Amit' }
+    ];
+}
+
+async function fetchTeachersPublic() {
+    try {
+        // Public endpoint use kar rahe hain - NO TOKEN NEEDED!
+        const response = await fetch('/api/public/teachers');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data && data.data.length > 0) {
+                allTeachers = data.data;
+                return;
+            }
         }
-        
+    } catch (error) {
+        console.error('Error fetching teachers:', error);
+    }
+    // Agar API fail ho toh default images dikhao
+    allTeachers = [
+        { photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', name: 'Mr. Sharma' },
+        { photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', name: 'Mr. Verma' }
+    ];
+}
         // ============================================
         // CROSSFADE SLIDESHOW (Ek jagah fade in/out)
         // ============================================
