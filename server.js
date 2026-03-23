@@ -640,6 +640,58 @@ app.put('/api/admin/profile', verifyToken, async (req, res) => {
 });
 
 // ============================================
+// NEW: CHANGE ADMIN ID API
+// ============================================
+
+app.post('/api/change-admin-id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        
+        const { newAdminId, password } = req.body;
+        
+        if (!newAdminId || newAdminId.length < 3) {
+            return res.status(400).json({ success: false, message: "Admin ID must be at least 3 characters" });
+        }
+        
+        if (!password) {
+            return res.status(400).json({ success: false, message: "Password is required" });
+        }
+        
+        const admin = await Admin.findById(req.user.id);
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, admin.pws);
+        if (!isPasswordValid) {
+            return res.status(401).json({ success: false, message: "Invalid password" });
+        }
+        
+        const existingAdmin = await Admin.findOne({ adminID: newAdminId });
+        if (existingAdmin && existingAdmin._id.toString() !== admin._id.toString()) {
+            return res.status(400).json({ success: false, message: "Admin ID already taken" });
+        }
+        
+        admin.adminID = newAdminId;
+        await admin.save();
+        
+        console.log(`✅ Admin ID changed from ${req.user.adminID} to ${newAdminId}`);
+        
+        res.json({ 
+            success: true, 
+            message: "Admin ID changed successfully! Please login again.",
+            newAdminId: newAdminId
+        });
+        
+    } catch (err) {
+        console.error('Change Admin ID error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
 // WEBSITE CONFIG UPDATE
 // ============================================
 
@@ -712,7 +764,161 @@ app.post('/api/change-password', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// STUDENT APIs (with enhanced security)
+// TESTIMONIAL MANAGEMENT APIs (NEW)
+// ============================================
+
+// Get all testimonials (admin - includes inactive)
+app.get('/api/admin/testimonials', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const testimonials = await Testimonial.find().sort({ order: 1, createdAt: -1 });
+        res.json({ success: true, data: testimonials });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get single testimonial
+app.get('/api/testimonials/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        const testimonial = await Testimonial.findById(req.params.id);
+        if (!testimonial) return res.status(404).json({ success: false, message: "Testimonial not found" });
+        res.json({ success: true, data: testimonial });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Create new testimonial
+app.post('/api/testimonials', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { name, role, text, rating, image, order, isActive } = req.body;
+        
+        if (!name || !text) {
+            return res.status(400).json({ success: false, message: "Name and text are required" });
+        }
+        
+        const testimonial = new Testimonial({
+            name,
+            role: role || 'Student',
+            text,
+            rating: rating || 5,
+            image: image || '',
+            order: order || 0,
+            isActive: isActive !== undefined ? isActive : true
+        });
+        
+        await testimonial.save();
+        res.json({ success: true, message: "Testimonial added", data: testimonial });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update testimonial
+app.put('/api/testimonials/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { name, role, text, rating, image, order, isActive } = req.body;
+        
+        const testimonial = await Testimonial.findById(req.params.id);
+        if (!testimonial) {
+            return res.status(404).json({ success: false, message: "Testimonial not found" });
+        }
+        
+        if (name) testimonial.name = name;
+        if (role) testimonial.role = role;
+        if (text) testimonial.text = text;
+        if (rating) testimonial.rating = rating;
+        if (image !== undefined) testimonial.image = image;
+        if (order !== undefined) testimonial.order = order;
+        if (isActive !== undefined) testimonial.isActive = isActive;
+        
+        await testimonial.save();
+        res.json({ success: true, message: "Testimonial updated", data: testimonial });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Delete testimonial
+app.delete('/api/testimonials/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
+        if (!testimonial) {
+            return res.status(404).json({ success: false, message: "Testimonial not found" });
+        }
+        
+        res.json({ success: true, message: "Testimonial deleted" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Bulk update testimonials
+app.post('/api/testimonials/bulk', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { testimonials } = req.body;
+        
+        if (!Array.isArray(testimonials)) {
+            return res.status(400).json({ success: false, message: "Invalid data format" });
+        }
+        
+        const results = [];
+        
+        for (const t of testimonials) {
+            if (t._id) {
+                // Update existing
+                const updated = await Testimonial.findByIdAndUpdate(t._id, {
+                    name: t.name,
+                    role: t.role,
+                    text: t.text,
+                    rating: t.rating,
+                    image: t.image,
+                    order: t.order,
+                    isActive: t.isActive
+                }, { new: true });
+                if (updated) results.push(updated);
+            } else {
+                // Create new
+                const created = new Testimonial(t);
+                await created.save();
+                results.push(created);
+            }
+        }
+        
+        res.json({ success: true, message: "Testimonials saved", data: results });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// STUDENT APIs
 // ============================================
 
 app.post('/api/student-register', async (req, res) => {
@@ -720,7 +926,6 @@ app.post('/api/student-register', async (req, res) => {
     try {
         const data = req.body;
         
-        // Validate required fields
         const requiredFields = ['studentId', 'password', 'photo', 'aadharDocument', 'classMonthlyFees'];
         for (const field of requiredFields) {
             if (!data[field]) {
@@ -728,7 +933,6 @@ app.post('/api/student-register', async (req, res) => {
             }
         }
         
-        // Check existing
         const existing = await Student.findOne({ 
             $or: [{ studentId: data.studentId }, { aadharNumber: data.aadhar }] 
         });
@@ -736,7 +940,6 @@ app.post('/api/student-register', async (req, res) => {
             return res.status(400).json({ success: false, message: "Student already exists" });
         }
         
-        // Create student
         const student = new Student({
             studentId: data.studentId,
             password: data.password,
@@ -795,7 +998,6 @@ app.post('/api/student-register', async (req, res) => {
 
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
-        // Allow both admin and teacher to view students
         if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied. Only admin and teachers can view students." });
         }
@@ -806,7 +1008,6 @@ app.get('/api/students', verifyToken, async (req, res) => {
     }
 });
 
-// GET single student - Allow both admin AND teacher
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
@@ -819,6 +1020,7 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
 app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
@@ -829,7 +1031,6 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
         
         const updateData = req.body;
         
-        // Map the incoming data structure
         if (updateData.student) {
             student.studentName = {
                 first: updateData.student.firstName,
@@ -876,12 +1077,10 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
             };
         }
         
-        // Handle joining date update
         if (updateData.dates && updateData.dates.join) {
             const newJoiningDate = new Date(updateData.dates.join);
             if (newJoiningDate.toString() !== student.joiningDate.toString()) {
                 student.joiningDate = newJoiningDate;
-                // Regenerate fees history
                 const currentDate = new Date();
                 const newFeesHistory = [];
                 let current = new Date(newJoiningDate);
@@ -968,7 +1167,6 @@ app.get('/api/students/:id/attendance', verifyToken, async (req, res) => {
 
 app.post('/api/students/:id/attendance', verifyToken, async (req, res) => {
     try {
-        // Allow both admin and teacher to mark attendance
         if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
@@ -1059,7 +1257,6 @@ app.post('/api/teacher-register', async (req, res) => {
     try {
         const data = req.body;
         
-        // Validate required fields
         const requiredFields = ['teacherId', 'password', 'photo', 'aadharNumber', 'aadharDoc', 'mobile', 'dob', 'lastQualification', 'qualificationDoc'];
         for (const field of requiredFields) {
             if (!data[field]) {
@@ -1067,7 +1264,6 @@ app.post('/api/teacher-register', async (req, res) => {
             }
         }
         
-        // Check existing
         if (await Teacher.findOne({ aadharNumber: data.aadharNumber })) {
             return res.status(400).json({ success: false, message: "Aadhar already registered" });
         }
@@ -1098,7 +1294,6 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
 
 app.get('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
-        // Teacher sirf apna profile dekh sakta hai
         if (req.user.role === 'teacher' && req.user.teacherId !== req.params.id) {
             return res.status(403).json({ success: false, message: "You can only view your own profile" });
         }
@@ -1112,9 +1307,9 @@ app.get('/api/teachers/:id', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
 app.put('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
-        // Teacher sirf apna profile update kar sakta hai
         if (req.user.role === 'teacher' && req.user.teacherId !== req.params.id) {
             return res.status(403).json({ success: false, message: "You can only update your own profile" });
         }
@@ -1126,7 +1321,6 @@ app.put('/api/teachers/:id', verifyToken, async (req, res) => {
         if (!teacher) return res.status(404).json({ success: false, message: "Teacher not found" });
         
         const updateData = req.body;
-        // Teacher status change nahi kar sakta
         if (req.user.role === 'teacher') {
             delete updateData.status;
             delete updateData.salary;
@@ -1298,36 +1492,7 @@ app.delete('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// SERVE HTML FILES
-// ============================================
-
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
-app.get('/index.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
-app.get('/student-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'student-dashboard.html')); });
-app.get('/teacher-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-dashboard.html')); });
-app.get('/teacher-self-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-self-dashboard.html')); });
-app.get('/register.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'register.html')); });
-app.get('/teacher-reg.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-reg.html')); });
-app.get('/studentats.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'studentats.html')); });
-app.get('/login.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.html')); });
-app.get('/admin-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html')); });
-
-// ============================================
-// ERROR HANDLERS
-// ============================================
-
-// Global error handler
-app.use((err, req, res, next) => {
-    console.error("Global Error:", err.stack);
-    res.status(500).json({ success: false, message: "Something went wrong!", error: err.message });
-});
-
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ success: false, message: "API endpoint not found", path: req.path });
-});
-// ============================================
-// SALARY DUE REMINDER SCHEMA
+// SALARY DUE REMINDER SCHEMA & APIs
 // ============================================
 
 const SalaryDueReminderSchema = new mongoose.Schema({
@@ -1351,26 +1516,18 @@ const SalaryDueReminderSchema = new mongoose.Schema({
 
 const SalaryDueReminder = mongoose.model('SalaryDueReminder', SalaryDueReminderSchema);
 
-// ============================================
-// SALARY DUE REMINDER API
-// ============================================
-
-// Teacher sends reminder (saves in database)
 app.post('/api/salary-due-reminder', verifyToken, async (req, res) => {
     try {
-        // Allow teacher to send reminder
         if (req.user.role !== 'teacher' && req.user.role !== 'admin') {
             return res.status(403).json({ success: false, message: "Access denied" });
         }
         
         const { teacherId, teacherName, mobile, totalDue, dueMonths, dueCount, message } = req.body;
         
-        // Validate teacher is requesting own data
         if (req.user.role === 'teacher' && req.user.teacherId !== teacherId) {
             return res.status(403).json({ success: false, message: "You can only send reminder for yourself" });
         }
         
-        // Check if reminder already sent today
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
         
@@ -1387,32 +1544,20 @@ app.post('/api/salary-due-reminder', verifyToken, async (req, res) => {
             });
         }
         
-        // Save reminder in database
         const reminder = new SalaryDueReminder({
-            teacherId: teacherId,
-            teacherName: teacherName,
-            mobile: mobile,
-            totalDue: totalDue,
-            dueCount: dueCount,
-            dueMonths: dueMonths,
-            message: message,
-            status: 'pending'
+            teacherId, teacherName, mobile, totalDue, dueCount, dueMonths, message, status: 'pending'
         });
         
         await reminder.save();
         
-        // Log for admin (console)
         console.log(`📢 Salary Due Reminder #${reminder._id}`);
         console.log(`👨‍🏫 Teacher: ${teacherName} (${teacherId})`);
-        console.log(`📱 Mobile: ${mobile}`);
         console.log(`💰 Total Due: ₹${totalDue}`);
-        console.log(`📅 Due Months: ${dueMonths.map(m => `${m.month} ${m.year}`).join(', ')}`);
         
         res.json({ 
             success: true, 
             message: "Reminder sent successfully! Admin has been notified.",
-            reminderId: reminder._id,
-            reminder: reminder
+            reminderId: reminder._id
         });
         
     } catch (err) {
@@ -1421,60 +1566,42 @@ app.post('/api/salary-due-reminder', verifyToken, async (req, res) => {
     }
 });
 
-// Admin API: Get all pending due reminders
 app.get('/api/admin/due-reminders', verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ success: false, message: "Admin access required" });
         }
-        
-        const reminders = await SalaryDueReminder.find({ status: 'pending' })
-            .sort({ reminderDate: -1 });
-        
+        const reminders = await SalaryDueReminder.find({ status: 'pending' }).sort({ reminderDate: -1 });
         res.json({ success: true, data: reminders });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// Admin API: Mark reminder as resolved
 app.put('/api/admin/due-reminders/:id/resolve', verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ success: false, message: "Admin access required" });
         }
-        
         const { notes } = req.body;
-        
         const reminder = await SalaryDueReminder.findByIdAndUpdate(
             req.params.id,
-            {
-                status: 'resolved',
-                resolvedDate: new Date(),
-                resolvedBy: req.user.adminID,
-                notes: notes
-            },
+            { status: 'resolved', resolvedDate: new Date(), resolvedBy: req.user.adminID, notes },
             { new: true }
         );
-        
-        if (!reminder) {
-            return res.status(404).json({ success: false, message: "Reminder not found" });
-        }
-        
+        if (!reminder) return res.status(404).json({ success: false, message: "Reminder not found" });
         res.json({ success: true, message: "Reminder marked as resolved", data: reminder });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// Admin API: Get all teachers with due salary
 app.get('/api/admin/teachers-with-due', verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ success: false, message: "Admin access required" });
         }
         
-        // Find teachers with unpaid salary in history
         const teachers = await Teacher.find({
             'salaryHistory.status': { $in: ['unpaid', 'partial'] }
         }).select('teacherId teacherName mobile salary salaryHistory');
@@ -1482,7 +1609,6 @@ app.get('/api/admin/teachers-with-due', verifyToken, async (req, res) => {
         const dueTeachers = teachers.map(teacher => {
             const dueMonths = teacher.salaryHistory.filter(r => r.status !== 'paid');
             const totalDue = dueMonths.reduce((sum, r) => sum + (r.dueAmount || 0), 0);
-            
             return {
                 teacherId: teacher.teacherId,
                 teacherName: `${teacher.teacherName.first} ${teacher.teacherName.last}`,
@@ -1499,6 +1625,35 @@ app.get('/api/admin/teachers-with-due', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
+// ============================================
+// SERVE HTML FILES
+// ============================================
+
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
+app.get('/index.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
+app.get('/student-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'student-dashboard.html')); });
+app.get('/teacher-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-dashboard.html')); });
+app.get('/teacher-self-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-self-dashboard.html')); });
+app.get('/register.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'register.html')); });
+app.get('/teacher-reg.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-reg.html')); });
+app.get('/studentats.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'studentats.html')); });
+app.get('/login.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.html')); });
+app.get('/admin-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html')); });
+
+// ============================================
+// ERROR HANDLERS
+// ============================================
+
+app.use((err, req, res, next) => {
+    console.error("Global Error:", err.stack);
+    res.status(500).json({ success: false, message: "Something went wrong!", error: err.message });
+});
+
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: "API endpoint not found", path: req.path });
+});
+
 // ============================================
 // START SERVER
 // ============================================
@@ -1519,14 +1674,13 @@ app.listen(PORT, () => {
     console.log(`\n📌 API Endpoints:`);
     console.log(`   GET  /api/config           - Website Configuration`);
     console.log(`   GET  /api/stats            - Statistics Data`);
-    console.log(`   GET  /api/testimonials     - Testimonials`);
-    console.log(`   POST /api/admin-login      - Admin Login`);
-    console.log(`   POST /api/teacher-login    - Teacher Login`);
-    console.log(`   POST /api/student-register - Student Registration`);
-    console.log(`   POST /api/teacher-register - Teacher Registration`);
-    console.log(`   GET  /api/students         - All Students`);
-    console.log(`   GET  /api/teachers         - All Teachers`);
-    console.log(`   GET  /api/admin/profile    - Admin Profile`);
-    console.log(`   PUT  /api/admin/profile    - Update Admin Profile`);
+    console.log(`   GET  /api/testimonials     - Testimonials (Public)`);
+    console.log(`   GET  /api/admin/testimonials - Testimonials (Admin Full)`);
+    console.log(`   POST /api/testimonials     - Create Testimonial`);
+    console.log(`   PUT  /api/testimonials/:id - Update Testimonial`);
+    console.log(`   DELETE /api/testimonials/:id - Delete Testimonial`);
+    console.log(`   POST /api/testimonials/bulk - Bulk Update Testimonials`);
+    console.log(`   POST /api/change-admin-id  - Change Admin ID`);
+    console.log(`   GET  /api/admin/teachers-with-due - Teachers with Due Salary`);
     console.log(`\n📝 Default Admin: admin / admin123`);
 });
