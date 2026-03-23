@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
@@ -79,7 +79,7 @@
             overflow-x: hidden;
         }
         
-        /* ===== PREMIUM LOADER WITH RAIN DOTS ANIMATION ===== */
+        /* Page Loader */
         .page-loader {
             position: fixed;
             top: 0;
@@ -93,13 +93,8 @@
             align-items: center;
             transition: opacity 0.8s ease, visibility 0.8s ease;
         }
-        .page-loader.fade-out {
-            opacity: 0;
-            visibility: hidden;
-        }
-        .loader-container {
-            text-align: center;
-        }
+        .page-loader.fade-out { opacity: 0; visibility: hidden; }
+        .loader-container { text-align: center; }
         .rain-logo {
             display: flex;
             gap: 12px;
@@ -117,8 +112,8 @@
             animation-delay: calc(var(--i) * 0.1s);
         }
         @keyframes letterFloat {
-            0% { transform: translateY(0px); text-shadow: 0 0 0 rgba(67,97,238,0); }
-            100% { transform: translateY(-8px); text-shadow: 0 10px 20px rgba(67,97,238,0.3); }
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-8px); }
         }
         .rain-dots {
             display: flex;
@@ -135,32 +130,16 @@
             animation-delay: calc(var(--d) * 0.1s);
         }
         @keyframes rainDrop {
-            0%, 100% {
-                transform: translateY(-10px);
-                opacity: 0.3;
-            }
-            50% {
-                transform: translateY(10px);
-                opacity: 1;
-                background: var(--accent);
-            }
+            0%, 100% { transform: translateY(-10px); opacity: 0.3; }
+            50% { transform: translateY(10px); opacity: 1; background: var(--accent); }
         }
         .loader-text {
             margin-top: 25px;
             font-size: 0.85rem;
             color: var(--text-secondary);
-            letter-spacing: 2px;
-        }
-        .loader-text span {
-            display: inline-block;
-            animation: textPulse 1.5s infinite;
-        }
-        @keyframes textPulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
         }
         
-        /* ===== CONTINUOUS LOGO ANIMATION ===== */
+        /* Logo Animation */
         .logo-wrapper {
             display: flex;
             align-items: center;
@@ -195,7 +174,6 @@
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            position: relative;
             animation: textShine 3s infinite;
         }
         @keyframes textShine {
@@ -206,19 +184,13 @@
             font-size: 0.65rem;
             color: var(--accent);
             margin: 0;
-            animation: subtitlePulse 2s infinite;
         }
-        @keyframes subtitlePulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; text-shadow: 0 0 5px var(--accent); }
-        }
-        
         @media (min-width: 768px) {
             .logo-text h1 { font-size: 1.5rem; }
             .logo-text p { font-size: 0.7rem; }
         }
         
-        /* Floating Particles */
+        /* Particles */
         .particles {
             position: fixed;
             top: 0;
@@ -264,9 +236,7 @@
             display: none;
             gap: 8px;
         }
-        @media (min-width: 992px) {
-            .desktop-nav { display: flex; }
-        }
+        @media (min-width: 992px) { .desktop-nav { display: flex; } }
         .nav-btn {
             padding: 10px 20px;
             border-radius: 40px;
@@ -279,19 +249,8 @@
             border: none;
             cursor: pointer;
         }
-        .nav-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-        }
-        .nav-btn-primary {
-            background: var(--gradient-secondary);
-            color: white;
-        }
-        .nav-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(247,37,133,0.3);
-        }
+        .nav-btn:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+        .nav-btn-primary { background: var(--gradient-secondary); color: white; }
         
         /* Mobile Menu */
         .menu-toggle {
@@ -303,11 +262,8 @@
             border-radius: 12px;
             cursor: pointer;
             font-size: 1.2rem;
-            transition: all 0.3s;
         }
-        @media (min-width: 992px) {
-            .menu-toggle { display: none; }
-        }
+        @media (min-width: 992px) { .menu-toggle { display: none; } }
         .mobile-nav-drawer {
             position: fixed;
             top: 0;
@@ -321,6 +277,7 @@
             transition: right 0.3s ease;
             box-shadow: var(--shadow-lg);
             border-left: 3px solid var(--primary);
+            overflow-y: auto;
         }
         .mobile-nav-drawer.open { right: 0; }
         .mobile-nav-item {
@@ -334,12 +291,9 @@
             font-weight: 600;
             margin-bottom: 8px;
             transition: all 0.2s;
+            cursor: pointer;
         }
-        .mobile-nav-item:active {
-            background: var(--primary);
-            color: white;
-            transform: scale(0.98);
-        }
+        .mobile-nav-item:active { background: var(--primary); color: white; transform: scale(0.98); }
         .drawer-overlay {
             position: fixed;
             top: 0;
@@ -352,10 +306,7 @@
             visibility: hidden;
             transition: all 0.3s;
         }
-        .drawer-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
+        .drawer-overlay.show { opacity: 1; visibility: visible; }
         
         /* Header Actions */
         .header-actions {
@@ -363,7 +314,7 @@
             gap: 10px;
             align-items: center;
         }
-        .theme-btn, .whatsapp-float {
+        .theme-btn, .whatsapp-float, .voice-btn {
             width: 44px;
             height: 44px;
             border-radius: 12px;
@@ -378,7 +329,11 @@
             font-size: 1.1rem;
         }
         .whatsapp-float { background: #25D366; }
-        .theme-btn:active, .whatsapp-float:active { transform: scale(0.95); }
+        .voice-btn { background: var(--gradient-secondary); animation: voicePulse 2s infinite; }
+        @keyframes voicePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(247,37,133,0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(247,37,133,0); }
+        }
         
         /* Hero Slider */
         .hero-section { padding: 30px 5%; }
@@ -390,13 +345,9 @@
             box-shadow: var(--shadow-lg);
         }
         @media (min-width: 768px) { .swiper-container { height: 450px; } }
-        .swiper-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Stats Section with Photo Slideshow */
+        /* Stats Section with Crossfade Slideshow */
         .stats-section {
             padding: 50px 5%;
             background: var(--gradient-primary);
@@ -408,9 +359,7 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        @media (min-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(4, 1fr); }
-        }
+        @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
         .stat-card {
             text-align: center;
             color: white;
@@ -422,42 +371,42 @@
             cursor: pointer;
         }
         .stat-card:hover { transform: translateY(-5px); }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-        }
+        .stat-number { font-size: 2rem; font-weight: 800; }
         @media (min-width: 768px) { .stat-number { font-size: 2.5rem; } }
-        .stat-label {
-            font-size: 0.75rem;
-            opacity: 0.9;
-            margin-top: 5px;
-        }
+        .stat-label { font-size: 0.75rem; opacity: 0.9; margin-top: 5px; }
         
-        /* Photo Slideshow */
-        .photo-slideshow {
-            width: 70px;
-            height: 70px;
+        /* Crossfade Photo Slideshow (Horizontal/Vertical nahi, ek jagah fade in/out) */
+        .photo-crossfade {
+            width: 80px;
+            height: 80px;
             margin: 0 auto 15px;
             border-radius: 50%;
             overflow: hidden;
             border: 3px solid white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
         }
-        .photo-slideshow img {
+        .photo-crossfade img {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            animation: slideShow 8s infinite;
+            opacity: 0;
+            animation: crossfade 12s infinite;
         }
-        @keyframes slideShow {
-            0%, 25% { transform: translateY(0); }
-            33% { transform: translateY(-100%); }
-            58% { transform: translateY(-200%); }
-            83% { transform: translateY(-300%); }
-            100% { transform: translateY(0); }
+        .photo-crossfade img:nth-child(1) { animation-delay: 0s; }
+        .photo-crossfade img:nth-child(2) { animation-delay: 3s; }
+        .photo-crossfade img:nth-child(3) { animation-delay: 6s; }
+        .photo-crossfade img:nth-child(4) { animation-delay: 9s; }
+        @keyframes crossfade {
+            0%, 20% { opacity: 1; }
+            25%, 95% { opacity: 0; }
+            100% { opacity: 0; }
         }
         
-        /* Why Choose Us */
+        /* Features Section */
         .features-section {
             padding: 60px 5%;
             background: var(--bg-secondary);
@@ -488,12 +437,8 @@
             text-align: center;
             transition: all 0.3s;
             border: 1px solid var(--border-color);
-            cursor: pointer;
         }
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-        }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
         .feature-icon {
             width: 70px;
             height: 70px;
@@ -527,7 +472,6 @@
             border-radius: 24px;
             padding: 24px;
             border: 1px solid var(--border-color);
-            transition: all 0.3s;
             position: relative;
         }
         .testimonial-card::before {
@@ -554,12 +498,7 @@
             border-top: 1px solid var(--border-color);
             padding-top: 15px;
         }
-        .testimonial-author img {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
+        .testimonial-author img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
         .author-name { font-weight: 700; font-size: 0.9rem; }
         .author-rating { color: var(--accent); font-size: 0.7rem; }
         
@@ -588,6 +527,45 @@
         .about-stat { text-align: center; }
         .about-stat h3 { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
         
+        /* Important Links Section */
+        .important-links-section {
+            padding: 60px 5%;
+            background: var(--bg-primary);
+        }
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .link-category {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .link-category h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+        }
+        .link-category a {
+            display: block;
+            padding: 8px 0;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .link-category a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        .link-category i { width: 25px; margin-right: 8px; }
+        
         /* CTA Section */
         .cta-section {
             padding: 60px 5%;
@@ -613,10 +591,7 @@
             gap: 10px;
             transition: all 0.3s;
         }
-        .cta-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
+        .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         
         /* Footer */
         .footer {
@@ -660,12 +635,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-        }
-        .social-links a:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-3px);
         }
         .footer-bottom {
             text-align: center;
@@ -694,11 +663,9 @@
             visibility: hidden;
             transition: all 0.3s;
             z-index: 999;
-            box-shadow: var(--shadow-md);
         }
         .back-to-top.show { opacity: 1; visibility: visible; }
         
-        /* Toast Message */
         .toast-message {
             position: fixed;
             bottom: 30px;
@@ -735,7 +702,7 @@
     </style>
 </head>
 <body>
-    <!-- Premium Loader with Rain Dots Animation -->
+    <!-- Loader -->
     <div class="page-loader" id="pageLoader">
         <div class="loader-container">
             <div class="rain-logo">
@@ -745,30 +712,25 @@
                 <span class="rain-letter" style="--i:4">C</span>
             </div>
             <div class="rain-dots">
-                <div class="rain-dot" style="--d:1"></div>
-                <div class="rain-dot" style="--d:2"></div>
-                <div class="rain-dot" style="--d:3"></div>
-                <div class="rain-dot" style="--d:4"></div>
-                <div class="rain-dot" style="--d:5"></div>
-                <div class="rain-dot" style="--d:6"></div>
-                <div class="rain-dot" style="--d:7"></div>
-                <div class="rain-dot" style="--d:8"></div>
+                <div class="rain-dot" style="--d:1"></div><div class="rain-dot" style="--d:2"></div>
+                <div class="rain-dot" style="--d:3"></div><div class="rain-dot" style="--d:4"></div>
+                <div class="rain-dot" style="--d:5"></div><div class="rain-dot" style="--d:6"></div>
+                <div class="rain-dot" style="--d:7"></div><div class="rain-dot" style="--d:8"></div>
             </div>
-            <div class="loader-text">
-                <span>Loading Excellence...</span>
-            </div>
+            <div class="loader-text">Loading Excellence...</div>
         </div>
     </div>
     
     <div class="particles" id="particles"></div>
     <div class="drawer-overlay" id="drawerOverlay"></div>
     <div class="mobile-nav-drawer" id="mobileDrawer">
-        <div class="mobile-nav-item" data-page="home"><i class="fas fa-home"></i> Home</div>
-        <div class="mobile-nav-item" data-page="features"><i class="fas fa-star"></i> Features</div>
-        <div class="mobile-nav-item" data-page="teacher-reg"><i class="fas fa-chalkboard-user"></i> Teacher Registration</div>
-        <div class="mobile-nav-item" data-page="student-reg"><i class="fas fa-user-graduate"></i> Student Registration</div>
-        <div class="mobile-nav-item" data-page="ats"><i class="fas fa-fingerprint"></i> ATS (Attendance)</div>
-        <div class="mobile-nav-item" data-page="admin-login"><i class="fas fa-user-tie"></i> Admin Login</div>
+        <div class="mobile-nav-item" data-page="home"><i class="fas fa-home"></i> होम</div>
+        <div class="mobile-nav-item" data-page="features"><i class="fas fa-star"></i> विशेषताएँ</div>
+        <div class="mobile-nav-item" data-page="important-links"><i class="fas fa-link"></i> महत्वपूर्ण लिंक्स</div>
+        <div class="mobile-nav-item" data-page="teacher-reg"><i class="fas fa-chalkboard-user"></i> शिक्षक पंजीकरण</div>
+        <div class="mobile-nav-item" data-page="student-reg"><i class="fas fa-user-graduate"></i> छात्र पंजीकरण</div>
+        <div class="mobile-nav-item" data-page="ats"><i class="fas fa-fingerprint"></i> एटीएस (उपस्थिति)</div>
+        <div class="mobile-nav-item" data-page="admin-login"><i class="fas fa-user-tie"></i> एडमिन लॉगिन</div>
     </div>
     
     <header class="premium-header">
@@ -783,12 +745,14 @@
             <div class="desktop-nav">
                 <button class="nav-btn" data-page="home"><i class="fas fa-home"></i> Home</button>
                 <button class="nav-btn" data-page="features"><i class="fas fa-star"></i> Features</button>
-                <button class="nav-btn nav-btn-primary" data-page="teacher-reg"><i class="fas fa-chalkboard-user"></i> Teacher Registration</button>
-                <button class="nav-btn" data-page="student-reg"><i class="fas fa-user-graduate"></i> Student Registration</button>
+                <button class="nav-btn" data-page="important-links"><i class="fas fa-link"></i> Important Links</button>
+                <button class="nav-btn nav-btn-primary" data-page="teacher-reg"><i class="fas fa-chalkboard-user"></i> Teacher Reg</button>
+                <button class="nav-btn" data-page="student-reg"><i class="fas fa-user-graduate"></i> Student Reg</button>
                 <button class="nav-btn" data-page="ats"><i class="fas fa-fingerprint"></i> ATS</button>
                 <button class="nav-btn" data-page="admin-login"><i class="fas fa-user-tie"></i> Admin Login</button>
             </div>
             <div class="header-actions">
+                <button class="voice-btn" id="voiceBtn"><i class="fas fa-microphone-alt"></i></button>
                 <a href="#" class="whatsapp-float" id="whatsappBtn" target="_blank"><i class="fab fa-whatsapp"></i></a>
                 <button class="theme-btn" id="themeToggle"><i class="fas fa-palette"></i></button>
                 <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
@@ -797,10 +761,7 @@
     </header>
     
     <div id="mainContent">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-pulse"></i>
-            <p>Loading...</p>
-        </div>
+        <div class="loading-spinner"><i class="fas fa-spinner fa-pulse"></i><p>Loading...</p></div>
     </div>
     
     <div class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></div>
@@ -809,7 +770,7 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h4>About Us</h4>
-                <p id="footerAboutText">Bal Bharti Coaching Center is dedicated to providing quality education with modern technology integration.</p>
+                <p id="footerAboutText">Bal Bharti Coaching Center is dedicated to providing quality education...</p>
                 <div class="social-links">
                     <a href="#" id="whatsappLink" target="_blank"><i class="fab fa-whatsapp"></i></a>
                     <a href="#" id="instagramLink" target="_blank"><i class="fab fa-instagram"></i></a>
@@ -820,9 +781,9 @@
                 <h4>Quick Links</h4>
                 <a href="#" data-page="home"><i class="fas fa-angle-right"></i> Home</a>
                 <a href="#" data-page="features"><i class="fas fa-angle-right"></i> Features</a>
+                <a href="#" data-page="important-links"><i class="fas fa-angle-right"></i> Important Links</a>
                 <a href="#" data-page="teacher-reg"><i class="fas fa-angle-right"></i> Teacher Registration</a>
                 <a href="#" data-page="student-reg"><i class="fas fa-angle-right"></i> Student Registration</a>
-                <a href="#" data-page="ats"><i class="fas fa-angle-right"></i> ATS</a>
             </div>
             <div class="footer-section">
                 <h4>Contact Info</h4>
@@ -854,9 +815,56 @@
         let testimonialsData = null;
         let allStudents = [];
         let allTeachers = [];
+        let voiceEnabled = true;
         
         // ============================================
-        // FETCH CONFIG FROM DATABASE
+        // HINDI VOICE GUIDE
+        // ============================================
+        function speakHindi(text) {
+            if (!voiceEnabled) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'hi-IN';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function initVoiceGuide() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            if (voiceBtn) {
+                voiceBtn.addEventListener('click', () => {
+                    voiceEnabled = !voiceEnabled;
+                    speakHindi(voiceEnabled ? 'आवाज गाइड सक्रिय है' : 'आवाज गाइड बंद है');
+                });
+            }
+            // Welcome message
+            setTimeout(() => {
+                speakHindi('बाल भारती कोचिंग सेंटर में आपका स्वागत है। उत्कृष्टता की ओर आपकी यात्रा शुरू होती है।');
+            }, 2000);
+        }
+        
+        // ============================================
+        // DEFAULT DATA
+        // ============================================
+        function getDefaultStudentImages() {
+            return [
+                { photo: 'https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100', studentName: { first: 'Priya' } },
+                { photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100', studentName: { first: 'Amit' } },
+                { photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', studentName: { first: 'Rajesh' } },
+                { photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100', studentName: { first: 'Neha' } }
+            ];
+        }
+        
+        function getDefaultTeacherImages() {
+            return [
+                { photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', teacherName: { first: 'Mr. Sharma' } },
+                { photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', teacherName: { first: 'Mr. Verma' } },
+                { photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100', teacherName: { first: 'Ms. Gupta' } },
+                { photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100', teacherName: { first: 'Mr. Singh' } }
+            ];
+        }
+        
+        // ============================================
+        // FETCH CONFIG
         // ============================================
         async function fetchConfig() {
             try {
@@ -866,25 +874,17 @@
                 updateUIWithConfig(data);
                 return data;
             } catch (error) {
-                console.error('Error fetching config:', error);
                 return getDefaultConfig();
             }
         }
         
         function getDefaultConfig() {
             return {
-                logoText: 'BBCC',
                 title: 'Bal Bharti Coaching',
                 subTitle: 'Excellence in Education',
-                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education with modern technology and experienced faculty.',
-                slides: [
-                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200',
-                    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200',
-                    'https://images.unsplash.com/photo-1503676260728-5177806628cb?w=1200'
-                ],
-                whatsapp: '#',
-                insta: '#',
-                fb: '#',
+                aboutText: 'Welcome to Bal Bharti Coaching Center. We provide quality education.',
+                slides: ['https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200'],
+                whatsapp: '#', insta: '#', fb: '#',
                 contactAddress: '123 Education Street, City',
                 contactPhone: '+91 98765 43210',
                 contactEmail: 'info@balbharti.com',
@@ -895,12 +895,13 @@
         }
         
         function updateUIWithConfig(config) {
-            if (config.title) {
-                document.getElementById('siteTitle').textContent = config.title;
-                document.getElementById('pageTitle').textContent = config.title;
-            }
+            if (config.title) document.getElementById('siteTitle').textContent = config.title;
             if (config.subTitle) document.getElementById('siteSubtitle').textContent = config.subTitle;
-            if (config.aboutText) document.getElementById('footerAboutText').textContent = config.aboutText;
+            // Footer about text - sirf 10 words
+            if (config.aboutText) {
+                const words = config.aboutText.split(' ').slice(0, 10).join(' ');
+                document.getElementById('footerAboutText').textContent = words + '...';
+            }
             if (config.contactAddress) document.getElementById('contactAddress').textContent = config.contactAddress;
             if (config.contactPhone) document.getElementById('contactPhone').textContent = config.contactPhone;
             if (config.contactEmail) document.getElementById('contactEmail').textContent = config.contactEmail;
@@ -916,83 +917,69 @@
         }
         
         // ============================================
-        // FETCH STUDENTS FOR PHOTO SLIDESHOW
+        // FETCH STUDENTS & TEACHERS (No Auth Error)
         // ============================================
-        async function fetchStudents() {
+        async function fetchStudentsPublic() {
             try {
                 const token = localStorage.getItem('token');
-                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-                const response = await fetch('/api/students', { headers });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        allStudents = data.data;
+                if (token) {
+                    const response = await fetch('/api/students', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.data && data.data.length > 0) {
+                            allStudents = data.data;
+                            return;
+                        }
                     }
                 }
-            } catch (error) {
-                console.error('Error fetching students:', error);
-            }
-            // Default student images if no data
-            if (allStudents.length === 0) {
-                allStudents = [
-                    { photo: 'https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100', studentName: { first: 'Priya' } },
-                    { photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100', studentName: { first: 'Amit' } },
-                    { photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', studentName: { first: 'Rajesh' } },
-                    { photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100', studentName: { first: 'Neha' } }
-                ];
-            }
+            } catch (e) {}
+            allStudents = getDefaultStudentImages();
+        }
+        
+        async function fetchTeachersPublic() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const response = await fetch('/api/teachers', { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.data && data.data.length > 0) {
+                            allTeachers = data.data.filter(t => t.status === 'approved');
+                            if (allTeachers.length > 0) return;
+                        }
+                    }
+                }
+            } catch (e) {}
+            allTeachers = getDefaultTeacherImages();
         }
         
         // ============================================
-        // FETCH TEACHERS FOR PHOTO SLIDESHOW
+        // CROSSFADE SLIDESHOW (Ek jagah fade in/out)
         // ============================================
-        async function fetchTeachers() {
-            try {
-                const token = localStorage.getItem('token');
-                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-                const response = await fetch('/api/teachers', { headers });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        allTeachers = data.data.filter(t => t.status === 'approved');
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching teachers:', error);
-            }
-            // Default teacher images if no data
-            if (allTeachers.length === 0) {
-                allTeachers = [
-                    { photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100', teacherName: { first: 'Mr. Sharma' } },
-                    { photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', teacherName: { first: 'Mr. Verma' } },
-                    { photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100', teacherName: { first: 'Ms. Gupta' } },
-                    { photo: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100', teacherName: { first: 'Mr. Singh' } }
-                ];
-            }
-        }
-        
-        // ============================================
-        // GENERATE PHOTO SLIDESHOW HTML
-        // ============================================
-        function generatePhotoSlideshow(photos, names, type) {
-            if (!photos.length) return '';
-            
+        function generateCrossfadeSlideshow(photos, type) {
+            if (!photos.length) photos = ['https://via.placeholder.com/80'];
+            const displayPhotos = photos.slice(0, 6);
             let imagesHtml = '';
-            // Take first 8 photos for slideshow
-            const displayPhotos = photos.slice(0, 8);
             displayPhotos.forEach(photo => {
-                imagesHtml += `<img src="${photo}" alt="Student">`;
+                imagesHtml += `<img src="${photo}" alt="${type}">`;
             });
-            
             return `
-                <div class="photo-slideshow">
+                <div class="photo-crossfade">
                     ${imagesHtml}
                 </div>
             `;
         }
         
+        function getStudentPhotos() {
+            return allStudents.map(s => s.photo || 'https://via.placeholder.com/80').filter(p => p);
+        }
+        
+        function getTeacherPhotos() {
+            return allTeachers.map(t => t.photo || 'https://via.placeholder.com/80').filter(p => p);
+        }
+        
         // ============================================
-        // FETCH STATS FROM DATABASE
+        // FETCH STATS & TESTIMONIALS
         // ============================================
         async function fetchStats() {
             try {
@@ -1002,15 +989,10 @@
                     statsData = data.data;
                     return statsData;
                 }
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-            }
+            } catch (e) {}
             return { totalStudents: 542, totalTeachers: 28, totalCourses: 12, successRate: 96 };
         }
         
-        // ============================================
-        // FETCH TESTIMONIALS FROM DATABASE
-        // ============================================
         async function fetchTestimonials() {
             try {
                 const response = await fetch('/api/testimonials');
@@ -1019,62 +1001,44 @@
                     testimonialsData = data.data;
                     return testimonialsData;
                 }
-            } catch (error) {
-                console.error('Error fetching testimonials:', error);
-            }
+            } catch (e) {}
             return [
-                { name: "Priya Sharma", role: "Parent", text: "Bal Bharti Coaching has transformed my child's academic performance.", rating: 5, image: "https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100" },
-                { name: "Rajesh Kumar", role: "Teacher", text: "As a teacher, I love the dashboard. Marking attendance has become so easy.", rating: 5, image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" },
-                { name: "Amit Patel", role: "Student", text: "The attendance system is very efficient. I can check my history anytime.", rating: 5, image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" }
+                { name: "Priya Sharma", role: "Parent", text: "बहुत अच्छी कोचिंग, मेरे बच्चे के मार्क्स में सुधार हुआ है।", rating: 5, image: "https://images.unsplash.com/photo-1494790108777-466d853dd23d?w=100" },
+                { name: "Rajesh Kumar", role: "Teacher", text: "शानदार डैशबोर्ड, अटेंडेंस मार्क करना बहुत आसान हो गया है।", rating: 5, image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" },
+                { name: "Amit Patel", role: "Student", text: "अटेंडेंस सिस्टम बहुत अच्छा है, मैं कभी भी अपना हिस्ट्री देख सकता हूँ।", rating: 5, image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" }
             ];
         }
         
         // ============================================
-        // GENERATE STUDENT PHOTO SLIDESHOW
+        // IMPORTANT LINKS HTML
         // ============================================
-        function getStudentPhotos() {
-            return allStudents.map(s => s.photo || 'https://via.placeholder.com/100').filter(p => p);
-        }
-        
-        function getTeacherPhotos() {
-            return allTeachers.map(t => t.photo || 'https://via.placeholder.com/100').filter(p => p);
-        }
-        
-        function generateStudentSlideshow() {
-            const photos = getStudentPhotos();
-            if (photos.length === 0) {
-                return '<div class="photo-slideshow"><img src="https://via.placeholder.com/70"></div>';
-            }
-            
-            let imagesHtml = '';
-            const displayPhotos = photos.slice(0, 8);
-            displayPhotos.forEach(photo => {
-                imagesHtml += `<img src="${photo}" alt="Student">`;
-            });
-            
+        function getImportantLinksHTML() {
             return `
-                <div class="photo-slideshow" style="animation: slideShow ${Math.max(displayPhotos.length * 1.5, 6)}s infinite;">
-                    ${imagesHtml}
-                </div>
-            `;
-        }
-        
-        function generateTeacherSlideshow() {
-            const photos = getTeacherPhotos();
-            if (photos.length === 0) {
-                return '<div class="photo-slideshow"><img src="https://via.placeholder.com/70"></div>';
-            }
-            
-            let imagesHtml = '';
-            const displayPhotos = photos.slice(0, 8);
-            displayPhotos.forEach(photo => {
-                imagesHtml += `<img src="${photo}" alt="Teacher">`;
-            });
-            
-            return `
-                <div class="photo-slideshow" style="animation: slideShow ${Math.max(displayPhotos.length * 1.5, 6)}s infinite;">
-                    ${imagesHtml}
-                </div>
+                <section class="important-links-section" id="important-links">
+                    <h2 class="section-title"><i class="fas fa-link"></i> महत्वपूर्ण लिंक्स - बोर्ड परिणाम</h2>
+                    <div class="links-grid">
+                        <div class="link-category">
+                            <h3><i class="fas fa-globe"></i> केंद्रीय बोर्ड</h3>
+                            <a href="https://cbse.gov.in" target="_blank"><i class="fas fa-external-link-alt"></i> CBSE - cbse.gov.in</a>
+                            <a href="https://cisce.org" target="_blank"><i class="fas fa-external-link-alt"></i> CISCE (ICSE/ISC) - cisce.org</a>
+                            <a href="https://nios.ac.in" target="_blank"><i class="fas fa-external-link-alt"></i> NIOS (Open Schooling) - nios.ac.in</a>
+                        </div>
+                        <div class="link-category">
+                            <h3><i class="fas fa-map-marker-alt"></i> राज्य बोर्ड</h3>
+                            <a href="https://biharboardonline.bihar.gov.in" target="_blank"><i class="fas fa-external-link-alt"></i> बिहार विद्यालय परीक्षा समिति</a>
+                            <a href="https://upmsp.edu.in" target="_blank"><i class="fas fa-external-link-alt"></i> उत्तर प्रदेश माध्यमिक शिक्षा परिषद</a>
+                            <a href="https://mpbse.nic.in" target="_blank"><i class="fas fa-external-link-alt"></i> मध्य प्रदेश बोर्ड</a>
+                            <a href="https://rajeduboard.rajasthan.gov.in" target="_blank"><i class="fas fa-external-link-alt"></i> राजस्थान बोर्ड</a>
+                            <a href="https://mahahsscboard.in" target="_blank"><i class="fas fa-external-link-alt"></i> महाराष्ट्र बोर्ड</a>
+                            <a href="https://wbbse.wb.gov.in" target="_blank"><i class="fas fa-external-link-alt"></i> पश्चिम बंगाल बोर्ड</a>
+                            <a href="https://edudel.nic.in" target="_blank"><i class="fas fa-external-link-alt"></i> दिल्ली बोर्ड</a>
+                            <a href="https://jac.jharkhand.gov.in" target="_blank"><i class="fas fa-external-link-alt"></i> झारखंड बोर्ड</a>
+                            <a href="https://bseh.org.in" target="_blank"><i class="fas fa-external-link-alt"></i> हरियाणा बोर्ड</a>
+                            <a href="https://pseb.ac.in" target="_blank"><i class="fas fa-external-link-alt"></i> पंजाब बोर्ड</a>
+                            <a href="https://gseb.org" target="_blank"><i class="fas fa-external-link-alt"></i> गुजरात बोर्ड</a>
+                        </div>
+                    </div>
+                </section>
             `;
         }
         
@@ -1086,15 +1050,9 @@
             const stats = statsData || await fetchStats();
             const testimonials = testimonialsData || await fetchTestimonials();
             
-            // Get photos for slideshows
-            const studentPhotos = getStudentPhotos();
-            const teacherPhotos = getTeacherPhotos();
-            
             let slidesHtml = '';
             const slides = config.slides || getDefaultConfig().slides;
-            slides.forEach(slide => {
-                slidesHtml += `<div class="swiper-slide"><img src="${slide}" alt="Slide"></div>`;
-            });
+            slides.forEach(slide => { slidesHtml += `<div class="swiper-slide"><img src="${slide}" alt="Slide"></div>`; });
             
             let testimonialsHtml = '';
             testimonials.forEach(t => {
@@ -1126,27 +1084,23 @@
                 <section class="stats-section">
                     <div class="stats-grid">
                         <div class="stat-card">
-                            ${generateStudentSlideshow()}
-                            <div class="stat-number" id="statStudents">${stats.totalStudents}+</div>
+                            ${generateCrossfadeSlideshow(getStudentPhotos(), 'Student')}
+                            <div class="stat-number">${stats.totalStudents}+</div>
                             <div class="stat-label">Happy Students</div>
                         </div>
                         <div class="stat-card">
-                            ${generateTeacherSlideshow()}
-                            <div class="stat-number" id="statTeachers">${stats.totalTeachers}+</div>
+                            ${generateCrossfadeSlideshow(getTeacherPhotos(), 'Teacher')}
+                            <div class="stat-number">${stats.totalTeachers}+</div>
                             <div class="stat-label">Expert Teachers</div>
                         </div>
                         <div class="stat-card">
-                            <div class="photo-slideshow" style="animation: none; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-book-open fa-2x"></i>
-                            </div>
-                            <div class="stat-number" id="statCourses">${stats.totalCourses}+</div>
+                            <div class="photo-crossfade" style="background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; border: none;"><i class="fas fa-book-open fa-2x"></i></div>
+                            <div class="stat-number">${stats.totalCourses}+</div>
                             <div class="stat-label">Courses Offered</div>
                         </div>
                         <div class="stat-card">
-                            <div class="photo-slideshow" style="animation: none; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-chart-line fa-2x"></i>
-                            </div>
-                            <div class="stat-number" id="statSuccess">${stats.successRate}%</div>
+                            <div class="photo-crossfade" style="background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; border: none;"><i class="fas fa-chart-line fa-2x"></i></div>
+                            <div class="stat-number">${stats.successRate}%</div>
                             <div class="stat-label">Success Rate</div>
                         </div>
                     </div>
@@ -1193,14 +1147,14 @@
             const pageMapping = {
                 'home': 'home',
                 'features': 'features',
+                'important-links': 'important-links',
                 'teacher-reg': 'teacher-reg.html',
                 'student-reg': 'register.html',
                 'ats': 'studentats.html',
                 'admin-login': 'login.html'
             };
-            
             const target = pageMapping[page];
-            if (target === 'home' || target === 'features') {
+            if (target === 'home' || target === 'features' || target === 'important-links') {
                 loadPage(target);
             } else if (target) {
                 window.location.href = target;
@@ -1209,16 +1163,19 @@
         
         async function loadPage(page) {
             const content = document.getElementById('mainContent');
-            
             if (page === 'home') {
                 content.innerHTML = await renderHome();
                 initSwiper();
+                speakHindi('होम पेज लोड हुआ।');
             } else if (page === 'features') {
                 content.innerHTML = await renderHome();
                 initSwiper();
                 setTimeout(() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }), 200);
+                speakHindi('विशेषताएँ पेज');
+            } else if (page === 'important-links') {
+                content.innerHTML = getImportantLinksHTML();
+                speakHindi('महत्वपूर्ण लिंक्स - बोर्ड परिणाम');
             }
-            
             attachEventListeners();
         }
         
@@ -1237,22 +1194,17 @@
             document.getElementById('drawerOverlay')?.classList.remove('show');
         }
         
-        // ============================================
-        // SWIPER INITIALIZATION
-        // ============================================
         function initSwiper() {
             if (swiper) swiper.destroy();
             swiper = new Swiper(".mySwiper", {
-                effect: "slide",
-                grabCursor: true,
+                effect: "slide", grabCursor: true,
                 pagination: { el: ".swiper-pagination", clickable: true },
-                autoplay: { delay: 4000, disableOnInteraction: false },
-                loop: true
+                autoplay: { delay: 4000, disableOnInteraction: false }, loop: true
             });
         }
         
         // ============================================
-        // THEME MANAGEMENT
+        // THEME & INIT
         // ============================================
         let currentTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', currentTheme);
@@ -1272,11 +1224,9 @@
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('theme', currentTheme);
             showToast(`${currentTheme.toUpperCase()} theme activated!`);
+            speakHindi(`${currentTheme} थीम एक्टिवेटेड`);
         });
         
-        // ============================================
-        // PARTICLES
-        // ============================================
         function createParticles() {
             const container = document.getElementById('particles');
             for (let i = 0; i < 30; i++) {
@@ -1292,86 +1242,31 @@
             }
         }
         
-        // ============================================
-        // CONTINUOUS LOGO ANIMATION UPDATE
-        // ============================================
-        function startLogoAnimation() {
-            const logoIcon = document.querySelector('.logo-icon');
-            const logoText = document.querySelector('.logo-text h1');
-            
-            if (logoIcon) {
-                logoIcon.style.animation = 'logoGlow 2s infinite, logoRotate 4s ease-in-out infinite';
-            }
-            if (logoText) {
-                logoText.style.animation = 'textShine 3s infinite';
-            }
-        }
-        
-        // ============================================
-        // INITIALIZE
-        // ============================================
         async function initialize() {
             createParticles();
-            
-            // Show loader with rain animation
             const loader = document.getElementById('pageLoader');
-            
-            // Fetch all data
             await fetchConfig();
             await fetchStats();
-            await fetchStudents();
-            await fetchTeachers();
+            await fetchStudentsPublic();
+            await fetchTeachersPublic();
             await fetchTestimonials();
-            
-            // Load home page
             await loadPage('home');
+            initVoiceGuide();
+            setTimeout(() => { if (loader) loader.classList.add('fade-out'); }, 1500);
             
-            // Start continuous logo animation
-            startLogoAnimation();
-            
-            // Hide loader with fade out
-            setTimeout(() => {
-                if (loader) loader.classList.add('fade-out');
-            }, 1500);
-            
-            // Mobile Menu
             const menuToggle = document.getElementById('menuToggle');
             const drawer = document.getElementById('mobileDrawer');
             const overlay = document.getElementById('drawerOverlay');
-            
-            menuToggle?.addEventListener('click', () => {
-                drawer.classList.add('open');
-                overlay.classList.add('show');
-            });
-            
-            const closeDrawer = () => {
-                drawer.classList.remove('open');
-                overlay.classList.remove('show');
-            };
+            menuToggle?.addEventListener('click', () => { drawer.classList.add('open'); overlay.classList.add('show'); });
+            const closeDrawer = () => { drawer.classList.remove('open'); overlay.classList.remove('show'); };
             overlay?.addEventListener('click', closeDrawer);
             
-            // Back to Top
             window.addEventListener('scroll', () => {
                 const btn = document.getElementById('backToTop');
                 if (window.scrollY > 300) btn.classList.add('show');
                 else btn.classList.remove('show');
             });
-            document.getElementById('backToTop')?.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-            
-            // Refresh slideshow animations periodically
-            setInterval(() => {
-                const statCards = document.querySelectorAll('.stat-card .photo-slideshow');
-                statCards.forEach(card => {
-                    if (card && card.style.animation) {
-                        // Refresh animation
-                        const anim = card.style.animation;
-                        card.style.animation = 'none';
-                        setTimeout(() => { card.style.animation = anim; }, 10);
-                    }
-                });
-            }, 30000);
+            document.getElementById('backToTop')?.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
         }
         
         initialize();
