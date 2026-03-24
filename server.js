@@ -338,65 +338,7 @@ const TeacherSchema = new mongoose.Schema({
 const Teacher = mongoose.model('Teacher', TeacherSchema);
 
 console.log("✅ All Schemas loaded successfully");
-//////////////////////////////////////////////////////twillo/////////////////////
-// ============================================
-// TWILIO SETUP FOR CALL REMINDER
-// ============================================
 
-const twilio = require('twilio');
-
-// Twilio Client Setup
-const twilioClient = new twilio(
-    process.env.TWILIO_ACCOUNT_SID || 'aassss',
-    process.env.TWILIO_AUTH_TOKEN || 'your_auth_token_here'
-);
-
-const TWILIO_PHONE = process.env.TWILIO_PHONE_NUMBER || '+13613211017';
-
-// Call Reminder API Endpoint
-app.post('/api/twilio-call', verifyToken, async (req, res) => {
-    try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Admin access required' });
-        }
-        
-        const { to, message, studentId, studentName, dueAmount, type } = req.body;
-        
-        if (!to || !message) {
-            return res.status(400).json({ success: false, message: 'Phone number and message required' });
-        }
-        
-        console.log(`📞 Making call to: ${to} for student: ${studentName}`);
-        
-        const call = await twilioClient.calls.create({
-            url: `http://twimlets.com/message?Message=${encodeURIComponent(message)}`,
-            to: to,
-            from: TWILIO_PHONE
-        });
-        
-        console.log(`✅ Call initiated: ${call.sid}`);
-        
-        res.json({ 
-            success: true, 
-            message: 'Call initiated', 
-            callSid: call.sid 
-        });
-        
-    } catch (error) {
-        console.error('Call error:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.message 
-        });
-    }
-});
-
-// Call status callback (optional)
-app.post('/api/call-status', async (req, res) => {
-    console.log('Call status:', req.body);
-    res.send('<Response></Response>');
-});
-/////////////////////////////////////////////////////////////////////////////////////////////
 // ============================================
 // INITIALIZATION FUNCTIONS
 // ============================================
@@ -495,6 +437,67 @@ const verifyToken = (req, res, next) => {
 };
 
 // ============================================
+// TWILIO SETUP FOR CALL REMINDER (AFTER verifyToken)
+// ============================================
+
+const twilio = require('twilio');
+
+// Twilio Client Setup - uses environment variables
+const twilioClient = new twilio(
+    process.env.TWILIO_ACCOUNT_SID || 'your_account_sid_here',
+    process.env.TWILIO_AUTH_TOKEN || 'your_auth_token_here'
+);
+
+const TWILIO_PHONE = process.env.TWILIO_PHONE_NUMBER || '+13613211017';
+
+// API Endpoint: Make a call reminder (Admin only)
+app.post('/api/twilio-call', verifyToken, async (req, res) => {
+    try {
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Admin access required' });
+        }
+        
+        const { to, message, studentId, studentName, dueAmount, type } = req.body;
+        
+        // Validate required fields
+        if (!to || !message) {
+            return res.status(400).json({ success: false, message: 'Phone number and message required' });
+        }
+        
+        console.log(`📞 Making call to: ${to} for student: ${studentName}`);
+        
+        // Make the call using Twilio
+        const call = await twilioClient.calls.create({
+            url: `http://twimlets.com/message?Message=${encodeURIComponent(message)}`,
+            to: to,
+            from: TWILIO_PHONE
+        });
+        
+        console.log(`✅ Call initiated: ${call.sid}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Call initiated', 
+            callSid: call.sid 
+        });
+        
+    } catch (error) {
+        console.error('Call error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// Call status callback endpoint (optional - for tracking call status)
+app.post('/api/call-status', async (req, res) => {
+    console.log('Call status update:', req.body);
+    res.send('<Response></Response>');
+});
+
+// ============================================
 // PUBLIC APIs (No token needed)
 // ============================================
 
@@ -542,6 +545,7 @@ app.get('/api/testimonials', async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
 // ============================================
 // PUBLIC APIs - NO TOKEN NEEDED (Website Visitors)
 // ============================================
@@ -1738,6 +1742,11 @@ app.get('/studentats.html', (req, res) => { res.sendFile(path.join(__dirname, 'p
 app.get('/login.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.html')); });
 app.get('/admin-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html')); });
 
+// Call Reminder Page - New route
+app.get('/reminder.html', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'public', 'reminder.html')); 
+});
+
 // ============================================
 // ERROR HANDLERS
 // ============================================
@@ -1779,5 +1788,6 @@ app.listen(PORT, () => {
     console.log(`   POST /api/testimonials/bulk - Bulk Update Testimonials`);
     console.log(`   POST /api/change-admin-id  - Change Admin ID`);
     console.log(`   GET  /api/admin/teachers-with-due - Teachers with Due Salary`);
+    console.log(`   POST /api/twilio-call      - Make reminder call (Admin only)`);
     console.log(`\n📝 Default Admin: admin / admin123`);
 });
