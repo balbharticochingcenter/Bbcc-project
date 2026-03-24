@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Call Reminder System - Bal Bharti Coaching</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234361ee'/%3E%3Cstop offset='100%25' stop-color='%237209b7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grad)' rx='20'/%3E%3Ctext x='50' y='68' font-size='28' text-anchor='middle' fill='white' font-weight='bold'%3E📞%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%234361ee' rx='36'/%3E%3Ctext x='90' y='120' font-size='80' text-anchor='middle' fill='white' font-weight='bold'%3E📞%3C/text%3E%3C/svg%3E">
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
@@ -143,6 +147,18 @@
             cursor: pointer;
         }
         
+        .btn-forgot {
+            background: #64748b;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
         .log-container {
             background: #1e293b;
             border-radius: 15px;
@@ -196,6 +212,24 @@
             padding: 15px;
             margin-bottom: 15px;
         }
+        
+        .reminder-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -215,11 +249,16 @@
         
         <div class="row">
             <div class="col-md-6 mx-auto">
-                <input type="text" id="adminId" class="form-control mb-3" placeholder="Admin ID" value="admin">
-                <input type="password" id="adminPassword" class="form-control mb-3" placeholder="Password" value="admin123">
-                <button class="btn btn-primary w-100" onclick="adminLogin()">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
+                <form id="loginForm">
+                    <input type="text" id="adminId" class="form-control mb-3" placeholder="Admin ID" value="admin">
+                    <input type="password" id="adminPassword" class="form-control mb-3" placeholder="Password" value="admin123">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <button type="button" id="forgotPasswordBtn" class="btn-forgot">
+                        <i class="fas fa-key"></i> Forgot Password? Contact Super Admin
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -250,16 +289,16 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3><i class="fas fa-users"></i> Students with Due Fees</h3>
                 <div>
-                    <button class="btn-refresh" onclick="loadDueStudents()">
+                    <button class="btn-refresh" id="refreshBtn">
                         <i class="fas fa-sync-alt"></i> Refresh List
                     </button>
-                    <button class="btn-logout" onclick="logout()">
+                    <button class="btn-logout" id="logoutBtn">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </button>
                 </div>
             </div>
             
-            <button class="btn-call-all" onclick="callAllDue()">
+            <button class="btn-call-all" id="callAllBtn">
                 <i class="fas fa-phone-volume"></i> Call All Due Students
             </button>
             
@@ -317,6 +356,7 @@
 <script>
 // ============================================
 // CALL REMINDER SYSTEM - Independent Page
+// Fixed CSP issues - No inline event handlers
 // ============================================
 
 let adminToken = null;
@@ -324,17 +364,69 @@ let dueStudents = [];
 let callLog = [];
 let callHistory = [];
 
+// DOM Elements
+let loginForm, forgotPasswordBtn, refreshBtn, logoutBtn, callAllBtn;
+let adminIdInput, adminPasswordInput;
+let loginSection, mainContent;
+let totalStudentsSpan, dueCountSpan, callCountSpan;
+let dueStudentsListDiv, callLogDiv;
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Get DOM elements
+    loginForm = document.getElementById('loginForm');
+    forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+    refreshBtn = document.getElementById('refreshBtn');
+    logoutBtn = document.getElementById('logoutBtn');
+    callAllBtn = document.getElementById('callAllBtn');
+    adminIdInput = document.getElementById('adminId');
+    adminPasswordInput = document.getElementById('adminPassword');
+    loginSection = document.getElementById('loginSection');
+    mainContent = document.getElementById('mainContent');
+    totalStudentsSpan = document.getElementById('totalStudents');
+    dueCountSpan = document.getElementById('dueCount');
+    callCountSpan = document.getElementById('callCount');
+    dueStudentsListDiv = document.getElementById('dueStudentsList');
+    callLogDiv = document.getElementById('callLog');
+    
+    // Add event listeners
+    if (loginForm) loginForm.addEventListener('submit', adminLogin);
+    if (forgotPasswordBtn) forgotPasswordBtn.addEventListener('click', showForgotPasswordReminder);
+    if (refreshBtn) refreshBtn.addEventListener('click', loadDueStudents);
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    if (callAllBtn) callAllBtn.addEventListener('click', callAllDue);
+    
+    // Check saved session
+    checkSavedSession();
+});
+
+// Show Forgot Password Reminder
+function showForgotPasswordReminder() {
+    showReminderPopup(
+        '🔑 Forgot Password?\n\nContact Super Admin:\n📧 admin@balbharti.com\n📞 +91 98765 43210\n\nOr visit the center for password reset.'
+    );
+}
+
+// Show popup message
+function showReminderPopup(message) {
+    const popup = document.createElement('div');
+    popup.className = 'reminder-popup';
+    popup.innerHTML = message.replace(/\n/g, '<br>');
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), 5000);
+}
+
 // Admin Login
-async function adminLogin() {
-    const adminId = document.getElementById('adminId').value;
-    const password = document.getElementById('adminPassword').value;
+async function adminLogin(event) {
+    event.preventDefault();
+    
+    const adminId = adminIdInput.value;
+    const password = adminPasswordInput.value;
     
     if (!adminId || !password) {
-        alert('Please enter Admin ID and Password');
+        showReminderPopup('❌ Please enter Admin ID and Password');
         return;
     }
-    
-    showLoginStatus('Verifying...');
     
     try {
         const response = await fetch('/api/admin-login', {
@@ -350,8 +442,8 @@ async function adminLogin() {
             localStorage.setItem('reminder_token', adminToken);
             localStorage.setItem('reminder_admin', adminId);
             
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
+            loginSection.style.display = 'none';
+            mainContent.style.display = 'block';
             
             addToLog('✅ Login successful! Welcome to Call Reminder System', 'success');
             
@@ -360,12 +452,12 @@ async function adminLogin() {
             loadCallHistory();
             
         } else {
-            alert('Login failed: ' + (data.message || 'Invalid credentials'));
+            showReminderPopup('❌ Login failed: ' + (data.message || 'Invalid credentials'));
             addToLog('❌ Login failed: ' + (data.message || 'Invalid credentials'), 'error');
         }
         
     } catch (error) {
-        alert('Network error: ' + error.message);
+        showReminderPopup('❌ Network error: ' + error.message);
         addToLog('❌ Network error: ' + error.message, 'error');
     }
 }
@@ -376,20 +468,21 @@ function logout() {
     localStorage.removeItem('reminder_token');
     localStorage.removeItem('reminder_admin');
     
-    document.getElementById('loginSection').style.display = 'block';
-    document.getElementById('mainContent').style.display = 'none';
+    loginSection.style.display = 'block';
+    mainContent.style.display = 'none';
     
     addToLog('🔐 Logged out successfully', 'info');
+    showReminderPopup('🔐 Logged out successfully');
 }
 
 // Load Due Students
 async function loadDueStudents() {
     if (!adminToken) {
-        alert('Please login first');
+        showReminderPopup('Please login first');
         return;
     }
     
-    document.getElementById('dueStudentsList').innerHTML = `
+    dueStudentsListDiv.innerHTML = `
         <div class="text-center p-5">
             <div class="loading"></div>
             <p class="mt-3">Loading students...</p>
@@ -397,7 +490,6 @@ async function loadDueStudents() {
     `;
     
     try {
-        // Get all students
         const response = await fetch('/api/students', {
             headers: { 'Authorization': `Bearer ${adminToken}` }
         });
@@ -408,7 +500,7 @@ async function loadDueStudents() {
         }
         
         const students = data.data;
-        document.getElementById('totalStudents').innerText = students.length;
+        totalStudentsSpan.innerText = students.length;
         
         // Calculate due students
         const currentDate = new Date();
@@ -421,7 +513,6 @@ async function loadDueStudents() {
             let isDue = true;
             let dueAmount = student.classMonthlyFees || 2000;
             
-            // Check fees history
             if (student.feesHistory && student.feesHistory.length > 0) {
                 const currentMonthFee = student.feesHistory.find(f => 
                     f.month === `${currentMonth} ${currentYear}`
@@ -446,13 +537,13 @@ async function loadDueStudents() {
             }
         }
         
-        document.getElementById('dueCount').innerText = dueStudents.length;
+        dueCountSpan.innerText = dueStudents.length;
         displayDueStudents();
         
         addToLog(`📊 Found ${dueStudents.length} students with due fees`, 'info');
         
     } catch (error) {
-        document.getElementById('dueStudentsList').innerHTML = `
+        dueStudentsListDiv.innerHTML = `
             <div class="alert alert-danger">Error: ${error.message}</div>
         `;
         addToLog(`❌ Error loading students: ${error.message}`, 'error');
@@ -462,7 +553,7 @@ async function loadDueStudents() {
 // Display Due Students
 function displayDueStudents() {
     if (dueStudents.length === 0) {
-        document.getElementById('dueStudentsList').innerHTML = `
+        dueStudentsListDiv.innerHTML = `
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i> No students with due fees! All fees are up to date.
             </div>
@@ -482,11 +573,11 @@ function displayDueStudents() {
                     <small class="text-muted"><i class="fas fa-calendar"></i> ${student.month}</small>
                 </div>
                 <div class="call-buttons">
-                    <button class="btn-call-student" onclick="makeCall('${student.id}', '${student.name}', '${student.mobile}', ${student.dueAmount}, 'student')">
+                    <button class="btn-call-student" data-student-id="${student.id}" data-student-name="${student.name}" data-phone="${student.mobile}" data-amount="${student.dueAmount}" data-type="student">
                         <i class="fas fa-phone"></i> Call Student
                     </button>
                     ${student.fatherMobile ? `
-                    <button class="btn-call-parent" onclick="makeCall('${student.id}', '${student.name}', '${student.fatherMobile}', ${student.dueAmount}, 'parent')">
+                    <button class="btn-call-parent" data-student-id="${student.id}" data-student-name="${student.name}" data-phone="${student.fatherMobile}" data-amount="${student.dueAmount}" data-type="parent">
                         <i class="fas fa-user-friends"></i> Call Parent
                     </button>
                     ` : ''}
@@ -495,13 +586,26 @@ function displayDueStudents() {
         `;
     });
     
-    document.getElementById('dueStudentsList').innerHTML = html;
+    dueStudentsListDiv.innerHTML = html;
+    
+    // Add event listeners to dynamically created buttons
+    document.querySelectorAll('.btn-call-student, .btn-call-parent').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const studentId = btn.dataset.studentId;
+            const studentName = btn.dataset.studentName;
+            const phone = btn.dataset.phone;
+            const amount = parseInt(btn.dataset.amount);
+            const type = btn.dataset.type;
+            makeCall(studentId, studentName, phone, amount, type);
+        });
+    });
 }
 
 // Make Call
 async function makeCall(studentId, studentName, phoneNumber, dueAmount, type) {
     if (!phoneNumber || phoneNumber === '') {
         addToLog(`❌ ${studentName}: No phone number available`, 'error');
+        showReminderPopup(`❌ ${studentName}: No phone number available`);
         return;
     }
     
@@ -556,15 +660,18 @@ async function makeCall(studentId, studentName, phoneNumber, dueAmount, type) {
         
         if (data.success) {
             addToLog(`✅ Call initiated to ${studentName} (${formattedNumber}) - Call ID: ${data.callSid}`, 'success');
+            showReminderPopup(`✅ Call initiated to ${studentName}`);
             saveCallRecord(studentId, studentName, formattedNumber, dueAmount, type, 'success');
             updateCallCount();
         } else {
             addToLog(`❌ Call failed for ${studentName}: ${data.message}`, 'error');
+            showReminderPopup(`❌ Call failed for ${studentName}: ${data.message}`);
             saveCallRecord(studentId, studentName, formattedNumber, dueAmount, type, 'failed');
         }
         
     } catch (error) {
         addToLog(`❌ Error calling ${studentName}: ${error.message}`, 'error');
+        showReminderPopup(`❌ Error calling ${studentName}: ${error.message}`);
         saveCallRecord(studentId, studentName, formattedNumber, dueAmount, type, 'error');
     }
 }
@@ -572,7 +679,7 @@ async function makeCall(studentId, studentName, phoneNumber, dueAmount, type) {
 // Call All Due Students
 function callAllDue() {
     if (dueStudents.length === 0) {
-        alert('No due students to call');
+        showReminderPopup('No due students to call');
         return;
     }
     
@@ -584,6 +691,7 @@ function callAllDue() {
         function callNext() {
             if (index >= dueStudents.length) {
                 addToLog(`✅ Bulk calls completed! Called ${dueStudents.length} students.`, 'success');
+                showReminderPopup(`✅ Bulk calls completed! Called ${dueStudents.length} students.`);
                 return;
             }
             
@@ -593,7 +701,6 @@ function callAllDue() {
             makeCall(student.id, student.name, student.mobile, student.dueAmount, 'student');
             
             index++;
-            // Wait 3 seconds between calls
             setTimeout(callNext, 3000);
         }
         
@@ -640,12 +747,11 @@ function loadCallHistory() {
 function updateCallCount() {
     const today = new Date().toDateString();
     const todayCalls = callHistory.filter(c => new Date(c.timestamp).toDateString() === today);
-    document.getElementById('callCount').innerText = todayCalls.length;
+    callCountSpan.innerText = todayCalls.length;
 }
 
 // Add to log
 function addToLog(message, type) {
-    const logContainer = document.getElementById('callLog');
     const timestamp = new Date().toLocaleTimeString();
     const colorClass = type === 'success' ? 'log-success' : type === 'error' ? 'log-error' : 'log-info';
     
@@ -653,11 +759,11 @@ function addToLog(message, type) {
     logEntry.className = `log-entry ${colorClass}`;
     logEntry.innerHTML = `<span class="text-muted">[${timestamp}]</span> ${message}`;
     
-    logContainer.insertBefore(logEntry, logContainer.firstChild);
+    callLogDiv.insertBefore(logEntry, callLogDiv.firstChild);
     
     // Keep only last 100 logs
-    while (logContainer.children.length > 100) {
-        logContainer.removeChild(logContainer.lastChild);
+    while (callLogDiv.children.length > 100) {
+        callLogDiv.removeChild(callLogDiv.lastChild);
     }
 }
 
@@ -666,18 +772,13 @@ function checkSavedSession() {
     const savedToken = localStorage.getItem('reminder_token');
     if (savedToken) {
         adminToken = savedToken;
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
+        loginSection.style.display = 'none';
+        mainContent.style.display = 'block';
         loadDueStudents();
         loadCallHistory();
         addToLog('✅ Session restored', 'success');
     }
 }
-
-// Auto load on page load
-document.addEventListener('DOMContentLoaded', () => {
-    checkSavedSession();
-});
 </script>
 
 </body>
