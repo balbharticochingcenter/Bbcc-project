@@ -497,6 +497,20 @@ app.post('/api/call-status', async (req, res) => {
     res.send('<Response></Response>');
 });
 
+// Twilio Voice Webhook Endpoint
+app.post('/api/twilio-voice', (req, res) => {
+    const VoiceResponse = require('twilio').twiml.VoiceResponse;
+    const response = new VoiceResponse();
+    
+    // Get message from request body or use default
+    const message = req.body.message || 'नमस्ते, यह बाल भारती कोचिंग सेंटर से बात हो रही है। कृपया अपनी फीस जमा कर दें। धन्यवाद।';
+    
+    response.say({ voice: 'alice', language: 'hi-IN' }, message);
+    
+    res.set('Content-Type', 'text/xml');
+    res.send(response.toString());
+});
+
 // ============================================
 // PUBLIC APIs (No token needed)
 // ============================================
