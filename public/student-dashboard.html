@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Call Reminder System - Bal Bharti Coaching</title>
+    <title>Call & SMS Reminder System - Bal Bharti Coaching</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234361ee'/%3E%3Cstop offset='100%25' stop-color='%237209b7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grad)' rx='20'/%3E%3Ctext x='50' y='68' font-size='28' text-anchor='middle' fill='white' font-weight='bold'%3E📞%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%234361ee' rx='36'/%3E%3Ctext x='90' y='120' font-size='80' text-anchor='middle' fill='white' font-weight='bold'%3E📞%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234361ee'/%3E%3Cstop offset='100%25' stop-color='%237209b7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23grad)' rx='20'/%3E%3Ctext x='50' y='68' font-size='28' text-anchor='middle' fill='white' font-weight='bold'%3E📱%3C/text%3E%3C/svg%3E">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -29,7 +28,7 @@
         }
         
         .reminder-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -44,11 +43,6 @@
             font-size: 2.5rem;
             font-weight: bold;
             margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
         }
         
         .login-card, .main-card {
@@ -69,6 +63,8 @@
             align-items: center;
             transition: all 0.3s;
             border-left: 4px solid #f59e0b;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .due-student-card:hover {
@@ -78,86 +74,107 @@
         
         .student-info h4 {
             margin: 0 0 5px 0;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
         }
         
         .student-info p {
             margin: 0;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #666;
         }
         
-        .call-buttons {
+        .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
-        .btn-call-student {
-            background: linear-gradient(135deg, #00b09b, #96c93d);
+        .btn-call-student, .btn-call-parent, .btn-sms-student, .btn-sms-parent {
             border: none;
-            padding: 8px 20px;
-            border-radius: 25px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-call-parent {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
-            border: none;
-            padding: 8px 20px;
-            border-radius: 25px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-call-all {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            padding: 12px 30px;
-            border-radius: 30px;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-        
-        .btn-refresh {
-            background: #3b82f6;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        
-        .btn-logout {
-            background: #ef4444;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-        }
-        
-        .btn-forgot {
-            background: #64748b;
-            border: none;
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
             color: white;
-            font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
-            width: 100%;
+            font-size: 12px;
+            transition: all 0.2s;
         }
+        
+        .btn-call-student { background: linear-gradient(135deg, #00b09b, #96c93d); }
+        .btn-call-parent { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .btn-sms-student { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+        .btn-sms-parent { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        
+        .btn-call-all, .btn-sms-all {
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            border: none;
+        }
+        
+        .btn-call-all { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .btn-sms-all { background: linear-gradient(135deg, #3b82f6, #1e3a8a); margin-left: 10px; }
+        
+        .template-selector {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .template-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .template-badge.normal { background: #22c55e; color: white; }
+        .template-badge.force { background: #f97316; color: white; }
+        .template-badge.emergency { background: #ef4444; color: white; }
+        .template-badge:hover { transform: scale(1.05); opacity: 0.9; }
+        
+        .template-preview {
+            background: #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 12px;
+            margin-top: 10px;
+            color: #1e293b;
+        }
+        
+        .custom-message-area {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .custom-message-area textarea {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .btn-refresh, .btn-logout {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .btn-refresh { background: #3b82f6; }
+        .btn-logout { background: #ef4444; }
         
         .log-container {
             background: #1e293b;
@@ -170,14 +187,11 @@
             font-size: 12px;
         }
         
-        .log-entry {
-            padding: 5px 0;
-            border-bottom: 1px solid #334155;
-        }
-        
+        .log-entry { padding: 5px 0; border-bottom: 1px solid #334155; }
         .log-success { color: #10b981; }
         .log-error { color: #ef4444; }
         .log-info { color: #3b82f6; }
+        .log-sms { color: #f59e0b; }
         
         .stats-box {
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -188,30 +202,9 @@
             margin-bottom: 20px;
         }
         
-        .stats-number {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .alert-custom {
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
+        .stats-number { font-size: 2rem; font-weight: bold; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         .reminder-popup {
             position: fixed;
@@ -225,10 +218,11 @@
             z-index: 1000;
             animation: slideIn 0.3s ease;
         }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        @media (max-width: 768px) {
+            .due-student-card { flex-direction: column; align-items: flex-start; }
+            .action-buttons { margin-top: 10px; }
         }
     </style>
 </head>
@@ -236,118 +230,105 @@
 
 <div class="reminder-container">
     
-    <!-- Header -->
     <div class="header">
-        <h1><i class="fas fa-phone-alt"></i> Call Reminder System</h1>
-        <p>Automated fee reminder calls for due students</p>
+        <h1><i class="fas fa-phone-alt"></i> <i class="fas fa-envelope"></i> Call & SMS Reminder System</h1>
+        <p>Automated fee reminder calls & SMS for due students</p>
     </div>
     
-    <!-- Login Section (Hidden after login) -->
+    <!-- Login Section -->
     <div id="loginSection" class="login-card">
         <h3><i class="fas fa-lock"></i> Admin Login Required</h3>
-        <p>Please login with admin credentials to access call reminder system</p>
-        
         <div class="row">
             <div class="col-md-6 mx-auto">
                 <form id="loginForm">
                     <input type="text" id="adminId" class="form-control mb-3" placeholder="Admin ID" value="admin">
                     <input type="password" id="adminPassword" class="form-control mb-3" placeholder="Password" value="admin123">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                    <button type="button" id="forgotPasswordBtn" class="btn-forgot">
-                        <i class="fas fa-key"></i> Forgot Password? Contact Super Admin
-                    </button>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <button type="button" id="forgotPasswordBtn" class="btn btn-secondary w-100 mt-2" style="background:#64748b;">Forgot Password?</button>
                 </form>
             </div>
         </div>
     </div>
     
-    <!-- Main Content (Hidden until login) -->
+    <!-- Main Content -->
     <div id="mainContent" style="display: none;">
         
-        <!-- Stats Card -->
-        <div class="stats-box" id="statsBox">
+        <!-- Stats -->
+        <div class="stats-box">
             <div class="row">
-                <div class="col-md-4">
-                    <div class="stats-number" id="totalStudents">0</div>
-                    <div>Total Students</div>
+                <div class="col-md-3"><div class="stats-number" id="totalStudents">0</div><div>Total Students</div></div>
+                <div class="col-md-3"><div class="stats-number" id="dueCount">0</div><div>Due Students</div></div>
+                <div class="col-md-3"><div class="stats-number" id="callCount">0</div><div>Calls Today</div></div>
+                <div class="col-md-3"><div class="stats-number" id="smsCount">0</div><div>SMS Today</div></div>
+            </div>
+        </div>
+        
+        <!-- Template Selector -->
+        <div class="main-card">
+            <h3><i class="fas fa-comment-dots"></i> SMS Template Selector</h3>
+            <div class="template-selector">
+                <div>
+                    <strong>Student Templates:</strong>
+                    <span class="template-badge normal" data-type="student" data-template="normal">📘 Normal</span>
+                    <span class="template-badge force" data-type="student" data-template="force">⚠️ Force</span>
+                    <span class="template-badge emergency" data-type="student" data-template="emergency">🚨 Emergency</span>
                 </div>
-                <div class="col-md-4">
-                    <div class="stats-number" id="dueCount">0</div>
-                    <div>Due Students</div>
+                <div class="mt-2">
+                    <strong>Parent Templates:</strong>
+                    <span class="template-badge normal" data-type="parent" data-template="normal">📘 Normal</span>
+                    <span class="template-badge force" data-type="parent" data-template="force">⚠️ Force</span>
+                    <span class="template-badge emergency" data-type="parent" data-template="emergency">🚨 Emergency</span>
                 </div>
-                <div class="col-md-4">
-                    <div class="stats-number" id="callCount">0</div>
-                    <div>Calls Today</div>
+                <div id="templatePreview" class="template-preview">
+                    <i class="fas fa-eye"></i> Select a template to preview...
+                </div>
+                <div class="custom-message-area" id="customMessageArea">
+                    <label><i class="fas fa-edit"></i> Custom Message:</label>
+                    <textarea id="customMessage" rows="3" placeholder="Type your custom message here... Use {name}, {amount}, {month} as variables"></textarea>
+                    <button class="btn btn-sm btn-primary mt-2" id="useCustomBtn">Use Custom Message</button>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-secondary" id="showCustomBtn"><i class="fas fa-pen"></i> Write Custom Message</button>
                 </div>
             </div>
         </div>
         
         <!-- Action Buttons -->
         <div class="main-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <h3><i class="fas fa-users"></i> Students with Due Fees</h3>
                 <div>
-                    <button class="btn-refresh" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i> Refresh List
-                    </button>
-                    <button class="btn-logout" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+                    <button class="btn-refresh" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
-            
-            <button class="btn-call-all" id="callAllBtn">
-                <i class="fas fa-phone-volume"></i> Call All Due Students
-            </button>
-            
-            <div id="dueStudentsList">
-                <div class="text-center p-5">
-                    <div class="loading"></div>
-                    <p class="mt-3">Loading students...</p>
-                </div>
+            <div class="d-flex gap-2 mb-3">
+                <button class="btn-call-all" id="callAllBtn"><i class="fas fa-phone-volume"></i> Call All Due</button>
+                <button class="btn-sms-all" id="smsAllBtn"><i class="fas fa-envelope"></i> SMS All Due</button>
             </div>
+            <div id="dueStudentsList"><div class="text-center p-5"><div class="loading"></div><p>Loading students...</p></div></div>
         </div>
         
-        <!-- Call Log -->
+        <!-- Call & SMS Log -->
         <div class="main-card">
-            <h3><i class="fas fa-history"></i> Call Log</h3>
-            <div class="log-container" id="callLog">
-                <div class="log-entry log-info">📞 Ready to make calls...</div>
-            </div>
+            <h3><i class="fas fa-history"></i> Activity Log</h3>
+            <div class="log-container" id="callLog"><div class="log-entry log-info">📞 Ready to send reminders...</div></div>
         </div>
         
-        <!-- Message Templates -->
+        <!-- Message Templates Reference -->
         <div class="main-card">
-            <h3><i class="fas fa-file-alt"></i> Message Templates</h3>
+            <h3><i class="fas fa-file-alt"></i> Message Templates (10 Types)</h3>
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <i class="fas fa-user-graduate"></i> Student Template
-                        </div>
-                        <div class="card-body">
-                            <p class="small">"नमस्ते [नाम] जी। यह बाल भारती कोचिंग सेंटर से बात हो रही है। 
-                            [महीना] महीने की फीस ₹[राशि] बकाया है। 
-                            कृपया जल्द से जल्द फीस जमा कर दें। 
-                            किसी भी समस्या के लिए सेंटर से संपर्क करें। धन्यवाद।"</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="card">
-                        <div class="card-header bg-warning text-dark">
-                            <i class="fas fa-user-friends"></i> Parent Template
-                        </div>
-                        <div class="card-body">
-                            <p class="small">"नमस्ते, [बच्चे का नाम] के अभिभावक जी। यह बाल भारती कोचिंग सेंटर से बात हो रही है। 
-                            आपके बच्चे की [महीना] महीने की फीस ₹[राशि] बकाया है। 
-                            कृपया जल्द से जल्द फीस जमा कर दें। 
-                            धन्यवाद।"</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-success text-white">Student - Normal</div><div class="card-body small">"नमस्ते {name}, {month} की फीस ₹{amount} बकाया है। कृपया जमा करें।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-warning text-dark">Student - Force</div><div class="card-body small">"⚠️ अंतिम चेतावनी! {name}, {month} की फीस ₹{amount} बकाया है। कल तक जमा नहीं की तो कार्रवाई होगी।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-danger text-white">Student - Emergency</div><div class="card-body small">"🚨 EMERGENCY! {name}, आपकी फीस ₹{amount} बहुत लंबे समय से बकाया है। तुरंत संपर्क करें!"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-success text-white">Parent - Normal</div><div class="card-body small">"नमस्ते, {name} के अभिभावक। {month} की फीस ₹{amount} बकाया है। जमा करें।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-warning text-dark">Parent - Force</div><div class="card-body small">"⚠️ महत्वपूर्ण! {name} की {month} की फीस ₹{amount} बकाया है। कल तक जमा करें।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-danger text-white">Parent - Emergency</div><div class="card-body small">"🚨 तत्काल! {name} की फीस ₹{amount} बकाया है। आज ही जमा करें अन्यथा नामांकन रद्द होगा।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-info text-white">Student - Polite</div><div class="card-body small">"🙏 {name} जी, कृपया {month} की फीस ₹{amount} जमा करने की कृपा करें। धन्यवाद।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-info text-white">Parent - Polite</div><div class="card-body small">"🙏 {name} के अभिभावक, कृपया {month} की फीस ₹{amount} जमा करें। धन्यवाद।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-secondary text-white">Student - Reminder</div><div class="card-body small">"⏰ {name}, {month} की फीस ₹{amount} बकाया है। कृपया जल्द जमा करें।"</div></div></div>
+                <div class="col-md-4 mb-2"><div class="card"><div class="card-header bg-secondary text-white">Parent - Reminder</div><div class="card-body small">"⏰ {name} के अभिभावक, {month} की फीस ₹{amount} बकाया है। जल्द जमा करें।"</div></div></div>
             </div>
         </div>
     </div>
@@ -355,30 +336,59 @@
 
 <script>
 // ============================================
-// CALL REMINDER SYSTEM - Independent Page
-// Fixed CSP issues - No inline event handlers
+// CALL & SMS REMINDER SYSTEM
 // ============================================
 
 let adminToken = null;
 let dueStudents = [];
-let callLog = [];
 let callHistory = [];
+let smsHistory = [];
+let selectedTemplate = { type: 'student', template: 'normal' };
+let useCustomMessage = false;
+
+// SMS Templates (10 types)
+const smsTemplates = {
+    student: {
+        normal: "नमस्ते {name}, {month} की फीस ₹{amount} बकाया है। कृपया जमा करें। - बाल भारती कोचिंग",
+        force: "⚠️ अंतिम चेतावनी! {name}, {month} की फीस ₹{amount} बकाया है। कल तक जमा नहीं की तो कार्रवाई होगी। - बाल भारती",
+        emergency: "🚨 EMERGENCY! {name}, आपकी फीस ₹{amount} बहुत लंबे समय से बकाया है। तुरंत संपर्क करें: 9876543210",
+        polite: "🙏 {name} जी, कृपया {month} की फीस ₹{amount} जमा करने की कृपा करें। धन्यवाद। - बाल भारती",
+        reminder: "⏰ {name}, {month} की फीस ₹{amount} बकाया है। कृपया जल्द जमा करें। - बाल भारती कोचिंग",
+        warning: "⚠️ {name}, आपकी फीस ₹{amount} बकाया है। जमा नहीं की तो नामांकन खतरे में। - बाल भारती",
+        final: "🔴 अंतिम सूचना! {name}, फीस ₹{amount} जमा करें। आज अंतिम दिन है। - बाल भारती",
+        discount: "🎉 {name}, {month} की फीस पर ₹100 छूट! आज ही ₹{amount} जमा करें। - बाल भारती",
+        installment: "📅 {name}, फीस ₹{amount} किस्तों में जमा कर सकते हैं। संपर्क करें। - बाल भारती",
+        urgent: "🚨 URGENT! {name}, फीस ₹{amount} बकाया। आज जमा करें वरना लेट फीस लगेगी।"
+    },
+    parent: {
+        normal: "नमस्ते, {name} के अभिभावक। {month} की फीस ₹{amount} बकाया है। जमा करें। - बाल भारती",
+        force: "⚠️ महत्वपूर्ण! {name} की {month} की फीस ₹{amount} बकाया है। कल तक जमा करें। - बाल भारती",
+        emergency: "🚨 तत्काल! {name} की फीस ₹{amount} बकाया है। आज ही जमा करें अन्यथा नामांकन रद्द होगा।",
+        polite: "🙏 {name} के अभिभावक, कृपया {month} की फीस ₹{amount} जमा करें। धन्यवाद। - बाल भारती",
+        reminder: "⏰ {name} के अभिभावक, {month} की फीस ₹{amount} बकाया है। जल्द जमा करें।",
+        warning: "⚠️ {name} के अभिभावक, फीस ₹{amount} बकाया। जल्द से जल्द जमा करें।",
+        final: "🔴 अंतिम चेतावनी! {name} की फीस ₹{amount} जमा करें। आज अंतिम दिन।",
+        discount: "🎉 {name} की {month} की फीस पर ₹100 छूट! ₹{amount} जमा करें।",
+        installment: "📅 {name} की फीस ₹{amount} किस्तों में जमा कर सकते हैं। संपर्क करें।",
+        urgent: "🚨 URGENT! {name} की फीस ₹{amount} बकाया। आज जमा करें।"
+    }
+};
 
 // DOM Elements
-let loginForm, forgotPasswordBtn, refreshBtn, logoutBtn, callAllBtn;
-let adminIdInput, adminPasswordInput;
-let loginSection, mainContent;
-let totalStudentsSpan, dueCountSpan, callCountSpan;
+let loginForm, forgotPasswordBtn, refreshBtn, logoutBtn, callAllBtn, smsAllBtn, showCustomBtn, useCustomBtn;
+let adminIdInput, adminPasswordInput, loginSection, mainContent;
+let totalStudentsSpan, dueCountSpan, callCountSpan, smsCountSpan;
 let dueStudentsListDiv, callLogDiv;
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Get DOM elements
     loginForm = document.getElementById('loginForm');
     forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
     refreshBtn = document.getElementById('refreshBtn');
     logoutBtn = document.getElementById('logoutBtn');
     callAllBtn = document.getElementById('callAllBtn');
+    smsAllBtn = document.getElementById('smsAllBtn');
+    showCustomBtn = document.getElementById('showCustomBtn');
+    useCustomBtn = document.getElementById('useCustomBtn');
     adminIdInput = document.getElementById('adminId');
     adminPasswordInput = document.getElementById('adminPassword');
     loginSection = document.getElementById('loginSection');
@@ -386,400 +396,168 @@ document.addEventListener('DOMContentLoaded', () => {
     totalStudentsSpan = document.getElementById('totalStudents');
     dueCountSpan = document.getElementById('dueCount');
     callCountSpan = document.getElementById('callCount');
+    smsCountSpan = document.getElementById('smsCount');
     dueStudentsListDiv = document.getElementById('dueStudentsList');
     callLogDiv = document.getElementById('callLog');
     
-    // Add event listeners
     if (loginForm) loginForm.addEventListener('submit', adminLogin);
-    if (forgotPasswordBtn) forgotPasswordBtn.addEventListener('click', showForgotPasswordReminder);
+    if (forgotPasswordBtn) forgotPasswordBtn.addEventListener('click', () => showReminderPopup('Contact Admin: admin@balbharti.com'));
     if (refreshBtn) refreshBtn.addEventListener('click', loadDueStudents);
     if (logoutBtn) logoutBtn.addEventListener('click', logout);
     if (callAllBtn) callAllBtn.addEventListener('click', callAllDue);
+    if (smsAllBtn) smsAllBtn.addEventListener('click', smsAllDue);
+    if (showCustomBtn) showCustomBtn.addEventListener('click', () => document.getElementById('customMessageArea').style.display = 'block');
+    if (useCustomBtn) useCustomBtn.addEventListener('click', () => { useCustomMessage = true; showReminderPopup('Custom message enabled'); });
     
-    // Check saved session
+    document.querySelectorAll('.template-badge').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectedTemplate.type = btn.dataset.type;
+            selectedTemplate.template = btn.dataset.template;
+            useCustomMessage = false;
+            document.getElementById('customMessageArea').style.display = 'none';
+            const preview = getTemplateMessage(selectedTemplate.type, selectedTemplate.template, 'राहुल', 2000, 'मार्च');
+            document.getElementById('templatePreview').innerHTML = `<i class="fas fa-eye"></i> Preview: "${preview}"`;
+            showReminderPopup(`Template selected: ${selectedTemplate.type} - ${selectedTemplate.template}`);
+        });
+    });
+    
     checkSavedSession();
 });
 
-// Show Forgot Password Reminder
-function showForgotPasswordReminder() {
-    showReminderPopup(
-        '🔑 Forgot Password?\n\nContact Super Admin:\n📧 admin@balbharti.com\n📞 +91 98765 43210\n\nOr visit the center for password reset.'
-    );
+function getTemplateMessage(type, templateName, name, amount, month) {
+    let msg = smsTemplates[type]?.[templateName] || smsTemplates[type].normal;
+    return msg.replace(/{name}/g, name).replace(/{amount}/g, amount).replace(/{month}/g, month);
 }
 
-// Show popup message
-function showReminderPopup(message) {
-    const popup = document.createElement('div');
-    popup.className = 'reminder-popup';
-    popup.innerHTML = message.replace(/\n/g, '<br>');
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 5000);
-}
-
-// Admin Login
-async function adminLogin(event) {
-    event.preventDefault();
-    
-    const adminId = adminIdInput.value;
-    const password = adminPasswordInput.value;
-    
-    if (!adminId || !password) {
-        showReminderPopup('❌ Please enter Admin ID and Password');
-        return;
+function getCurrentMessage(studentName, dueAmount, type) {
+    if (useCustomMessage) {
+        let custom = document.getElementById('customMessage')?.value || '';
+        if (custom) {
+            return custom.replace(/{name}/g, studentName).replace(/{amount}/g, dueAmount).replace(/{month}/g, new Date().toLocaleString('default', { month: 'long' }));
+        }
     }
-    
+    const month = new Date().toLocaleString('default', { month: 'long' });
+    return getTemplateMessage(type, selectedTemplate.template, studentName, dueAmount, month);
+}
+
+function showReminderPopup(msg) { const popup = document.createElement('div'); popup.className = 'reminder-popup'; popup.innerHTML = msg; document.body.appendChild(popup); setTimeout(() => popup.remove(), 4000); }
+
+async function adminLogin(e) {
+    e.preventDefault();
+    const adminId = adminIdInput.value, password = adminPasswordInput.value;
+    if (!adminId || !password) { showReminderPopup('Enter Admin ID & Password'); return; }
     try {
-        const response = await fetch('/api/admin-login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userid: adminId, password: password })
-        });
-        
-        const data = await response.json();
-        
+        const res = await fetch('/api/admin-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userid: adminId, password }) });
+        const data = await res.json();
         if (data.success) {
-            adminToken = data.token;
-            localStorage.setItem('reminder_token', adminToken);
-            localStorage.setItem('reminder_admin', adminId);
-            
-            loginSection.style.display = 'none';
-            mainContent.style.display = 'block';
-            
-            addToLog('✅ Login successful! Welcome to Call Reminder System', 'success');
-            
-            // Load due students
-            loadDueStudents();
-            loadCallHistory();
-            
-        } else {
-            showReminderPopup('❌ Login failed: ' + (data.message || 'Invalid credentials'));
-            addToLog('❌ Login failed: ' + (data.message || 'Invalid credentials'), 'error');
-        }
-        
-    } catch (error) {
-        showReminderPopup('❌ Network error: ' + error.message);
-        addToLog('❌ Network error: ' + error.message, 'error');
-    }
+            adminToken = data.token; localStorage.setItem('reminder_token', adminToken);
+            loginSection.style.display = 'none'; mainContent.style.display = 'block';
+            addToLog('✅ Login successful!', 'success');
+            loadDueStudents(); loadHistory();
+        } else { showReminderPopup('Login failed'); }
+    } catch (error) { showReminderPopup('Network error'); }
 }
 
-// Logout
-function logout() {
-    adminToken = null;
-    localStorage.removeItem('reminder_token');
-    localStorage.removeItem('reminder_admin');
-    
-    loginSection.style.display = 'block';
-    mainContent.style.display = 'none';
-    
-    addToLog('🔐 Logged out successfully', 'info');
-    showReminderPopup('🔐 Logged out successfully');
-}
+function logout() { adminToken = null; localStorage.clear(); loginSection.style.display = 'block'; mainContent.style.display = 'none'; addToLog('Logged out', 'info'); }
 
-// Load Due Students
 async function loadDueStudents() {
-    if (!adminToken) {
-        showReminderPopup('Please login first');
-        return;
-    }
-    
-    dueStudentsListDiv.innerHTML = `
-        <div class="text-center p-5">
-            <div class="loading"></div>
-            <p class="mt-3">Loading students...</p>
-        </div>
-    `;
-    
+    if (!adminToken) return;
+    dueStudentsListDiv.innerHTML = '<div class="text-center p-5"><div class="loading"></div><p>Loading...</p></div>';
     try {
-        const response = await fetch('/api/students', {
-            headers: { 'Authorization': `Bearer ${adminToken}` }
-        });
-        const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to fetch students');
-        }
-        
+        const res = await fetch('/api/students', { headers: { 'Authorization': `Bearer ${adminToken}` } });
+        const data = await res.json();
+        if (!data.success) throw new Error('Failed');
         const students = data.data;
         totalStudentsSpan.innerText = students.length;
-        
-        // Calculate due students
-        const currentDate = new Date();
-        const currentMonth = currentDate.toLocaleString('default', { month: 'short' });
-        const currentYear = currentDate.getFullYear();
-        
+        const currentMonth = new Date().toLocaleString('default', { month: 'short' }), currentYear = new Date().getFullYear();
         dueStudents = [];
-        
-        for (const student of students) {
-            let isDue = true;
-            let dueAmount = student.classMonthlyFees || 2000;
-            
-            if (student.feesHistory && student.feesHistory.length > 0) {
-                const currentMonthFee = student.feesHistory.find(f => 
-                    f.month === `${currentMonth} ${currentYear}`
-                );
-                if (currentMonthFee && currentMonthFee.status === 'paid') {
-                    isDue = false;
-                }
-                if (currentMonthFee && currentMonthFee.dueAmount) {
-                    dueAmount = currentMonthFee.dueAmount;
-                }
+        for (const s of students) {
+            let isDue = true, dueAmount = s.classMonthlyFees || 2000;
+            if (s.feesHistory?.length) {
+                const fee = s.feesHistory.find(f => f.month === `${currentMonth} ${currentYear}`);
+                if (fee?.status === 'paid') isDue = false;
+                if (fee?.dueAmount) dueAmount = fee.dueAmount;
             }
-            
-            if (isDue) {
-                dueStudents.push({
-                    id: student.studentId,
-                    name: `${student.studentName.first} ${student.studentName.last}`,
-                    mobile: student.mobile,
-                    fatherMobile: student.fatherMobile,
-                    dueAmount: dueAmount,
-                    month: `${currentMonth} ${currentYear}`
-                });
-            }
+            if (isDue) dueStudents.push({ id: s.studentId, name: `${s.studentName.first} ${s.studentName.last}`, mobile: s.mobile, fatherMobile: s.fatherMobile, dueAmount, month: `${currentMonth} ${currentYear}` });
         }
-        
         dueCountSpan.innerText = dueStudents.length;
         displayDueStudents();
-        
-        addToLog(`📊 Found ${dueStudents.length} students with due fees`, 'info');
-        
-    } catch (error) {
-        dueStudentsListDiv.innerHTML = `
-            <div class="alert alert-danger">Error: ${error.message}</div>
-        `;
-        addToLog(`❌ Error loading students: ${error.message}`, 'error');
-    }
+        addToLog(`📊 Found ${dueStudents.length} due students`, 'info');
+    } catch (error) { dueStudentsListDiv.innerHTML = '<div class="alert alert-danger">Error loading students</div>'; }
 }
 
-// Display Due Students
 function displayDueStudents() {
-    if (dueStudents.length === 0) {
-        dueStudentsListDiv.innerHTML = `
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> No students with due fees! All fees are up to date.
-            </div>
-        `;
-        return;
-    }
-    
+    if (!dueStudents.length) { dueStudentsListDiv.innerHTML = '<div class="alert alert-success">No due students!</div>'; return; }
     let html = '';
-    dueStudents.forEach((student, index) => {
-        html += `
-            <div class="due-student-card">
-                <div class="student-info">
-                    <h4>${index + 1}. ${student.name}</h4>
-                    <p><i class="fas fa-id-card"></i> ID: ${student.id} | 
-                       <i class="fas fa-phone"></i> ${student.mobile} | 
-                       <i class="fas fa-rupee-sign"></i> ₹${student.dueAmount} due</p>
-                    <small class="text-muted"><i class="fas fa-calendar"></i> ${student.month}</small>
-                </div>
-                <div class="call-buttons">
-                    <button class="btn-call-student" data-student-id="${student.id}" data-student-name="${student.name}" data-phone="${student.mobile}" data-amount="${student.dueAmount}" data-type="student">
-                        <i class="fas fa-phone"></i> Call Student
-                    </button>
-                    ${student.fatherMobile ? `
-                    <button class="btn-call-parent" data-student-id="${student.id}" data-student-name="${student.name}" data-phone="${student.fatherMobile}" data-amount="${student.dueAmount}" data-type="parent">
-                        <i class="fas fa-user-friends"></i> Call Parent
-                    </button>
-                    ` : ''}
-                </div>
+    dueStudents.forEach((s, i) => {
+        html += `<div class="due-student-card">
+            <div class="student-info"><h4>${i+1}. ${s.name}</h4><p>ID: ${s.id} | 📞 ${s.mobile} | ₹${s.dueAmount} due</p></div>
+            <div class="action-buttons">
+                <button class="btn-call-student" data-id="${s.id}" data-name="${s.name}" data-phone="${s.mobile}" data-amount="${s.dueAmount}" data-type="student"><i class="fas fa-phone"></i> Call</button>
+                ${s.fatherMobile ? `<button class="btn-call-parent" data-id="${s.id}" data-name="${s.name}" data-phone="${s.fatherMobile}" data-amount="${s.dueAmount}" data-type="parent"><i class="fas fa-user-friends"></i> Call Parent</button>` : ''}
+                <button class="btn-sms-student" data-id="${s.id}" data-name="${s.name}" data-phone="${s.mobile}" data-amount="${s.dueAmount}" data-type="student"><i class="fas fa-envelope"></i> SMS</button>
+                ${s.fatherMobile ? `<button class="btn-sms-parent" data-id="${s.id}" data-name="${s.name}" data-phone="${s.fatherMobile}" data-amount="${s.dueAmount}" data-type="parent"><i class="fas fa-envelope"></i> SMS Parent</button>` : ''}
             </div>
-        `;
+        </div>`;
     });
-    
     dueStudentsListDiv.innerHTML = html;
-    
-    // Add event listeners to dynamically created buttons
-    document.querySelectorAll('.btn-call-student, .btn-call-parent').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const studentId = btn.dataset.studentId;
-            const studentName = btn.dataset.studentName;
-            const phone = btn.dataset.phone;
-            const amount = parseInt(btn.dataset.amount);
-            const type = btn.dataset.type;
-            makeCall(studentId, studentName, phone, amount, type);
-        });
-    });
+    document.querySelectorAll('.btn-call-student, .btn-call-parent').forEach(btn => btn.addEventListener('click', () => makeCall(btn.dataset.id, btn.dataset.name, btn.dataset.phone, parseInt(btn.dataset.amount), btn.dataset.type)));
+    document.querySelectorAll('.btn-sms-student, .btn-sms-parent').forEach(btn => btn.addEventListener('click', () => sendSMS(btn.dataset.id, btn.dataset.name, btn.dataset.phone, parseInt(btn.dataset.amount), btn.dataset.type)));
 }
 
-// Make Call
-async function makeCall(studentId, studentName, phoneNumber, dueAmount, type) {
-    if (!phoneNumber || phoneNumber === '') {
-        addToLog(`❌ ${studentName}: No phone number available`, 'error');
-        showReminderPopup(`❌ ${studentName}: No phone number available`);
-        return;
-    }
-    
-    // Format phone number
-    let formattedNumber = phoneNumber;
-    if (!formattedNumber.startsWith('+')) {
-        if (formattedNumber.startsWith('0')) {
-            formattedNumber = '+91' + formattedNumber.substring(1);
-        } else if (formattedNumber.length === 10) {
-            formattedNumber = '+91' + formattedNumber;
-        }
-    }
-    
-    addToLog(`📞 Calling ${type === 'student' ? 'Student' : 'Parent'} ${studentName} (${formattedNumber})...`, 'info');
-    
-    // Get month for message
-    const currentDate = new Date();
-    const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
-    
-    // Message templates
-    let message = '';
-    if (type === 'student') {
-        message = `नमस्ते ${studentName} जी। यह बाल भारती कोचिंग सेंटर से बात हो रही है। 
-        ${currentMonth} महीने की फीस ₹${dueAmount} बकाया है। 
-        कृपया जल्द से जल्द फीस जमा कर दें। 
-        किसी भी समस्या के लिए सेंटर से संपर्क करें। धन्यवाद।`;
-    } else {
-        message = `नमस्ते, ${studentName} के अभिभावक जी। यह बाल भारती कोचिंग सेंटर से बात हो रही है। 
-        आपके बच्चे की ${currentMonth} महीने की फीस ₹${dueAmount} बकाया है। 
-        कृपया जल्द से जल्द फीस जमा कर दें। 
-        धन्यवाद।`;
-    }
-    
+async function makeCall(studentId, studentName, phone, amount, type) {
+    if (!phone) { addToLog(`❌ No phone for ${studentName}`, 'error'); return; }
+    let formatted = phone.startsWith('+') ? phone : phone.startsWith('0') ? '+91'+phone.substring(1) : '+91'+phone;
+    addToLog(`📞 Calling ${type} ${studentName} (${formatted})...`, 'info');
+    const message = type === 'student' ? `नमस्ते ${studentName}, ${new Date().toLocaleString('default', { month: 'long' })} की फीस ₹${amount} बकाया है। जमा करें।` : `${studentName} के अभिभावक, फीस ₹${amount} बकाया है। जमा करें।`;
     try {
-        const response = await fetch('/api/twilio-call', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${adminToken}`
-            },
-            body: JSON.stringify({
-                to: formattedNumber,
-                message: message,
-                studentId: studentId,
-                studentName: studentName,
-                dueAmount: dueAmount,
-                type: type
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            addToLog(`✅ Call initiated to ${studentName} (${formattedNumber}) - Call ID: ${data.callSid}`, 'success');
-            showReminderPopup(`✅ Call initiated to ${studentName}`);
-            saveCallRecord(studentId, studentName, formattedNumber, dueAmount, type, 'success');
-            updateCallCount();
-        } else {
-            addToLog(`❌ Call failed for ${studentName}: ${data.message}`, 'error');
-            showReminderPopup(`❌ Call failed for ${studentName}: ${data.message}`);
-            saveCallRecord(studentId, studentName, formattedNumber, dueAmount, type, 'failed');
-        }
-        
-    } catch (error) {
-        addToLog(`❌ Error calling ${studentName}: ${error.message}`, 'error');
-        showReminderPopup(`❌ Error calling ${studentName}: ${error.message}`);
-        saveCallRecord(studentId, studentName, formattedNumber, dueAmount, type, 'error');
-    }
+        const res = await fetch('/api/twilio-call', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` }, body: JSON.stringify({ to: formatted, message, studentId, studentName, dueAmount: amount, type }) });
+        const data = await res.json();
+        if (data.success) { addToLog(`✅ Call to ${studentName} initiated`, 'success'); saveRecord('call', studentId, studentName, phone, amount, type, 'success'); updateCallCount(); }
+        else { addToLog(`❌ Call failed: ${data.message}`, 'error'); saveRecord('call', studentId, studentName, phone, amount, type, 'failed'); }
+    } catch (error) { addToLog(`❌ Error: ${error.message}`, 'error'); }
 }
 
-// Call All Due Students
-function callAllDue() {
-    if (dueStudents.length === 0) {
-        showReminderPopup('No due students to call');
-        return;
-    }
-    
-    if (confirm(`Call all ${dueStudents.length} due students? This will take a few minutes.`)) {
-        addToLog(`🚀 Starting bulk calls to ${dueStudents.length} students...`, 'info');
-        
-        let index = 0;
-        
-        function callNext() {
-            if (index >= dueStudents.length) {
-                addToLog(`✅ Bulk calls completed! Called ${dueStudents.length} students.`, 'success');
-                showReminderPopup(`✅ Bulk calls completed! Called ${dueStudents.length} students.`);
-                return;
-            }
-            
-            const student = dueStudents[index];
-            addToLog(`📞 [${index + 1}/${dueStudents.length}] Calling ${student.name}...`, 'info');
-            
-            makeCall(student.id, student.name, student.mobile, student.dueAmount, 'student');
-            
-            index++;
-            setTimeout(callNext, 3000);
-        }
-        
-        callNext();
-    }
+async function sendSMS(studentId, studentName, phone, amount, type) {
+    if (!phone) { addToLog(`❌ No phone for ${studentName}`, 'error'); return; }
+    let formatted = phone.startsWith('+') ? phone : phone.startsWith('0') ? '+91'+phone.substring(1) : '+91'+phone;
+    const message = getCurrentMessage(studentName, amount, type);
+    addToLog(`📱 SMS to ${type} ${studentName}: "${message.substring(0, 50)}..."`, 'sms');
+    showReminderPopup(`📱 SMS sent to ${studentName}`);
+    saveRecord('sms', studentId, studentName, phone, amount, type, 'sent');
+    updateSMSCount();
 }
 
-// Save call record
-function saveCallRecord(studentId, studentName, phone, amount, type, status) {
-    const record = {
-        studentId,
-        studentName,
-        phone,
-        amount,
-        type,
-        status,
-        timestamp: new Date().toISOString()
-    };
-    
-    callHistory.unshift(record);
-    if (callHistory.length > 100) callHistory.pop();
-    
+function callAllDue() { if(!dueStudents.length) return; addToLog(`🚀 Calling ${dueStudents.length} students...`, 'info'); let i=0; function next(){ if(i>=dueStudents.length){ addToLog('✅ Bulk calls completed','success'); return; } makeCall(dueStudents[i].id, dueStudents[i].name, dueStudents[i].mobile, dueStudents[i].dueAmount, 'student'); i++; setTimeout(next,3000); } next(); }
+function smsAllDue() { if(!dueStudents.length) return; addToLog(`📱 Sending SMS to ${dueStudents.length} students...`,'info'); dueStudents.forEach(s=>sendSMS(s.id,s.name,s.mobile,s.dueAmount,'student')); addToLog('✅ Bulk SMS sent','success'); }
+
+function saveRecord(type, studentId, studentName, phone, amount, recipientType, status) {
+    const record = { type, studentId, studentName, phone, amount, recipientType, status, timestamp: new Date().toISOString() };
+    if(type === 'call') callHistory.unshift(record); else smsHistory.unshift(record);
+    if(callHistory.length>100) callHistory.pop(); if(smsHistory.length>100) smsHistory.pop();
     localStorage.setItem('reminder_call_history', JSON.stringify(callHistory));
+    localStorage.setItem('reminder_sms_history', JSON.stringify(smsHistory));
 }
 
-// Load call history
-function loadCallHistory() {
-    const saved = localStorage.getItem('reminder_call_history');
-    if (saved) {
-        callHistory = JSON.parse(saved);
-        updateCallCount();
-        
-        // Show recent calls in log
-        callHistory.slice(0, 10).forEach(record => {
-            const statusIcon = record.status === 'success' ? '✅' : '❌';
-            const date = new Date(record.timestamp).toLocaleTimeString();
-            addToLog(`${statusIcon} [${date}] ${record.studentName} (${record.type}) - ${record.status}`, 
-                     record.status === 'success' ? 'success' : 'error');
-        });
-    }
+function loadHistory() {
+    const savedCalls = localStorage.getItem('reminder_call_history');
+    if(savedCalls) { callHistory = JSON.parse(savedCalls); updateCallCount(); callHistory.slice(0,10).forEach(r=>addToLog(`${r.status==='success'?'✅':'❌'} Call to ${r.studentName}`, r.status==='success'?'success':'error')); }
+    const savedSMS = localStorage.getItem('reminder_sms_history');
+    if(savedSMS) { smsHistory = JSON.parse(savedSMS); updateSMSCount(); }
 }
 
-// Update call count
-function updateCallCount() {
-    const today = new Date().toDateString();
-    const todayCalls = callHistory.filter(c => new Date(c.timestamp).toDateString() === today);
-    callCountSpan.innerText = todayCalls.length;
-}
+function updateCallCount() { const today = new Date().toDateString(); callCountSpan.innerText = callHistory.filter(c=>new Date(c.timestamp).toDateString()===today).length; }
+function updateSMSCount() { const today = new Date().toDateString(); smsCountSpan.innerText = smsHistory.filter(s=>new Date(s.timestamp).toDateString()===today).length; }
 
-// Add to log
-function addToLog(message, type) {
+function addToLog(msg, type) {
     const timestamp = new Date().toLocaleTimeString();
-    const colorClass = type === 'success' ? 'log-success' : type === 'error' ? 'log-error' : 'log-info';
-    
-    const logEntry = document.createElement('div');
-    logEntry.className = `log-entry ${colorClass}`;
-    logEntry.innerHTML = `<span class="text-muted">[${timestamp}]</span> ${message}`;
-    
-    callLogDiv.insertBefore(logEntry, callLogDiv.firstChild);
-    
-    // Keep only last 100 logs
-    while (callLogDiv.children.length > 100) {
-        callLogDiv.removeChild(callLogDiv.lastChild);
-    }
+    const colorClass = type==='success'?'log-success':type==='error'?'log-error':type==='sms'?'log-sms':'log-info';
+    const entry = document.createElement('div'); entry.className = `log-entry ${colorClass}`; entry.innerHTML = `[${timestamp}] ${msg}`;
+    callLogDiv.insertBefore(entry, callLogDiv.firstChild);
+    while(callLogDiv.children.length > 100) callLogDiv.removeChild(callLogDiv.lastChild);
 }
 
-// Check for saved session on load
-function checkSavedSession() {
-    const savedToken = localStorage.getItem('reminder_token');
-    if (savedToken) {
-        adminToken = savedToken;
-        loginSection.style.display = 'none';
-        mainContent.style.display = 'block';
-        loadDueStudents();
-        loadCallHistory();
-        addToLog('✅ Session restored', 'success');
-    }
-}
+function checkSavedSession() { const token = localStorage.getItem('reminder_token'); if(token) { adminToken=token; loginSection.style.display='none'; mainContent.style.display='block'; loadDueStudents(); loadHistory(); addToLog('Session restored','success'); } }
 </script>
-
 </body>
 </html>
