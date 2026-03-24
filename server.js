@@ -490,7 +490,63 @@ app.post('/api/twilio-call', verifyToken, async (req, res) => {
         });
     }
 });
-
+// SMS Incoming Webhook (जब कोई आपको SMS करे)
+app.post('/api/sms-incoming', (req, res) => {
+    const from = req.body.From;
+    const body = req.body.Body;
+    console.log(`📱 Incoming SMS from ${from}: ${body}`);
+    
+    // Auto-reply (optional)
+    const reply = `धन्यवाद! आपकी फीस जमा करने के लिए centre से संपर्क करें। - बाल भारती कोचिंग`;
+    
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Message>${reply}</Message>
+    </Response>`;
+    
+    res.set('Content-Type', 'text/xml');
+    res.send(twiml);
+});
+// ========== SEND SMS API ==========
+app.post('/api/send-sms', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Admin access required' });
+        }
+        
+        const { to, message, studentId, studentName, dueAmount, type } = req.body;
+        
+        if (!to || !message) {
+            return res.status(400).json({ success: false, message: 'Phone number and message required' });
+        }
+        
+        console.log(`📱 Sending SMS to: ${to} for student: ${studentName}`);
+        
+        // Format phone number
+        let formattedNumber = to;
+        if (!formattedNumber.startsWith('+')) {
+            if (formattedNumber.startsWith('0')) {
+                formattedNumber = '+91' + formattedNumber.substring(1);
+            } else if (formattedNumber.length === 10) {
+                formattedNumber = '+91' + formattedNumber;
+            }
+        }
+        
+        const sms = await twilioClient.messages.create({
+            body: message,
+            from: TWILIO_PHONE,
+            to: formattedNumber
+        });
+        
+        console.log(`✅ SMS sent: ${sms.sid}`);
+        
+        res.json({ success: true, message: 'SMS sent', sid: sms.sid });
+        
+    } catch (error) {
+        console.error('SMS error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 // Call status callback endpoint (optional - for tracking call status)
 app.post('/api/call-status', async (req, res) => {
     console.log('Call status update:', req.body);
