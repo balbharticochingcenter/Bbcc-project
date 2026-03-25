@@ -1796,7 +1796,993 @@ app.get('/api/admin/teachers-with-due', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// ============================================
+// ENHANCED ENQUIRY FORM SCHEMA & APIs
+// ============================================
 
+// Enhanced Enquiry Schema with all fields
+const EnquirySchema = new mongoose.Schema({
+    // Personal Information
+    fullName: { type: String, required: true, trim: true },
+    mobile: { type: String, required: true, trim: true },
+    alternateMobile: { type: String, default: '', trim: true },
+    email: { type: String, default: '', trim: true, lowercase: true },
+    
+    // Family Information
+    parentName: { type: String, default: '', trim: true },
+    parentMobile: { type: String, default: '', trim: true },
+    
+    // Location & Education
+    location: { type: String, default: '', trim: true },
+    city: { type: String, default: '', trim: true },
+    pincode: { type: String, default: '', trim: true },
+    board: { type: String, default: '', trim: true },
+    class: { type: String, default: '', trim: true },
+    
+    // Who is applying
+    applicantType: { 
+        type: String, 
+        enum: ['self', 'father', 'mother', 'friend', 'relative', 'other'], 
+        default: 'self' 
+    },
+    applicantRelation: { type: String, default: '', trim: true }, // For 'other' type
+    
+    // Additional Details
+    course: { type: String, default: '', trim: true },
+    preferredTime: { type: String, default: '', trim: true },
+    message: { type: String, default: '', trim: true },
+    source: { type: String, default: 'website', trim: true }, // How they found us
+    
+    // Status & Tracking
+    status: { 
+        type: String, 
+        enum: ['pending', 'contacted', 'followup', 'admitted', 'not_interested', 'spam'], 
+        default: 'pending' 
+    },
+    priority: { 
+        type: String, 
+        enum: ['low', 'medium', 'high', 'urgent'], 
+        default: 'medium' 
+    },
+    notes: { type: String, default: '' },
+    followupDate: { type: Date },
+    respondedBy: { type: String, default: '' },
+    respondedAt: { type: Date },
+    assignedTo: { type: String, default: '' }, // Which teacher/counselor
+    
+    // Technical Info
+    ipAddress: { type: String, default: '' },
+    userAgent: { type: String, default: '' },
+    
+    // Call Reminder
+    callReminderSent: { type: Boolean, default: false },
+    reminderSentAt: { type: Date }
+    
+}, { timestamps: true });
+
+// Indexes for better search
+EnquirySchema.index({ fullName: 'text', mobile: 'text', parentName: 'text' });
+EnquirySchema.index({ status: 1, priority: 1 });
+EnquirySchema.index({ createdAt: -1 });
+
+const Enquiry = mongoose.model('Enquiry', EnquirySchema);
+
+// ============================================
+// UNIVERSAL DEMO VIDEO SCHEMA (All Formats)
+// ============================================
+
+const DemoVideoSchema = new mongoose.Schema({
+    // Basic Info
+    title: { type: String, required: true, trim: true },
+    description: { type: String, default: '', trim: true },
+    
+    // Video Source - Supports ALL formats
+    videoSource: { 
+        type: String, 
+        enum: [
+            'youtube',      // YouTube URL
+            'vimeo',        // Vimeo URL
+            'dailymotion',  // Dailymotion URL
+            'facebook',     // Facebook video URL
+            'instagram',    // Instagram video URL
+            'drive',        // Google Drive link
+            'dropbox',      // Dropbox link
+            'mp4',          // Direct MP4 URL
+            'm3u8',         // HLS streaming
+            'embed',        // Generic embed code
+            'upload'        // Uploaded file
+        ], 
+        default: 'youtube' 
+    },
+    videoUrl: { type: String, required: true, trim: true }, // Original URL
+    
+    // For uploaded videos
+    videoFile: { type: String, default: '' }, // Server path or Cloudinary URL
+    videoFileType: { type: String, default: '' }, // mp4, webm, etc.
+    videoSize: { type: Number, default: 0 }, // File size in bytes
+    
+    // For embed code
+    embedCode: { type: String, default: '' }, // Raw HTML embed code
+    
+    // Thumbnail
+    thumbnail: { type: String, default: '' },
+    thumbnailType: { type: String, enum: ['auto', 'custom', 'upload'], default: 'auto' },
+    
+    // Video Metadata
+    duration: { type: String, default: '' },
+    quality: { type: [String], default: ['720p'] }, // Available qualities
+    language: { type: String, default: 'hindi' }, // Hindi, English, etc.
+    
+    // Categories & Organization
+    category: { type: String, default: 'demo', trim: true },
+    subCategory: { type: String, default: '', trim: true },
+    tags: [{ type: String }], // Array of tags for search
+    
+    // Display Settings
+    order: { type: Number, default: 0 },
+    isActive: { type: Boolean, default: true },
+    featured: { type: Boolean, default: false },
+    isPremium: { type: Boolean, default: false }, // For paid content
+    
+    // Statistics
+    views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    shares: { type: Number, default: 0 },
+    
+    // Admin Info
+    uploadedBy: { type: String, default: '' },
+    approvedBy: { type: String, default: '' },
+    approvedAt: { type: Date },
+    
+    // Schedule (for future publishing)
+    publishDate: { type: Date, default: Date.now },
+    expiryDate: { type: Date }
+    
+}, { timestamps: true });
+
+// Indexes
+DemoVideoSchema.index({ title: 'text', tags: 'text' });
+DemoVideoSchema.index({ category: 1, isActive: 1, featured: -1 });
+DemoVideoSchema.index({ publishDate: -1 });
+
+const DemoVideo = mongoose.model('DemoVideo', DemoVideoSchema);
+
+// ============================================
+// ENHANCED ENQUIRY FORM API (Public)
+// ============================================
+
+app.post('/api/enquiry', async (req, res) => {
+    try {
+        const {
+            fullName, mobile, alternateMobile, email,
+            parentName, parentMobile,
+            location, city, pincode, board, class: studentClass,
+            applicantType, applicantRelation,
+            course, preferredTime, message, source
+        } = req.body;
+        
+        // Validate required fields
+        if (!fullName || !mobile) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Full Name and Mobile Number are required!" 
+            });
+        }
+        
+        // Validate mobile number (10 digits)
+        const mobileRegex = /^\d{10}$/;
+        if (!mobileRegex.test(mobile)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Mobile number must be 10 digits!" 
+            });
+        }
+        
+        // Validate alternate mobile if provided
+        if (alternateMobile && !mobileRegex.test(alternateMobile)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Alternate mobile number must be 10 digits!" 
+            });
+        }
+        
+        // Validate email if provided
+        if (email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Invalid email format!" 
+                });
+            }
+        }
+        
+        // Anti-spam: Check same mobile within 5 minutes
+        const ipAddress = req.ip || req.connection.remoteAddress;
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const recentEnquiry = await Enquiry.findOne({
+            $or: [
+                { mobile: mobile },
+                { ipAddress: ipAddress }
+            ],
+            createdAt: { $gte: fiveMinutesAgo }
+        });
+        
+        if (recentEnquiry) {
+            return res.status(429).json({ 
+                success: false, 
+                message: "Please wait 5 minutes before submitting another enquiry." 
+            });
+        }
+        
+        // Create new enquiry
+        const enquiry = new Enquiry({
+            fullName,
+            mobile,
+            alternateMobile: alternateMobile || '',
+            email: email || '',
+            parentName: parentName || '',
+            parentMobile: parentMobile || '',
+            location: location || '',
+            city: city || '',
+            pincode: pincode || '',
+            board: board || '',
+            class: studentClass || '',
+            applicantType: applicantType || 'self',
+            applicantRelation: applicantRelation || '',
+            course: course || '',
+            preferredTime: preferredTime || '',
+            message: message || '',
+            source: source || 'website',
+            status: 'pending',
+            priority: 'medium',
+            ipAddress: ipAddress,
+            userAgent: req.headers['user-agent'] || ''
+        });
+        
+        await enquiry.save();
+        
+        console.log(`📧 New Enquiry #${enquiry._id}`);
+        console.log(`   👤 ${fullName} | 📱 ${mobile}`);
+        console.log(`   📍 ${location || city || 'N/A'} | 🎓 ${board || 'N/A'} - ${studentClass || 'N/A'}`);
+        console.log(`   👨‍👩‍👧 Applicant: ${applicantType} ${applicantRelation ? '(' + applicantRelation + ')' : ''}`);
+        
+        // Optional: Send SMS confirmation
+        // await sendConfirmationSMS(mobile, fullName);
+        
+        res.json({ 
+            success: true, 
+            message: "Enquiry submitted successfully! We'll contact you soon.",
+            enquiryId: enquiry._id
+        });
+        
+    } catch (err) {
+        console.error('Enquiry submission error:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to submit enquiry. Please try again." 
+        });
+    }
+});
+
+// ============================================
+// ENQUIRY MANAGEMENT APIs (Admin Only)
+// ============================================
+
+// Get all enquiries with filters
+app.get('/api/admin/enquiries', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { 
+            status, priority, board, class: studentClass,
+            fromDate, toDate, search,
+            page = 1, limit = 20 
+        } = req.query;
+        
+        const query = {};
+        if (status) query.status = status;
+        if (priority) query.priority = priority;
+        if (board) query.board = board;
+        if (studentClass) query.class = studentClass;
+        
+        // Date range filter
+        if (fromDate || toDate) {
+            query.createdAt = {};
+            if (fromDate) query.createdAt.$gte = new Date(fromDate);
+            if (toDate) query.createdAt.$lte = new Date(toDate + 'T23:59:59');
+        }
+        
+        // Text search
+        if (search) {
+            query.$or = [
+                { fullName: { $regex: search, $options: 'i' } },
+                { mobile: { $regex: search, $options: 'i' } },
+                { parentName: { $regex: search, $options: 'i' } },
+                { location: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        const enquiries = await Enquiry.find(query)
+            .sort({ priority: -1, createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+        
+        const total = await Enquiry.countDocuments(query);
+        
+        // Get statistics
+        const stats = {
+            total: await Enquiry.countDocuments(),
+            pending: await Enquiry.countDocuments({ status: 'pending' }),
+            contacted: await Enquiry.countDocuments({ status: 'contacted' }),
+            followup: await Enquiry.countDocuments({ status: 'followup' }),
+            admitted: await Enquiry.countDocuments({ status: 'admitted' }),
+            notInterested: await Enquiry.countDocuments({ status: 'not_interested' }),
+            highPriority: await Enquiry.countDocuments({ priority: 'high' }),
+            urgent: await Enquiry.countDocuments({ priority: 'urgent' })
+        };
+        
+        res.json({ 
+            success: true, 
+            data: enquiries,
+            stats,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get single enquiry
+app.get('/api/admin/enquiries/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const enquiry = await Enquiry.findById(req.params.id);
+        if (!enquiry) {
+            return res.status(404).json({ success: false, message: "Enquiry not found" });
+        }
+        
+        res.json({ success: true, data: enquiry });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update enquiry
+app.put('/api/admin/enquiries/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const {
+            status, priority, notes, followupDate,
+            assignedTo, callReminderSent
+        } = req.body;
+        
+        const enquiry = await Enquiry.findById(req.params.id);
+        if (!enquiry) {
+            return res.status(404).json({ success: false, message: "Enquiry not found" });
+        }
+        
+        if (status) enquiry.status = status;
+        if (priority) enquiry.priority = priority;
+        if (notes) enquiry.notes = notes;
+        if (followupDate) enquiry.followupDate = new Date(followupDate);
+        if (assignedTo !== undefined) enquiry.assignedTo = assignedTo;
+        if (callReminderSent !== undefined) {
+            enquiry.callReminderSent = callReminderSent;
+            if (callReminderSent) enquiry.reminderSentAt = new Date();
+        }
+        
+        if (status && status !== 'pending') {
+            enquiry.respondedBy = req.user.adminID;
+            enquiry.respondedAt = new Date();
+        }
+        
+        await enquiry.save();
+        
+        res.json({ 
+            success: true, 
+            message: "Enquiry updated successfully", 
+            data: enquiry 
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Delete enquiry
+app.delete('/api/admin/enquiries/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const enquiry = await Enquiry.findByIdAndDelete(req.params.id);
+        if (!enquiry) {
+            return res.status(404).json({ success: false, message: "Enquiry not found" });
+        }
+        
+        res.json({ success: true, message: "Enquiry deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Bulk update enquiries
+app.post('/api/admin/enquiries/bulk', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { enquiryIds, updateData } = req.body;
+        
+        if (!enquiryIds || !Array.isArray(enquiryIds) || enquiryIds.length === 0) {
+            return res.status(400).json({ success: false, message: "Enquiry IDs required" });
+        }
+        
+        const result = await Enquiry.updateMany(
+            { _id: { $in: enquiryIds } },
+            { 
+                $set: { 
+                    ...updateData,
+                    respondedBy: req.user.adminID,
+                    respondedAt: new Date()
+                } 
+            }
+        );
+        
+        res.json({ 
+            success: true, 
+            message: `${result.modifiedCount} enquiries updated`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get enquiry dashboard stats
+app.get('/api/admin/enquiries/dashboard', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        // Today's enquiries
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const todayEnquiries = await Enquiry.countDocuments({
+            createdAt: { $gte: today, $lt: tomorrow }
+        });
+        
+        // This week enquiries
+        const weekStart = new Date(today);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        const weekEnquiries = await Enquiry.countDocuments({
+            createdAt: { $gte: weekStart }
+        });
+        
+        // This month enquiries
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const monthEnquiries = await Enquiry.countDocuments({
+            createdAt: { $gte: monthStart }
+        });
+        
+        // Enquiries by board
+        const boardStats = await Enquiry.aggregate([
+            { $match: { board: { $ne: '' } } },
+            { $group: { _id: '$board', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 5 }
+        ]);
+        
+        // Enquiries by class
+        const classStats = await Enquiry.aggregate([
+            { $match: { class: { $ne: '' } } },
+            { $group: { _id: '$class', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 5 }
+        ]);
+        
+        // Enquiries by source
+        const sourceStats = await Enquiry.aggregate([
+            { $group: { _id: '$source', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]);
+        
+        // Followup needed
+        const followupNeeded = await Enquiry.countDocuments({
+            status: { $in: ['pending', 'contacted', 'followup'] },
+            followupDate: { $lte: new Date() }
+        });
+        
+        res.json({
+            success: true,
+            data: {
+                today: todayEnquiries,
+                thisWeek: weekEnquiries,
+                thisMonth: monthEnquiries,
+                followupNeeded,
+                byBoard: boardStats,
+                byClass: classStats,
+                bySource: sourceStats
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// UNIVERSAL DEMO VIDEO APIs (All Formats)
+// ============================================
+
+// Get all active videos for website
+app.get('/api/videos', async (req, res) => {
+    try {
+        const { category, featured, limit = 12, page = 1 } = req.query;
+        const query = { 
+            isActive: true,
+            publishDate: { $lte: new Date() }
+        };
+        
+        if (category && category !== 'all') query.category = category;
+        if (featured === 'true') query.featured = true;
+        
+        const videos = await DemoVideo.find(query)
+            .sort({ featured: -1, order: 1, publishDate: -1 })
+            .skip((page - 1) * limit)
+            .limit(parseInt(limit));
+        
+        const total = await DemoVideo.countDocuments(query);
+        
+        // Format video URLs for frontend
+        const formattedVideos = videos.map(video => ({
+            ...video.toObject(),
+            embedUrl: getEmbedUrl(video.videoUrl, video.videoSource),
+            thumbnailUrl: getThumbnailUrl(video)
+        }));
+        
+        res.json({ 
+            success: true, 
+            data: formattedVideos,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Helper function to get embed URL
+function getEmbedUrl(url, source) {
+    if (!url) return '';
+    
+    switch(source) {
+        case 'youtube':
+            // YouTube: https://youtu.be/xxx or https://www.youtube.com/watch?v=xxx
+            const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/;
+            const match = url.match(youtubeRegex);
+            if (match) return `https://www.youtube.com/embed/${match[1]}`;
+            return url;
+            
+        case 'vimeo':
+            const vimeoRegex = /vimeo\.com\/(\d+)/;
+            const vMatch = url.match(vimeoRegex);
+            if (vMatch) return `https://player.vimeo.com/video/${vMatch[1]}`;
+            return url;
+            
+        case 'dailymotion':
+            const dmRegex = /dailymotion\.com\/video\/([^_]+)/;
+            const dmMatch = url.match(dmRegex);
+            if (dmMatch) return `https://www.dailymotion.com/embed/video/${dmMatch[1]}`;
+            return url;
+            
+        case 'drive':
+            // Google Drive
+            const driveRegex = /\/d\/([^\/]+)/;
+            const driveMatch = url.match(driveRegex);
+            if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+            return url;
+            
+        case 'mp4':
+        case 'm3u8':
+            return url;
+            
+        default:
+            return url;
+    }
+}
+
+// Helper function to get thumbnail URL
+function getThumbnailUrl(video) {
+    if (video.thumbnail) return video.thumbnail;
+    
+    if (video.videoSource === 'youtube') {
+        const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/;
+        const match = video.videoUrl.match(youtubeRegex);
+        if (match) return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+    }
+    
+    if (video.videoSource === 'vimeo') {
+        return 'https://via.placeholder.com/640x360?text=Vimeo+Video';
+    }
+    
+    return 'https://via.placeholder.com/640x360?text=Video+Thumbnail';
+}
+
+// Get single video with view count increment
+app.get('/api/videos/:id', async (req, res) => {
+    try {
+        const video = await DemoVideo.findById(req.params.id);
+        if (!video) {
+            return res.status(404).json({ success: false, message: "Video not found" });
+        }
+        
+        if (!video.isActive) {
+            return res.status(403).json({ success: false, message: "Video not available" });
+        }
+        
+        // Increment view count
+        video.views += 1;
+        await video.save();
+        
+        const formattedVideo = {
+            ...video.toObject(),
+            embedUrl: getEmbedUrl(video.videoUrl, video.videoSource),
+            thumbnailUrl: getThumbnailUrl(video)
+        };
+        
+        res.json({ success: true, data: formattedVideo });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get video categories
+app.get('/api/video-categories', async (req, res) => {
+    try {
+        const categories = await DemoVideo.aggregate([
+            { $match: { isActive: true } },
+            { $group: { 
+                _id: '$category', 
+                count: { $sum: 1 },
+                videos: { $push: { title: '$title', _id: '$_id' } }
+            }},
+            { $sort: { count: -1 } }
+        ]);
+        
+        res.json({ success: true, data: categories });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get featured video
+app.get('/api/featured-video', async (req, res) => {
+    try {
+        const featuredVideo = await DemoVideo.findOne({ 
+            featured: true, 
+            isActive: true,
+            publishDate: { $lte: new Date() }
+        }).sort({ order: 1 });
+        
+        if (featuredVideo) {
+            const formatted = {
+                ...featuredVideo.toObject(),
+                embedUrl: getEmbedUrl(featuredVideo.videoUrl, featuredVideo.videoSource),
+                thumbnailUrl: getThumbnailUrl(featuredVideo)
+            };
+            res.json({ success: true, data: formatted });
+        } else {
+            res.json({ success: true, data: null });
+        }
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// VIDEO MANAGEMENT APIs (Admin Only)
+// ============================================
+
+// Get all videos for admin
+app.get('/api/admin/videos', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const videos = await DemoVideo.find().sort({ order: 1, createdAt: -1 });
+        res.json({ success: true, data: videos });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Create new video (Supports ALL formats)
+app.post('/api/admin/videos', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const {
+            title, description, videoSource, videoUrl, embedCode,
+            thumbnail, category, subCategory, tags,
+            order, featured, isActive, isPremium,
+            language, duration, publishDate, expiryDate
+        } = req.body;
+        
+        if (!title) {
+            return res.status(400).json({ success: false, message: "Title is required" });
+        }
+        
+        if (!videoUrl && videoSource !== 'embed') {
+            return res.status(400).json({ success: false, message: "Video URL is required" });
+        }
+        
+        const video = new DemoVideo({
+            title,
+            description: description || '',
+            videoSource: videoSource || 'youtube',
+            videoUrl: videoUrl || '',
+            embedCode: embedCode || '',
+            thumbnail: thumbnail || '',
+            category: category || 'demo',
+            subCategory: subCategory || '',
+            tags: tags || [],
+            order: order || 0,
+            featured: featured || false,
+            isActive: isActive !== undefined ? isActive : true,
+            isPremium: isPremium || false,
+            language: language || 'hindi',
+            duration: duration || '',
+            publishDate: publishDate ? new Date(publishDate) : new Date(),
+            expiryDate: expiryDate ? new Date(expiryDate) : null,
+            uploadedBy: req.user.adminID,
+            approvedBy: req.user.adminID,
+            approvedAt: new Date()
+        });
+        
+        await video.save();
+        
+        console.log(`🎥 New Video Added: ${title} (${videoSource}) by ${req.user.adminID}`);
+        
+        res.json({ 
+            success: true, 
+            message: "Video added successfully", 
+            data: video 
+        });
+    } catch (err) {
+        console.error('Video creation error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Update video
+app.put('/api/admin/videos/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const video = await DemoVideo.findById(req.params.id);
+        if (!video) {
+            return res.status(404).json({ success: false, message: "Video not found" });
+        }
+        
+        const updateFields = [
+            'title', 'description', 'videoSource', 'videoUrl', 'embedCode',
+            'thumbnail', 'category', 'subCategory', 'tags', 'order',
+            'featured', 'isActive', 'isPremium', 'language', 'duration',
+            'publishDate', 'expiryDate'
+        ];
+        
+        updateFields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                video[field] = req.body[field];
+            }
+        });
+        
+        await video.save();
+        
+        res.json({ 
+            success: true, 
+            message: "Video updated successfully", 
+            data: video 
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Delete video
+app.delete('/api/admin/videos/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const video = await DemoVideo.findByIdAndDelete(req.params.id);
+        if (!video) {
+            return res.status(404).json({ success: false, message: "Video not found" });
+        }
+        
+        res.json({ success: true, message: "Video deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Bulk video operations
+app.post('/api/admin/videos/bulk', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { videos, action, videoIds, updateData } = req.body;
+        
+        // Bulk create/update
+        if (videos && Array.isArray(videos)) {
+            const results = [];
+            for (const v of videos) {
+                if (v._id) {
+                    const updated = await DemoVideo.findByIdAndUpdate(v._id, v, { new: true });
+                    if (updated) results.push(updated);
+                } else {
+                    const created = new DemoVideo({
+                        ...v,
+                        uploadedBy: req.user.adminID,
+                        approvedBy: req.user.adminID,
+                        approvedAt: new Date()
+                    });
+                    await created.save();
+                    results.push(created);
+                }
+            }
+            return res.json({ success: true, message: "Videos saved", data: results });
+        }
+        
+        // Bulk delete
+        if (action === 'delete' && videoIds && Array.isArray(videoIds)) {
+            const result = await DemoVideo.deleteMany({ _id: { $in: videoIds } });
+            return res.json({ success: true, message: `${result.deletedCount} videos deleted` });
+        }
+        
+        // Bulk update
+        if (action === 'update' && videoIds && updateData) {
+            const result = await DemoVideo.updateMany(
+                { _id: { $in: videoIds } },
+                { $set: updateData }
+            );
+            return res.json({ success: true, message: `${result.modifiedCount} videos updated` });
+        }
+        
+        res.status(400).json({ success: false, message: "Invalid request" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Video analytics
+app.get('/api/admin/videos/analytics', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const totalVideos = await DemoVideo.countDocuments();
+        const activeVideos = await DemoVideo.countDocuments({ isActive: true });
+        const totalViews = await DemoVideo.aggregate([
+            { $group: { _id: null, total: { $sum: '$views' } } }
+        ]);
+        
+        const topVideos = await DemoVideo.find()
+            .sort({ views: -1 })
+            .limit(10)
+            .select('title views thumbnail');
+        
+        const viewsByCategory = await DemoVideo.aggregate([
+            { $match: { isActive: true } },
+            { $group: { _id: '$category', views: { $sum: '$views' }, count: { $sum: 1 } } },
+            { $sort: { views: -1 } }
+        ]);
+        
+        res.json({
+            success: true,
+            data: {
+                totalVideos,
+                activeVideos,
+                totalViews: totalViews[0]?.total || 0,
+                topVideos,
+                viewsByCategory
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// ENQUIRY CALL REMINDER (Twilio Integration)
+// ============================================
+
+// Send call reminder for enquiry
+app.post('/api/enquiry-call/:enquiryId', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const enquiry = await Enquiry.findById(req.params.enquiryId);
+        if (!enquiry) {
+            return res.status(404).json({ success: false, message: "Enquiry not found" });
+        }
+        
+        const { message } = req.body;
+        const callMessage = message || `नमस्ते ${enquiry.fullName} जी, यह बाल भारती कोचिंग सेंटर से बात हो रही है। आपकी enquiry के संबंध में हम आपसे संपर्क कर रहे हैं। कृपया जल्द से जल्द सेंटर आकर मिलें। धन्यवाद।`;
+        
+        // Make call using Twilio (if configured)
+        if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+            const twilioClient = require('twilio')(
+                process.env.TWILIO_ACCOUNT_SID,
+                process.env.TWILIO_AUTH_TOKEN
+            );
+            
+            const call = await twilioClient.calls.create({
+                url: `http://twimlets.com/message?Message=${encodeURIComponent(callMessage)}`,
+                to: enquiry.mobile,
+                from: process.env.TWILIO_PHONE_NUMBER || '+13613211017'
+            });
+            
+            enquiry.callReminderSent = true;
+            enquiry.reminderSentAt = new Date();
+            await enquiry.save();
+            
+            res.json({ 
+                success: true, 
+                message: "Call initiated", 
+                callSid: call.sid 
+            });
+        } else {
+            // Twilio not configured
+            enquiry.callReminderSent = true;
+            enquiry.reminderSentAt = new Date();
+            await enquiry.save();
+            
+            res.json({ 
+                success: true, 
+                message: "Reminder marked (SMS/Twilio not configured)" 
+            });
+        }
+        
+    } catch (err) {
+        console.error('Enquiry call error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 // ============================================
 // SERVE HTML FILES
 // ============================================
