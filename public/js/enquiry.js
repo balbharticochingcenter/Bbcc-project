@@ -72,73 +72,59 @@
     ];
     
     // ============================================
-    // DEFAULT VIDEOS FOR BACKGROUND
+    // NO DEFAULT VIDEOS - Only from Database
     // ============================================
     
-    const DEFAULT_VIDEOS = [
-        {
-            id: 'intro1',
-            title: '🎓 बाल भारती कोचिंग का परिचय',
-            description: 'हमारे संस्थान की शिक्षण पद्धति और सफलता की कहानी',
-            videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            videoType: 'youtube',
-            thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-            featured: true
-        },
-        {
-            id: 'demo1',
-            title: '🔬 गणित डेमो क्लास - बीजगणित',
-            description: 'गणित को आसान बनाने की हमारी विशेष विधि',
-            videoUrl: 'https://www.youtube.com/watch?v=9bZkp7q19f0',
-            videoType: 'youtube',
-            thumbnail: 'https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg',
-            featured: false
-        },
-        {
-            id: 'demo2',
-            title: '🧪 विज्ञान डेमो - भौतिक विज्ञान',
-            description: 'प्रैक्टिकल तरीके से विज्ञान सीखें',
-            videoUrl: 'https://www.youtube.com/watch?v=3JZ_D3ELwOQ',
-            videoType: 'youtube',
-            thumbnail: 'https://img.youtube.com/vi/3JZ_D3ELwOQ/maxresdefault.jpg',
-            featured: false
-        },
-        {
-            id: 'demo3',
-            title: '📖 अंग्रेजी ग्रामर क्लास',
-            description: 'स्पोकन इंग्लिश और ग्रामर की बेहतरीन क्लास',
-            videoUrl: 'https://www.youtube.com/watch?v=8jLOx1hD3_o',
-            videoType: 'youtube',
-            thumbnail: 'https://img.youtube.com/vi/8jLOx1hD3_o/maxresdefault.jpg',
-            featured: false
-        },
-        {
-            id: 'demo4',
-            title: '💻 कंप्यूटर साइंस - प्रोग्रामिंग बेसिक्स',
-            description: 'कोडिंग की दुनिया में पहला कदम',
-            videoUrl: 'https://www.youtube.com/watch?v=qz0aGYrrlhU',
-            videoType: 'youtube',
-            thumbnail: 'https://img.youtube.com/vi/qz0aGYrrlhU/maxresdefault.jpg',
-            featured: false
-        },
-        {
-            id: 'demo5',
-            title: '📝 एग्जाम टिप्स और ट्रिक्स',
-            description: 'परीक्षा में अच्छे नंबर लाने के सीक्रेट',
-            videoUrl: 'https://www.youtube.com/watch?v=6yBDK5nqT7k',
-            videoType: 'youtube',
-            thumbnail: 'https://img.youtube.com/vi/6yBDK5nqT7k/maxresdefault.jpg',
-            featured: false
+    let videosData = []; // Will store videos from API
+    let videoSectionCreated = false;
+    
+    // ============================================
+    // FETCH VIDEOS FROM DATABASE
+    // ============================================
+    
+    async function fetchVideosFromDatabase() {
+        try {
+            console.log('📡 Fetching videos from database...');
+            
+            // Try to fetch from API
+            const response = await fetch(`${CONFIG.apiBaseUrl}/api/videos?limit=20`);
+            
+            if (!response.ok) {
+                console.log('❌ No videos found in database, hiding video section');
+                return [];
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.length > 0) {
+                console.log(`✅ Found ${result.data.length} videos in database`);
+                return result.data;
+            } else {
+                console.log('⚠️ No videos found in database');
+                return [];
+            }
+            
+        } catch (error) {
+            console.error('❌ Error fetching videos:', error);
+            return [];
         }
-    ];
+    }
     
     // ============================================
-    // CREATE DEMO VIDEO SECTION (Background)
+    // CREATE DEMO VIDEO SECTION (Only if videos exist)
     // ============================================
     
-    function createDemoVideoSection() {
+    function createDemoVideoSection(videos) {
         // Check if video section already exists
         if (document.getElementById('bbVideoSection')) return;
+        
+        // If no videos, don't create section
+        if (!videos || videos.length === 0) {
+            console.log('🚫 No videos available, skipping video section creation');
+            return;
+        }
+        
+        videoSectionCreated = true;
         
         const videoSection = document.createElement('section');
         videoSection.id = 'bbVideoSection';
@@ -192,8 +178,8 @@
             document.body.insertBefore(videoSection, document.body.firstChild);
         }
         
-        // Load videos
-        loadDemoVideos();
+        // Render videos
+        renderVideosFromData(videos);
         
         // View more button
         const viewMoreBtn = document.getElementById('bbViewMoreVideos');
@@ -201,29 +187,37 @@
             viewMoreBtn.addEventListener('click', () => {
                 const grid = document.getElementById('bbVideosGrid');
                 if (grid) {
-                    renderAllVideos(grid);
+                    renderAllVideosFromData(grid, videos);
                 }
             });
         }
     }
     
-    function loadDemoVideos() {
+    function renderVideosFromData(videos) {
         const featuredContainer = document.getElementById('bbFeaturedVideoContainer');
         const grid = document.getElementById('bbVideosGrid');
         
+        if (!videos || videos.length === 0) return;
+        
+        // Get featured video (first one with featured=true, otherwise first video)
+        const featuredVideo = videos.find(v => v.featured === true) || videos[0];
+        
         if (featuredContainer) {
-            renderFeaturedVideo(DEFAULT_VIDEOS[0], featuredContainer);
+            renderFeaturedVideoFromData(featuredVideo, featuredContainer);
         }
         
+        // Get next 4 videos for grid
+        const gridVideos = videos.filter(v => v._id !== featuredVideo._id).slice(0, 4);
+        
         if (grid) {
-            renderDemoVideosGrid(grid, DEFAULT_VIDEOS.slice(1, 5));
+            renderVideosGridFromData(grid, gridVideos);
         }
     }
     
-    function renderFeaturedVideo(video, container) {
-        if (!container) return;
+    function renderFeaturedVideoFromData(video, container) {
+        if (!container || !video) return;
         
-        const embedUrl = getEmbedUrl(video.videoUrl, video.videoType);
+        const embedUrl = getEmbedUrlFromData(video.videoUrl, video.videoSource || 'youtube');
         
         container.innerHTML = `
             <div style="
@@ -242,18 +236,65 @@
                     </iframe>
                 </div>
                 <div style="padding: 20px;">
-                    <h3 style="margin: 0 0 8px; color: white; font-size: 20px;">${video.title}</h3>
-                    <p style="margin: 0; color: rgba(255,255,255,0.8);">${video.description}</p>
+                    <h3 style="margin: 0 0 8px; color: white; font-size: 20px;">${escapeHtml(video.title)}</h3>
+                    <p style="margin: 0; color: rgba(255,255,255,0.8);">${escapeHtml(video.description || 'Watch this demo video')}</p>
                 </div>
             </div>
         `;
     }
     
-    function renderDemoVideosGrid(container, videos) {
+    function renderVideosGridFromData(container, videos) {
+        if (!container) return;
+        
+        if (videos.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; color: white; padding: 40px;">
+                    <p>More videos coming soon...</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = videos.map(video => `
+            <div onclick="playDemoVideoFromData('${video.videoUrl}', '${video.videoSource || 'youtube'}', '${escapeHtml(video.title)}')" style="
+                background: rgba(255,255,255,0.1);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                overflow: hidden;
+                cursor: pointer;
+                transition: all 0.3s;
+            ">
+                <div style="position: relative;">
+                    <img src="${getThumbnailUrlFromData(video)}" alt="${escapeHtml(video.title)}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">
+                    <div style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(0,0,0,0.6);
+                        border-radius: 50%;
+                        width: 50px;
+                        height: 50px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">
+                        <span style="color: white; font-size: 20px;">▶</span>
+                    </div>
+                </div>
+                <div style="padding: 15px;">
+                    <h4 style="margin: 0 0 5px; color: white; font-size: 16px;">${escapeHtml(video.title)}</h4>
+                    <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 12px;">${escapeHtml((video.description || '').substring(0, 60))}...</p>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function renderAllVideosFromData(container, videos) {
         if (!container) return;
         
         container.innerHTML = videos.map(video => `
-            <div onclick="playDemoVideo('${video.videoUrl}', '${video.videoType}')" style="
+            <div onclick="playDemoVideoFromData('${video.videoUrl}', '${video.videoSource || 'youtube'}', '${escapeHtml(video.title)}')" style="
                 background: rgba(255,255,255,0.1);
                 backdrop-filter: blur(10px);
                 border-radius: 20px;
@@ -262,7 +303,7 @@
                 transition: all 0.3s;
             ">
                 <div style="position: relative;">
-                    <img src="${video.thumbnail}" alt="${video.title}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;">
+                    <img src="${getThumbnailUrlFromData(video)}" alt="${escapeHtml(video.title)}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">
                     <div style="
                         position: absolute;
                         top: 50%;
@@ -280,51 +321,17 @@
                     </div>
                 </div>
                 <div style="padding: 15px;">
-                    <h4 style="margin: 0 0 5px; color: white; font-size: 16px;">${video.title}</h4>
-                    <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 12px;">${video.description.substring(0, 60)}...</p>
+                    <h4 style="margin: 0 0 5px; color: white; font-size: 16px;">${escapeHtml(video.title)}</h4>
+                    <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 12px;">${escapeHtml((video.description || '').substring(0, 60))}...</p>
                 </div>
             </div>
         `).join('');
     }
     
-    function renderAllVideos(container) {
-        container.innerHTML = DEFAULT_VIDEOS.map(video => `
-            <div onclick="playDemoVideo('${video.videoUrl}', '${video.videoType}')" style="
-                background: rgba(255,255,255,0.1);
-                backdrop-filter: blur(10px);
-                border-radius: 20px;
-                overflow: hidden;
-                cursor: pointer;
-                transition: all 0.3s;
-            ">
-                <div style="position: relative;">
-                    <img src="${video.thumbnail}" alt="${video.title}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;">
-                    <div style="
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        background: rgba(0,0,0,0.6);
-                        border-radius: 50%;
-                        width: 50px;
-                        height: 50px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    ">
-                        <span style="color: white; font-size: 20px;">▶</span>
-                    </div>
-                </div>
-                <div style="padding: 15px;">
-                    <h4 style="margin: 0 0 5px; color: white; font-size: 16px;">${video.title}</h4>
-                    <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 12px;">${video.description.substring(0, 60)}...</p>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    function getEmbedUrl(url, type) {
-        if (type === 'youtube') {
+    function getEmbedUrlFromData(url, source) {
+        if (!url) return '';
+        
+        if (source === 'youtube') {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
             const match = url.match(regExp);
             const id = (match && match[2].length === 11) ? match[2] : null;
@@ -333,7 +340,20 @@
         return url;
     }
     
-    window.playDemoVideo = function(videoUrl, videoType) {
+    function getThumbnailUrlFromData(video) {
+        if (video.thumbnail) return video.thumbnail;
+        
+        if (video.videoSource === 'youtube') {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = video.videoUrl.match(regExp);
+            const id = (match && match[2].length === 11) ? match[2] : null;
+            if (id) return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+        }
+        
+        return 'https://via.placeholder.com/640x360?text=Video';
+    }
+    
+    window.playDemoVideoFromData = function(videoUrl, videoType, videoTitle) {
         // Create video modal if not exists
         let videoModal = document.getElementById('bbDemoVideoModal');
         if (!videoModal) {
@@ -376,7 +396,7 @@
         }
         
         const player = document.getElementById('bbDemoVideoPlayer');
-        const embedUrl = getEmbedUrl(videoUrl, videoType);
+        const embedUrl = getEmbedUrlFromData(videoUrl, videoType);
         
         if (player) {
             player.innerHTML = `
@@ -1179,6 +1199,16 @@
         showToast('आपके मोबाइल पर सूचना भेज दी गई है 📱 / SMS sent to your mobile', 'success');
     }
     
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
     // ============================================
     // ADD CSS ANIMATIONS
     // ============================================
@@ -1278,16 +1308,24 @@
     // INITIALIZE EVERYTHING
     // ============================================
     
-    function init() {
+    async function init() {
         console.log('🚀 Bal Bharti Coaching - Complete Module Initialized');
         console.log('📞 Contact Number:', CONFIG.centerPhone);
-        console.log('🎥 Demo Video Section Added');
-        console.log('🎨 3D Cartoon Modal Ready');
         
         addStyles();
-        createDemoVideoSection();  // Demo video section (background)
         createModal();              // 3D cartoon modal
         createEnquiryButton();      // Center position button
+        
+        // Fetch videos from database and create section only if videos exist
+        const videos = await fetchVideosFromDatabase();
+        
+        if (videos && videos.length > 0) {
+            console.log(`✅ Creating video section with ${videos.length} videos`);
+            createDemoVideoSection(videos);
+        } else {
+            console.log('❌ No videos found in database, video section will not be displayed');
+            // Optional: Show a message or hide the section completely
+        }
     }
     
     if (document.readyState === 'loading') {
