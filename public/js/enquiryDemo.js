@@ -7,6 +7,8 @@ class EnquiryVideoAdminModule {
         this.token = localStorage.getItem('token') || sessionStorage.getItem('token');
         this.videoChart = null;
         this.enquiryChart = null;
+        this.useDemoMode = false; // Will auto-switch if backend fails
+        this.demoVideos = this.loadDemoVideosFromStorage();
         this.init();
     }
 
@@ -17,6 +19,64 @@ class EnquiryVideoAdminModule {
         this.loadVideos();
         this.loadEnquiries();
         this.setupEventListeners();
+    }
+
+    // Load videos from localStorage for demo mode
+    loadDemoVideosFromStorage() {
+        const stored = localStorage.getItem('demo_videos');
+        if (stored) {
+            return JSON.parse(stored);
+        }
+        // Default demo videos
+        return [
+            {
+                _id: 'demo1',
+                title: 'Introduction to Our Institute',
+                videoSource: 'youtube',
+                videoUrl: 'https://youtu.be/i5buD3fh0yw',
+                thumbnail: '',
+                category: 'intro',
+                description: 'Welcome to our coaching institute',
+                order: 1,
+                isActive: true,
+                featured: true,
+                views: 1250,
+                createdAt: new Date().toISOString()
+            },
+            {
+                _id: 'demo2',
+                title: 'Effective Study Tips for Students',
+                videoSource: 'youtube',
+                videoUrl: 'https://youtu.be/jNQXAC9IVRw',
+                thumbnail: '',
+                category: 'tutorial',
+                description: 'Tips for better learning and exam preparation',
+                order: 2,
+                isActive: true,
+                featured: false,
+                views: 890,
+                createdAt: new Date().toISOString()
+            },
+            {
+                _id: 'demo3',
+                title: 'Success Stories - Our Top Students',
+                videoSource: 'youtube',
+                videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                thumbnail: '',
+                category: 'success',
+                description: 'Hear from our successful students',
+                order: 3,
+                isActive: true,
+                featured: false,
+                views: 2340,
+                createdAt: new Date().toISOString()
+            }
+        ];
+    }
+
+    // Save demo videos to localStorage
+    saveDemoVideosToStorage() {
+        localStorage.setItem('demo_videos', JSON.stringify(this.demoVideos));
     }
 
     injectStyles() {
@@ -219,6 +279,17 @@ class EnquiryVideoAdminModule {
                     color: white;
                     border-color: transparent;
                 }
+
+                /* Demo Mode Badge */
+                .demo-mode-badge {
+                    background: #ff9800;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                    margin-left: 10px;
+                }
             </style>
         `;
         document.head.insertAdjacentHTML('beforeend', styles);
@@ -239,7 +310,11 @@ class EnquiryVideoAdminModule {
         videoSection.className = 'premium-card mt-4';
         videoSection.innerHTML = `
             <div class="card-header">
-                <h3><i class="fas fa-video me-2"></i> Demo Video Management</h3>
+                <h3><i class="fas fa-video me-2"></i> Demo Video Management 
+                    <span id="demoModeBadge" style="display: none;" class="demo-mode-badge">
+                        <i class="fas fa-info-circle"></i> Demo Mode
+                    </span>
+                </h3>
                 <div>
                     <button class="btn-primary-premium" id="addVideoBtn" style="padding: 8px 16px;">
                         <i class="fas fa-plus"></i> Add Video
@@ -311,7 +386,7 @@ class EnquiryVideoAdminModule {
                             <div class="mb-3">
                                 <label class="fw-bold">Video URL *</label>
                                 <input type="text" id="videoUrl" class="form-control" placeholder="https://youtube.com/watch?v=...">
-                                <small class="text-muted">YouTube, Vimeo, or direct video URL</small>
+                                <small class="text-muted">YouTube, Vimeo, or direct video URL (supports playlist URLs)</small>
                             </div>
                             <div class="mb-3" id="embedCodeDiv" style="display: none;">
                                 <label class="fw-bold">Embed Code</label>
@@ -320,6 +395,7 @@ class EnquiryVideoAdminModule {
                             <div class="mb-3">
                                 <label class="fw-bold">Thumbnail URL (Optional)</label>
                                 <input type="text" id="videoThumbnail" class="form-control" placeholder="https://...">
+                                <small class="text-muted">Leave empty for auto-generated YouTube thumbnail</small>
                             </div>
                             <div class="mb-3">
                                 <label class="fw-bold">Category</label>
@@ -364,31 +440,51 @@ class EnquiryVideoAdminModule {
         document.body.insertAdjacentHTML('beforeend', modalHtml);
 
         // Show/hide embed code field
-        document.getElementById('videoSource').addEventListener('change', (e) => {
-            const embedDiv = document.getElementById('embedCodeDiv');
-            embedDiv.style.display = e.target.value === 'embed' ? 'block' : 'none';
-            if (e.target.value === 'embed') {
-                document.getElementById('videoUrl').placeholder = 'Optional for embed';
-            } else {
-                document.getElementById('videoUrl').placeholder = 'https://youtube.com/watch?v=...';
-            }
-        });
+        const sourceSelect = document.getElementById('videoSource');
+        if (sourceSelect) {
+            sourceSelect.addEventListener('change', (e) => {
+                const embedDiv = document.getElementById('embedCodeDiv');
+                embedDiv.style.display = e.target.value === 'embed' ? 'block' : 'none';
+                if (e.target.value === 'embed') {
+                    document.getElementById('videoUrl').placeholder = 'Optional for embed';
+                } else {
+                    document.getElementById('videoUrl').placeholder = 'https://youtube.com/watch?v=...';
+                }
+            });
+        }
     }
 
     async loadVideos() {
         try {
+            // Try to fetch from backend first
             const res = await fetch('/api/admin/videos', {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
-            const data = await res.json();
-            if (data.success) {
-                this.renderVideos(data.data);
-            } else {
-                this.renderDefaultVideos();
+            
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    this.useDemoMode = false;
+                    const demoBadge = document.getElementById('demoModeBadge');
+                    if (demoBadge) demoBadge.style.display = 'none';
+                    this.renderVideos(data.data);
+                    return;
+                }
             }
+            
+            // If backend fails, use demo mode
+            this.useDemoMode = true;
+            const demoBadge = document.getElementById('demoModeBadge');
+            if (demoBadge) demoBadge.style.display = 'inline-flex';
+            console.log('Using demo mode for videos');
+            this.renderVideos(this.demoVideos);
+            
         } catch (error) {
             console.error('Error loading videos:', error);
-            this.renderDefaultVideos();
+            this.useDemoMode = true;
+            const demoBadge = document.getElementById('demoModeBadge');
+            if (demoBadge) demoBadge.style.display = 'inline-flex';
+            this.renderVideos(this.demoVideos);
         }
     }
 
@@ -401,6 +497,7 @@ class EnquiryVideoAdminModule {
                 <div class="text-center py-5">
                     <i class="fas fa-video-slash fa-3x text-muted"></i>
                     <p class="mt-3">No videos added yet. Click "Add Video" to get started.</p>
+                    ${this.useDemoMode ? '<p class="text-muted small"><i class="fas fa-info-circle"></i> Demo Mode: Videos are saved locally</p>' : ''}
                 </div>
             `;
             return;
@@ -425,7 +522,7 @@ class EnquiryVideoAdminModule {
                         <span class="badge bg-secondary">${video.category || 'general'}</span>
                         <span class="badge ${video.isActive ? 'bg-success' : 'bg-danger'}">${video.isActive ? 'Active' : 'Inactive'}</span>
                     </div>
-                    ${video.featured ? '<span class="badge bg-warning text-dark"><i class="fas fa-star"></i> Featured</span>' : ''}
+                    ${video.featured ? '<span class="badge bg-warning text-dark mt-1"><i class="fas fa-star"></i> Featured</span>' : ''}
                 </div>
                 <div class="video-actions">
                     <button class="btn btn-sm btn-outline-primary play-video" data-id="${video._id}" data-url="${this.getEmbedUrl(video)}" data-title="${video.title}">
@@ -444,57 +541,57 @@ class EnquiryVideoAdminModule {
         this.attachVideoEvents();
     }
 
-    renderDefaultVideos() {
-        const container = document.getElementById('videosGridContainer');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="video-card">
-                <img class="video-thumbnail" src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" alt="Sample Video">
-                <div class="video-info">
-                    <div class="video-title">Introduction to Bal Bharti Coaching</div>
-                    <div class="video-meta"><span><i class="fas fa-eye"></i> 1250</span><span class="badge bg-secondary">intro</span></div>
-                </div>
-                <div class="video-actions">
-                    <button class="btn btn-sm btn-outline-primary play-demo-video" data-url="https://www.youtube.com/embed/dQw4w9WgXcQ"><i class="fas fa-play"></i> Play</button>
-                </div>
-            </div>
-            <div class="video-card">
-                <img class="video-thumbnail" src="https://img.youtube.com/vi/jNQXAC9IVRw/mqdefault.jpg" alt="Sample Video">
-                <div class="video-info">
-                    <div class="video-title">Effective Study Tips for Students</div>
-                    <div class="video-meta"><span><i class="fas fa-eye"></i> 890</span><span class="badge bg-secondary">tutorial</span></div>
-                </div>
-                <div class="video-actions">
-                    <button class="btn btn-sm btn-outline-primary play-demo-video" data-url="https://www.youtube.com/embed/jNQXAC9IVRw"><i class="fas fa-play"></i> Play</button>
-                </div>
-            </div>
-        `;
-
-        document.querySelectorAll('.play-demo-video').forEach(btn => {
-            btn.onclick = () => this.openVideoPlayer(btn.dataset.url, 'Demo Video');
-        });
-    }
-
     getVideoThumbnail(video) {
         if (video.thumbnail) return video.thumbnail;
+        
         if (video.videoSource === 'youtube') {
-            const match = video.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-            if (match) return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
+            let videoId = null;
+            let url = video.videoUrl;
+            
+            if (url.includes('youtube.com/watch')) {
+                const urlParams = new URLSearchParams(url.split('?')[1]);
+                videoId = urlParams.get('v');
+            } else if (url.includes('youtu.be/')) {
+                const afterDomain = url.split('youtu.be/')[1];
+                videoId = afterDomain.split('?')[0];
+            }
+            
+            if (videoId) {
+                return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            }
         }
+        
         return 'https://via.placeholder.com/280x160?text=Video';
     }
 
     getEmbedUrl(video) {
         if (video.embedCode) return video.embedCode;
+        
         if (video.videoSource === 'youtube') {
-            const match = video.videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-            if (match) return `https://www.youtube.com/embed/${match[1]}`;
+            let videoId = null;
+            let url = video.videoUrl;
+            
+            // Handle various YouTube URL formats
+            if (url.includes('youtube.com/watch')) {
+                const urlParams = new URLSearchParams(url.split('?')[1]);
+                videoId = urlParams.get('v');
+            } else if (url.includes('youtu.be/')) {
+                const afterDomain = url.split('youtu.be/')[1];
+                videoId = afterDomain.split('?')[0];
+            } else if (url.includes('youtube.com/embed/')) {
+                return url;
+            }
+            
+            if (videoId) {
+                return `https://www.youtube.com/embed/${videoId}`;
+            }
         }
+        
         if (video.videoSource === 'vimeo') {
             const match = video.videoUrl.match(/vimeo\.com\/(\d+)/);
             if (match) return `https://player.vimeo.com/video/${match[1]}`;
         }
+        
         return video.videoUrl;
     }
 
@@ -525,13 +622,40 @@ class EnquiryVideoAdminModule {
 
         const container = document.getElementById('videoPlayerContainerCustom');
         let embedHtml = '';
-        if (url.includes('youtube.com/embed') || url.includes('player.vimeo.com')) {
-            embedHtml = `<iframe src="${url}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        
+        // Clean and format the URL for embedding
+        let cleanUrl = url;
+        if (url.includes('youtube.com/embed')) {
+            const embedMatch = url.match(/youtube\.com\/embed\/([^?]+)/);
+            if (embedMatch) {
+                cleanUrl = `https://www.youtube.com/embed/${embedMatch[1]}?autoplay=1`;
+            }
+        } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            let videoId = null;
+            if (url.includes('youtube.com/watch')) {
+                const urlParams = new URLSearchParams(url.split('?')[1]);
+                videoId = urlParams.get('v');
+            } else if (url.includes('youtu.be/')) {
+                const afterDomain = url.split('youtu.be/')[1];
+                videoId = afterDomain.split('?')[0];
+            }
+            
+            if (videoId) {
+                cleanUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            }
+        } else if (url.includes('vimeo.com')) {
+            const match = url.match(/vimeo\.com\/(\d+)/);
+            if (match) {
+                cleanUrl = `https://player.vimeo.com/video/${match[1]}?autoplay=1`;
+            }
         } else if (url.match(/\.(mp4|webm|ogg)$/i)) {
             embedHtml = `<video controls autoplay><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
-        } else {
-            embedHtml = `<iframe src="${url}" frameborder="0" allowfullscreen></iframe>`;
         }
+        
+        if (embedHtml === '') {
+            embedHtml = `<iframe src="${cleanUrl}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        }
+        
         container.innerHTML = embedHtml;
         modal.classList.add('open');
         this.showToast(`Playing: ${title}`, 'info');
@@ -556,6 +680,15 @@ class EnquiryVideoAdminModule {
         document.querySelectorAll('.delete-video').forEach(btn => {
             btn.onclick = () => this.deleteVideo(btn.dataset.id);
         });
+    }
+
+    openAddVideoModal() {
+        const modal = document.getElementById('videoModal');
+        document.getElementById('videoModalTitle').innerHTML = '<i class="fas fa-video"></i> Add New Video';
+        document.getElementById('videoForm').reset();
+        document.getElementById('videoSource').value = 'youtube';
+        document.getElementById('embedCodeDiv').style.display = 'none';
+        modal.style.display = 'block';
     }
 
     async openEditVideoModal(video) {
@@ -593,6 +726,75 @@ class EnquiryVideoAdminModule {
         document.getElementById('cancelVideoBtn').onclick = () => modal.style.display = 'none';
     }
 
+    async addNewVideo() {
+        const data = {
+            title: document.getElementById('videoTitle').value,
+            videoSource: document.getElementById('videoSource').value,
+            videoUrl: document.getElementById('videoUrl').value,
+            thumbnail: document.getElementById('videoThumbnail').value,
+            category: document.getElementById('videoCategory').value,
+            description: document.getElementById('videoDescription').value,
+            order: parseInt(document.getElementById('videoOrder').value) || 0,
+            isActive: document.getElementById('videoStatus').value === 'true',
+            featured: document.getElementById('videoFeatured').checked
+        };
+        
+        if (document.getElementById('videoSource').value === 'embed') {
+            data.embedCode = document.getElementById('embedCode').value;
+        }
+        
+        if (!data.title) {
+            this.showToast('Please enter video title', 'error');
+            return false;
+        }
+        
+        // If in demo mode, save to localStorage
+        if (this.useDemoMode) {
+            const newVideo = {
+                ...data,
+                _id: 'demo_' + Date.now(),
+                views: 0,
+                createdAt: new Date().toISOString()
+            };
+            this.demoVideos.push(newVideo);
+            this.saveDemoVideosToStorage();
+            this.showToast('Video added successfully! (Demo Mode)', 'success');
+            return true;
+        }
+        
+        // Otherwise try backend
+        try {
+            const res = await fetch('/api/admin/videos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) {
+                this.showToast('Video added successfully!', 'success');
+                return true;
+            } else {
+                this.showToast(result.message || 'Add failed', 'error');
+                return false;
+            }
+        } catch (error) {
+            this.showToast('Add failed - Using demo mode', 'error');
+            // Fallback to demo mode
+            const newVideo = {
+                ...data,
+                _id: 'demo_' + Date.now(),
+                views: 0,
+                createdAt: new Date().toISOString()
+            };
+            this.demoVideos.push(newVideo);
+            this.saveDemoVideosToStorage();
+            this.useDemoMode = true;
+            const demoBadge = document.getElementById('demoModeBadge');
+            if (demoBadge) demoBadge.style.display = 'inline-flex';
+            return true;
+        }
+    }
+
     async updateVideo(id) {
         const data = {
             title: document.getElementById('videoTitle').value,
@@ -608,6 +810,17 @@ class EnquiryVideoAdminModule {
         
         if (document.getElementById('videoSource').value === 'embed') {
             data.embedCode = document.getElementById('embedCode').value;
+        }
+        
+        // If in demo mode, update localStorage
+        if (this.useDemoMode) {
+            const index = this.demoVideos.findIndex(v => v._id === id);
+            if (index !== -1) {
+                this.demoVideos[index] = { ...this.demoVideos[index], ...data };
+                this.saveDemoVideosToStorage();
+                this.showToast('Video updated successfully! (Demo Mode)', 'success');
+            }
+            return;
         }
         
         try {
@@ -629,6 +842,16 @@ class EnquiryVideoAdminModule {
 
     async deleteVideo(id) {
         if (!confirm('Delete this video? This action cannot be undone.')) return;
+        
+        // If in demo mode, delete from localStorage
+        if (this.useDemoMode) {
+            this.demoVideos = this.demoVideos.filter(v => v._id !== id);
+            this.saveDemoVideosToStorage();
+            this.showToast('Video deleted successfully! (Demo Mode)', 'success');
+            this.loadVideos();
+            return;
+        }
+        
         try {
             const res = await fetch(`/api/admin/videos/${id}`, {
                 method: 'DELETE',
@@ -812,27 +1035,27 @@ class EnquiryVideoAdminModule {
                 <td>
                     <strong>${this.escapeHtml(e.fullName)}</strong><br>
                     <small class="text-muted">${this.escapeHtml(e.email || 'No email')}</small>
-                 </td>
+                </td>
                 <td>
                     <a href="tel:${e.mobile}" class="text-decoration-none"><i class="fas fa-phone-alt"></i> ${e.mobile}</a>
                     ${e.alternateMobile ? `<br><small>Alt: ${e.alternateMobile}</small>` : ''}
-                 </td>
+                </td>
                 <td>
                     ${e.parentName ? `<strong>${this.escapeHtml(e.parentName)}</strong><br>` : ''}
                     ${e.parentMobile ? `<small>${e.parentMobile}</small>` : ''}
-                 </td>
+                </td>
                 <td>
                     ${e.board || '-'}<br>
                     <small>${e.class || '-'}</small>
-                 </td>
+                </td>
                 <td>
                     ${this.escapeHtml(e.location || '-')}<br>
                     <small>${this.escapeHtml(e.city || '')}</small>
-                 </td>
+                </td>
                 <td>
                     <span class="badge bg-secondary">${e.applicantType}</span>
                     ${e.applicantRelation ? `<br><small>${e.applicantRelation}</small>` : ''}
-                 </td>
+                </td>
                 <td>
                     <select class="form-select form-select-sm status-change" data-id="${e._id}" style="width: 110px; font-size: 0.7rem;">
                         <option value="pending" ${e.status === 'pending' ? 'selected' : ''}>Pending</option>
@@ -842,11 +1065,11 @@ class EnquiryVideoAdminModule {
                         <option value="not_interested" ${e.status === 'not_interested' ? 'selected' : ''}>Not Interested</option>
                         <option value="spam" ${e.status === 'spam' ? 'selected' : ''}>Spam</option>
                     </select>
-                 </td>
+                </td>
                 <td>
                     <small>${new Date(e.createdAt).toLocaleDateString('en-IN')}</small><br>
                     <small class="text-muted">${new Date(e.createdAt).toLocaleTimeString()}</small>
-                 </td>
+                </td>
                 <td>
                     <div class="btn-group btn-group-sm">
                         <button class="btn btn-outline-primary view-enquiry" data-id="${e._id}" data-enquiry='${JSON.stringify(e)}' title="View Details">
@@ -859,8 +1082,8 @@ class EnquiryVideoAdminModule {
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
-                 </td>
-             </tr>
+                </td>
+            </tr>
         `).join('');
 
         // Add pagination
@@ -1030,6 +1253,14 @@ class EnquiryVideoAdminModule {
             };
         }
 
+        // Close Modal Button
+        const closeVideoModal = document.getElementById('closeVideoModal');
+        if (closeVideoModal) {
+            closeVideoModal.onclick = () => {
+                document.getElementById('videoModal').style.display = 'none';
+            };
+        }
+
         // Video Search
         const videoSearch = document.getElementById('videoSearch');
         if (videoSearch) {
@@ -1107,57 +1338,6 @@ class EnquiryVideoAdminModule {
         }
     }
 
-    openAddVideoModal() {
-        const modal = document.getElementById('videoModal');
-        document.getElementById('videoModalTitle').innerHTML = '<i class="fas fa-video"></i> Add New Video';
-        document.getElementById('videoForm').reset();
-        document.getElementById('videoSource').value = 'youtube';
-        document.getElementById('embedCodeDiv').style.display = 'none';
-        modal.style.display = 'block';
-    }
-
-    async addNewVideo() {
-        const data = {
-            title: document.getElementById('videoTitle').value,
-            videoSource: document.getElementById('videoSource').value,
-            videoUrl: document.getElementById('videoUrl').value,
-            thumbnail: document.getElementById('videoThumbnail').value,
-            category: document.getElementById('videoCategory').value,
-            description: document.getElementById('videoDescription').value,
-            order: parseInt(document.getElementById('videoOrder').value) || 0,
-            isActive: document.getElementById('videoStatus').value === 'true',
-            featured: document.getElementById('videoFeatured').checked
-        };
-        
-        if (document.getElementById('videoSource').value === 'embed') {
-            data.embedCode = document.getElementById('embedCode').value;
-        }
-        
-        if (!data.title) {
-            this.showToast('Please enter video title', 'error');
-            return false;
-        }
-        
-        try {
-            const res = await fetch('/api/admin/videos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if (result.success) {
-                this.showToast('Video added successfully!', 'success');
-                return true;
-            } else {
-                this.showToast(result.message || 'Add failed', 'error');
-                return false;
-            }
-        } catch (error) {
-            this.showToast('Add failed', 'error');
-            return false;
-        }
-    }
-
     async exportEnquiriesToCSV() {
         try {
             const res = await fetch('/api/admin/enquiries?limit=1000', {
@@ -1202,10 +1382,31 @@ class EnquiryVideoAdminModule {
     }
 
     showToast(msg, type = 'success') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toastContainer';
+            toastContainer.style.position = 'fixed';
+            toastContainer.style.bottom = '20px';
+            toastContainer.style.right = '20px';
+            toastContainer.style.zIndex = '10000';
+            document.body.appendChild(toastContainer);
+        }
+
         const toast = document.createElement('div');
         toast.className = `toast-premium ${type}`;
+        toast.style.backgroundColor = type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3';
+        toast.style.color = 'white';
+        toast.style.padding = '12px 20px';
+        toast.style.borderRadius = '8px';
+        toast.style.marginBottom = '10px';
+        toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        toast.style.display = 'flex';
+        toast.style.alignItems = 'center';
+        toast.style.gap = '10px';
         toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${msg}</span>`;
-        document.getElementById('toastContainer').appendChild(toast);
+        toastContainer.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
 
