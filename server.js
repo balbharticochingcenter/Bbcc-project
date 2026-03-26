@@ -558,10 +558,9 @@ app.post('/api/twilio-voice', (req, res) => {
     const VoiceResponse = require('twilio').twiml.VoiceResponse;
     const response = new VoiceResponse();
     
-    // Get message from request body or use default
-    const message = req.body.message || 'नमस्ते, यह बाल भारती कोचिंग सेंटर से बात हो रही है। कृपया अपनी फीस जमा कर दें। धन्यवाद।';
+    const message = req.body.message || 'Namaste, yah Bal Bharti Coaching Center se baat ho rahi hai. Kripya apni fees jama kar den. Dhanyavaad.';
     
-    response.say({ voice: 'alice', language: 'hi-IN' }, message);
+    response.say({ voice: 'Polly.Aditi' }, message);
     
     res.set('Content-Type', 'text/xml');
     res.send(response.toString());
@@ -1911,7 +1910,7 @@ const DemoVideoSchema = new mongoose.Schema({
     // Video Metadata
     duration: { type: String, default: '' },
     quality: { type: [String], default: ['720p'] }, // Available qualities
-    language: { type: String, default: 'hindi' }, // Hindi, English, etc.
+    language: { type: String, default: 'en' }, // Hindi, English, etc.
     
     // Categories & Organization
     category: { type: String, default: 'demo', trim: true },
@@ -2556,7 +2555,7 @@ app.post('/api/admin/videos', verifyToken, async (req, res) => {
             featured: featured || false,
             isActive: isActive !== undefined ? isActive : true,
             isPremium: isPremium || false,
-            language: language || 'hindi',
+            language: language || 'en',
             duration: duration || '',
             publishDate: publishDate ? new Date(publishDate) : new Date(),
             expiryDate: expiryDate ? new Date(expiryDate) : null,
