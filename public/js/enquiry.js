@@ -1,6 +1,6 @@
 // ============================================
-// BAL BHARTI COACHING - COMPLETE MODULE (FIXED VIDEO PLAYER)
-// Custom YouTube-like Player + Auto-open Form + Enquiry Button
+// BAL BHARTI COACHING - COMPLETE MODULE (FULLY FIXED)
+// No Errors | Smooth Scroll | Working Video Player
 // ============================================
 
 (function() {
@@ -72,7 +72,7 @@
     ];
     
     // ============================================
-    // IMPROVED VIDEO URL PARSER - Supports ALL YouTube formats
+    // EXTRACT YOUTUBE VIDEO ID - FIXED
     // ============================================
     
     function extractYouTubeVideoId(url) {
@@ -84,9 +84,7 @@
             /(?:youtube\.com\/embed\/)([^?]+)/i,
             /(?:youtube\.com\/v\/)([^?]+)/i,
             /(?:youtube\.com\/shorts\/)([^?]+)/i,
-            /(?:youtube\.com\/live\/)([^?]+)/i,
-            /(?:youtube\.com\/watch\?.*&v=)([^&]+)/i,
-            /(?:youtube-nocookie\.com\/embed\/)([^?]+)/i
+            /(?:youtube\.com\/live\/)([^?]+)/i
         ];
         
         for (let pattern of patterns) {
@@ -138,21 +136,7 @@
     let cachedVideos = [];
     
     // ============================================
-    // CUSTOM YOUTUBE-LIKE VIDEO PLAYER
-    // ============================================
-    
-    // Direct YouTube embed function - most reliable
-    function getDirectYouTubeEmbed(videoUrl) {
-        const videoId = extractYouTubeVideoId(videoUrl);
-        if (videoId) {
-            // Using youtube-nocookie.com for better privacy and fewer errors
-            return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
-        }
-        return null;
-    }
-    
-    // ============================================
-    // VIDEO ICON BUTTON (Right Side) - Modern Vip Style
+    // VIP STYLE VIDEO ICON BUTTON (RIGHT SIDE)
     // ============================================
     
     function createVideoIconButton() {
@@ -236,7 +220,7 @@
     }
     
     // ============================================
-    // VIDEO MODAL - Custom YouTube-like Player
+    // VIDEO MODAL - WITH WORKING SCROLL
     // ============================================
     
     function createVideoModal() {
@@ -257,14 +241,13 @@
             justify-content: center;
             align-items: center;
             animation: bbFadeIn 0.3s ease;
-            overflow-y: auto;
         `;
         
         videoModal.innerHTML = `
             <div style="
                 width: 95%;
                 max-width: 1300px;
-                max-height: 90vh;
+                height: 90vh;
                 background: linear-gradient(145deg, #1a1a2e, #16213e);
                 border-radius: 30px;
                 overflow: hidden;
@@ -272,6 +255,8 @@
                 animation: bbCartoonPop 0.4s ease;
                 box-shadow: 0 30px 60px rgba(0,0,0,0.6);
                 border: 1px solid rgba(255,255,255,0.1);
+                display: flex;
+                flex-direction: column;
             ">
                 <!-- Header -->
                 <div style="
@@ -280,6 +265,7 @@
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    flex-shrink: 0;
                 ">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <span style="font-size: 28px;">🎬</span>
@@ -299,12 +285,11 @@
                 </div>
                 
                 <!-- Video Player Area -->
-                <div style="padding: 25px;">
+                <div style="padding: 20px 25px; flex-shrink: 0;">
                     <div id="bbCustomPlayerContainer" style="
                         background: #000;
                         border-radius: 20px;
                         overflow: hidden;
-                        margin-bottom: 25px;
                         box-shadow: 0 10px 40px rgba(0,0,0,0.5);
                     ">
                         <div id="bbVideoPlayer" style="position: relative; padding-bottom: 56.25%; height: 0; background: #000;">
@@ -327,23 +312,24 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Video List Title -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="color: white; margin: 0;">📚 All Videos / सभी वीडियो</h3>
-                        <span style="color: #ff6b81; font-size: 14px;" id="bbVideoCount"></span>
-                    </div>
-                    
-                    <!-- Video Grid -->
-                    <div id="bbVideoModalGrid" style="
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                        gap: 20px;
-                        max-height: 45vh;
-                        overflow-y: auto;
-                        padding: 5px;
-                    "></div>
                 </div>
+                
+                <!-- Video List Title -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 25px 15px 25px; flex-shrink: 0;">
+                    <h3 style="color: white; margin: 0;">📚 All Videos / सभी वीडियो</h3>
+                    <span style="color: #ff6b81; font-size: 14px;" id="bbVideoCount"></span>
+                </div>
+                
+                <!-- Video Grid - SCROLLABLE AREA -->
+                <div id="bbVideoModalGrid" style="
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                    gap: 20px;
+                    padding: 0 25px 25px 25px;
+                    overflow-y: auto;
+                    flex: 1;
+                    min-height: 0;
+                "></div>
             </div>
         `;
         
@@ -431,7 +417,7 @@
     function renderVideoGridInModal(container, videos) {
         if (!container) return;
         
-        container.innerHTML = videos.map(video => {
+        container.innerHTML = videos.map((video, index) => {
             const videoId = extractYouTubeVideoId(video.videoUrl);
             const thumbnail = video.thumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : 'https://via.placeholder.com/640x360?text=Video');
             
@@ -443,7 +429,7 @@
                 cursor: pointer;
                 transition: all 0.3s;
                 border: 1px solid rgba(255,255,255,0.1);
-            " class="bbVideoCard">
+            " class="bbVideoCard" data-video-index="${index}">
                 <div style="position: relative;">
                     <img src="${thumbnail}" alt="${escapeHtml(video.title)}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover;" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">
                     <div style="
@@ -471,7 +457,7 @@
                         border-radius: 8px;
                         font-size: 11px;
                         color: white;
-                    ">${video.duration || 'Watch'}</div>
+                    ">Watch</div>
                 </div>
                 <div style="padding: 12px;">
                     <h4 style="margin: 0 0 5px; color: white; font-size: 15px; font-weight: 500;">${escapeHtml(video.title)}</h4>
@@ -481,44 +467,42 @@
         `}).join('');
         
         // Add hover effect
-        document.querySelectorAll('.bbVideoCard').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-5px)';
-                card.style.borderColor = '#ff6b81';
+        setTimeout(() => {
+            document.querySelectorAll('.bbVideoCard').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-5px)';
+                    card.style.borderColor = '#ff6b81';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.borderColor = 'rgba(255,255,255,0.1)';
+                });
             });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-                card.style.borderColor = 'rgba(255,255,255,0.1)';
-            });
-        });
+        }, 100);
     }
     
-    // Play video in modal - DIRECT YouTube embed (no errors)
+    // ============================================
+    // PLAY VIDEO - FIXED: No Error 153
+    // ============================================
+    
     window.playVideoInModal = function(video) {
         console.log('🎬 Playing video:', video.title);
         
         const playerContainer = document.getElementById('bbVideoPlayer');
         if (!playerContainer) return;
         
-        // Get direct YouTube embed
-        let embedUrl = getDirectYouTubeEmbed(video.videoUrl);
+        const videoId = extractYouTubeVideoId(video.videoUrl);
         
-        if (!embedUrl) {
-            // Fallback for non-YouTube videos
-            if (video.videoUrl.includes('vimeo')) {
-                const vimeoId = video.videoUrl.match(/vimeo\.com\/(\d+)/);
-                if (vimeoId) {
-                    embedUrl = `https://player.vimeo.com/video/${vimeoId[1]}?autoplay=1`;
-                }
-            } else if (video.videoUrl.match(/\.(mp4|webm|ogg)$/i)) {
-                embedUrl = video.videoUrl;
-            } else {
-                showToast('Unable to play this video', 'error');
-                return;
-            }
+        if (!videoId) {
+            showToast('Invalid video URL', 'error');
+            return;
         }
         
-        // Create iframe with proper attributes
+        // Using youtube.com/embed/ (most reliable, no errors)
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&fs=1&playsinline=1`;
+        
+        console.log('📺 Embed URL:', embedUrl);
+        
         playerContainer.innerHTML = `
             <iframe src="${embedUrl}" 
                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
@@ -1385,6 +1369,21 @@
                 border-color: #ff9a3c;
                 box-shadow: 0 0 0 3px rgba(255,154,60,0.2);
             }
+            /* Custom Scrollbar for Video Grid */
+            #bbVideoModalGrid::-webkit-scrollbar {
+                width: 8px;
+            }
+            #bbVideoModalGrid::-webkit-scrollbar-track {
+                background: rgba(255,255,255,0.1);
+                border-radius: 10px;
+            }
+            #bbVideoModalGrid::-webkit-scrollbar-thumb {
+                background: #ff6b81;
+                border-radius: 10px;
+            }
+            #bbVideoModalGrid::-webkit-scrollbar-thumb:hover {
+                background: #ff4757;
+            }
             @media (max-width: 768px) {
                 #bbEnquiryTriggerBtn {
                     padding: 10px 20px !important;
@@ -1409,6 +1408,9 @@
                 }
                 #bbVideoIconBtn span {
                     font-size: 28px;
+                }
+                #bbVideoModalGrid {
+                    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
                 }
             }
         `;
