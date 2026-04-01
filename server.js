@@ -2723,7 +2723,98 @@ app.get('/api/admin/videos/analytics', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// ============================================///////////////////////////////////
+// STUDENT LOGIN API with Remember Me
+// ============================================
 
+app.post('/api/student-login', authLimiter, async (req, res) => {
+    const { studentId, password, aadharNumber } = req.body;
+    
+    try {
+        let student;
+        
+        // Find by Student ID or Aadhar Number
+        if (studentId) {
+            student = await Student.findOne({ studentId: studentId });
+        } else if (aadharNumber) {
+            student = await Student.findOne({ aadharNumber: aadharNumber });
+        }
+        
+        if (!student) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+        
+        // Verify password
+        if (student.password !== password) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+        
+        // Generate token with longer expiry for remember me
+        const token = jwt.sign(
+            { 
+                id: student._id, 
+                studentId: student.studentId, 
+                role: 'student',
+                name: `${student.studentName.first} ${student.studentName.last}`
+            }, 
+            process.env.JWT_SECRET || 'fallback_secret', 
+            { expiresIn: '15d' } // 15 days expiry for remember me
+        );
+        
+        // Prepare student data (remove sensitive info)
+        const studentData = student.toObject();
+        delete studentData.password;
+        delete studentData.aadharNumber; // Remove sensitive data
+        delete studentData.aadharDocument;
+        
+        res.json({ 
+            success: true, 
+            message: "Login successful", 
+            token,
+            data: studentData
+        });
+        
+    } catch (err) {
+        console.error('Student login error:', err);
+        res.status(500).json({ success: false, message: "Login failed" });
+    }
+});
+
+// ============================================
+// GET STUDENT SELF DATA (Protected)
+// ============================================
+
+app.get('/api/students/self', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'student') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        
+        const student = await Student.findOne({ studentId: req.user.studentId });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        // Remove sensitive data
+        const studentData = student.toObject();
+        delete studentData.password;
+        delete studentData.aadharNumber;
+        delete studentData.aadharDocument;
+        
+        res.json({ success: true, data: studentData });
+        
+    } catch (err) {
+        console.error('Error fetching student self data:', err);
+        res.status(500).json({ success: false, message: "Failed to fetch student data" });
+    }
+});
+
+// ============================================
+// UPDATE STUDENT PROFILE (Limited - Only view)
+// Students can only view, not update
+// This endpoint is intentionally read-only
+// ============================================
 // ============================================
 // ENQUIRY CALL REMINDER (Twilio Integration)
 // ============================================
