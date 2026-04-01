@@ -92,6 +92,7 @@
         .form-control:focus {
             border-color: #4F46E5;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
         }
 
         .login-btn {
@@ -104,11 +105,18 @@
             color: white;
             width: 100%;
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .remember-me {
@@ -135,6 +143,7 @@
             color: #4F46E5;
             text-decoration: none;
             font-size: 0.85rem;
+            cursor: pointer;
         }
 
         .divider {
@@ -223,6 +232,7 @@
             border-radius: 10px;
             font-size: 0.9rem;
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .logout-btn:hover {
@@ -350,10 +360,13 @@
 
         .info-group {
             margin-bottom: 15px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 10px;
         }
 
         .info-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             font-weight: 600;
             color: #6b7280;
@@ -399,7 +412,7 @@
         }
 
         /* Status Badges */
-        .badge-paid {
+        .badge-paid, .badge-present {
             background: #10b981;
             color: white;
             padding: 4px 12px;
@@ -409,7 +422,7 @@
             display: inline-block;
         }
 
-        .badge-partial {
+        .badge-partial, .badge-late {
             background: #f59e0b;
             color: white;
             padding: 4px 12px;
@@ -419,38 +432,8 @@
             display: inline-block;
         }
 
-        .badge-unpaid {
+        .badge-unpaid, .badge-absent {
             background: #ef4444;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .badge-present {
-            background: #10b981;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .badge-absent {
-            background: #ef4444;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .badge-late {
-            background: #f59e0b;
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -644,6 +627,31 @@
                 transform: translateY(0);
             }
         }
+
+        .text-muted {
+            color: #6b7280 !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 { margin-top: 5px; }
+        .mt-3 { margin-top: 15px; }
+        .mb-2 { margin-bottom: 10px; }
+        .p-2 { padding: 10px; }
+        .p-3 { padding: 15px; }
+        .bg-light { background: #f9fafb; }
+        .rounded { border-radius: 10px; }
+        .small { font-size: 0.8rem; }
+        .float-end { float: right; }
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
     </style>
 </head>
 <body>
@@ -695,7 +703,7 @@
                 }
             } catch (error) {
                 console.error('Error fetching student data:', error);
-                showError('Failed to load your data. Please login again.');
+                showError('Failed to load your data. Please login again.', 'danger');
                 setTimeout(() => {
                     logout();
                 }, 2000);
@@ -715,7 +723,7 @@
                             <p>Student Login Portal</p>
                         </div>
                         
-                        <form onsubmit="handleLogin(event)">
+                        <form id="loginForm">
                             <div class="form-group">
                                 <label>Student ID or Aadhar Number</label>
                                 <input type="text" id="loginIdentifier" class="form-control" placeholder="Enter Student ID or Aadhar Number" required>
@@ -731,10 +739,10 @@
                                     <input type="checkbox" id="rememberMe"> 
                                     <span>Remember me for 15 days</span>
                                 </label>
-                                <a href="#" class="forgot-link" onclick="showForgotPassword(event)">Forgot Password?</a>
+                                <a class="forgot-link" onclick="showForgotPassword(event)">Forgot Password?</a>
                             </div>
                             
-                            <button type="submit" class="login-btn">
+                            <button type="submit" class="login-btn" id="loginBtn">
                                 <i class="fas fa-sign-in-alt"></i> Login
                             </button>
                         </form>
@@ -749,21 +757,31 @@
                     </div>
                 </div>
             `;
+            
+            // Add event listener to form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
         }
         
         // Handle Login
         async function handleLogin(event) {
-            event.preventDefault();
+            event.preventDefault(); // Important: Prevent page refresh
             
             const identifier = document.getElementById('loginIdentifier').value.trim();
             const password = document.getElementById('loginPassword').value;
             const rememberMe = document.getElementById('rememberMe').checked;
+            const loginBtn = document.getElementById('loginBtn');
             
             if (!identifier || !password) {
-                showError('Please enter both identifier and password');
+                showError('Please enter both identifier and password', 'danger');
                 return;
             }
             
+            // Disable button and show loading
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
             showLoading();
             
             try {
@@ -797,11 +815,15 @@
                     renderDashboard();
                     showError('Login successful! Welcome back!', 'success');
                 } else {
-                    showError(result.message || 'Login failed');
+                    showError(result.message || 'Login failed', 'danger');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showError('Login failed. Please check your connection.');
+                showError('Login failed. Please check your connection.', 'danger');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
             } finally {
                 hideLoading();
             }
@@ -1101,7 +1123,7 @@
                                               record.status === 'late' ? '⏰ Late' : '◐ Half Day'}
                                         </span>
                                     </td>
-                                    <td>${record.remarks || '-'}</td>
+                                    <td><small>${record.remarks || '-'}</small></td>
                                     <td><small>${record.markedBy || '-'}</small></td>
                                 </tr>
                             `).join('')}
@@ -1222,12 +1244,14 @@
             const content = document.getElementById(`${sectionId}-content`);
             const header = document.querySelector(`#${sectionId}-section .section-header`);
             
-            if (content.classList.contains('collapsed')) {
-                content.classList.remove('collapsed');
-                header.classList.remove('collapsed');
-            } else {
-                content.classList.add('collapsed');
-                header.classList.add('collapsed');
+            if (content && header) {
+                if (content.classList.contains('collapsed')) {
+                    content.classList.remove('collapsed');
+                    header.classList.remove('collapsed');
+                } else {
+                    content.classList.add('collapsed');
+                    header.classList.add('collapsed');
+                }
             }
         }
         
@@ -1243,7 +1267,7 @@
                 const header = document.querySelector(`#${sectionId} .section-header`);
                 if (content && content.classList.contains('collapsed')) {
                     content.classList.remove('collapsed');
-                    header.classList.remove('collapsed');
+                    if (header) header.classList.remove('collapsed');
                 }
             }
         }
@@ -1265,11 +1289,14 @@
         }
         
         function showLoading() {
-            const overlay = document.createElement('div');
-            overlay.id = 'loading-overlay';
-            overlay.className = 'loading-overlay';
-            overlay.innerHTML = '<div class="spinner"></div>';
-            document.body.appendChild(overlay);
+            let overlay = document.getElementById('loading-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'loading-overlay';
+                overlay.className = 'loading-overlay';
+                overlay.innerHTML = '<div class="spinner"></div>';
+                document.body.appendChild(overlay);
+            }
         }
         
         function hideLoading() {
@@ -1280,14 +1307,15 @@
         function showError(message, type = 'danger') {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type} alert-custom`;
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle';
             alertDiv.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}"></i> 
+                <i class="fas ${icon}"></i> 
                 ${message}
-                <button type="button" class="btn-close float-end" onclick="this.parentElement.remove()"></button>
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()">&times;</button>
             `;
             document.body.appendChild(alertDiv);
             setTimeout(() => {
-                if (alertDiv) alertDiv.remove();
+                if (alertDiv && alertDiv.parentElement) alertDiv.remove();
             }, 5000);
         }
         
@@ -1313,6 +1341,7 @@
         window.scrollToSection = scrollToSection;
         window.showForgotPassword = showForgotPassword;
         window.toggleProfileMenu = toggleProfileMenu;
+        window.showError = showError;
     </script>
 </body>
 </html>
