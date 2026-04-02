@@ -1,8 +1,8 @@
 // ============================================
 // STUDENT ARCHIVE & PROMOTION SYSTEM
+// CSP COMPLIANT - No inline event handlers
 // ============================================
 
-// Add Archive Tab HTML to Admin Dashboard
 (function() {
     // Wait for DOM to load
     if (document.readyState === 'loading') {
@@ -14,6 +14,10 @@
     async function initArchiveSystem() {
         // Check if archive tab already exists
         if (document.getElementById('archivePane')) return;
+        
+        // Get token
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (!token) return;
         
         // Find the tab container and add Archive button
         const tabContainer = document.querySelector('.tabs-container');
@@ -35,11 +39,11 @@
             bottomNav.appendChild(archiveNavItem);
         }
         
-        // Find where to insert archive pane (after admin pane)
+        // Find where to insert archive pane
         const tabContents = document.getElementById('tabContents');
         if (!tabContents) return;
         
-        // Create archive pane HTML
+        // Create archive pane HTML (no inline event handlers)
         const archivePaneHTML = `
             <div class="tab-pane" id="archivePane" style="display:none">
                 <div class="premium-card">
@@ -143,7 +147,7 @@
             </div>
         `;
         
-        // Insert archive pane after admin pane
+        // Insert archive pane
         const adminPane = document.getElementById('adminPane');
         if (adminPane) {
             adminPane.insertAdjacentHTML('afterend', archivePaneHTML);
@@ -151,431 +155,527 @@
             tabContents.insertAdjacentHTML('beforeend', archivePaneHTML);
         }
         
-        // Initialize archive functions
-        initArchiveFunctions();
+        // Initialize archive functions (using addEventListener, not inline)
+        initArchiveEventListeners();
+        await loadArchiveFilters(token);
+        await loadArchiveYears(token);
+        await loadArchivedStudents(token);
     }
     
-    async function initArchiveFunctions() {
-        // Get token
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) return;
-        
-        // Variables
-        let archivedStudents = [];
-        let currentArchivePage = 1;
-        let archiveTotalPages = 1;
-        
-        // Load boards and classes for filters
-        async function loadArchiveFilters() {
-            try {
-                const res = await fetch('/api/boards', { headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await res.json();
-                if (data.success) {
-                    const boardSelect = document.getElementById('archiveBoardFilter');
-                    const classSelect = document.getElementById('archiveClassFilter');
-                    if (boardSelect) {
-                        boardSelect.innerHTML = '<option value="">All Boards</option>' + 
-                            data.data.boards.map(b => `<option value="${b}">${b}</option>`).join('');
-                    }
-                    if (classSelect) {
-                        classSelect.innerHTML = '<option value="">All Classes</option>' + 
-                            data.data.classes.map(c => `<option value="${c}">${c}</option>`).join('');
-                    }
-                }
-            } catch(e) { console.error('Error loading filters:', e); }
+    // Initialize all event listeners
+    function initArchiveEventListeners() {
+        // Refresh button
+        const refreshBtn = document.getElementById('refreshArchiveBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                loadArchivedStudents(token);
+                loadArchiveYears(token);
+            });
         }
         
-        // Load available years for archive
-        async function loadArchiveYears() {
-            try {
-                const res = await fetch('/api/archive-years', { headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await res.json();
-                if (data.success) {
-                    const yearSelect = document.getElementById('archiveYearSelect');
-                    if (yearSelect) {
-                        yearSelect.innerHTML = '<option value="">Choose Year</option>';
-                        data.data.forEach(y => {
-                            yearSelect.innerHTML += `<option value="${y.year}">${y.year} (${y.count} students)</option>`;
-                        });
-                    }
-                }
-            } catch(e) { console.error('Error loading years:', e); }
+        // Preview button
+        const previewBtn = document.getElementById('previewArchiveBtn');
+        if (previewBtn) {
+            previewBtn.addEventListener('click', () => {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                previewArchive(token);
+            });
         }
         
-        // Load archived students
-        async function loadArchivedStudents(page = 1) {
-            const board = document.getElementById('archiveBoardFilter')?.value || '';
-            const classVal = document.getElementById('archiveClassFilter')?.value || '';
-            const search = document.getElementById('archiveSearchInput')?.value || '';
-            
-            let url = `/api/archived-students?page=${page}&limit=20`;
-            if (board) url += `&board=${encodeURIComponent(board)}`;
-            if (classVal) url += `&class=${encodeURIComponent(classVal)}`;
-            if (search) url += `&search=${encodeURIComponent(search)}`;
-            
-            try {
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await res.json();
-                if (data.success) {
-                    archivedStudents = data.data;
-                    currentArchivePage = data.pagination.page;
-                    archiveTotalPages = data.pagination.pages;
-                    renderArchivedTable();
-                    renderArchivePagination();
-                } else {
-                    document.getElementById('archivedStudentsList').innerHTML = 
-                        '<tr><td colspan="8" class="text-center py-5 text-danger">Failed to load archived students</td></tr>';
+        // Archive button
+        const archiveBtn = document.getElementById('archiveByYearBtn');
+        if (archiveBtn) {
+            archiveBtn.addEventListener('click', () => {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                archiveByYear(token);
+            });
+        }
+        
+        // Filter button
+        const filterBtn = document.getElementById('filterArchiveBtn');
+        if (filterBtn) {
+            filterBtn.addEventListener('click', () => {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                loadArchivedStudents(token, 1);
+            });
+        }
+        
+        // Restore selected button
+        const restoreSelectedBtn = document.getElementById('restoreSelectedBtn');
+        if (restoreSelectedBtn) {
+            restoreSelectedBtn.addEventListener('click', () => {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                restoreSelected(token);
+            });
+        }
+        
+        // Delete selected button
+        const deleteSelectedBtn = document.getElementById('deleteSelectedArchiveBtn');
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', () => {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                deleteSelectedArchived(token);
+            });
+        }
+        
+        // Select all checkbox
+        const selectAll = document.getElementById('selectAllArchive');
+        if (selectAll) {
+            selectAll.addEventListener('change', (e) => {
+                document.querySelectorAll('.archive-checkbox').forEach(cb => cb.checked = e.target.checked);
+                updateBulkButtonsState();
+            });
+        }
+        
+        // Search input - enter key
+        const searchInput = document.getElementById('archiveSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                    loadArchivedStudents(token, 1);
                 }
-            } catch(e) {
-                console.error('Error loading archived students:', e);
-                document.getElementById('archivedStudentsList').innerHTML = 
-                    '<tr><td colspan="8" class="text-center py-5 text-danger">Error loading data</td></tr>';
+            });
+        }
+        
+        // Listen for checkbox changes
+        document.addEventListener('change', (e) => {
+            if (e.target.classList && e.target.classList.contains('archive-checkbox')) {
+                updateBulkButtonsState();
+                // Update select all state
+                const allCheckboxes = document.querySelectorAll('.archive-checkbox');
+                const selectAllEl = document.getElementById('selectAllArchive');
+                if (selectAllEl && allCheckboxes.length > 0) {
+                    const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
+                    selectAllEl.checked = checkedCount === allCheckboxes.length;
+                    selectAllEl.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+                }
             }
-        }
+        });
+    }
+    
+    // Load boards and classes for filters
+    async function loadArchiveFilters(token) {
+        try {
+            const res = await fetch('/api/boards', { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            if (data.success) {
+                const boardSelect = document.getElementById('archiveBoardFilter');
+                const classSelect = document.getElementById('archiveClassFilter');
+                if (boardSelect) {
+                    boardSelect.innerHTML = '<option value="">All Boards</option>' + 
+                        data.data.boards.map(b => `<option value="${b}">${b}</option>`).join('');
+                }
+                if (classSelect) {
+                    classSelect.innerHTML = '<option value="">All Classes</option>' + 
+                        data.data.classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                }
+            }
+        } catch(e) { console.error('Error loading filters:', e); }
+    }
+    
+    // Load available years for archive
+    async function loadArchiveYears(token) {
+        try {
+            const res = await fetch('/api/archive-years', { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            if (data.success) {
+                const yearSelect = document.getElementById('archiveYearSelect');
+                if (yearSelect) {
+                    yearSelect.innerHTML = '<option value="">Choose Year</option>';
+                    data.data.forEach(y => {
+                        yearSelect.innerHTML += `<option value="${y.year}">${y.year} (${y.count} students)</option>`;
+                    });
+                }
+            }
+        } catch(e) { console.error('Error loading years:', e); }
+    }
+    
+    // Load archived students
+    async function loadArchivedStudents(token, page = 1) {
+        const board = document.getElementById('archiveBoardFilter')?.value || '';
+        const classVal = document.getElementById('archiveClassFilter')?.value || '';
+        const search = document.getElementById('archiveSearchInput')?.value || '';
         
-        // Render archived students table
-        function renderArchivedTable() {
+        let url = `/api/archived-students?page=${page}&limit=20`;
+        if (board) url += `&board=${encodeURIComponent(board)}`;
+        if (classVal) url += `&class=${encodeURIComponent(classVal)}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        
+        try {
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            if (data.success) {
+                window.archivedStudentsData = data.data;
+                window.currentArchivePage = data.pagination.page;
+                window.archiveTotalPages = data.pagination.pages;
+                renderArchivedTable(token);
+                renderArchivePagination(token);
+            } else {
+                const tbody = document.getElementById('archivedStudentsList');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-danger">Failed to load archived students</td></tr>';
+                }
+            }
+        } catch(e) {
+            console.error('Error loading archived students:', e);
             const tbody = document.getElementById('archivedStudentsList');
-            if (!tbody) return;
-            
-            if (!archivedStudents.length) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5"><i class="fas fa-archive fa-2x text-muted"></i><p class="mt-2">No archived students found</p></td></tr>';
-                return;
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-danger">Error loading data</td></tr>';
             }
-            
-            tbody.innerHTML = archivedStudents.map(s => `
-                <tr>
-                    <td><input type="checkbox" class="archive-checkbox" data-id="${s._id}"></td>
-                    <td><strong>${s.studentId}</strong></td>
-                    <td>${s.studentName.first} ${s.studentName.last}</td>
-                    <td>${s.education?.board || '-'}</td>
-                    <td>${s.education?.class || '-'}</td>
-                    <td>${new Date(s.joiningDate).getFullYear()}</td>
-                    <td>${new Date(s.archivedAt).toLocaleDateString()}</td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="action-btn restore-single" data-id="${s._id}" style="background:#10b981;" title="Restore">
-                                <i class="fas fa-undo"></i>
-                            </button>
-                            <button class="action-btn delete-single" data-id="${s._id}" style="background:#dc2626;" title="Delete Permanently">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-            
-            // Attach event listeners for single actions
-            document.querySelectorAll('.restore-single').forEach(btn => {
-                btn.onclick = () => restoreStudent(btn.dataset.id);
-            });
-            document.querySelectorAll('.delete-single').forEach(btn => {
-                btn.onclick = () => deleteArchivedStudent(btn.dataset.id);
-            });
-            
-            // Update bulk action buttons state
-            updateBulkButtonsState();
+        }
+    }
+    
+    // Render archived students table
+    function renderArchivedTable(token) {
+        const tbody = document.getElementById('archivedStudentsList');
+        if (!tbody) return;
+        
+        const students = window.archivedStudentsData || [];
+        
+        if (!students.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5"><i class="fas fa-archive fa-2x text-muted"></i><p class="mt-2">No archived students found</p></td></tr>';
+            return;
         }
         
-        // Render pagination
-        function renderArchivePagination() {
-            const div = document.getElementById('archivePagination');
-            if (!div) return;
-            if (archiveTotalPages <= 1) {
-                div.innerHTML = '';
-                return;
-            }
-            
-            let html = '<div class="d-flex gap-2 flex-wrap">';
-            for (let i = 1; i <= Math.min(archiveTotalPages, 5); i++) {
-                const activeClass = i === currentArchivePage ? 'active' : '';
-                html += `<button class="btn-secondary-premium archive-page-btn ${activeClass}" data-page="${i}" style="padding:6px 12px; ${i === currentArchivePage ? 'background: var(--gradient-primary); color: white;' : ''}">${i}</button>`;
-            }
-            if (archiveTotalPages > 5) {
-                html += `<span class="px-2">...</span>`;
-                html += `<button class="btn-secondary-premium archive-page-btn" data-page="${archiveTotalPages}" style="padding:6px 12px;">${archiveTotalPages}</button>`;
-            }
-            html += '</div>';
-            div.innerHTML = html;
-            
-            document.querySelectorAll('.archive-page-btn').forEach(btn => {
-                btn.onclick = () => loadArchivedStudents(parseInt(btn.dataset.page));
+        tbody.innerHTML = students.map(s => `
+            <tr>
+                <td><input type="checkbox" class="archive-checkbox" data-id="${s._id}"></td>
+                <td><strong>${escapeHtml(s.studentId)}</strong></td>
+                <td>${escapeHtml(s.studentName.first)} ${escapeHtml(s.studentName.last)}</td>
+                <td>${escapeHtml(s.education?.board || '-')}</td>
+                <td>${escapeHtml(s.education?.class || '-')}</td>
+                <td>${new Date(s.joiningDate).getFullYear()}</td>
+                <td>${new Date(s.archivedAt).toLocaleDateString()}</td>
+                <td>
+                    <div class="action-btns">
+                        <button class="action-btn restore-single" data-id="${s._id}" style="background:#10b981;" title="Restore">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="action-btn delete-single" data-id="${s._id}" style="background:#dc2626;" title="Delete Permanently">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+        
+        // Attach event listeners for single actions (using addEventListener, not inline)
+        document.querySelectorAll('.restore-single').forEach(btn => {
+            btn.removeEventListener('click', handleRestoreClick);
+            btn.addEventListener('click', handleRestoreClick);
+        });
+        document.querySelectorAll('.delete-single').forEach(btn => {
+            btn.removeEventListener('click', handleDeleteClick);
+            btn.addEventListener('click', handleDeleteClick);
+        });
+        
+        function handleRestoreClick(e) {
+            const id = e.currentTarget.getAttribute('data-id');
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            restoreStudent(token, id);
+        }
+        
+        function handleDeleteClick(e) {
+            const id = e.currentTarget.getAttribute('data-id');
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            deleteArchivedStudent(token, id);
+        }
+        
+        updateBulkButtonsState();
+    }
+    
+    // Render pagination
+    function renderArchivePagination(token) {
+        const div = document.getElementById('archivePagination');
+        if (!div) return;
+        
+        const totalPages = window.archiveTotalPages || 1;
+        const currentPage = window.currentArchivePage || 1;
+        
+        if (totalPages <= 1) {
+            div.innerHTML = '';
+            return;
+        }
+        
+        let html = '<div class="d-flex gap-2 flex-wrap">';
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+            const activeClass = i === currentPage ? 'active' : '';
+            html += `<button class="btn-secondary-premium archive-page-btn ${activeClass}" data-page="${i}" style="padding:6px 12px; ${i === currentPage ? 'background: var(--gradient-primary); color: white;' : ''}">${i}</button>`;
+        }
+        if (totalPages > 5) {
+            html += `<span class="px-2">...</span>`;
+            html += `<button class="btn-secondary-premium archive-page-btn" data-page="${totalPages}" style="padding:6px 12px;">${totalPages}</button>`;
+        }
+        html += '</div>';
+        div.innerHTML = html;
+        
+        document.querySelectorAll('.archive-page-btn').forEach(btn => {
+            btn.removeEventListener('click', handlePageClick);
+            btn.addEventListener('click', handlePageClick);
+        });
+        
+        function handlePageClick(e) {
+            const page = parseInt(e.currentTarget.getAttribute('data-page'));
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            loadArchivedStudents(token, page);
+        }
+    }
+    
+    // Update bulk buttons state
+    function updateBulkButtonsState() {
+        const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
+        const restoreBtn = document.getElementById('restoreSelectedBtn');
+        const deleteBtn = document.getElementById('deleteSelectedArchiveBtn');
+        if (restoreBtn) restoreBtn.disabled = checkedCount === 0;
+        if (deleteBtn) deleteBtn.disabled = checkedCount === 0;
+    }
+    
+    // Preview archive
+    async function previewArchive(token) {
+        const year = document.getElementById('archiveYearSelect').value;
+        if (!year) {
+            showToast('Please select a year', 'warning');
+            return;
+        }
+        
+        showLoader(true);
+        try {
+            const res = await fetch('/api/archive-by-year', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ year, dryRun: true })
             });
-        }
-        
-        // Update bulk buttons state
-        function updateBulkButtonsState() {
-            const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
-            const restoreBtn = document.getElementById('restoreSelectedBtn');
-            const deleteBtn = document.getElementById('deleteSelectedArchiveBtn');
-            if (restoreBtn) restoreBtn.disabled = checkedCount === 0;
-            if (deleteBtn) deleteBtn.disabled = checkedCount === 0;
-        }
-        
-        // Preview archive
-        async function previewArchive() {
-            const year = document.getElementById('archiveYearSelect').value;
-            if (!year) {
-                showToast('Please select a year', 'warning');
-                return;
-            }
-            
-            showLoader(true);
-            try {
-                const res = await fetch('/api/archive-by-year', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ year, dryRun: true })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    const div = document.getElementById('archivePreviewDiv');
-                    div.style.display = 'block';
-                    if (data.count === 0) {
-                        div.innerHTML = `<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> No students found who joined in ${year}</div>`;
-                    } else {
-                        div.innerHTML = `
-                            <div class="alert alert-info mb-0">
-                                <i class="fas fa-info-circle"></i> <strong>${data.count} students</strong> will be archived from year ${year}
-                                <hr class="my-2">
-                                <div style="max-height: 200px; overflow-y: auto;">
-                                    ${data.preview.map(s => `• <strong>${s.id}</strong> - ${s.name} (${s.class || 'N/A'})`).join('<br>')}
-                                </div>
+            const data = await res.json();
+            if (data.success) {
+                const div = document.getElementById('archivePreviewDiv');
+                div.style.display = 'block';
+                if (data.count === 0) {
+                    div.innerHTML = `<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> No students found who joined in ${year}</div>`;
+                } else {
+                    div.innerHTML = `
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i> <strong>${data.count} students</strong> will be archived from year ${year}
+                            <hr class="my-2">
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${data.preview.map(s => `• <strong>${escapeHtml(s.id)}</strong> - ${escapeHtml(s.name)} (${escapeHtml(s.class || 'N/A')})`).join('<br>')}
                             </div>
-                        `;
-                    }
-                } else {
-                    showToast(data.message || 'Preview failed', 'error');
+                        </div>
+                    `;
                 }
-            } catch(e) {
-                showToast('Preview failed', 'error');
+            } else {
+                showToast(data.message || 'Preview failed', 'error');
             }
-            showLoader(false);
+        } catch(e) {
+            showToast('Preview failed', 'error');
+        }
+        showLoader(false);
+    }
+    
+    // Archive by year
+    async function archiveByYear(token) {
+        const year = document.getElementById('archiveYearSelect').value;
+        const reason = document.getElementById('archiveReasonInput').value;
+        
+        if (!year) {
+            showToast('Please select a year', 'warning');
+            return;
         }
         
-        // Archive by year
-        async function archiveByYear() {
-            const year = document.getElementById('archiveYearSelect').value;
-            const reason = document.getElementById('archiveReasonInput').value;
-            
-            if (!year) {
-                showToast('Please select a year', 'warning');
-                return;
-            }
-            
-            if (!confirm(`⚠️ WARNING: This will archive ALL students who joined in ${year}.\n\nArchived students will be moved to archive storage and removed from active list.\n\nThis action can be reversed by restoring students from archive.\n\nContinue?`)) {
-                return;
-            }
-            
-            showLoader(true);
-            try {
-                const res = await fetch('/api/archive-by-year', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ year, reason: reason || `Yearly archival for ${year}` })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`✅ ${data.message}`, 'success');
-                    // Refresh all relevant data
-                    loadArchivedStudents();
-                    loadArchiveYears();
-                    // Also refresh active students if available
-                    if (typeof loadStudents === 'function') loadStudents();
-                    // Clear preview
-                    document.getElementById('archivePreviewDiv').style.display = 'none';
-                    document.getElementById('archiveReasonInput').value = '';
-                } else {
-                    showToast(data.message || 'Archive failed', 'error');
-                }
-            } catch(e) {
-                showToast('Archive failed', 'error');
-            }
-            showLoader(false);
+        if (!confirm(`⚠️ WARNING: This will archive ALL students who joined in ${year}.\n\nArchived students will be moved to archive storage and removed from active list.\n\nThis action can be reversed by restoring students from archive.\n\nContinue?`)) {
+            return;
         }
         
-        // Restore single student
-        async function restoreStudent(id) {
-            if (!confirm('Restore this student to active list?')) return;
-            
-            showLoader(true);
+        showLoader(true);
+        try {
+            const res = await fetch('/api/archive-by-year', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ year, reason: reason || `Yearly archival for ${year}` })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ ${data.message}`, 'success');
+                loadArchivedStudents(token);
+                loadArchiveYears(token);
+                if (typeof window.loadStudents === 'function') window.loadStudents();
+                const previewDiv = document.getElementById('archivePreviewDiv');
+                if (previewDiv) previewDiv.style.display = 'none';
+                const reasonInput = document.getElementById('archiveReasonInput');
+                if (reasonInput) reasonInput.value = '';
+            } else {
+                showToast(data.message || 'Archive failed', 'error');
+            }
+        } catch(e) {
+            showToast('Archive failed', 'error');
+        }
+        showLoader(false);
+    }
+    
+    // Restore single student
+    async function restoreStudent(token, id) {
+        if (!confirm('Restore this student to active list?')) return;
+        
+        showLoader(true);
+        try {
+            const res = await fetch(`/api/restore-student/${id}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('✅ Student restored successfully', 'success');
+                loadArchivedStudents(token);
+                loadArchiveYears(token);
+                if (typeof window.loadStudents === 'function') window.loadStudents();
+            } else {
+                showToast(data.message || 'Restore failed', 'error');
+            }
+        } catch(e) {
+            showToast('Restore failed', 'error');
+        }
+        showLoader(false);
+    }
+    
+    // Delete archived student permanently
+    async function deleteArchivedStudent(token, id) {
+        if (!confirm('⚠️ PERMANENT DELETE: This will permanently delete the archived student record. This cannot be undone.\n\nContinue?')) return;
+        
+        showLoader(true);
+        try {
+            const res = await fetch(`/api/archived-students/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Deleted permanently', 'success');
+                loadArchivedStudents(token);
+            } else {
+                showToast(data.message || 'Delete failed', 'error');
+            }
+        } catch(e) {
+            showToast('Delete failed', 'error');
+        }
+        showLoader(false);
+    }
+    
+    // Restore selected students
+    async function restoreSelected(token) {
+        const selected = [...document.querySelectorAll('.archive-checkbox:checked')].map(cb => cb.getAttribute('data-id'));
+        if (!selected.length) {
+            showToast('Please select students to restore', 'warning');
+            return;
+        }
+        
+        if (!confirm(`Restore ${selected.length} student(s) to active list?`)) return;
+        
+        showLoader(true);
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const id of selected) {
             try {
                 const res = await fetch(`/api/restore-student/${id}`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-                if (data.success) {
-                    showToast('✅ Student restored successfully', 'success');
-                    loadArchivedStudents();
-                    loadArchiveYears();
-                    if (typeof loadStudents === 'function') loadStudents();
-                } else {
-                    showToast(data.message || 'Restore failed', 'error');
-                }
+                if (data.success) successCount++;
+                else failCount++;
             } catch(e) {
-                showToast('Restore failed', 'error');
+                failCount++;
             }
-            showLoader(false);
         }
         
-        // Delete archived student permanently
-        async function deleteArchivedStudent(id) {
-            if (!confirm('⚠️ PERMANENT DELETE: This will permanently delete the archived student record. This cannot be undone.\n\nContinue?')) return;
-            
-            showLoader(true);
+        showToast(`✅ Restored: ${successCount}, Failed: ${failCount}`, successCount > 0 ? 'success' : 'error');
+        loadArchivedStudents(token);
+        loadArchiveYears(token);
+        if (typeof window.loadStudents === 'function') window.loadStudents();
+        showLoader(false);
+    }
+    
+    // Delete selected archived students
+    async function deleteSelectedArchived(token) {
+        const selected = [...document.querySelectorAll('.archive-checkbox:checked')].map(cb => cb.getAttribute('data-id'));
+        if (!selected.length) {
+            showToast('Please select students to delete', 'warning');
+            return;
+        }
+        
+        if (!confirm(`⚠️ PERMANENT DELETE: This will permanently delete ${selected.length} archived student record(s). This cannot be undone.\n\nContinue?`)) return;
+        
+        showLoader(true);
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const id of selected) {
             try {
                 const res = await fetch(`/api/archived-students/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-                if (data.success) {
-                    showToast('Deleted permanently', 'success');
-                    loadArchivedStudents();
-                } else {
-                    showToast(data.message || 'Delete failed', 'error');
-                }
+                if (data.success) successCount++;
+                else failCount++;
             } catch(e) {
-                showToast('Delete failed', 'error');
+                failCount++;
             }
-            showLoader(false);
         }
         
-        // Restore selected students
-        async function restoreSelected() {
-            const selected = [...document.querySelectorAll('.archive-checkbox:checked')].map(cb => cb.dataset.id);
-            if (!selected.length) {
-                showToast('Please select students to restore', 'warning');
-                return;
-            }
-            
-            if (!confirm(`Restore ${selected.length} student(s) to active list?`)) return;
-            
-            showLoader(true);
-            let successCount = 0;
-            let failCount = 0;
-            
-            for (const id of selected) {
-                try {
-                    const res = await fetch(`/api/restore-student/${id}`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    if (data.success) successCount++;
-                    else failCount++;
-                } catch(e) {
-                    failCount++;
-                }
-            }
-            
-            showToast(`✅ Restored: ${successCount}, Failed: ${failCount}`, successCount > 0 ? 'success' : 'error');
-            loadArchivedStudents();
-            loadArchiveYears();
-            if (typeof loadStudents === 'function') loadStudents();
-            showLoader(false);
-        }
-        
-        // Delete selected archived students
-        async function deleteSelectedArchived() {
-            const selected = [...document.querySelectorAll('.archive-checkbox:checked')].map(cb => cb.dataset.id);
-            if (!selected.length) {
-                showToast('Please select students to delete', 'warning');
-                return;
-            }
-            
-            if (!confirm(`⚠️ PERMANENT DELETE: This will permanently delete ${selected.length} archived student record(s). This cannot be undone.\n\nContinue?`)) return;
-            
-            showLoader(true);
-            let successCount = 0;
-            let failCount = 0;
-            
-            for (const id of selected) {
-                try {
-                    const res = await fetch(`/api/archived-students/${id}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    if (data.success) successCount++;
-                    else failCount++;
-                } catch(e) {
-                    failCount++;
-                }
-            }
-            
-            showToast(`✅ Deleted: ${successCount}, Failed: ${failCount}`, successCount > 0 ? 'success' : 'error');
-            loadArchivedStudents();
-            showLoader(false);
-        }
-        
-        // Event Listeners
-        document.getElementById('refreshArchiveBtn')?.addEventListener('click', () => loadArchivedStudents());
-        document.getElementById('previewArchiveBtn')?.addEventListener('click', previewArchive);
-        document.getElementById('archiveByYearBtn')?.addEventListener('click', archiveByYear);
-        document.getElementById('filterArchiveBtn')?.addEventListener('click', () => loadArchivedStudents(1));
-        document.getElementById('restoreSelectedBtn')?.addEventListener('click', restoreSelected);
-        document.getElementById('deleteSelectedArchiveBtn')?.addEventListener('click', deleteSelectedArchived);
-        
-        // Select all checkbox
-        document.getElementById('selectAllArchive')?.addEventListener('change', (e) => {
-            document.querySelectorAll('.archive-checkbox').forEach(cb => cb.checked = e.target.checked);
-            updateBulkButtonsState();
-        });
-        
-        // Update bulk buttons when individual checkbox changes
-        document.addEventListener('change', (e) => {
-            if (e.target.classList?.contains('archive-checkbox')) {
-                updateBulkButtonsState();
-                // Update select all state
-                const allCheckboxes = document.querySelectorAll('.archive-checkbox');
-                const selectAll = document.getElementById('selectAllArchive');
-                if (selectAll) {
-                    const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
-                    selectAll.checked = checkedCount === allCheckboxes.length && allCheckboxes.length > 0;
-                    selectAll.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
-                }
-            }
-        });
-        
-        // Initial load
-        loadArchiveFilters();
-        loadArchiveYears();
-        loadArchivedStudents();
-        
-        // Override switchTab to load archive data when tab is clicked
-        const originalSwitchTab = window.switchTab;
-        if (originalSwitchTab) {
-            window.switchTab = function(tabId) {
-                originalSwitchTab(tabId);
-                if (tabId === 'archive') {
-                    loadArchivedStudents();
-                    loadArchiveYears();
-                }
-            };
-        }
+        showToast(`✅ Deleted: ${successCount}, Failed: ${failCount}`, successCount > 0 ? 'success' : 'error');
+        loadArchivedStudents(token);
+        showLoader(false);
     }
     
-    // Helper functions (if not already defined)
+    // Helper: Escape HTML to prevent XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+    
+    // Helper: Show toast notification
     function showToast(msg, type = 'success') {
         const toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) return;
+        if (!toastContainer) {
+            console.log(`${type}: ${msg}`);
+            return;
+        }
         const toast = document.createElement('div');
         toast.className = `toast-premium ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${msg}</span>`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${escapeHtml(msg)}</span>`;
         toastContainer.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
     
+    // Helper: Show/hide loader
     function showLoader(show) {
         const loader = document.getElementById('loaderOverlay');
         if (loader) loader.style.display = show ? 'flex' : 'none';
+    }
+    
+    // Override switchTab to load archive data when tab is clicked
+    const originalSwitchTab = window.switchTab;
+    if (originalSwitchTab) {
+        window.switchTab = function(tabId) {
+            originalSwitchTab(tabId);
+            if (tabId === 'archive') {
+                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                loadArchivedStudents(token);
+                loadArchiveYears(token);
+            }
+        };
     }
 })();
