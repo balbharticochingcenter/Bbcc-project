@@ -340,6 +340,49 @@ const Teacher = mongoose.model('Teacher', TeacherSchema);
 console.log("✅ All Schemas loaded successfully");
 
 // ============================================
+// ARCHIVED STUDENT SCHEMA
+// ============================================
+
+const ArchivedStudentSchema = new mongoose.Schema({
+    studentId: { type: String, required: true, unique: true, index: true },
+    password: { type: String, required: true },
+    photo: { type: String, required: true },
+    studentName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    mobile: { type: String, required: true },
+    aadharNumber: { type: String, required: true, unique: true },
+    aadharDocument: { type: String, required: true },
+    registrationDate: { type: Date, required: true },
+    joiningDate: { type: Date, required: true },
+    leavingDate: { type: Date, default: Date.now },
+    classMonthlyFees: { type: Number, default: 0 },
+    feesHistory: [{
+        month: String, year: Number, monthIndex: Number,
+        paidAmount: Number, dueAmount: Number,
+        status: { type: String, enum: ['paid', 'partial', 'unpaid'], default: 'unpaid' },
+        paymentDate: Date, updatedBy: String
+    }],
+    attendance: [{
+        date: String,
+        status: { type: String, enum: ['present', 'absent', 'late', 'half-day'], default: 'present' },
+        remarks: String, markedBy: String, markedAt: Date
+    }],
+    fatherName: { first: String, middle: String, last: String },
+    fatherMobile: String,
+    motherName: { first: String, middle: String, last: String },
+    address: { current: String, permanent: String },
+    education: { board: String, class: String },
+    archivedAt: { type: Date, default: Date.now },
+    archivedBy: { type: String, default: '' },
+    archiveReason: { type: String, default: 'Yearly archival' },
+    originalId: { type: mongoose.Schema.Types.ObjectId, required: true }
+}, { timestamps: true });
+
+const ArchivedStudent = mongoose.model('ArchivedStudent', ArchivedStudentSchema);
+// ============================================
 // INITIALIZATION FUNCTIONS
 // ============================================
 
@@ -1418,7 +1461,85 @@ app.get('/api/students/:board/:class', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+/////////////////////////////////////////////////////////////
+// ============================================
+// ARCHIVE APIS
+// ============================================
 
+app.get('/api/archived-students', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: "Admin access required" });
+        const { page = 1, limit = 50, search, board, class: className } = req.query;
+        const query = {};
+        if (search) query.$or = [
+            { studentId: { $regex: search, $options: 'i' } },
+            { 'studentName.first': { $regex: search, $options: 'i' } },
+            { 'studentName.last': { $regex: search, $options: 'i' } }
+        ];
+        if (board) query['education.board'] = board;
+        if (className) query['education.class'] = className;
+        
+        const archived = await ArchivedStudent.find(query).sort({ archivedAt: -1 }).skip((page-1)*limit).limit(parseInt(limit));
+        const total = await ArchivedStudent.countDocuments(query);
+        res.json({ success: true, data: archived, pagination: { total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total/limit) } });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.post('/api/archive-by-year', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: "Admin access required" });
+        const { year, reason, dryRun = false } = req.body;
+        if (!year) return res.status(400).json({ success: false, message: "Year required" });
+        
+        const start = new Date(year, 0, 1);
+        const end = new Date(parseInt(year)+1, 0, 1);
+        const students = await Student.find({ joiningDate: { $gte: start, $lt: end } });
+        
+        if (dryRun) return res.json({ success: true, preview: students.map(s => ({ id: s.studentId, name: `${s.studentName.first} ${s.studentName.last}`, class: s.education?.class })), count: students.length });
+        
+        const archived = [];
+        for (const s of students) {
+            const archivedStudent = new ArchivedStudent({ ...s.toObject(), archivedBy: req.user.adminID, archiveReason: reason || `Yearly archival ${year}`, originalId: s._id, leavingDate: new Date() });
+            await archivedStudent.save();
+            await Student.deleteOne({ _id: s._id });
+            archived.push(s.studentId);
+        }
+        res.json({ success: true, message: `Archived ${archived.length} students`, archived });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.post('/api/restore-student/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: "Admin access required" });
+        const archived = await ArchivedStudent.findById(req.params.id);
+        if (!archived) return res.status(404).json({ success: false, message: "Not found" });
+        const existing = await Student.findOne({ studentId: archived.studentId });
+        if (existing) return res.status(400).json({ success: false, message: "Student already exists" });
+        
+        const restored = new Student(archived.toObject());
+        delete restored._id;
+        await restored.save();
+        await ArchivedStudent.deleteOne({ _id: archived._id });
+        res.json({ success: true, message: "Restored successfully" });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.delete('/api/archived-students/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: "Admin access required" });
+        await ArchivedStudent.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: "Deleted permanently" });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/archive-years', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ success: false, message: "Admin access required" });
+        const years = await Student.aggregate([{ $group: { _id: { $year: "$joiningDate" }, count: { $sum: 1 } } }, { $sort: { _id: -1 } }]);
+        res.json({ success: true, data: years.map(y => ({ year: y._id, count: y.count })) });
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+///////////////////////////////////////////////////////////////////////
 // ============================================
 // TEACHER APIs
 // ============================================
