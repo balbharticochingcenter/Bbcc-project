@@ -2936,6 +2936,170 @@ app.get('/api/students/self', verifyToken, async (req, res) => {
 // Students can only view, not update
 // This endpoint is intentionally read-only
 // ============================================
+
+// ============================================
+// OLD STUDENTS SCHEMA (PROMOTED STUDENTS)
+// ============================================
+
+const OldStudentSchema = new mongoose.Schema({
+    // Original student data
+    studentId: { type: String, required: true, index: true },
+    password: { type: String, required: true },
+    photo: { type: String, required: true },
+    studentName: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    mobile: { type: String, required: true },
+    aadharNumber: { type: String, required: true },
+    aadharDocument: { type: String, required: true },
+    registrationDate: { type: Date },
+    joiningDate: { type: Date },
+    leavingDate: { type: Date, default: Date.now },
+    classMonthlyFees: { type: Number, default: 0 },
+    feesHistory: [{
+        month: String, year: Number, paidAmount: Number,
+        dueAmount: Number, status: String, paymentDate: Date
+    }],
+    attendance: [{
+        date: String, status: String, remarks: String, markedBy: String
+    }],
+    fatherName: { first: String, middle: String, last: String },
+    fatherMobile: String,
+    motherName: { first: String, middle: String, last: String },
+    address: { current: String, permanent: String },
+    oldEducation: {
+        board: { type: String, required: true },
+        class: { type: String, required: true }
+    },
+    newEducation: {
+        board: { type: String },
+        class: { type: String }
+    },
+    promotionReason: { type: String, default: '' },
+    promotedAt: { type: Date, default: Date.now },
+    promotedBy: { type: String, default: '' }
+}, { timestamps: true });
+
+const OldStudent = mongoose.model('OldStudent', OldStudentSchema);
+
+// ============================================
+// PROMOTION APIs
+// ============================================
+
+// Move student to old students
+app.post('/api/move-to-old-student', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const { studentId, reason, promotedTo } = req.body;
+        
+        // Find current student
+        const student = await Student.findOne({ studentId: studentId });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        // Create old student record
+        const oldStudent = new OldStudent({
+            studentId: student.studentId,
+            password: student.password,
+            photo: student.photo,
+            studentName: student.studentName,
+            mobile: student.mobile,
+            aadharNumber: student.aadharNumber,
+            aadharDocument: student.aadharDocument,
+            registrationDate: student.registrationDate,
+            joiningDate: student.joiningDate,
+            classMonthlyFees: student.classMonthlyFees,
+            feesHistory: student.feesHistory || [],
+            attendance: student.attendance || [],
+            fatherName: student.fatherName,
+            fatherMobile: student.fatherMobile,
+            motherName: student.motherName,
+            address: student.address,
+            oldEducation: {
+                board: student.education.board,
+                class: student.education.class
+            },
+            newEducation: promotedTo ? {
+                board: promotedTo.board,
+                class: promotedTo.class
+            } : null,
+            promotionReason: reason || 'Class promotion',
+            promotedBy: req.user.adminID
+        });
+        
+        await oldStudent.save();
+        
+        // Delete current student
+        await Student.deleteOne({ studentId: studentId });
+        
+        console.log(`📦 Student ${studentId} moved to old students by ${req.user.adminID}`);
+        
+        res.json({ success: true, message: "Student moved to old records", data: oldStudent });
+        
+    } catch (err) {
+        console.error('Move to old error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get all old students
+app.get('/api/old-students', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const oldStudents = await OldStudent.find().sort({ promotedAt: -1 });
+        res.json({ success: true, data: oldStudents });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get single old student
+app.get('/api/old-students/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const oldStudent = await OldStudent.findById(req.params.id);
+        if (!oldStudent) {
+            return res.status(404).json({ success: false, message: "Old student not found" });
+        }
+        
+        res.json({ success: true, data: oldStudent });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Search student by Aadhar
+app.get('/api/students/by-aadhar/:aadhar', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Admin access required" });
+        }
+        
+        const student = await Student.findOne({ aadharNumber: req.params.aadhar });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        res.json({ success: true, data: student });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 // ============================================
 // ENQUIRY CALL REMINDER (Twilio Integration)
 // ============================================
