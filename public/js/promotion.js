@@ -1,6 +1,6 @@
 // ============================================
 // STUDENT ARCHIVE & PROMOTION SYSTEM
-// CSP COMPLIANT - No inline event handlers
+// FIXED TAB SWITCHING
 // ============================================
 
 (function() {
@@ -43,7 +43,7 @@
         const tabContents = document.getElementById('tabContents');
         if (!tabContents) return;
         
-        // Create archive pane HTML (no inline event handlers)
+        // Create archive pane HTML
         const archivePaneHTML = `
             <div class="tab-pane" id="archivePane" style="display:none">
                 <div class="premium-card">
@@ -155,104 +155,106 @@
             tabContents.insertAdjacentHTML('beforeend', archivePaneHTML);
         }
         
-        // Initialize archive functions (using addEventListener, not inline)
-        initArchiveEventListeners();
+        // FIX: Override the switchTab function to include archive pane
+        if (window.switchTab) {
+            const originalSwitchTab = window.switchTab;
+            window.switchTab = function(tabId) {
+                // Hide all panes
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.style.display = 'none';
+                });
+                
+                // Show selected pane
+                const selectedPane = document.getElementById(tabId + 'Pane');
+                if (selectedPane) {
+                    selectedPane.style.display = 'block';
+                }
+                
+                // Update tab buttons active state
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.getAttribute('data-tab') === tabId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // Update bottom nav items
+                document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                    if (item.getAttribute('data-tab') === tabId) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+                
+                // Load archive data if archive tab is opened
+                if (tabId === 'archive') {
+                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                    setTimeout(() => {
+                        loadArchiveFilters(token);
+                        loadArchiveYears(token);
+                        loadArchivedStudents(token);
+                    }, 100);
+                }
+                
+                // Call original function if needed for other tabs
+                if (originalSwitchTab && tabId !== 'archive') {
+                    // But we already handled hiding/showing, so we might not need original
+                }
+            };
+        } else {
+            // If switchTab doesn't exist, create it
+            window.switchTab = function(tabId) {
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.style.display = 'none';
+                });
+                const selectedPane = document.getElementById(tabId + 'Pane');
+                if (selectedPane) {
+                    selectedPane.style.display = 'block';
+                }
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.getAttribute('data-tab') === tabId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                    if (item.getAttribute('data-tab') === tabId) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+                if (tabId === 'archive') {
+                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                    setTimeout(() => {
+                        loadArchiveFilters(token);
+                        loadArchiveYears(token);
+                        loadArchivedStudents(token);
+                    }, 100);
+                }
+            };
+        }
+        
+        // Also add click handlers to the new tab buttons
+        document.querySelectorAll('.tab-btn, .bottom-nav-item').forEach(btn => {
+            btn.removeEventListener('click', handleTabClick);
+            btn.addEventListener('click', handleTabClick);
+        });
+        
+        function handleTabClick(e) {
+            const tabId = e.currentTarget.getAttribute('data-tab');
+            if (tabId && window.switchTab) {
+                window.switchTab(tabId);
+            }
+        }
+        
+        // Initialize archive functions
         await loadArchiveFilters(token);
         await loadArchiveYears(token);
         await loadArchivedStudents(token);
-    }
-    
-    // Initialize all event listeners
-    function initArchiveEventListeners() {
-        // Refresh button
-        const refreshBtn = document.getElementById('refreshArchiveBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                loadArchivedStudents(token);
-                loadArchiveYears(token);
-            });
-        }
-        
-        // Preview button
-        const previewBtn = document.getElementById('previewArchiveBtn');
-        if (previewBtn) {
-            previewBtn.addEventListener('click', () => {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                previewArchive(token);
-            });
-        }
-        
-        // Archive button
-        const archiveBtn = document.getElementById('archiveByYearBtn');
-        if (archiveBtn) {
-            archiveBtn.addEventListener('click', () => {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                archiveByYear(token);
-            });
-        }
-        
-        // Filter button
-        const filterBtn = document.getElementById('filterArchiveBtn');
-        if (filterBtn) {
-            filterBtn.addEventListener('click', () => {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                loadArchivedStudents(token, 1);
-            });
-        }
-        
-        // Restore selected button
-        const restoreSelectedBtn = document.getElementById('restoreSelectedBtn');
-        if (restoreSelectedBtn) {
-            restoreSelectedBtn.addEventListener('click', () => {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                restoreSelected(token);
-            });
-        }
-        
-        // Delete selected button
-        const deleteSelectedBtn = document.getElementById('deleteSelectedArchiveBtn');
-        if (deleteSelectedBtn) {
-            deleteSelectedBtn.addEventListener('click', () => {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                deleteSelectedArchived(token);
-            });
-        }
-        
-        // Select all checkbox
-        const selectAll = document.getElementById('selectAllArchive');
-        if (selectAll) {
-            selectAll.addEventListener('change', (e) => {
-                document.querySelectorAll('.archive-checkbox').forEach(cb => cb.checked = e.target.checked);
-                updateBulkButtonsState();
-            });
-        }
-        
-        // Search input - enter key
-        const searchInput = document.getElementById('archiveSearchInput');
-        if (searchInput) {
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                    loadArchivedStudents(token, 1);
-                }
-            });
-        }
-        
-        // Listen for checkbox changes
-        document.addEventListener('change', (e) => {
-            if (e.target.classList && e.target.classList.contains('archive-checkbox')) {
-                updateBulkButtonsState();
-                // Update select all state
-                const allCheckboxes = document.querySelectorAll('.archive-checkbox');
-                const selectAllEl = document.getElementById('selectAllArchive');
-                if (selectAllEl && allCheckboxes.length > 0) {
-                    const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
-                    selectAllEl.checked = checkedCount === allCheckboxes.length;
-                    selectAllEl.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
-                }
-            }
-        });
     }
     
     // Load boards and classes for filters
@@ -322,7 +324,7 @@
             console.error('Error loading archived students:', e);
             const tbody = document.getElementById('archivedStudentsList');
             if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-danger">Error loading data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-danger">Error loading data. Please check your internet connection.</td></tr>';
             }
         }
     }
@@ -361,7 +363,7 @@
             </tr>
         `).join('');
         
-        // Attach event listeners for single actions (using addEventListener, not inline)
+        // Attach event listeners
         document.querySelectorAll('.restore-single').forEach(btn => {
             btn.removeEventListener('click', handleRestoreClick);
             btn.addEventListener('click', handleRestoreClick);
@@ -373,17 +375,58 @@
         
         function handleRestoreClick(e) {
             const id = e.currentTarget.getAttribute('data-id');
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             restoreStudent(token, id);
         }
         
         function handleDeleteClick(e) {
             const id = e.currentTarget.getAttribute('data-id');
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             deleteArchivedStudent(token, id);
         }
         
+        // Setup select all and bulk buttons
+        setupBulkActions();
+    }
+    
+    // Setup bulk actions
+    function setupBulkActions() {
+        const selectAll = document.getElementById('selectAllArchive');
+        if (selectAll) {
+            selectAll.removeEventListener('change', handleSelectAll);
+            selectAll.addEventListener('change', handleSelectAll);
+        }
+        
+        function handleSelectAll(e) {
+            document.querySelectorAll('.archive-checkbox').forEach(cb => cb.checked = e.target.checked);
+            updateBulkButtonsState();
+        }
+        
+        // Listen for checkbox changes
+        document.removeEventListener('change', handleCheckboxChange);
+        document.addEventListener('change', handleCheckboxChange);
+        
+        function handleCheckboxChange(e) {
+            if (e.target.classList && e.target.classList.contains('archive-checkbox')) {
+                updateBulkButtonsState();
+                const allCheckboxes = document.querySelectorAll('.archive-checkbox');
+                const selectAllEl = document.getElementById('selectAllArchive');
+                if (selectAllEl && allCheckboxes.length > 0) {
+                    const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
+                    selectAllEl.checked = checkedCount === allCheckboxes.length;
+                    selectAllEl.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+                }
+            }
+        }
+        
         updateBulkButtonsState();
+    }
+    
+    // Update bulk buttons state
+    function updateBulkButtonsState() {
+        const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
+        const restoreBtn = document.getElementById('restoreSelectedBtn');
+        const deleteBtn = document.getElementById('deleteSelectedArchiveBtn');
+        if (restoreBtn) restoreBtn.disabled = checkedCount === 0;
+        if (deleteBtn) deleteBtn.disabled = checkedCount === 0;
     }
     
     // Render pagination
@@ -418,18 +461,8 @@
         
         function handlePageClick(e) {
             const page = parseInt(e.currentTarget.getAttribute('data-page'));
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             loadArchivedStudents(token, page);
         }
-    }
-    
-    // Update bulk buttons state
-    function updateBulkButtonsState() {
-        const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
-        const restoreBtn = document.getElementById('restoreSelectedBtn');
-        const deleteBtn = document.getElementById('deleteSelectedArchiveBtn');
-        if (restoreBtn) restoreBtn.disabled = checkedCount === 0;
-        if (deleteBtn) deleteBtn.disabled = checkedCount === 0;
     }
     
     // Preview archive
@@ -635,7 +668,65 @@
         showLoader(false);
     }
     
-    // Helper: Escape HTML to prevent XSS
+    // Set up button event listeners
+    function setupButtonListeners(token) {
+        const previewBtn = document.getElementById('previewArchiveBtn');
+        if (previewBtn) {
+            previewBtn.removeEventListener('click', () => previewArchive(token));
+            previewBtn.addEventListener('click', () => previewArchive(token));
+        }
+        
+        const archiveBtn = document.getElementById('archiveByYearBtn');
+        if (archiveBtn) {
+            archiveBtn.removeEventListener('click', () => archiveByYear(token));
+            archiveBtn.addEventListener('click', () => archiveByYear(token));
+        }
+        
+        const filterBtn = document.getElementById('filterArchiveBtn');
+        if (filterBtn) {
+            filterBtn.removeEventListener('click', () => loadArchivedStudents(token, 1));
+            filterBtn.addEventListener('click', () => loadArchivedStudents(token, 1));
+        }
+        
+        const refreshBtn = document.getElementById('refreshArchiveBtn');
+        if (refreshBtn) {
+            refreshBtn.removeEventListener('click', () => {
+                loadArchivedStudents(token);
+                loadArchiveYears(token);
+            });
+            refreshBtn.addEventListener('click', () => {
+                loadArchivedStudents(token);
+                loadArchiveYears(token);
+            });
+        }
+        
+        const restoreSelectedBtn = document.getElementById('restoreSelectedBtn');
+        if (restoreSelectedBtn) {
+            restoreSelectedBtn.removeEventListener('click', () => restoreSelected(token));
+            restoreSelectedBtn.addEventListener('click', () => restoreSelected(token));
+        }
+        
+        const deleteSelectedBtn = document.getElementById('deleteSelectedArchiveBtn');
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.removeEventListener('click', () => deleteSelectedArchived(token));
+            deleteSelectedBtn.addEventListener('click', () => deleteSelectedArchived(token));
+        }
+        
+        // Search on Enter
+        const searchInput = document.getElementById('archiveSearchInput');
+        if (searchInput) {
+            searchInput.removeEventListener('keypress', handleSearchEnter);
+            searchInput.addEventListener('keypress', handleSearchEnter);
+        }
+        
+        function handleSearchEnter(e) {
+            if (e.key === 'Enter') {
+                loadArchivedStudents(token, 1);
+            }
+        }
+    }
+    
+    // Helper functions
     function escapeHtml(str) {
         if (!str) return '';
         return str
@@ -646,7 +737,6 @@
             .replace(/'/g, '&#39;');
     }
     
-    // Helper: Show toast notification
     function showToast(msg, type = 'success') {
         const toastContainer = document.getElementById('toastContainer');
         if (!toastContainer) {
@@ -660,22 +750,21 @@
         setTimeout(() => toast.remove(), 3000);
     }
     
-    // Helper: Show/hide loader
     function showLoader(show) {
         const loader = document.getElementById('loaderOverlay');
         if (loader) loader.style.display = show ? 'flex' : 'none';
     }
     
-    // Override switchTab to load archive data when tab is clicked
-    const originalSwitchTab = window.switchTab;
-    if (originalSwitchTab) {
-        window.switchTab = function(tabId) {
-            originalSwitchTab(tabId);
-            if (tabId === 'archive') {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                loadArchivedStudents(token);
-                loadArchiveYears(token);
-            }
-        };
-    }
+    // Make functions globally available for button clicks
+    window.previewArchive = previewArchive;
+    window.archiveByYear = archiveByYear;
+    window.loadArchivedStudents = loadArchivedStudents;
+    window.restoreSelected = restoreSelected;
+    window.deleteSelectedArchived = deleteSelectedArchived;
+    
+    // Setup button listeners after DOM is ready
+    setTimeout(() => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        setupButtonListeners(token);
+    }, 500);
 })();
