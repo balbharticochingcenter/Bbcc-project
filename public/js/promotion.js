@@ -1,244 +1,210 @@
 // ============================================
-// STUDENT ARCHIVE & PROMOTION SYSTEM
-// FIXED TAB SWITCHING
+// STUDENT PROMOTION SYSTEM
+// Move to Old Students & Create New Record
 // ============================================
 
 (function() {
-    // Wait for DOM to load
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initArchiveSystem);
+        document.addEventListener('DOMContentLoaded', initPromotionSystem);
     } else {
-        initArchiveSystem();
+        initPromotionSystem();
     }
     
-    async function initArchiveSystem() {
-        // Check if archive tab already exists
-        if (document.getElementById('archivePane')) return;
+    async function initPromotionSystem() {
+        // Check if promotion tab already exists
+        if (document.getElementById('promotionPane')) return;
         
-        // Get token
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         if (!token) return;
         
-        // Find the tab container and add Archive button
+        // Add Promotion Tab Button
         const tabContainer = document.querySelector('.tabs-container');
         if (tabContainer) {
-            const archiveTabBtn = document.createElement('button');
-            archiveTabBtn.className = 'tab-btn';
-            archiveTabBtn.setAttribute('data-tab', 'archive');
-            archiveTabBtn.innerHTML = '<i class="fas fa-archive"></i> Archive';
-            tabContainer.appendChild(archiveTabBtn);
+            const promotionTabBtn = document.createElement('button');
+            promotionTabBtn.className = 'tab-btn';
+            promotionTabBtn.setAttribute('data-tab', 'promotion');
+            promotionTabBtn.innerHTML = '<i class="fas fa-arrow-up"></i> Promotion';
+            tabContainer.appendChild(promotionTabBtn);
         }
         
-        // Add to bottom navigation for mobile
+        // Add to bottom navigation
         const bottomNav = document.querySelector('.bottom-nav');
         if (bottomNav) {
-            const archiveNavItem = document.createElement('div');
-            archiveNavItem.className = 'bottom-nav-item';
-            archiveNavItem.setAttribute('data-tab', 'archive');
-            archiveNavItem.innerHTML = '<i class="fas fa-archive"></i><span>Archive</span>';
-            bottomNav.appendChild(archiveNavItem);
+            const promotionNavItem = document.createElement('div');
+            promotionNavItem.className = 'bottom-nav-item';
+            promotionNavItem.setAttribute('data-tab', 'promotion');
+            promotionNavItem.innerHTML = '<i class="fas fa-arrow-up"></i><span>Promotion</span>';
+            bottomNav.appendChild(promotionNavItem);
         }
         
-        // Find where to insert archive pane
+        // Create Promotion Pane
         const tabContents = document.getElementById('tabContents');
         if (!tabContents) return;
         
-        // Create archive pane HTML
-        const archivePaneHTML = `
-            <div class="tab-pane" id="archivePane" style="display:none">
+        const promotionPaneHTML = `
+            <div class="tab-pane" id="promotionPane" style="display:none">
                 <div class="premium-card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-archive"></i> Student Archive & Promotion</h3>
-                        <div class="d-flex gap-2">
-                            <button class="btn-secondary-premium" id="refreshArchiveBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
-                        </div>
+                    <div class="card-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                        <h3><i class="fas fa-arrow-up"></i> Student Promotion</h3>
+                        <span class="badge bg-white text-success">Promote students to next class</span>
                     </div>
                     <div class="card-body">
-                        <!-- Archive by Year Section -->
-                        <div class="form-section" style="background: linear-gradient(135deg, #fef3c7, #fff3e0);">
-                            <div class="form-section-title"><i class="fas fa-calendar-alt"></i> Archive Students by Joining Year</div>
+                        <!-- Search Student Section -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="fas fa-search"></i> Find Student to Promote</div>
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="fw-bold">Select Year</label>
-                                    <select id="archiveYearSelect" class="form-select">
-                                        <option value="">Choose Year</option>
-                                    </select>
+                                    <label>Student ID</label>
+                                    <input type="text" id="promotionStudentId" class="form-control" placeholder="Enter Student ID">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="fw-bold">Reason (Optional)</label>
-                                    <input type="text" id="archiveReasonInput" class="form-control" placeholder="e.g., Batch completed 2024">
+                                    <label>OR Aadhar Number</label>
+                                    <input type="text" id="promotionAadhar" class="form-control" placeholder="Enter Aadhar Number">
                                 </div>
                                 <div class="col-md-4 d-flex align-items-end">
-                                    <div class="d-flex gap-2 w-100">
-                                        <button class="btn-secondary-premium w-50" id="previewArchiveBtn"><i class="fas fa-eye"></i> Preview</button>
-                                        <button class="btn-primary-premium w-50" id="archiveByYearBtn"><i class="fas fa-archive"></i> Archive</button>
+                                    <button class="btn-primary-premium w-100" id="searchStudentBtn">
+                                        <i class="fas fa-search"></i> Search Student
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Student Details Display -->
+                        <div id="promotionStudentDetails" style="display:none;">
+                            <div class="alert alert-success">
+                                <i class="fas fa-user-check"></i> Student Found! Fill promotion details below.
+                            </div>
+                            
+                            <!-- Current Student Info -->
+                            <div class="form-section" style="background: #f0fdf4;">
+                                <div class="form-section-title"><i class="fas fa-graduation-cap"></i> Current Student Information</div>
+                                <div id="currentStudentInfo" class="row g-3"></div>
+                            </div>
+                            
+                            <!-- Promotion Form -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fas fa-arrow-up"></i> Promotion Details</div>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label>New Board *</label>
+                                        <select id="promoteNewBoard" class="form-select" required>
+                                            <option value="">Select Board</option>
+                                            <option value="CBSE">CBSE</option>
+                                            <option value="ICSE">ICSE</option>
+                                            <option value="State Board">State Board</option>
+                                            <option value="UP Board">UP Board</option>
+                                            <option value="Bihar Board">Bihar Board</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>New Class *</label>
+                                        <select id="promoteNewClass" class="form-select" required>
+                                            <option value="">Select Class</option>
+                                            <option value="Class 1">Class 1</option>
+                                            <option value="Class 2">Class 2</option>
+                                            <option value="Class 3">Class 3</option>
+                                            <option value="Class 4">Class 4</option>
+                                            <option value="Class 5">Class 5</option>
+                                            <option value="Class 6">Class 6</option>
+                                            <option value="Class 7">Class 7</option>
+                                            <option value="Class 8">Class 8</option>
+                                            <option value="Class 9">Class 9</option>
+                                            <option value="Class 10">Class 10</option>
+                                            <option value="Class 11">Class 11</option>
+                                            <option value="Class 12">Class 12</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>New Monthly Fees (₹) *</label>
+                                        <input type="number" id="promoteNewFees" class="form-control" placeholder="Enter new fees" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>New Joining Date *</label>
+                                        <input type="date" id="promoteJoiningDate" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Promotion Reason</label>
+                                        <input type="text" id="promoteReason" class="form-control" placeholder="e.g., Class promotion, Board change">
                                     </div>
                                 </div>
                             </div>
-                            <div id="archivePreviewDiv" class="mt-3" style="display:none; background:white; padding:15px; border-radius:12px; border:1px solid #eef2f6;"></div>
-                        </div>
-                        
-                        <!-- Filter Section -->
-                        <div class="row g-3 mt-4 mb-4">
-                            <div class="col-md-3">
-                                <label class="fw-bold">Board</label>
-                                <select id="archiveBoardFilter" class="form-select">
-                                    <option value="">All Boards</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="fw-bold">Class</label>
-                                <select id="archiveClassFilter" class="form-select">
-                                    <option value="">All Classes</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="fw-bold">Search</label>
-                                <div class="search-box">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" id="archiveSearchInput" class="form-control" placeholder="Search by name/ID...">
-                                </div>
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button class="btn-primary-premium w-100" id="filterArchiveBtn"><i class="fas fa-filter"></i> Filter</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Archived Students Table -->
-                        <div class="table-responsive-custom">
-                            <table class="premium-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 40px;"><input type="checkbox" id="selectAllArchive"></th>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Board</th>
-                                        <th>Class</th>
-                                        <th>Joining Year</th>
-                                        <th>Archived Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="archivedStudentsList">
-                                    <tr><td colspan="8" class="text-center py-5"><i class="fas fa-spinner fa-spin"></i> Loading archived students...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Bulk Actions & Pagination -->
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div class="d-flex gap-2">
-                                <button class="btn-secondary-premium" id="restoreSelectedBtn" disabled>
-                                    <i class="fas fa-undo"></i> Restore Selected
-                                </button>
-                                <button class="btn-danger-premium" id="deleteSelectedArchiveBtn" disabled style="background: #dc2626; color: white; border: none; border-radius: 40px; padding: 10px 24px;">
-                                    <i class="fas fa-trash"></i> Delete Permanently
+                            
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-3 justify-content-end mt-4">
+                                <button class="btn-secondary-premium" id="cancelPromoteBtn">Cancel</button>
+                                <button class="btn-primary-premium" id="confirmPromoteBtn" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                    <i class="fas fa-arrow-up"></i> Promote Student
                                 </button>
                             </div>
-                            <div id="archivePagination"></div>
                         </div>
                         
-                        <!-- Info Note -->
-                        <div class="alert alert-info mt-4" style="background: #e6f7ff; border-radius: 16px; padding: 12px 20px;">
-                            <i class="fas fa-info-circle"></i> <strong>Note:</strong> Archived students are moved to separate storage. You can restore them anytime. Students are archived based on their <strong>Joining Year</strong>. Use this to manage old batches.
+                        <!-- Old Students Section -->
+                        <div class="mt-5">
+                            <div class="form-section-title"><i class="fas fa-history"></i> Promoted Students History</div>
+                            <div class="table-responsive-custom mt-3">
+                                <table class="premium-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Student ID</th>
+                                            <th>Name</th>
+                                            <th>Old Board/Class</th>
+                                            <th>New Board/Class</th>
+                                            <th>Promoted Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="promotedHistoryList">
+                                        <tr><td colspan="6" class="text-center py-5">Loading promoted students...<td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         `;
         
-        // Insert archive pane
+        // Insert promotion pane
         const adminPane = document.getElementById('adminPane');
         if (adminPane) {
-            adminPane.insertAdjacentHTML('afterend', archivePaneHTML);
+            adminPane.insertAdjacentHTML('afterend', promotionPaneHTML);
         } else {
-            tabContents.insertAdjacentHTML('beforeend', archivePaneHTML);
+            tabContents.insertAdjacentHTML('beforeend', promotionPaneHTML);
         }
         
-        // FIX: Override the switchTab function to include archive pane
+        // Initialize promotion functions
+        initPromotionEventListeners(token);
+        loadPromotedHistory(token);
+        
+        // Update switchTab function
         if (window.switchTab) {
             const originalSwitchTab = window.switchTab;
             window.switchTab = function(tabId) {
-                // Hide all panes
-                document.querySelectorAll('.tab-pane').forEach(pane => {
-                    pane.style.display = 'none';
-                });
-                
-                // Show selected pane
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.style.display = 'none');
                 const selectedPane = document.getElementById(tabId + 'Pane');
-                if (selectedPane) {
-                    selectedPane.style.display = 'block';
-                }
+                if (selectedPane) selectedPane.style.display = 'block';
                 
-                // Update tab buttons active state
                 document.querySelectorAll('.tab-btn').forEach(btn => {
-                    if (btn.getAttribute('data-tab') === tabId) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
+                    if (btn.getAttribute('data-tab') === tabId) btn.classList.add('active');
+                    else btn.classList.remove('active');
                 });
                 
-                // Update bottom nav items
                 document.querySelectorAll('.bottom-nav-item').forEach(item => {
-                    if (item.getAttribute('data-tab') === tabId) {
-                        item.classList.add('active');
-                    } else {
-                        item.classList.remove('active');
-                    }
+                    if (item.getAttribute('data-tab') === tabId) item.classList.add('active');
+                    else item.classList.remove('active');
                 });
                 
-                // Load archive data if archive tab is opened
-                if (tabId === 'archive') {
-                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                    setTimeout(() => {
-                        loadArchiveFilters(token);
-                        loadArchiveYears(token);
-                        loadArchivedStudents(token);
-                    }, 100);
+                if (tabId === 'promotion') {
+                    loadPromotedHistory(token);
                 }
                 
-                // Call original function if needed for other tabs
-                if (originalSwitchTab && tabId !== 'archive') {
-                    // But we already handled hiding/showing, so we might not need original
-                }
-            };
-        } else {
-            // If switchTab doesn't exist, create it
-            window.switchTab = function(tabId) {
-                document.querySelectorAll('.tab-pane').forEach(pane => {
-                    pane.style.display = 'none';
-                });
-                const selectedPane = document.getElementById(tabId + 'Pane');
-                if (selectedPane) {
-                    selectedPane.style.display = 'block';
-                }
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    if (btn.getAttribute('data-tab') === tabId) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-                document.querySelectorAll('.bottom-nav-item').forEach(item => {
-                    if (item.getAttribute('data-tab') === tabId) {
-                        item.classList.add('active');
-                    } else {
-                        item.classList.remove('active');
-                    }
-                });
-                if (tabId === 'archive') {
-                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-                    setTimeout(() => {
-                        loadArchiveFilters(token);
-                        loadArchiveYears(token);
-                        loadArchivedStudents(token);
-                    }, 100);
+                if (originalSwitchTab && tabId !== 'promotion') {
+                    originalSwitchTab(tabId);
                 }
             };
         }
         
-        // Also add click handlers to the new tab buttons
+        // Add click handlers to new tab buttons
         document.querySelectorAll('.tab-btn, .bottom-nav-item').forEach(btn => {
             btn.removeEventListener('click', handleTabClick);
             btn.addEventListener('click', handleTabClick);
@@ -246,506 +212,393 @@
         
         function handleTabClick(e) {
             const tabId = e.currentTarget.getAttribute('data-tab');
-            if (tabId && window.switchTab) {
-                window.switchTab(tabId);
-            }
+            if (tabId && window.switchTab) window.switchTab(tabId);
+        }
+    }
+    
+    function initPromotionEventListeners(token) {
+        // Search Student
+        const searchBtn = document.getElementById('searchStudentBtn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => searchStudent(token));
         }
         
-        // Initialize archive functions
-        await loadArchiveFilters(token);
-        await loadArchiveYears(token);
-        await loadArchivedStudents(token);
-    }
-    
-    // Load boards and classes for filters
-    async function loadArchiveFilters(token) {
-        try {
-            const res = await fetch('/api/boards', { headers: { 'Authorization': `Bearer ${token}` } });
-            const data = await res.json();
-            if (data.success) {
-                const boardSelect = document.getElementById('archiveBoardFilter');
-                const classSelect = document.getElementById('archiveClassFilter');
-                if (boardSelect) {
-                    boardSelect.innerHTML = '<option value="">All Boards</option>' + 
-                        data.data.boards.map(b => `<option value="${b}">${b}</option>`).join('');
-                }
-                if (classSelect) {
-                    classSelect.innerHTML = '<option value="">All Classes</option>' + 
-                        data.data.classes.map(c => `<option value="${c}">${c}</option>`).join('');
-                }
-            }
-        } catch(e) { console.error('Error loading filters:', e); }
-    }
-    
-    // Load available years for archive
-    async function loadArchiveYears(token) {
-        try {
-            const res = await fetch('/api/archive-years', { headers: { 'Authorization': `Bearer ${token}` } });
-            const data = await res.json();
-            if (data.success) {
-                const yearSelect = document.getElementById('archiveYearSelect');
-                if (yearSelect) {
-                    yearSelect.innerHTML = '<option value="">Choose Year</option>';
-                    data.data.forEach(y => {
-                        yearSelect.innerHTML += `<option value="${y.year}">${y.year} (${y.count} students)</option>`;
-                    });
-                }
-            }
-        } catch(e) { console.error('Error loading years:', e); }
-    }
-    
-    // Load archived students
-    async function loadArchivedStudents(token, page = 1) {
-        const board = document.getElementById('archiveBoardFilter')?.value || '';
-        const classVal = document.getElementById('archiveClassFilter')?.value || '';
-        const search = document.getElementById('archiveSearchInput')?.value || '';
+        // Enter key search
+        const studentIdInput = document.getElementById('promotionStudentId');
+        const aadharInput = document.getElementById('promotionAadhar');
         
-        let url = `/api/archived-students?page=${page}&limit=20`;
-        if (board) url += `&board=${encodeURIComponent(board)}`;
-        if (classVal) url += `&class=${encodeURIComponent(classVal)}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (studentIdInput) {
+            studentIdInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchStudent(token);
+            });
+        }
+        if (aadharInput) {
+            aadharInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchStudent(token);
+            });
+        }
+        
+        // Cancel button
+        const cancelBtn = document.getElementById('cancelPromoteBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                document.getElementById('promotionStudentDetails').style.display = 'none';
+                document.getElementById('promotionStudentId').value = '';
+                document.getElementById('promotionAadhar').value = '';
+            });
+        }
+        
+        // Confirm Promotion
+        const confirmBtn = document.getElementById('confirmPromoteBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => promoteStudent(token));
+        }
+        
+        // Set default joining date
+        const joinDateInput = document.getElementById('promoteJoiningDate');
+        if (joinDateInput) {
+            joinDateInput.value = new Date().toISOString().split('T')[0];
+        }
+    }
+    
+    async function searchStudent(token) {
+        const studentId = document.getElementById('promotionStudentId').value.trim();
+        const aadhar = document.getElementById('promotionAadhar').value.trim();
+        
+        if (!studentId && !aadhar) {
+            showToast('Please enter Student ID or Aadhar Number', 'warning');
+            return;
+        }
+        
+        showLoader(true);
         
         try {
+            let url = '';
+            if (studentId) {
+                url = `/api/students/${studentId}`;
+            } else {
+                url = `/api/students/by-aadhar/${aadhar}`;
+            }
+            
             const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await res.json();
-            if (data.success) {
-                window.archivedStudentsData = data.data;
-                window.currentArchivePage = data.pagination.page;
-                window.archiveTotalPages = data.pagination.pages;
-                renderArchivedTable(token);
-                renderArchivePagination(token);
+            
+            if (data.success && data.data) {
+                displayStudentForPromotion(data.data);
             } else {
-                const tbody = document.getElementById('archivedStudentsList');
-                if (tbody) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-danger">Failed to load archived students</td></tr>';
+                showToast('Student not found!', 'error');
+                document.getElementById('promotionStudentDetails').style.display = 'none';
+            }
+        } catch (err) {
+            showToast('Error searching student', 'error');
+            console.error(err);
+        }
+        
+        showLoader(false);
+    }
+    
+    function displayStudentForPromotion(student) {
+        const detailsDiv = document.getElementById('promotionStudentDetails');
+        const currentInfoDiv = document.getElementById('currentStudentInfo');
+        
+        currentInfoDiv.innerHTML = `
+            <div class="col-md-3">
+                <strong>Student ID:</strong><br>
+                ${escapeHtml(student.studentId)}
+            </div>
+            <div class="col-md-3">
+                <strong>Name:</strong><br>
+                ${escapeHtml(student.studentName.first)} ${escapeHtml(student.studentName.last)}
+            </div>
+            <div class="col-md-3">
+                <strong>Current Board:</strong><br>
+                ${escapeHtml(student.education?.board || '-')}
+            </div>
+            <div class="col-md-3">
+                <strong>Current Class:</strong><br>
+                ${escapeHtml(student.education?.class || '-')}
+            </div>
+            <div class="col-md-3">
+                <strong>Mobile:</strong><br>
+                ${escapeHtml(student.mobile || '-')}
+            </div>
+            <div class="col-md-3">
+                <strong>Father's Name:</strong><br>
+                ${escapeHtml(student.fatherName?.first || '')} ${escapeHtml(student.fatherName?.last || '')}
+            </div>
+            <div class="col-md-3">
+                <strong>Current Fees:</strong><br>
+                ₹${student.classMonthlyFees || 0}
+            </div>
+            <div class="col-md-3">
+                <strong>Joining Date:</strong><br>
+                ${new Date(student.joiningDate).toLocaleDateString()}
+            </div>
+        `;
+        
+        // Store student data for promotion
+        window.currentStudentForPromotion = student;
+        detailsDiv.style.display = 'block';
+        
+        // Auto-fill promotion form with suggested values
+        const currentClass = student.education?.class || '';
+        const currentBoard = student.education?.board || '';
+        
+        // Suggest next class
+        const classMatch = currentClass.match(/\d+/);
+        if (classMatch) {
+            const currentClassNum = parseInt(classMatch[0]);
+            const nextClassNum = currentClassNum + 1;
+            if (nextClassNum <= 12) {
+                const nextClassSelect = document.getElementById('promoteNewClass');
+                if (nextClassSelect) {
+                    nextClassSelect.value = `Class ${nextClassNum}`;
                 }
             }
-        } catch(e) {
-            console.error('Error loading archived students:', e);
-            const tbody = document.getElementById('archivedStudentsList');
-            if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-danger">Error loading data. Please check your internet connection.</td></tr>';
+        }
+        
+        // Suggest same board if available
+        const boardSelect = document.getElementById('promoteNewBoard');
+        if (boardSelect && currentBoard) {
+            for (let i = 0; i < boardSelect.options.length; i++) {
+                if (boardSelect.options[i].value === currentBoard) {
+                    boardSelect.value = currentBoard;
+                    break;
+                }
             }
+        }
+        
+        // Suggest same fees or slightly higher
+        const feesInput = document.getElementById('promoteNewFees');
+        if (feesInput && student.classMonthlyFees) {
+            feesInput.value = student.classMonthlyFees + 500;
         }
     }
     
-    // Render archived students table
-    function renderArchivedTable(token) {
-        const tbody = document.getElementById('archivedStudentsList');
-        if (!tbody) return;
-        
-        const students = window.archivedStudentsData || [];
-        
-        if (!students.length) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5"><i class="fas fa-archive fa-2x text-muted"></i><p class="mt-2">No archived students found</p></td></tr>';
+    async function promoteStudent(token) {
+        const student = window.currentStudentForPromotion;
+        if (!student) {
+            showToast('No student selected', 'error');
             return;
         }
         
-        tbody.innerHTML = students.map(s => `
-            <tr>
-                <td><input type="checkbox" class="archive-checkbox" data-id="${s._id}"></td>
-                <td><strong>${escapeHtml(s.studentId)}</strong></td>
-                <td>${escapeHtml(s.studentName.first)} ${escapeHtml(s.studentName.last)}</td>
-                <td>${escapeHtml(s.education?.board || '-')}</td>
-                <td>${escapeHtml(s.education?.class || '-')}</td>
-                <td>${new Date(s.joiningDate).getFullYear()}</td>
-                <td>${new Date(s.archivedAt).toLocaleDateString()}</td>
-                <td>
-                    <div class="action-btns">
-                        <button class="action-btn restore-single" data-id="${s._id}" style="background:#10b981;" title="Restore">
-                            <i class="fas fa-undo"></i>
-                        </button>
-                        <button class="action-btn delete-single" data-id="${s._id}" style="background:#dc2626;" title="Delete Permanently">
-                            <i class="fas fa-trash"></i>
-                        </button>
+        const newBoard = document.getElementById('promoteNewBoard').value;
+        const newClass = document.getElementById('promoteNewClass').value;
+        const newFees = document.getElementById('promoteNewFees').value;
+        const newJoiningDate = document.getElementById('promoteJoiningDate').value;
+        const reason = document.getElementById('promoteReason').value || 'Class promotion';
+        
+        if (!newBoard || !newClass || !newFees || !newJoiningDate) {
+            showToast('Please fill all promotion details', 'warning');
+            return;
+        }
+        
+        if (!confirm(`⚠️ PROMOTE STUDENT\n\nStudent: ${student.studentName.first} ${student.studentName.last}\nID: ${student.studentId}\n\nCurrent: ${student.education?.board} - ${student.education?.class}\nNew: ${newBoard} - ${newClass}\n\nThis will:\n1. Move current record to OLD STUDENTS\n2. Create new record with same ID\n3. Keep old data for history\n\nContinue?`)) {
+            return;
+        }
+        
+        showLoader(true);
+        
+        try {
+            // Step 1: Move current student to old students
+            const moveRes = await fetch('/api/move-to-old-student', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    studentId: student.studentId,
+                    reason: reason,
+                    promotedTo: { board: newBoard, class: newClass, fees: newFees, joiningDate: newJoiningDate }
+                })
+            });
+            
+            const moveData = await moveRes.json();
+            if (!moveData.success) {
+                showToast(moveData.message || 'Failed to move old record', 'error');
+                showLoader(false);
+                return;
+            }
+            
+            // Step 2: Create new student record with same ID
+            const newStudentData = {
+                studentId: student.studentId,
+                password: student.password,
+                photo: student.photo,
+                student: {
+                    firstName: student.studentName.first,
+                    middleName: student.studentName.middle || '',
+                    lastName: student.studentName.last
+                },
+                mobile: student.mobile,
+                aadhar: student.aadharNumber,
+                aadharDocument: student.aadharDocument,
+                classMonthlyFees: parseInt(newFees),
+                dates: {
+                    reg: newJoiningDate,
+                    join: newJoiningDate
+                },
+                father: {
+                    firstName: student.fatherName.first,
+                    middleName: student.fatherName.middle || '',
+                    lastName: student.fatherName.last,
+                    mobile: student.fatherMobile
+                },
+                mother: {
+                    firstName: student.motherName?.first || '',
+                    lastName: student.motherName?.last || ''
+                },
+                address: {
+                    current: student.address.current,
+                    permanent: student.address.permanent
+                },
+                education: {
+                    board: newBoard,
+                    class: newClass
+                }
+            };
+            
+            const createRes = await fetch('/api/student-register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newStudentData)
+            });
+            
+            const createData = await createRes.json();
+            if (!createData.success) {
+                showToast(createData.message || 'Failed to create new record', 'error');
+                showLoader(false);
+                return;
+            }
+            
+            showToast(`✅ Student promoted successfully!\n${student.studentName.first} ${student.studentName.last} is now in ${newClass}`, 'success');
+            
+            // Reset form
+            document.getElementById('promotionStudentDetails').style.display = 'none';
+            document.getElementById('promotionStudentId').value = '';
+            document.getElementById('promotionAadhar').value = '';
+            document.getElementById('promoteNewBoard').value = '';
+            document.getElementById('promoteNewClass').value = '';
+            document.getElementById('promoteNewFees').value = '';
+            document.getElementById('promoteReason').value = '';
+            document.getElementById('promoteJoiningDate').value = new Date().toISOString().split('T')[0];
+            
+            // Refresh lists
+            loadPromotedHistory(token);
+            if (typeof window.loadStudents === 'function') window.loadStudents();
+            
+        } catch (err) {
+            console.error('Promotion error:', err);
+            showToast('Promotion failed', 'error');
+        }
+        
+        showLoader(false);
+    }
+    
+    async function loadPromotedHistory(token) {
+        try {
+            const res = await fetch('/api/old-students', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            
+            const tbody = document.getElementById('promotedHistoryList');
+            if (!tbody) return;
+            
+            if (data.success && data.data.length > 0) {
+                tbody.innerHTML = data.data.slice(0, 20).map(s => `
+                    <tr>
+                        <td><strong>${escapeHtml(s.studentId)}</strong></td>
+                        <td>${escapeHtml(s.studentName.first)} ${escapeHtml(s.studentName.last)}</td>
+                        <td>${escapeHtml(s.oldEducation?.board || '-')} - ${escapeHtml(s.oldEducation?.class || '-')}</td>
+                        <td>${escapeHtml(s.newEducation?.board || '-')} - ${escapeHtml(s.newEducation?.class || '-')}</td>
+                        <td>${new Date(s.promotedAt).toLocaleDateString()}</td>
+                        <td>
+                            <button class="action-btn btn-view view-old" data-id="${s._id}" style="background:#4361ee;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                // Add view handlers
+                document.querySelectorAll('.view-old').forEach(btn => {
+                    btn.addEventListener('click', () => viewOldStudent(btn.dataset.id, token));
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><i class="fas fa-history"></i> No promoted students found</td></tr>';
+            }
+        } catch (err) {
+            console.error('Error loading promoted history:', err);
+        }
+    }
+    
+    async function viewOldStudent(id, token) {
+        try {
+            const res = await fetch(`/api/old-students/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                const s = data.data;
+                showModal(`
+                    <div class="text-center mb-3">
+                        <img src="${s.photo}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+                        <h5 class="mt-2">${s.studentName.first} ${s.studentName.last}</h5>
+                        <p class="text-muted">ID: ${s.studentId}</p>
                     </div>
-                </td>
-            </tr>
-        `).join('');
-        
-        // Attach event listeners
-        document.querySelectorAll('.restore-single').forEach(btn => {
-            btn.removeEventListener('click', handleRestoreClick);
-            btn.addEventListener('click', handleRestoreClick);
-        });
-        document.querySelectorAll('.delete-single').forEach(btn => {
-            btn.removeEventListener('click', handleDeleteClick);
-            btn.addEventListener('click', handleDeleteClick);
-        });
-        
-        function handleRestoreClick(e) {
-            const id = e.currentTarget.getAttribute('data-id');
-            restoreStudent(token, id);
-        }
-        
-        function handleDeleteClick(e) {
-            const id = e.currentTarget.getAttribute('data-id');
-            deleteArchivedStudent(token, id);
-        }
-        
-        // Setup select all and bulk buttons
-        setupBulkActions();
-    }
-    
-    // Setup bulk actions
-    function setupBulkActions() {
-        const selectAll = document.getElementById('selectAllArchive');
-        if (selectAll) {
-            selectAll.removeEventListener('change', handleSelectAll);
-            selectAll.addEventListener('change', handleSelectAll);
-        }
-        
-        function handleSelectAll(e) {
-            document.querySelectorAll('.archive-checkbox').forEach(cb => cb.checked = e.target.checked);
-            updateBulkButtonsState();
-        }
-        
-        // Listen for checkbox changes
-        document.removeEventListener('change', handleCheckboxChange);
-        document.addEventListener('change', handleCheckboxChange);
-        
-        function handleCheckboxChange(e) {
-            if (e.target.classList && e.target.classList.contains('archive-checkbox')) {
-                updateBulkButtonsState();
-                const allCheckboxes = document.querySelectorAll('.archive-checkbox');
-                const selectAllEl = document.getElementById('selectAllArchive');
-                if (selectAllEl && allCheckboxes.length > 0) {
-                    const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
-                    selectAllEl.checked = checkedCount === allCheckboxes.length;
-                    selectAllEl.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
-                }
+                    <div class="row g-2">
+                        <div class="col-6"><strong>Old Board:</strong> ${s.oldEducation?.board}</div>
+                        <div class="col-6"><strong>Old Class:</strong> ${s.oldEducation?.class}</div>
+                        <div class="col-6"><strong>New Board:</strong> ${s.newEducation?.board}</div>
+                        <div class="col-6"><strong>New Class:</strong> ${s.newEducation?.class}</div>
+                        <div class="col-12"><strong>Promoted Date:</strong> ${new Date(s.promotedAt).toLocaleString()}</div>
+                        <div class="col-12"><strong>Reason:</strong> ${s.promotionReason || '-'}</div>
+                        <div class="col-12"><hr><strong>Mobile:</strong> ${s.mobile}</div>
+                        <div class="col-12"><strong>Father:</strong> ${s.fatherName.first} ${s.fatherName.last}</div>
+                    </div>
+                `, 'Promoted Student Details');
             }
-        }
-        
-        updateBulkButtonsState();
-    }
-    
-    // Update bulk buttons state
-    function updateBulkButtonsState() {
-        const checkedCount = document.querySelectorAll('.archive-checkbox:checked').length;
-        const restoreBtn = document.getElementById('restoreSelectedBtn');
-        const deleteBtn = document.getElementById('deleteSelectedArchiveBtn');
-        if (restoreBtn) restoreBtn.disabled = checkedCount === 0;
-        if (deleteBtn) deleteBtn.disabled = checkedCount === 0;
-    }
-    
-    // Render pagination
-    function renderArchivePagination(token) {
-        const div = document.getElementById('archivePagination');
-        if (!div) return;
-        
-        const totalPages = window.archiveTotalPages || 1;
-        const currentPage = window.currentArchivePage || 1;
-        
-        if (totalPages <= 1) {
-            div.innerHTML = '';
-            return;
-        }
-        
-        let html = '<div class="d-flex gap-2 flex-wrap">';
-        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
-            const activeClass = i === currentPage ? 'active' : '';
-            html += `<button class="btn-secondary-premium archive-page-btn ${activeClass}" data-page="${i}" style="padding:6px 12px; ${i === currentPage ? 'background: var(--gradient-primary); color: white;' : ''}">${i}</button>`;
-        }
-        if (totalPages > 5) {
-            html += `<span class="px-2">...</span>`;
-            html += `<button class="btn-secondary-premium archive-page-btn" data-page="${totalPages}" style="padding:6px 12px;">${totalPages}</button>`;
-        }
-        html += '</div>';
-        div.innerHTML = html;
-        
-        document.querySelectorAll('.archive-page-btn').forEach(btn => {
-            btn.removeEventListener('click', handlePageClick);
-            btn.addEventListener('click', handlePageClick);
-        });
-        
-        function handlePageClick(e) {
-            const page = parseInt(e.currentTarget.getAttribute('data-page'));
-            loadArchivedStudents(token, page);
+        } catch (err) {
+            showToast('Error loading details', 'error');
         }
     }
     
-    // Preview archive
-    async function previewArchive(token) {
-        const year = document.getElementById('archiveYearSelect').value;
-        if (!year) {
-            showToast('Please select a year', 'warning');
-            return;
-        }
-        
-        showLoader(true);
-        try {
-            const res = await fetch('/api/archive-by-year', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ year, dryRun: true })
-            });
-            const data = await res.json();
-            if (data.success) {
-                const div = document.getElementById('archivePreviewDiv');
-                div.style.display = 'block';
-                if (data.count === 0) {
-                    div.innerHTML = `<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> No students found who joined in ${year}</div>`;
-                } else {
-                    div.innerHTML = `
-                        <div class="alert alert-info mb-0">
-                            <i class="fas fa-info-circle"></i> <strong>${data.count} students</strong> will be archived from year ${year}
-                            <hr class="my-2">
-                            <div style="max-height: 200px; overflow-y: auto;">
-                                ${data.preview.map(s => `• <strong>${escapeHtml(s.id)}</strong> - ${escapeHtml(s.name)} (${escapeHtml(s.class || 'N/A')})`).join('<br>')}
-                            </div>
-                        </div>
-                    `;
-                }
-            } else {
-                showToast(data.message || 'Preview failed', 'error');
-            }
-        } catch(e) {
-            showToast('Preview failed', 'error');
-        }
-        showLoader(false);
+    function showModal(content, title) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-custom';
+        modal.style.display = 'block';
+        modal.innerHTML = `
+            <div class="modal-content-custom" style="max-width:500px;">
+                <div class="modal-header-custom">
+                    <h4>${title}</h4>
+                    <button class="modal-close" id="closeModalBtn">&times;</button>
+                </div>
+                <div class="modal-body-custom">${content}</div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('closeModalBtn').onclick = () => modal.remove();
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
     }
     
-    // Archive by year
-    async function archiveByYear(token) {
-        const year = document.getElementById('archiveYearSelect').value;
-        const reason = document.getElementById('archiveReasonInput').value;
-        
-        if (!year) {
-            showToast('Please select a year', 'warning');
-            return;
-        }
-        
-        if (!confirm(`⚠️ WARNING: This will archive ALL students who joined in ${year}.\n\nArchived students will be moved to archive storage and removed from active list.\n\nThis action can be reversed by restoring students from archive.\n\nContinue?`)) {
-            return;
-        }
-        
-        showLoader(true);
-        try {
-            const res = await fetch('/api/archive-by-year', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ year, reason: reason || `Yearly archival for ${year}` })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast(`✅ ${data.message}`, 'success');
-                loadArchivedStudents(token);
-                loadArchiveYears(token);
-                if (typeof window.loadStudents === 'function') window.loadStudents();
-                const previewDiv = document.getElementById('archivePreviewDiv');
-                if (previewDiv) previewDiv.style.display = 'none';
-                const reasonInput = document.getElementById('archiveReasonInput');
-                if (reasonInput) reasonInput.value = '';
-            } else {
-                showToast(data.message || 'Archive failed', 'error');
-            }
-        } catch(e) {
-            showToast('Archive failed', 'error');
-        }
-        showLoader(false);
-    }
-    
-    // Restore single student
-    async function restoreStudent(token, id) {
-        if (!confirm('Restore this student to active list?')) return;
-        
-        showLoader(true);
-        try {
-            const res = await fetch(`/api/restore-student/${id}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('✅ Student restored successfully', 'success');
-                loadArchivedStudents(token);
-                loadArchiveYears(token);
-                if (typeof window.loadStudents === 'function') window.loadStudents();
-            } else {
-                showToast(data.message || 'Restore failed', 'error');
-            }
-        } catch(e) {
-            showToast('Restore failed', 'error');
-        }
-        showLoader(false);
-    }
-    
-    // Delete archived student permanently
-    async function deleteArchivedStudent(token, id) {
-        if (!confirm('⚠️ PERMANENT DELETE: This will permanently delete the archived student record. This cannot be undone.\n\nContinue?')) return;
-        
-        showLoader(true);
-        try {
-            const res = await fetch(`/api/archived-students/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('Deleted permanently', 'success');
-                loadArchivedStudents(token);
-            } else {
-                showToast(data.message || 'Delete failed', 'error');
-            }
-        } catch(e) {
-            showToast('Delete failed', 'error');
-        }
-        showLoader(false);
-    }
-    
-    // Restore selected students
-    async function restoreSelected(token) {
-        const selected = [...document.querySelectorAll('.archive-checkbox:checked')].map(cb => cb.getAttribute('data-id'));
-        if (!selected.length) {
-            showToast('Please select students to restore', 'warning');
-            return;
-        }
-        
-        if (!confirm(`Restore ${selected.length} student(s) to active list?`)) return;
-        
-        showLoader(true);
-        let successCount = 0;
-        let failCount = 0;
-        
-        for (const id of selected) {
-            try {
-                const res = await fetch(`/api/restore-student/${id}`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (data.success) successCount++;
-                else failCount++;
-            } catch(e) {
-                failCount++;
-            }
-        }
-        
-        showToast(`✅ Restored: ${successCount}, Failed: ${failCount}`, successCount > 0 ? 'success' : 'error');
-        loadArchivedStudents(token);
-        loadArchiveYears(token);
-        if (typeof window.loadStudents === 'function') window.loadStudents();
-        showLoader(false);
-    }
-    
-    // Delete selected archived students
-    async function deleteSelectedArchived(token) {
-        const selected = [...document.querySelectorAll('.archive-checkbox:checked')].map(cb => cb.getAttribute('data-id'));
-        if (!selected.length) {
-            showToast('Please select students to delete', 'warning');
-            return;
-        }
-        
-        if (!confirm(`⚠️ PERMANENT DELETE: This will permanently delete ${selected.length} archived student record(s). This cannot be undone.\n\nContinue?`)) return;
-        
-        showLoader(true);
-        let successCount = 0;
-        let failCount = 0;
-        
-        for (const id of selected) {
-            try {
-                const res = await fetch(`/api/archived-students/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (data.success) successCount++;
-                else failCount++;
-            } catch(e) {
-                failCount++;
-            }
-        }
-        
-        showToast(`✅ Deleted: ${successCount}, Failed: ${failCount}`, successCount > 0 ? 'success' : 'error');
-        loadArchivedStudents(token);
-        showLoader(false);
-    }
-    
-    // Set up button event listeners
-    function setupButtonListeners(token) {
-        const previewBtn = document.getElementById('previewArchiveBtn');
-        if (previewBtn) {
-            previewBtn.removeEventListener('click', () => previewArchive(token));
-            previewBtn.addEventListener('click', () => previewArchive(token));
-        }
-        
-        const archiveBtn = document.getElementById('archiveByYearBtn');
-        if (archiveBtn) {
-            archiveBtn.removeEventListener('click', () => archiveByYear(token));
-            archiveBtn.addEventListener('click', () => archiveByYear(token));
-        }
-        
-        const filterBtn = document.getElementById('filterArchiveBtn');
-        if (filterBtn) {
-            filterBtn.removeEventListener('click', () => loadArchivedStudents(token, 1));
-            filterBtn.addEventListener('click', () => loadArchivedStudents(token, 1));
-        }
-        
-        const refreshBtn = document.getElementById('refreshArchiveBtn');
-        if (refreshBtn) {
-            refreshBtn.removeEventListener('click', () => {
-                loadArchivedStudents(token);
-                loadArchiveYears(token);
-            });
-            refreshBtn.addEventListener('click', () => {
-                loadArchivedStudents(token);
-                loadArchiveYears(token);
-            });
-        }
-        
-        const restoreSelectedBtn = document.getElementById('restoreSelectedBtn');
-        if (restoreSelectedBtn) {
-            restoreSelectedBtn.removeEventListener('click', () => restoreSelected(token));
-            restoreSelectedBtn.addEventListener('click', () => restoreSelected(token));
-        }
-        
-        const deleteSelectedBtn = document.getElementById('deleteSelectedArchiveBtn');
-        if (deleteSelectedBtn) {
-            deleteSelectedBtn.removeEventListener('click', () => deleteSelectedArchived(token));
-            deleteSelectedBtn.addEventListener('click', () => deleteSelectedArchived(token));
-        }
-        
-        // Search on Enter
-        const searchInput = document.getElementById('archiveSearchInput');
-        if (searchInput) {
-            searchInput.removeEventListener('keypress', handleSearchEnter);
-            searchInput.addEventListener('keypress', handleSearchEnter);
-        }
-        
-        function handleSearchEnter(e) {
-            if (e.key === 'Enter') {
-                loadArchivedStudents(token, 1);
-            }
-        }
-    }
-    
-    // Helper functions
     function escapeHtml(str) {
         if (!str) return '';
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
     
     function showToast(msg, type = 'success') {
         const toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) {
-            console.log(`${type}: ${msg}`);
-            return;
-        }
+        if (!toastContainer) return;
         const toast = document.createElement('div');
         toast.className = `toast-premium ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><span>${escapeHtml(msg)}</span>`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><span>${msg}</span>`;
         toastContainer.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
@@ -754,17 +607,4 @@
         const loader = document.getElementById('loaderOverlay');
         if (loader) loader.style.display = show ? 'flex' : 'none';
     }
-    
-    // Make functions globally available for button clicks
-    window.previewArchive = previewArchive;
-    window.archiveByYear = archiveByYear;
-    window.loadArchivedStudents = loadArchivedStudents;
-    window.restoreSelected = restoreSelected;
-    window.deleteSelectedArchived = deleteSelectedArchived;
-    
-    // Setup button listeners after DOM is ready
-    setTimeout(() => {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        setupButtonListeners(token);
-    }, 500);
 })();
