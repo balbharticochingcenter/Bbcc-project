@@ -1,3 +1,5 @@
+// ========== SESSION HELPER FUNCTIONS ==========
+
 function getSessionEndDate(startDate) {
     const endDate = new Date(startDate);
     endDate.setFullYear(endDate.getFullYear() + 1);
@@ -58,9 +60,31 @@ function generateFeesHistory(joiningDate, monthlyFees, sessionEndDate) {
     return feesHistory;
 }
 
+function shouldAutoBlock(student) {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const currentSession = student.currentSession?.sessionName;
+    
+    const currentMonthFee = student.feesHistory?.find(f => 
+        f.monthIndex === currentMonth && f.year === currentYear && f.sessionName === currentSession
+    );
+    
+    const prevMonthFee = student.feesHistory?.find(f => 
+        f.monthIndex === currentMonth - 1 && f.year === currentYear && f.sessionName === currentSession
+    );
+    
+    if (prevMonthFee?.status === 'unpaid' && currentMonthFee?.status === 'unpaid') {
+        return { shouldBlock: true, reason: '2 months fees due' };
+    }
+    
+    return { shouldBlock: false };
+}
+
 module.exports = {
     getSessionEndDate,
     getSessionName,
     calculateProRatedFees,
-    generateFeesHistory
+    generateFeesHistory,
+    shouldAutoBlock
 };
