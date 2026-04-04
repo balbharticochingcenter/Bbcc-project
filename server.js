@@ -79,6 +79,125 @@ mongoose.connection.once('open', async () => {
     }
 });
 
+// ========== EXTRA ADMIN APIs (Change ID/Password) ==========
+// Get all admins (for super admin)
+app.get('/api/admins', async (req, res) => {
+    try {
+        const Admin = require('./models/Admin');
+        const admins = await Admin.find().select('-pws');
+        res.json({ success: true, data: admins });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Create new admin (for super admin)
+app.post('/api/admins', async (req, res) => {
+    try {
+        const Admin = require('./models/Admin');
+        const { adminID, password, name } = req.body;
+        
+        const existing = await Admin.findOne({ adminID });
+        if (existing) {
+            return res.status(400).json({ success: false, message: "Admin ID already exists" });
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const admin = new Admin({
+            adminID,
+            pws: hashedPassword,
+            name: name || 'Admin'
+        });
+        await admin.save();
+        
+        res.json({ success: true, message: "Admin created successfully", data: { adminID, name } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Change admin password (logged in admin can change their own password)
+app.post('/api/change-password', async (req, res) => {
+    try {
+        const Admin = require('./models/Admin');
+        const { adminID, oldPassword, newPassword } = req.body;
+        
+        const admin = await Admin.findOne({ adminID });
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        const isValid = await bcrypt.compare(oldPassword, admin.pws);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: "Old password is incorrect" });
+        }
+        
+        admin.pws = await bcrypt.hash(newPassword, 10);
+        await admin.save();
+        
+        res.json({ success: true, message: "Password changed successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Change admin ID (logged in admin can change their own ID)
+app.post('/api/change-admin-id', async (req, res) => {
+    try {
+        const Admin = require('./models/Admin');
+        const { oldAdminID, newAdminID, password } = req.body;
+        
+        const admin = await Admin.findOne({ adminID: oldAdminID });
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        const isValid = await bcrypt.compare(password, admin.pws);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: "Password is incorrect" });
+        }
+        
+        // Check if new ID already exists
+        const existing = await Admin.findOne({ adminID: newAdminID });
+        if (existing && existing._id.toString() !== admin._id.toString()) {
+            return res.status(400).json({ success: false, message: "Admin ID already taken" });
+        }
+        
+        admin.adminID = newAdminID;
+        await admin.save();
+        
+        res.json({ success: true, message: "Admin ID changed successfully", newAdminID });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Setup admin route (for first time setup)
+app.get('/api/setup-admin', async (req, res) => {
+    try {
+        const Admin = require('./models/Admin');
+        
+        const existing = await Admin.findOne({ adminID: 'admin' });
+        if (existing) {
+            return res.json({ success: true, message: "Admin already exists! Use admin/admin123" });
+        }
+        
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        const admin = new Admin({
+            adminID: 'admin',
+            pws: hashedPassword,
+            name: 'Super Admin',
+            loginAttempts: 0,
+            lockUntil: null
+        });
+        await admin.save();
+        
+        res.json({ success: true, message: "Admin created! Use admin/admin123" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ========== ERROR HANDLERS ==========
 app.use((err, req, res, next) => {
     console.error("Error:", err.stack);
@@ -94,5 +213,11 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`\n✅ Server running on http://localhost:${PORT}`);
     console.log(`📌 Login Page: http://localhost:${PORT}/login.html`);
-    console.log(`📌 Default Credentials: admin / admin123\n`);
+    console.log(`📌 Default Credentials: admin / admin123`);
+    console.log(`\n📌 Admin APIs:`);
+    console.log(`   GET  /api/admins - List all admins`);
+    console.log(`   POST /api/admins - Create new admin`);
+    console.log(`   POST /api/change-password - Change password`);
+    console.log(`   POST /api/change-admin-id - Change admin ID`);
+    console.log(`   GET  /api/setup-admin - Setup default admin\n`);
 });
