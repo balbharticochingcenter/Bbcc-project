@@ -25,7 +25,7 @@ app.use(express.static('public'));
 const connectDB = require('./models');
 connectDB();
 
-// Import Routes (jo tumhare paas already hain)
+// Import Routes
 const studentRoutes = require('./routes/studentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
@@ -39,24 +39,37 @@ app.use('/api', teacherRoutes);
 
 // Serve HTML
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
+app.get('/login.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.html')); });
+app.get('/management.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'management.html')); });
 app.get('/student-management.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'student-management.html')); });
 
-// Auto create admin on server start
+// ========== AUTO CREATE ADMIN ==========
 mongoose.connection.once('open', async () => {
     try {
         const Admin = require('./models/Admin');
+        
         const existing = await Admin.findOne({ adminID: 'admin' });
+        
         if (!existing) {
-            const hashed = await bcrypt.hash('admin123', 10);
-            await Admin.create({ adminID: 'admin', pws: hashed, name: 'Super Admin' });
-            console.log('✅ Admin created: admin / admin123');
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            const admin = new Admin({
+                adminID: 'admin',
+                pws: hashedPassword,
+                name: 'Super Admin'
+            });
+            await admin.save();
+            console.log('✅ Default Admin Created!');
+            console.log('   👤 Username: admin');
+            console.log('   🔑 Password: admin123');
+        } else {
+            console.log('✅ Admin already exists');
         }
     } catch (err) {
-        console.log('Admin creation error:', err.message);
+        console.log('❌ Admin creation error:', err.message);
     }
 });
 
-// Error handlers
+// Error Handlers
 app.use((err, req, res, next) => {
     console.error("Error:", err.stack);
     res.status(500).json({ success: false, message: "Something went wrong!" });
@@ -66,10 +79,9 @@ app.use((req, res) => {
     res.status(404).json({ success: false, message: "API not found" });
 });
 
-// Start server
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-    console.log(`🌐 http://localhost:${PORT}`);
-    console.log(`📌 Login: admin / admin123`);
+    console.log(`\n✅ Server running on http://localhost:${PORT}`);
+    console.log(`📌 Login: admin / admin123\n`);
 });
