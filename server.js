@@ -2,89 +2,33 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
-const xss = require('xss-clean');
-const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
-const bcrypt = require('bcrypt');
-const connectDB = require('./models');
-
-// Import Routes
-const studentRoutes = require('./routes/studentRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const teacherRoutes = require('./routes/teacherRoutes');
-const publicRoutes = require('./routes/publicRoutes');
 
 const app = express();
 
-// ========== SECURITY MIDDLEWARE ==========
-app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false,
-}));
+// Middleware
 app.use(cors());
-app.use(xss());
-app.use(mongoSanitize());
-app.use(compression());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json());
 app.use(express.static('public'));
 
-// ========== DATABASE CONNECTION ==========
-connectDB();
+// Database Connection
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.log('❌ DB Error:', err.message));
 
-// ========== AUTO CREATE DEFAULT ADMIN ==========
-mongoose.connection.once('open', async () => {
-    try {
-        const Admin = require('./models/Admin');
-        
-        const existingAdmin = await Admin.findOne({ adminID: 'admin' });
-        
-        if (!existingAdmin) {
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            const defaultAdmin = new Admin({
-                adminID: 'admin',
-                pws: hashedPassword,
-                name: 'Super Admin'
-            });
-            await defaultAdmin.save();
-            console.log('✅ Default Admin Created: admin / admin123');
-        } else {
-            console.log('✅ Admin already exists');
-        }
-    } catch (err) {
-        console.log('❌ Admin creation error:', err.message);
-    }
-});
-
-// ========== ROUTES ==========
-app.use('/api', publicRoutes);
+// Routes
+const studentRoutes = require('./routes/studentRoutes');
 app.use('/api', studentRoutes);
-app.use('/api', adminRoutes);
-app.use('/api', teacherRoutes);
 
-// ========== SERVE HTML FILES ==========
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
-app.get('/login.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.html')); });
-app.get('/student-management.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'student-management.html')); });
-app.get('/student-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'student-dashboard.html')); });
-app.get('/teacher-dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'teacher-dashboard.html')); });
-
-// ========== ERROR HANDLERS ==========
-app.use((err, req, res, next) => {
-    console.error("Error:", err.stack);
-    res.status(500).json({ success: false, message: "Something went wrong!" });
+// Serve HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'student-management.html'));
 });
 
-app.use((req, res) => {
-    res.status(404).json({ success: false, message: "API not found" });
-});
-
-// ========== START SERVER ==========
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-    console.log(`🌐 http://localhost:${PORT}`);
-    console.log(`\n📌 Login: admin / admin123`);
+    console.log(`\n✅ Server running on http://localhost:${PORT}`);
+    console.log(`\n📌 FIRST: Open http://localhost:5000/api/setup-admin`);
+    console.log(`📌 THEN: Login with admin / admin123\n`);
 });
