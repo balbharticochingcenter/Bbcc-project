@@ -1,11 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
 const path = require('path');
+const bcrypt = require('bcrypt');
 const connectDB = require('./models');
 
 // Import Routes
@@ -31,6 +33,30 @@ app.use(express.static('public'));
 
 // ========== DATABASE CONNECTION ==========
 connectDB();
+
+// ========== AUTO CREATE DEFAULT ADMIN ==========
+mongoose.connection.once('open', async () => {
+    try {
+        const Admin = require('./models/Admin');
+        
+        const existingAdmin = await Admin.findOne({ adminID: 'admin' });
+        
+        if (!existingAdmin) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            const defaultAdmin = new Admin({
+                adminID: 'admin',
+                pws: hashedPassword,
+                name: 'Super Admin'
+            });
+            await defaultAdmin.save();
+            console.log('✅ Default Admin Created: admin / admin123');
+        } else {
+            console.log('✅ Admin already exists');
+        }
+    } catch (err) {
+        console.log('❌ Admin creation error:', err.message);
+    }
+});
 
 // ========== ROUTES ==========
 app.use('/api', publicRoutes);
@@ -60,10 +86,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`🌐 http://localhost:${PORT}`);
-    console.log(`\n📌 API Endpoints:`);
-    console.log(`   POST /api/student-register - Register Student`);
-    console.log(`   POST /api/student-login - Student Login`);
-    console.log(`   GET  /api/students - Get All Students`);
-    console.log(`   POST /api/admin-login - Admin Login`);
-    console.log(`   POST /api/teacher-login - Teacher Login`);
+    console.log(`\n📌 Login: admin / admin123`);
 });
