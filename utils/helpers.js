@@ -1,18 +1,18 @@
-// ========== SESSION HELPER FUNCTIONS ==========
-
+// Get session end date (March 7 of next year)
 function getSessionEndDate(startDate) {
     const endDate = new Date(startDate);
     endDate.setFullYear(endDate.getFullYear() + 1);
     endDate.setMonth(2); // March
     endDate.setDate(7);
-    endDate.setHours(23, 59, 59, 999);
     return endDate;
 }
 
+// Get session name
 function getSessionName(startDate, endDate) {
     return `${startDate.getFullYear()}-${endDate.getFullYear()}`;
 }
 
+// Calculate pro-rated fees
 function calculateProRatedFees(monthlyFees, monthDate, joinDate, sessionEndDate) {
     const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
     const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
@@ -25,11 +25,10 @@ function calculateProRatedFees(monthlyFees, monthDate, joinDate, sessionEndDate)
     
     const daysInMonth = monthEnd.getDate();
     const effectiveDays = Math.ceil((effectiveEnd - effectiveStart) / (1000 * 60 * 60 * 24)) + 1;
-    const proRatedFees = (monthlyFees / daysInMonth) * effectiveDays;
-    
-    return Math.round(proRatedFees * 100) / 100;
+    return Math.round((monthlyFees / daysInMonth) * effectiveDays * 100) / 100;
 }
 
+// Generate fees history
 function generateFeesHistory(joiningDate, monthlyFees, sessionEndDate) {
     const feesHistory = [];
     const sessionName = getSessionName(joiningDate, sessionEndDate);
@@ -52,7 +51,7 @@ function generateFeesHistory(joiningDate, monthlyFees, sessionEndDate) {
                 paidAmount: 0,
                 dueAmount: amount,
                 status: 'unpaid',
-                remarks: amount < monthlyFees ? `Pro-rated fees (joined on ${joiningDate.toLocaleDateString()})` : ''
+                remarks: ''
             });
         }
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -60,6 +59,7 @@ function generateFeesHistory(joiningDate, monthlyFees, sessionEndDate) {
     return feesHistory;
 }
 
+// Check auto block
 function shouldAutoBlock(student) {
     const today = new Date();
     const currentMonth = today.getMonth();
@@ -77,7 +77,6 @@ function shouldAutoBlock(student) {
     if (prevMonthFee?.status === 'unpaid' && currentMonthFee?.status === 'unpaid') {
         return { shouldBlock: true, reason: '2 months fees due' };
     }
-    
     return { shouldBlock: false };
 }
 
