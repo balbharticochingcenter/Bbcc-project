@@ -27,30 +27,16 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// ========== OPTIONAL VERIFY (For public endpoints if any) ==========
-const optionalVerify = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token) {
-        try {
-            req.user = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-        } catch(e) { req.user = null; }
-    } else { req.user = null; }
-    next();
-};
-
 // ========== HELPER FUNCTIONS ==========
 
-// Get session end date (March 31st of next year)
 function getSessionEndDate(startDate) {
     const endDate = new Date(startDate);
     endDate.setFullYear(endDate.getFullYear() + 1);
-    endDate.setMonth(2); // March
+    endDate.setMonth(2);
     endDate.setDate(31);
     return endDate;
 }
 
-// Generate fees history for a session
 function generateFeesHistory(joiningDate, monthlyFees, sessionEndDate) {
     const feesHistory = [];
     const sessionName = `${joiningDate.getFullYear()}-${sessionEndDate.getFullYear()}`;
@@ -78,10 +64,8 @@ function generateFeesHistory(joiningDate, monthlyFees, sessionEndDate) {
     return feesHistory;
 }
 
-// Move student to old students collection
 async function moveToOldStudents(student) {
     try {
-        // Calculate total fees paid
         const totalFeesPaid = student.feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
         
         const oldStudentData = {
@@ -118,7 +102,6 @@ async function moveToOldStudents(student) {
         const oldStudent = new OldStudent(oldStudentData);
         await oldStudent.save();
         await Student.deleteOne({ _id: student._id });
-        
         return true;
     } catch (err) {
         console.error('Error moving to old students:', err);
@@ -126,7 +109,6 @@ async function moveToOldStudents(student) {
     }
 }
 
-// Validate student data before save
 function validateStudentData(data, isUpdate = false) {
     const errors = [];
     
@@ -153,40 +135,29 @@ function validateStudentData(data, isUpdate = false) {
     return errors;
 }
 
-// ========== 1. STUDENT REGISTRATION (FIXED ENDPOINT) ==========
-// Endpoint: POST /api/students/register
+// ==============================================
+// ========== 1. STUDENT REGISTRATION ==========
+// ==============================================
+// Frontend calls: POST /api/students/register
 router.post('/register', async (req, res) => {
     try {
         const data = req.body;
         
-        // Validation
         const validationErrors = validateStudentData(data, false);
         if (validationErrors.length > 0) {
             return res.status(400).json({ success: false, message: validationErrors.join(', ') });
         }
         
-        // Check if student already exists
         const existing = await Student.findOne({ studentId: data.studentId });
         if (existing) {
             return res.status(400).json({ success: false, message: "Student with this Aadhar number already exists" });
         }
         
-        // Check by mobile number (optional warning)
-        const existingMobile = await Student.findOne({ studentMobile: data.studentMobile });
-        if (existingMobile) {
-            // Just warning, not error - multiple students can have same mobile? Usually not
-            console.log('Warning: Mobile number already registered with another student');
-        }
-        
-        // Setup session dates
         const joiningDate = new Date(data.joiningDate || new Date());
         const sessionEndDate = getSessionEndDate(joiningDate);
         const sessionName = `${joiningDate.getFullYear()}-${sessionEndDate.getFullYear()}`;
-        
-        // Generate password if not provided (use last 6 digits of Aadhar)
         const password = data.password || data.studentId.slice(-6);
         
-        // Create student object
         const student = new Student({
             studentId: data.studentId,
             password: password,
@@ -234,12 +205,9 @@ router.post('/register', async (req, res) => {
             blockHistory: []
         });
         
-        // Generate fees history
         student.feesHistory = generateFeesHistory(joiningDate, student.monthlyFees, sessionEndDate);
-        
         await student.save();
         
-        // Return success with student ID and password
         res.json({ 
             success: true, 
             message: "Student registered successfully",
@@ -249,7 +217,6 @@ router.post('/register', async (req, res) => {
         
     } catch (err) {
         console.error('Registration error:', err);
-        // Handle duplicate key error specifically
         if (err.code === 11000) {
             return res.status(400).json({ success: false, message: "Duplicate entry - Student ID already exists" });
         }
@@ -257,15 +224,16 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// ========== 2. GET ALL STUDENTS (WITH FILTERS) ==========
-// Endpoint: GET /api/students
-router.get('/students', verifyToken, async (req, res) => {
+// ==============================================
+// ========== 2. GET ALL STUDENTS ==========
+// ==============================================
+// Frontend calls: GET /api/students
+router.get('/', verifyToken, async (req, res) => {
     try {
         const { board, class: className, session, search, page = 1, limit = 50 } = req.query;
         
-        let query = {};
+        let query = { isActive: true };
         
-        // Apply filters
         if (board && board !== 'all') {
             query['education.board'] = board;
         }
@@ -284,9 +252,6 @@ router.get('/students', verifyToken, async (req, res) => {
             ];
         }
         
-        // Only active students (not moved to old)
-        query.isActive = true;
-        
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const students = await Student.find(query)
             .sort({ createdAt: -1 })
@@ -295,7 +260,6 @@ router.get('/students', verifyToken, async (req, res) => {
         
         const total = await Student.countDocuments(query);
         
-        // Remove passwords from response
         const safeStudents = students.map(s => {
             const obj = s.toObject();
             delete obj.password;
@@ -318,9 +282,11 @@ router.get('/students', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 3. GET STUDENT BY ID (WITH AGGREGATED DATA) ==========
-// Endpoint: GET /api/students/:id
-router.get('/students/:id', verifyToken, async (req, res) => {
+// ==============================================
+// ========== 3. GET STUDENT BY ID ==========
+// ==============================================
+// Frontend calls: GET /api/students/:id
+router.get('/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
         
@@ -331,7 +297,6 @@ router.get('/students/:id', verifyToken, async (req, res) => {
         const data = student.toObject();
         delete data.password;
         
-        // Add aggregated statistics
         const feesHistory = data.feesHistory || [];
         const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
         const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
@@ -358,9 +323,11 @@ router.get('/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 4. UPDATE STUDENT (FIXED - ONLY ALLOWED FIELDS) ==========
-// Endpoint: PUT /api/students/:id
-router.put('/students/:id', verifyToken, async (req, res) => {
+// ==============================================
+// ========== 4. UPDATE STUDENT ==========
+// ==============================================
+// Frontend calls: PUT /api/students/:id
+router.put('/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
         
@@ -370,7 +337,6 @@ router.put('/students/:id', verifyToken, async (req, res) => {
         
         const updates = req.body;
         
-        // ALLOWED FIELDS FOR UPDATE (Security - don't allow all fields)
         const allowedUpdates = [
             'studentName', 'studentMobile', 'email', 'parentType',
             'fatherName', 'fatherMobile', 'motherName', 'motherMobile',
@@ -378,16 +344,13 @@ router.put('/students/:id', verifyToken, async (req, res) => {
             'education', 'monthlyFees', 'address', 'photo', 'aadharDocument'
         ];
         
-        // Apply only allowed updates
         for (const field of allowedUpdates) {
             if (updates[field] !== undefined) {
                 if (field === 'monthlyFees') {
-                    // If monthly fees changes, update future fees history
                     const oldFees = student.monthlyFees;
                     const newFees = parseInt(updates.monthlyFees);
                     
                     if (oldFees !== newFees && newFees > 0) {
-                        // Update future months in fees history
                         const currentDate = new Date();
                         student.feesHistory = student.feesHistory.map(fee => {
                             const feeDate = new Date(fee.year, fee.monthIndex);
@@ -425,21 +388,21 @@ router.put('/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 5. DELETE STUDENT (SOFT DELETE OR MOVE TO OLD) ==========
-// Endpoint: DELETE /api/students/:id
-router.delete('/students/:id', verifyToken, async (req, res) => {
+// ==============================================
+// ========== 5. DELETE STUDENT ==========
+// ==============================================
+// Frontend calls: DELETE /api/students/:id
+router.delete('/:id', verifyToken, async (req, res) => {
     try {
         const { permanent } = req.query;
         
         if (permanent === 'true') {
-            // Permanent delete
             const student = await Student.findOneAndDelete({ studentId: req.params.id });
             if (!student) {
                 return res.status(404).json({ success: false, message: "Student not found" });
             }
             res.json({ success: true, message: "Student permanently deleted" });
         } else {
-            // Move to old students (soft delete)
             const student = await Student.findOne({ studentId: req.params.id });
             if (!student) {
                 return res.status(404).json({ success: false, message: "Student not found" });
@@ -458,9 +421,11 @@ router.delete('/students/:id', verifyToken, async (req, res) => {
     }
 });
 
+// ==============================================
 // ========== 6. UPDATE FEES ==========
-// Endpoint: POST /api/students/:studentId/fees
-router.post('/students/:studentId/fees', verifyToken, async (req, res) => {
+// ==============================================
+// Frontend calls: POST /api/students/:studentId/fees
+router.post('/:studentId/fees', verifyToken, async (req, res) => {
     try {
         const { month, year, paidAmount, remarks } = req.body;
         const student = await Student.findOne({ studentId: req.params.studentId });
@@ -504,9 +469,11 @@ router.post('/students/:studentId/fees', verifyToken, async (req, res) => {
     }
 });
 
+// ==============================================
 // ========== 7. MARK ATTENDANCE ==========
-// Endpoint: POST /api/students/:studentId/attendance
-router.post('/students/:studentId/attendance', verifyToken, async (req, res) => {
+// ==============================================
+// Frontend calls: POST /api/students/:studentId/attendance
+router.post('/:studentId/attendance', verifyToken, async (req, res) => {
     try {
         const { date, status, checkInTime, checkOutTime, remarks } = req.body;
         const student = await Student.findOne({ studentId: req.params.studentId });
@@ -549,9 +516,11 @@ router.post('/students/:studentId/attendance', verifyToken, async (req, res) => 
     }
 });
 
+// ==============================================
 // ========== 8. BLOCK STUDENT ==========
-// Endpoint: POST /api/students/:studentId/block
-router.post('/students/:studentId/block', verifyToken, async (req, res) => {
+// ==============================================
+// Frontend calls: POST /api/students/:studentId/block
+router.post('/:studentId/block', verifyToken, async (req, res) => {
     try {
         const { reason, blockedUntil } = req.body;
         const student = await Student.findOne({ studentId: req.params.studentId });
@@ -583,9 +552,11 @@ router.post('/students/:studentId/block', verifyToken, async (req, res) => {
     }
 });
 
+// ==============================================
 // ========== 9. UNBLOCK STUDENT ==========
-// Endpoint: POST /api/students/:studentId/unblock
-router.post('/students/:studentId/unblock', verifyToken, async (req, res) => {
+// ==============================================
+// Frontend calls: POST /api/students/:studentId/unblock
+router.post('/:studentId/unblock', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.studentId });
         
@@ -593,7 +564,6 @@ router.post('/students/:studentId/unblock', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Student not found" });
         }
         
-        // Update last block record
         const lastBlock = student.blockHistory[student.blockHistory.length - 1];
         if (lastBlock && !lastBlock.unblockedAt) {
             lastBlock.unblockedAt = new Date();
@@ -616,9 +586,11 @@ router.post('/students/:studentId/unblock', verifyToken, async (req, res) => {
     }
 });
 
+// ==============================================
 // ========== 10. GET OLD STUDENTS ==========
-// Endpoint: GET /api/old-students
-router.get('/old-students', verifyToken, async (req, res) => {
+// ==============================================
+// Frontend calls: GET /api/students/old
+router.get('/old', verifyToken, async (req, res) => {
     try {
         const { board, class: className, session, search, page = 1, limit = 50 } = req.query;
         
@@ -666,14 +638,14 @@ router.get('/old-students', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 11. DASHBOARD STATS (NEW) ==========
-// Endpoint: GET /api/dashboard/stats
+// ==============================================
+// ========== 11. DASHBOARD STATS ==========
+// ==============================================
 router.get('/dashboard/stats', verifyToken, async (req, res) => {
     try {
         const totalStudents = await Student.countDocuments({ isActive: true });
         const totalOldStudents = await OldStudent.countDocuments();
         
-        // Fees summary
         const students = await Student.find({ isActive: true });
         let totalFeesCollected = 0;
         let totalFeesDue = 0;
@@ -684,7 +656,6 @@ router.get('/dashboard/stats', verifyToken, async (req, res) => {
             totalFeesDue += feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
         }
         
-        // Attendance summary (last 30 days)
         const last30Days = new Date();
         last30Days.setDate(last30Days.getDate() - 30);
         
@@ -701,10 +672,8 @@ router.get('/dashboard/stats', verifyToken, async (req, res) => {
             ? Math.round((totalPresent / totalAttendanceDays) * 100) 
             : 0;
         
-        // Blocked students count
         const blockedStudents = await Student.countDocuments({ 'accountStatus.isBlocked': true });
         
-        // Monthly fees collection trend (last 6 months)
         const monthlyTrend = [];
         for (let i = 5; i >= 0; i--) {
             const d = new Date();
@@ -741,37 +710,10 @@ router.get('/dashboard/stats', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 12. CHECK AND MOVE COMPLETED SESSIONS (NEW) ==========
-// Endpoint: POST /api/admin/check-session-completion
-router.post('/admin/check-session-completion', verifyToken, async (req, res) => {
-    try {
-        const today = new Date();
-        const students = await Student.find({ isActive: true });
-        
-        let movedCount = 0;
-        
-        for (const student of students) {
-            const sessionEndDate = new Date(student.currentSession?.endDate);
-            if (sessionEndDate < today) {
-                const moved = await moveToOldStudents(student);
-                if (moved) movedCount++;
-            }
-        }
-        
-        res.json({ 
-            success: true, 
-            message: `Session check completed. ${movedCount} students moved to old students.`
-        });
-        
-    } catch (err) {
-        console.error('Session completion check error:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// ========== 13. BULK DELETE STUDENTS (NEW) ==========
-// Endpoint: POST /api/students/bulk-delete
-router.post('/students/bulk-delete', verifyToken, async (req, res) => {
+// ==============================================
+// ========== 12. BULK DELETE ==========
+// ==============================================
+router.post('/bulk-delete', verifyToken, async (req, res) => {
     try {
         const { studentIds, permanent } = req.body;
         
@@ -808,13 +750,13 @@ router.post('/students/bulk-delete', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 14. EXPORT STUDENTS DATA (NEW) ==========
-// Endpoint: GET /api/students/export/csv
-router.get('/students/export/csv', verifyToken, async (req, res) => {
+// ==============================================
+// ========== 13. EXPORT CSV ==========
+// ==============================================
+router.get('/export/csv', verifyToken, async (req, res) => {
     try {
         const students = await Student.find({ isActive: true });
         
-        // Define CSV headers
         const headers = [
             'Student ID', 'First Name', 'Last Name', 'Mobile', 'Email',
             'Board', 'Class', 'Session', 'Monthly Fees', 'Total Paid',
@@ -847,7 +789,6 @@ router.get('/students/export/csv', verifyToken, async (req, res) => {
             ];
         });
         
-        // Create CSV content
         const csvContent = [
             headers.join(','),
             ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
@@ -863,9 +804,10 @@ router.get('/students/export/csv', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 15. CHANGE STUDENT PASSWORD (NEW) ==========
-// Endpoint: POST /api/students/:studentId/change-password
-router.post('/students/:studentId/change-password', verifyToken, async (req, res) => {
+// ==============================================
+// ========== 14. CHANGE PASSWORD ==========
+// ==============================================
+router.post('/:studentId/change-password', verifyToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
         const student = await Student.findOne({ studentId: req.params.studentId });
@@ -874,7 +816,6 @@ router.post('/students/:studentId/change-password', verifyToken, async (req, res
             return res.status(404).json({ success: false, message: "Student not found" });
         }
         
-        // If current password provided, verify it
         if (currentPassword && student.password !== currentPassword) {
             return res.status(401).json({ success: false, message: "Current password is incorrect" });
         }
@@ -894,10 +835,11 @@ router.post('/students/:studentId/change-password', verifyToken, async (req, res
     }
 });
 
-// ========== 16. BACKWARD COMPATIBILITY (OLD ENDPOINT) ==========
-// Some frontend might still call /student-register
+// ==============================================
+// ========== 15. BACKWARD COMPATIBILITY ==========
+// ==============================================
+// For frontend that calls /student-register (old endpoint)
 router.post('/student-register', async (req, res) => {
-    // Redirect to new endpoint
     req.url = '/register';
     router.handle(req, res);
 });
