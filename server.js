@@ -230,7 +230,7 @@ mongoose.connection.once('open', async () => {
 // ========== IMPORT STUDENT ROUTES ==========
 // ========== ========== ========== ==========
 const studentRoutes = require('./routes/studentRoutes');
-app.use('/api', studentRoutes);
+app.use('/api/students', studentRoutes);
 
 // ========== ========== ========== ==========
 // ========== SERVE HTML FILES ==========
