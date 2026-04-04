@@ -22,7 +22,7 @@ app.use('/api', studentRoutes);
 
 // Serve HTML
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'student-management.html'));
+    res.sendFile(path.join(__dirname, 'public', 'management.html'));
 });
 
 // Start Server
