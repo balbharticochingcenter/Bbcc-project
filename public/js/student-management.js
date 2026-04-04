@@ -1,6 +1,6 @@
 // ============================================
-// STUDENT-MANAGEMENT.JS - COMPLETE SYSTEM
-// WITH GRAPHS, BLOCK/UNBLOCK, OLD STUDENTS
+// STUDENT-MANAGEMENT.JS - COMPLETE FIXED VERSION
+// WITH DEMO STUDENT AUTO-CREATE
 // ============================================
 
 (function() {
@@ -8,8 +8,6 @@
 
     // ========== CONFIGURATION ==========
     const API_BASE_URL = window.location.origin + '/api';
-    let currentUser = null;
-    let currentTab = 'students';
     let studentsData = [];
     let oldStudentsData = [];
     let currentViewStudent = null;
@@ -30,10 +28,28 @@
         '9th', '10th', '11th', '12th', 'Graduation', 'Post Graduation', 'Other'
     ];
 
-    const allSessions = ['2023-2024', '2024-2025', '2025-2026', '2026-2027', '2027-2028'];
+    const allSessions = ['2024-2025', '2025-2026', '2026-2027', '2027-2028'];
 
-    // Default Photo
     const DEFAULT_PHOTO = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23667eea"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="white" font-size="40"%3E📷%3C/text%3E%3C/svg%3E';
+
+    // ========== DEMO STUDENT DATA ==========
+    const DEMO_STUDENT = {
+        studentId: "123456789012",
+        aadharNumber: "123456789012",
+        password: "demo123",
+        photo: DEFAULT_PHOTO,
+        aadharDocument: DEFAULT_PHOTO,
+        studentName: { first: "Rahul", middle: "", last: "Sharma" },
+        parentType: "Father",
+        fatherName: { first: "Rajesh", last: "Sharma" },
+        fatherMobile: "9876543210",
+        studentMobile: "9876543210",
+        email: "rahul@example.com",
+        education: { board: "CBSE", class: "10th" },
+        monthlyFees: 2000,
+        joiningDate: new Date().toISOString().split('T')[0],
+        address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" }
+    };
 
     // ========== HELPER FUNCTIONS ==========
     function showAlert(message, type = 'info', duration = 3000) {
@@ -46,7 +62,7 @@
             color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#856404'};
             border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#ffeeba'};
             border-radius: 10px; padding: 12px 20px; display: flex;
-            justify-content: space-between; align-items: center; font-family: Arial, sans-serif;
+            justify-content: space-between; align-items: center; font-family: Arial, sans-serif; z-index: 10001;
         `;
         document.body.appendChild(alertDiv);
         const closeBtn = alertDiv.querySelector('.close-alert-btn');
@@ -61,6 +77,7 @@
     }
 
     function formatDate(date) {
+        if (!date) return '-';
         return new Date(date).toLocaleDateString('en-IN');
     }
 
@@ -68,49 +85,6 @@
         if (status === 'paid') return '<span class="badge badge-paid">✅ Paid</span>';
         if (status === 'partial') return '<span class="badge badge-partial">⚠️ Partial</span>';
         return '<span class="badge badge-unpaid">❌ Unpaid</span>';
-    }
-
-    // Image Compression
-    async function compressImage(file, maxSizeKB = 15) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    let width = img.width;
-                    let height = img.height;
-                    let quality = 0.7;
-                    
-                    const maxDimension = 200;
-                    if (width > height && width > maxDimension) {
-                        height = (height * maxDimension) / width;
-                        width = maxDimension;
-                    } else if (height > maxDimension) {
-                        width = (width * maxDimension) / height;
-                        height = maxDimension;
-                    }
-                    
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    let result = canvas.toDataURL('image/jpeg', quality);
-                    
-                    while (result.length > maxSizeKB * 1024 && quality > 0.1) {
-                        quality -= 0.1;
-                        result = canvas.toDataURL('image/jpeg', quality);
-                    }
-                    
-                    resolve(result);
-                };
-                img.onerror = reject;
-            };
-            reader.onerror = reject;
-        });
     }
 
     // ========== STYLES ==========
@@ -205,7 +179,7 @@
         
         .dashboard-container {
             background: #f8f9fa; border-radius: 15px;
-            padding: 20px; margin-top: 20px;
+            padding: 20px;
         }
         .dashboard-header {
             display: flex; gap: 20px; flex-wrap: wrap;
@@ -224,6 +198,14 @@
         }
         .info-label { font-weight: 600; color: #666; }
         .info-value { color: #333; }
+        
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px; margin-bottom: 20px;
+        }
+        .stat-card {
+            padding: 15px; border-radius: 10px; text-align: center;
+        }
         
         .chart-container {
             background: white; border-radius: 15px;
@@ -274,13 +256,13 @@
         .modal.active { display: flex; }
         .modal-content {
             background: white; border-radius: 20px;
-            max-width: 800px; width: 90%; max-height: 90vh;
+            max-width: 1200px; width: 90%; max-height: 90vh;
             overflow-y: auto;
         }
         .modal-header {
             padding: 20px; background: linear-gradient(135deg, #667eea, #764ba2);
             color: white; display: flex; justify-content: space-between;
-            align-items: center;
+            align-items: center; position: sticky; top: 0;
         }
         .modal-body { padding: 20px; }
         .modal-footer { padding: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e0e0e0; }
@@ -306,11 +288,13 @@
         .image-actions { display: flex; gap: 10px; margin-top: 5px; }
         
         .empty-state { text-align: center; padding: 50px; color: #999; }
+        .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
         
         @media (max-width: 768px) {
             .form-row, .form-row-3 { grid-template-columns: 1fr; }
             .students-grid { grid-template-columns: 1fr; }
             .filter-bar { flex-direction: column; }
+            .info-row { grid-template-columns: 1fr; gap: 5px; }
         }
     `;
 
@@ -342,6 +326,7 @@
                         <select id="filterSession"><option value="all">All Sessions</option>${allSessions.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
                         <input type="text" id="searchStudent" placeholder="🔍 Search by name or ID...">
                         <button class="btn btn-primary" id="refreshBtn">🔄 Refresh</button>
+                        <button class="btn btn-success" id="createDemoBtn">🎓 Create Demo Student</button>
                     </div>
                     <div id="studentsGrid" class="students-grid"></div>
                 </div>
@@ -409,22 +394,15 @@
         
         <!-- STUDENT DASHBOARD MODAL -->
         <div id="dashboardModal" class="modal">
-            <div class="modal-content" style="max-width: 1200px;">
+            <div class="modal-content">
                 <div class="modal-header">
                     <h3 id="dashboardTitle">Student Dashboard</h3>
                     <button class="close-modal" id="closeDashboardModal">×</button>
                 </div>
-                <div class="modal-body" id="dashboardBody"></div>
-                <div class="modal-footer">
-                    <button class="btn btn-danger" id="deleteStudentBtn" style="display:none;">🗑️ Delete Student</button>
-                    <button class="btn btn-warning" id="blockStudentBtn" style="display:none;">🔴 Block Student</button>
-                    <button class="btn btn-success" id="unblockStudentBtn" style="display:none;">🟢 Unblock Student</button>
-                    <button class="btn btn-primary" id="editStudentBtn" style="display:none;">✏️ Edit</button>
-                    <button class="btn btn-success" id="saveEditBtn" style="display:none;">💾 Save Changes</button>
-                    <button class="btn btn-info" id="exportReportBtn" style="display:none;">📎 Export Report</button>
-                    <button class="btn btn-primary" id="reAdmitBtn" style="display:none;">🔄 Re-admit</button>
-                    <button class="btn" id="cancelEditBtn" style="display:none;">Cancel</button>
+                <div class="modal-body" id="dashboardBody">
+                    <div style="text-align: center; padding: 50px;">Loading...</div>
                 </div>
+                <div class="modal-footer" id="dashboardFooter"></div>
             </div>
         </div>
     `;
@@ -448,6 +426,11 @@
             await this.loadOldStudents();
             document.getElementById('joiningDate').value = new Date().toISOString().split('T')[0];
             this.setupParentTypeToggle();
+            
+            // Check if no students, show demo button hint
+            if (this.students.length === 0) {
+                showAlert('No students found. Click "Create Demo Student" to add a sample student!', 'info', 5000);
+            }
         }
 
         injectStyles() {
@@ -483,6 +466,7 @@
             document.getElementById('oldFilterSession')?.addEventListener('change', () => this.renderOldStudentsGrid());
             document.getElementById('searchOld')?.addEventListener('input', () => this.renderOldStudentsGrid());
             document.getElementById('refreshBtn')?.addEventListener('click', () => this.loadStudents());
+            document.getElementById('createDemoBtn')?.addEventListener('click', () => this.createDemoStudent());
             
             // New Admission
             document.getElementById('registerStudentBtn')?.addEventListener('click', () => this.registerStudent());
@@ -509,15 +493,12 @@
         }
 
         switchTab(tab) {
-            currentTab = tab;
             document.querySelectorAll('.main-tab-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.tab === tab);
             });
             document.querySelectorAll('.tab-pane').forEach(pane => {
                 pane.classList.toggle('active', pane.dataset.pane === tab);
             });
-            if (tab === 'students') this.renderStudentsGrid();
-            if (tab === 'old-students') this.renderOldStudentsGrid();
         }
 
         async apiCall(endpoint, options = {}) {
@@ -537,7 +518,7 @@
                 }
                 return data;
             } catch (err) {
-                showAlert('Network error: ' + err.message, 'error');
+                console.error('API Error:', err);
                 return { success: false, message: err.message };
             }
         }
@@ -546,11 +527,16 @@
             try {
                 const response = await this.apiCall('/students');
                 if (response.success) {
-                    this.students = response.data;
+                    this.students = response.data || [];
+                    this.renderStudentsGrid();
+                } else {
+                    this.students = [];
                     this.renderStudentsGrid();
                 }
             } catch (err) {
-                showAlert('Error loading students', 'error');
+                console.error('Load students error:', err);
+                this.students = [];
+                this.renderStudentsGrid();
             }
         }
 
@@ -558,11 +544,16 @@
             try {
                 const response = await this.apiCall('/old-students');
                 if (response.success) {
-                    this.oldStudents = response.data;
+                    this.oldStudents = response.data || [];
+                    this.renderOldStudentsGrid();
+                } else {
+                    this.oldStudents = [];
                     this.renderOldStudentsGrid();
                 }
             } catch (err) {
-                showAlert('Error loading old students', 'error');
+                console.error('Load old students error:', err);
+                this.oldStudents = [];
+                this.renderOldStudentsGrid();
             }
         }
 
@@ -577,15 +568,15 @@
             if (classVal !== 'all') filtered = filtered.filter(s => s.education?.class === classVal);
             if (session !== 'all') filtered = filtered.filter(s => s.currentSession?.sessionName === session);
             if (search) filtered = filtered.filter(s => 
-                s.studentId.includes(search) || 
-                `${s.studentName?.first} ${s.studentName?.last}`.toLowerCase().includes(search)
+                (s.studentId || '').includes(search) || 
+                `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase().includes(search)
             );
             
             const grid = document.getElementById('studentsGrid');
             if (!grid) return;
             
             if (filtered.length === 0) {
-                grid.innerHTML = '<div class="empty-state">📭 No students found</div>';
+                grid.innerHTML = '<div class="empty-state">📭 No students found. Click "Create Demo Student" to add one!</div>';
                 return;
             }
             
@@ -594,7 +585,7 @@
                     <div class="student-card-header">
                         <img src="${s.photo || DEFAULT_PHOTO}" class="student-card-img" onerror="this.src='${DEFAULT_PHOTO}'">
                         <div class="student-card-name">${s.studentName?.first || ''} ${s.studentName?.last || ''}</div>
-                        <div class="student-card-id">${s.studentId}</div>
+                        <div class="student-card-id">${s.studentId || '-'}</div>
                     </div>
                     <div class="student-card-body">
                         <div class="student-card-info"><span>📞 Mobile:</span><span>${s.studentMobile || '-'}</span></div>
@@ -605,7 +596,7 @@
                 </div>
             `).join('');
             
-            document.querySelectorAll('.student-card').forEach(card => {
+            document.querySelectorAll('#studentsGrid .student-card').forEach(card => {
                 card.addEventListener('click', () => this.showStudentDashboard(card.dataset.id, false));
             });
         }
@@ -621,8 +612,8 @@
             if (classVal !== 'all') filtered = filtered.filter(s => s.education?.class === classVal);
             if (session !== 'all') filtered = filtered.filter(s => s.completedSession?.sessionName === session);
             if (search) filtered = filtered.filter(s => 
-                s.studentId.includes(search) || 
-                `${s.studentName?.first} ${s.studentName?.last}`.toLowerCase().includes(search)
+                (s.studentId || '').includes(search) || 
+                `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase().includes(search)
             );
             
             const grid = document.getElementById('oldStudentsGrid');
@@ -638,15 +629,13 @@
                     <div class="student-card-header">
                         <img src="${s.photo || DEFAULT_PHOTO}" class="student-card-img" onerror="this.src='${DEFAULT_PHOTO}'">
                         <div class="student-card-name">${s.studentName?.first || ''} ${s.studentName?.last || ''}</div>
-                        <div class="student-card-id">${s.studentId}</div>
+                        <div class="student-card-id">${s.studentId || '-'}</div>
                     </div>
                     <div class="student-card-body">
                         <div class="student-card-info"><span>📞 Mobile:</span><span>${s.studentMobile || '-'}</span></div>
                         <div class="student-card-info"><span>📚 Class:</span><span>${s.education?.class || '-'}</span></div>
                         <div class="student-card-info"><span>📅 Completed:</span><span>${formatDate(s.sessionCompletedAt)}</span></div>
-                        <div class="student-card-info"><span>💰 Total Paid:</span><span>₹${(s.totalFeesPaid || 0).toLocaleString()}</span></div>
-                        <div class="student-card-info"><span>⚠️ Due:</span><span>₹${(s.totalFeesDue || 0).toLocaleString()}</span></div>
-                        <div class="student-card-info"><span>📊 Attendance:</span><span>${Math.round(s.attendancePercentage || 0)}%</span></div>
+                        <div class="student-card-info"><span>💰 Paid:</span><span>₹${(s.totalFeesPaid || 0).toLocaleString()}</span></div>
                     </div>
                 </div>
             `).join('');
@@ -656,18 +645,48 @@
             });
         }
 
+        async createDemoStudent() {
+            try {
+                showAlert('Creating demo student...', 'info');
+                
+                const response = await this.apiCall('/student-register', {
+                    method: 'POST',
+                    body: JSON.stringify(DEMO_STUDENT)
+                });
+                
+                if (response.success) {
+                    showAlert('✅ Demo student created! ID: 123456789012, Password: demo123', 'success', 5000);
+                    await this.loadStudents();
+                    this.switchTab('students');
+                } else {
+                    if (response.message?.includes('already exists')) {
+                        showAlert('Demo student already exists! You can view it in the Students tab.', 'info');
+                        this.switchTab('students');
+                    } else {
+                        showAlert('Failed to create demo student: ' + response.message, 'error');
+                    }
+                }
+            } catch (err) {
+                showAlert('Error creating demo student', 'error');
+            }
+        }
+
         async showStudentDashboard(studentId, isOld = false) {
             try {
+                showAlert('Loading student data...', 'info');
+                
                 let student;
                 if (isOld) {
                     student = this.oldStudents?.find(s => s.studentId === studentId);
                 } else {
                     const response = await this.apiCall(`/students/${studentId}`);
-                    if (response.success) student = response.data;
+                    if (response.success && response.data) {
+                        student = response.data;
+                    }
                 }
                 
                 if (!student) {
-                    showAlert('Student not found', 'error');
+                    showAlert('Student not found!', 'error');
                     return;
                 }
                 
@@ -675,63 +694,71 @@
                 this.renderDashboard(student, isOld);
                 document.getElementById('dashboardModal').classList.add('active');
             } catch (err) {
-                showAlert('Error loading dashboard', 'error');
+                console.error('Dashboard error:', err);
+                showAlert('Error loading dashboard: ' + err.message, 'error');
             }
         }
 
         renderDashboard(student, isOld = false) {
             const body = document.getElementById('dashboardBody');
+            const footer = document.getElementById('dashboardFooter');
             if (!body) return;
             
-            const totalFees = student.feesHistory?.reduce((sum, f) => sum + (f.amount || 0), 0) || 0;
-            const paidFees = student.feesHistory?.reduce((sum, f) => sum + (f.paidAmount || 0), 0) || 0;
+            // Safely get values with defaults
+            const studentName = `${student.studentName?.first || ''} ${student.studentName?.last || ''}`.trim() || 'N/A';
+            const studentId = student.studentId || 'N/A';
+            const studentMobile = student.studentMobile || 'N/A';
+            const board = student.education?.board || 'N/A';
+            const className = student.education?.class || 'N/A';
+            const sessionName = student.currentSession?.sessionName || student.completedSession?.sessionName || 'N/A';
+            const monthlyFees = student.monthlyFees || 0;
+            
+            // Calculate totals safely
+            const feesHistory = student.feesHistory || [];
+            const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
+            const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
             const dueFees = totalFees - paidFees;
-            const totalDays = student.attendance?.length || 0;
-            const presentDays = student.attendance?.filter(a => a.status === 'present').length || 0;
-            const attendancePercent = totalDays > 0 ? (presentDays / totalDays) * 100 : 0;
+            
+            const attendance = student.attendance || [];
+            const totalDays = attendance.length;
+            const presentDays = attendance.filter(a => a.status === 'present').length;
+            const attendancePercent = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+            
+            const isBlocked = student.accountStatus?.isBlocked || false;
+            const blockReason = student.accountStatus?.blockReason || '';
             
             // Prepare chart data
-            const last12Months = this.getLast12Months();
-            const attendanceData = this.getAttendanceData(student, last12Months);
-            const feesData = this.getFeesData(student, last12Months);
+            const months = this.getLast12Months();
+            const attendanceData = this.getAttendanceData(student, months);
+            const feesData = this.getFeesData(student, months);
             
             body.innerHTML = `
                 <div class="dashboard-container">
                     <div class="dashboard-header">
-                        <img src="${student.photo || DEFAULT_PHOTO}" class="dashboard-photo" onerror="this.src='${DEFAULT_PHOTO}'" id="dashboardPhoto">
+                        <img src="${student.photo || DEFAULT_PHOTO}" class="dashboard-photo" onerror="this.src='${DEFAULT_PHOTO}'">
                         <div class="dashboard-info">
-                            ${!isEditMode ? `
-                                <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value" id="viewStudentId">${student.studentId}</div></div>
-                                <div class="info-row"><div class="info-label">Name:</div><div class="info-value" id="viewName">${student.studentName?.first || ''} ${student.studentName?.middle || ''} ${student.studentName?.last || ''}</div></div>
-                                <div class="info-row"><div class="info-label">Mobile:</div><div class="info-value" id="viewMobile">${student.studentMobile || '-'}</div></div>
-                                <div class="info-row"><div class="info-label">Board & Class:</div><div class="info-value" id="viewEducation">${student.education?.board || '-'} - ${student.education?.class || '-'}</div></div>
-                                <div class="info-row"><div class="info-label">Session:</div><div class="info-value" id="viewSession">${student.currentSession?.sessionName || '-'} (${formatDate(student.currentSession?.startDate)} to ${formatDate(student.currentSession?.endDate)})</div></div>
-                                <div class="info-row"><div class="info-label">Monthly Fees:</div><div class="info-value" id="viewFees">₹${student.monthlyFees || 0}</div></div>
-                            ` : `
-                                <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value"><strong>${student.studentId}</strong> (Cannot edit)</div></div>
-                                <div class="info-row"><div class="info-label">First Name:</div><div class="info-value"><input type="text" id="editFirstName" value="${student.studentName?.first || ''}" class="form-control"></div></div>
-                                <div class="info-row"><div class="info-label">Middle Name:</div><div class="info-value"><input type="text" id="editMiddleName" value="${student.studentName?.middle || ''}" class="form-control"></div></div>
-                                <div class="info-row"><div class="info-label">Last Name:</div><div class="info-value"><input type="text" id="editLastName" value="${student.studentName?.last || ''}" class="form-control"></div></div>
-                                <div class="info-row"><div class="info-label">Mobile:</div><div class="info-value"><input type="tel" id="editMobile" value="${student.studentMobile || ''}" class="form-control"></div></div>
-                                <div class="info-row"><div class="info-label">Board:</div><div class="info-value"><select id="editBoard" class="form-control">${allBoards.map(b => `<option value="${b}" ${student.education?.board === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div></div>
-                                <div class="info-row"><div class="info-label">Class:</div><div class="info-value"><select id="editClass" class="form-control">${allClasses.map(c => `<option value="${c}" ${student.education?.class === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div></div>
-                                <div class="info-row"><div class="info-label">Monthly Fees:</div><div class="info-value"><input type="number" id="editMonthlyFees" value="${student.monthlyFees || 0}" class="form-control"></div></div>
-                            `}
+                            <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value"><strong>${studentId}</strong></div></div>
+                            <div class="info-row"><div class="info-label">Name:</div><div class="info-value">${studentName}</div></div>
+                            <div class="info-row"><div class="info-label">Mobile:</div><div class="info-value">${studentMobile}</div></div>
+                            <div class="info-row"><div class="info-label">Board & Class:</div><div class="info-value">${board} - ${className}</div></div>
+                            <div class="info-row"><div class="info-label">Session:</div><div class="info-value">${sessionName}</div></div>
+                            <div class="info-row"><div class="info-label">Monthly Fees:</div><div class="info-value">₹${monthlyFees}</div></div>
+                            <div class="info-row"><div class="info-label">Status:</div><div class="info-value">${isBlocked ? `<span class="badge-blocked">🔴 BLOCKED - ${blockReason}</span>` : '<span class="badge-active">🟢 ACTIVE</span>'}</div></div>
                         </div>
                     </div>
                     
-                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                    <div class="stats-grid">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
                             <h3>₹${paidFees.toLocaleString()}</h3><p>Total Paid</p>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
                             <h3>₹${dueFees.toLocaleString()}</h3><p>Total Due</p>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                            <h3>${Math.round(attendancePercent)}%</h3><p>Attendance</p>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">
+                            <h3>${attendancePercent}%</h3><p>Attendance</p>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #fd7e14); color: #333; padding: 15px; border-radius: 10px; text-align: center;">
-                            <h3>${student.accountStatus?.isBlocked ? '🔴 BLOCKED' : '🟢 ACTIVE'}</h3><p>Status</p>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #fd7e14); color: #333;">
+                            <h3>${totalDays}</h3><p>Total Days</p>
                         </div>
                     </div>
                     
@@ -751,20 +778,20 @@
                     </div>
                     
                     <div class="chart-container">
-                        <div class="chart-title">📋 Fees History Details</div>
+                        <div class="chart-title">📋 Fees History</div>
                         <div style="overflow-x: auto;">
                             <table class="data-table">
-                                <thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th>${!isOld && isEditMode ? '<th>Action</th>' : ''}</tr></thead>
+                                <thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
                                 <tbody id="feesTableBody"></tbody>
                             </table>
                         </div>
                     </div>
                     
                     <div class="chart-container">
-                        <div class="chart-title">📅 Attendance Records</div>
+                        <div class="chart-title">📅 Recent Attendance</div>
                         <div style="overflow-x: auto;">
                             <table class="data-table">
-                                <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th>${!isOld && isEditMode ? '<th>Action</th>' : ''}</tr></thead>
+                                <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th></tr></thead>
                                 <tbody id="attendanceTableBody"></tbody>
                             </table>
                         </div>
@@ -783,101 +810,88 @@
             `;
             
             // Populate tables
-            this.populateFeesTable(student, isOld);
-            this.populateAttendanceTable(student, isOld);
-            this.populateBlockHistory(student);
+            this.populateFeesTable(feesHistory);
+            this.populateAttendanceTable(attendance);
+            this.populateBlockHistory(student.blockHistory || []);
             
-            // Render charts
-            this.renderAttendanceChart(attendanceData);
-            this.renderFeesChart(feesData);
-            this.renderDueTrendChart(feesData);
+            // Render charts after DOM is ready
+            setTimeout(() => {
+                this.renderAttendanceChart(attendanceData, months);
+                this.renderFeesChart(feesData, months);
+                this.renderDueTrendChart(feesData, months);
+            }, 100);
             
-            // Show/hide buttons
-            document.getElementById('deleteStudentBtn').style.display = !isOld && !isEditMode ? 'inline-flex' : 'none';
-            document.getElementById('blockStudentBtn').style.display = !isOld && !isEditMode && !student.accountStatus?.isBlocked ? 'inline-flex' : 'none';
-            document.getElementById('unblockStudentBtn').style.display = !isOld && !isEditMode && student.accountStatus?.isBlocked ? 'inline-flex' : 'none';
-            document.getElementById('editStudentBtn').style.display = !isOld && !isEditMode ? 'inline-flex' : 'none';
-            document.getElementById('saveEditBtn').style.display = !isOld && isEditMode ? 'inline-flex' : 'none';
-            document.getElementById('cancelEditBtn').style.display = !isOld && isEditMode ? 'inline-flex' : 'none';
-            document.getElementById('exportReportBtn').style.display = 'inline-flex';
-            document.getElementById('reAdmitBtn').style.display = isOld ? 'inline-flex' : 'none';
+            // Setup footer buttons
+            footer.innerHTML = `
+                ${!isOld ? `<button class="btn btn-danger" id="deleteStudentBtn">🗑️ Delete Student</button>` : ''}
+                ${!isOld && !isBlocked ? `<button class="btn btn-warning" id="blockStudentBtn">🔴 Block Student</button>` : ''}
+                ${!isOld && isBlocked ? `<button class="btn btn-success" id="unblockStudentBtn">🟢 Unblock Student</button>` : ''}
+                ${!isOld ? `<button class="btn btn-primary" id="editStudentBtn">✏️ Edit</button>` : ''}
+                <button class="btn btn-info" id="exportReportBtn">📎 Export Report</button>
+                ${isOld ? `<button class="btn btn-primary" id="reAdmitBtn">🔄 Re-admit</button>` : ''}
+                <button class="btn" id="closeDashboardFooterBtn">Close</button>
+            `;
             
-            // Attach button events
+            // Attach footer button events
             document.getElementById('deleteStudentBtn')?.addEventListener('click', () => this.deleteStudent(student.studentId));
             document.getElementById('blockStudentBtn')?.addEventListener('click', () => this.blockStudent(student.studentId));
             document.getElementById('unblockStudentBtn')?.addEventListener('click', () => this.unblockStudent(student.studentId));
-            document.getElementById('editStudentBtn')?.addEventListener('click', () => this.enableEditMode(student));
-            document.getElementById('saveEditBtn')?.addEventListener('click', () => this.saveEditStudent(student));
-            document.getElementById('cancelEditBtn')?.addEventListener('click', () => this.cancelEditMode(student));
+            document.getElementById('editStudentBtn')?.addEventListener('click', () => showAlert('Edit feature coming soon!', 'info'));
             document.getElementById('exportReportBtn')?.addEventListener('click', () => this.exportStudentReport(student));
-            document.getElementById('reAdmitBtn')?.addEventListener('click', () => this.reAdmitStudent(student));
+            document.getElementById('reAdmitBtn')?.addEventListener('click', () => showAlert('Re-admit feature coming soon!', 'info'));
+            document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
         }
 
-        populateFeesTable(student, isOld) {
+        populateFeesTable(feesHistory) {
             const tbody = document.getElementById('feesTableBody');
             if (!tbody) return;
             
-            const feesHistory = student.feesHistory || [];
+            if (!feesHistory || feesHistory.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No fees records found</td></tr>';
+                return;
+            }
+            
             tbody.innerHTML = feesHistory.map(f => `
                 <tr>
-                    <td>${f.month} ${f.year}</td>
-                    <td>₹${f.amount}</td>
-                    <td>${!isOld && isEditMode ? `<input type="number" class="edit-paid-amount" data-month="${f.month}" data-year="${f.year}" value="${f.paidAmount || 0}" style="width:80px;">` : `₹${f.paidAmount || 0}`}</td>
+                    <td>${f.month || '-'} ${f.year || ''}</td>
+                    <td>₹${f.amount || 0}</td>
+                    <td>₹${f.paidAmount || 0}</td>
                     <td>₹${f.dueAmount || 0}</td>
                     <td>${getStatusBadge(f.status)}</td>
-                    ${!isOld && isEditMode ? `<td><button class="btn btn-sm btn-primary update-fees-btn" data-month="${f.month}" data-year="${f.year}">Update</button></td>` : ''}
                 </tr>
             `).join('');
-            
-            if (!isOld && isEditMode) {
-                document.querySelectorAll('.update-fees-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const month = btn.dataset.month;
-                        const year = parseInt(btn.dataset.year);
-                        const paidInput = document.querySelector(`.edit-paid-amount[data-month="${month}"][data-year="${year}"]`);
-                        const paidAmount = parseInt(paidInput?.value || 0);
-                        await this.updateFees(student.studentId, month, year, paidAmount, student.currentSession?.sessionName);
-                    });
-                });
-            }
         }
 
-        populateAttendanceTable(student, isOld) {
+        populateAttendanceTable(attendance) {
             const tbody = document.getElementById('attendanceTableBody');
             if (!tbody) return;
             
-            const attendance = (student.attendance || []).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 50);
-            tbody.innerHTML = attendance.map(a => `
+            if (!attendance || attendance.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No attendance records found</td></tr>';
+                return;
+            }
+            
+            const recent = [...attendance].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+            tbody.innerHTML = recent.map(a => `
                 <tr>
                     <td>${formatDate(a.date)}</td>
-                    <td>${!isOld && isEditMode ? `<select class="edit-att-status" data-date="${a.date}"><option value="present" ${a.status === 'present' ? 'selected' : ''}>Present</option><option value="absent" ${a.status === 'absent' ? 'selected' : ''}>Absent</option><option value="late" ${a.status === 'late' ? 'selected' : ''}>Late</option><option value="half-day" ${a.status === 'half-day' ? 'selected' : ''}>Half Day</option></select>` : a.status}</td>
-                    <td>${!isOld && isEditMode ? `<input type="time" class="edit-checkin" data-date="${a.date}" value="${a.checkInTime || ''}">` : a.checkInTime || '-'}</td>
-                    <td>${!isOld && isEditMode ? `<input type="time" class="edit-checkout" data-date="${a.date}" value="${a.checkOutTime || ''}">` : a.checkOutTime || '-'}</td>
-                    <td>${!isOld && isEditMode ? `<input type="text" class="edit-att-remarks" data-date="${a.date}" value="${a.remarks || ''}" style="width:100px;">` : a.remarks || '-'}</td>
-                    ${!isOld && isEditMode ? `<td><button class="btn btn-sm btn-primary update-attendance-btn" data-date="${a.date}">Save</button></td>` : ''}
+                    <td>${a.status || '-'}</td>
+                    <td>${a.checkInTime || '-'}</td>
+                    <td>${a.checkOutTime || '-'}</td>
                 </tr>
             `).join('');
-            
-            if (!isOld && isEditMode) {
-                document.querySelectorAll('.update-attendance-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const date = btn.dataset.date;
-                        const status = document.querySelector(`.edit-att-status[data-date="${date}"]`)?.value;
-                        const checkInTime = document.querySelector(`.edit-checkin[data-date="${date}"]`)?.value;
-                        const checkOutTime = document.querySelector(`.edit-checkout[data-date="${date}"]`)?.value;
-                        const remarks = document.querySelector(`.edit-att-remarks[data-date="${date}"]`)?.value;
-                        await this.updateAttendance(student.studentId, date, status, checkInTime, checkOutTime, remarks);
-                    });
-                });
-            }
         }
 
-        populateBlockHistory(student) {
+        populateBlockHistory(blockHistory) {
             const tbody = document.getElementById('blockHistoryBody');
             if (!tbody) return;
             
-            const blocks = student.blockHistory || [];
-            tbody.innerHTML = blocks.map(b => `
+            if (!blockHistory || blockHistory.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No block history</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = blockHistory.map(b => `
                 <tr>
                     <td>${formatDate(b.blockedFrom)}</td>
                     <td>${b.blockedUntil ? formatDate(b.blockedUntil) : 'Permanent'}</td>
@@ -885,10 +899,6 @@
                     <td>${b.unblockedAt ? formatDate(b.unblockedAt) : 'Still Blocked'}</td>
                 </tr>
             `).join('');
-            
-            if (blocks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No block history</td></tr>';
-            }
         }
 
         getLast12Months() {
@@ -906,8 +916,9 @@
         }
 
         getAttendanceData(student, months) {
+            const attendance = student.attendance || [];
             return months.map(m => {
-                const monthAttendance = (student.attendance || []).filter(a => {
+                const monthAttendance = attendance.filter(a => {
                     const d = new Date(a.date);
                     return d.getMonth() === m.monthIndex && d.getFullYear() === m.year;
                 });
@@ -918,8 +929,9 @@
         }
 
         getFeesData(student, months) {
+            const feesHistory = student.feesHistory || [];
             return months.map(m => {
-                const fee = (student.feesHistory || []).find(f => f.monthIndex === m.monthIndex && f.year === m.year);
+                const fee = feesHistory.find(f => f.monthIndex === m.monthIndex && f.year === m.year);
                 return {
                     paid: fee?.paidAmount || 0,
                     due: fee?.dueAmount || 0,
@@ -928,142 +940,80 @@
             });
         }
 
-        renderAttendanceChart(data) {
-            const ctx = document.getElementById('attendanceChart')?.getContext('2d');
-            if (!ctx) return;
-            if (charts.attendance) charts.attendance.destroy();
-            charts.attendance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: this.getLast12Months().map(m => m.name),
-                    datasets: [{
-                        label: 'Attendance %',
-                        data: data,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: true, scales: { y: { min: 0, max: 100 } } }
-            });
-        }
-
-        renderFeesChart(data) {
-            const ctx = document.getElementById('feesChart')?.getContext('2d');
-            if (!ctx) return;
-            if (charts.fees) charts.fees.destroy();
-            charts.fees = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: this.getLast12Months().map(m => m.name),
-                    datasets: [
-                        { label: 'Paid Amount', data: data.map(d => d.paid), backgroundColor: '#28a745' },
-                        { label: 'Due Amount', data: data.map(d => d.due), backgroundColor: '#dc3545' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
-            });
-        }
-
-        renderDueTrendChart(data) {
-            const ctx = document.getElementById('dueTrendChart')?.getContext('2d');
-            if (!ctx) return;
-            if (charts.dueTrend) charts.dueTrend.destroy();
-            charts.dueTrend = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: this.getLast12Months().map(m => m.name),
-                    datasets: [{
-                        label: 'Due Amount (₹)',
-                        data: data.map(d => d.due),
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true } } }
-            });
-        }
-
-        enableEditMode(student) {
-            isEditMode = true;
-            this.renderDashboard(student, false);
-        }
-
-        cancelEditMode(student) {
-            isEditMode = false;
-            this.renderDashboard(student, false);
-        }
-
-        async saveEditStudent(student) {
+        renderAttendanceChart(data, months) {
+            const canvas = document.getElementById('attendanceChart');
+            if (!canvas) return;
+            
             try {
-                const updatedData = {
-                    studentName: {
-                        first: document.getElementById('editFirstName')?.value || '',
-                        middle: document.getElementById('editMiddleName')?.value || '',
-                        last: document.getElementById('editLastName')?.value || ''
+                if (charts.attendance) charts.attendance.destroy();
+                const ctx = canvas.getContext('2d');
+                charts.attendance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: months.map(m => m.name),
+                        datasets: [{
+                            label: 'Attendance %',
+                            data: data,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
                     },
-                    studentMobile: document.getElementById('editMobile')?.value || '',
-                    education: {
-                        board: document.getElementById('editBoard')?.value || '',
-                        class: document.getElementById('editClass')?.value || ''
-                    },
-                    monthlyFees: parseInt(document.getElementById('editMonthlyFees')?.value || 0)
-                };
-                
-                const response = await this.apiCall(`/students/${student.studentId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(updatedData)
+                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Percentage (%)' } } } }
                 });
-                
-                if (response.success) {
-                    showAlert('Student updated successfully', 'success');
-                    isEditMode = false;
-                    await this.loadStudents();
-                    await this.showStudentDashboard(student.studentId, false);
-                } else {
-                    showAlert(response.message || 'Update failed', 'error');
-                }
             } catch (err) {
-                showAlert('Error saving student', 'error');
+                console.error('Chart error:', err);
             }
         }
 
-        async updateFees(studentId, month, year, paidAmount, sessionName) {
+        renderFeesChart(data, months) {
+            const canvas = document.getElementById('feesChart');
+            if (!canvas) return;
+            
             try {
-                const response = await this.apiCall(`/update-fees/${studentId}`, {
-                    method: 'POST',
-                    body: JSON.stringify({ month, year, paidAmount, sessionName })
+                if (charts.fees) charts.fees.destroy();
+                const ctx = canvas.getContext('2d');
+                charts.fees = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: months.map(m => m.name),
+                        datasets: [
+                            { label: 'Paid Amount (₹)', data: data.map(d => d.paid), backgroundColor: '#28a745' },
+                            { label: 'Due Amount (₹)', data: data.map(d => d.due), backgroundColor: '#dc3545' }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Amount (₹)' } } } }
                 });
-                if (response.success) {
-                    showAlert('Fees updated successfully', 'success');
-                    await this.loadStudents();
-                    await this.showStudentDashboard(studentId, false);
-                } else {
-                    showAlert(response.message || 'Update failed', 'error');
-                }
             } catch (err) {
-                showAlert('Error updating fees', 'error');
+                console.error('Chart error:', err);
             }
         }
 
-        async updateAttendance(studentId, date, status, checkInTime, checkOutTime, remarks) {
+        renderDueTrendChart(data, months) {
+            const canvas = document.getElementById('dueTrendChart');
+            if (!canvas) return;
+            
             try {
-                const response = await this.apiCall(`/students/${studentId}/attendance`, {
-                    method: 'POST',
-                    body: JSON.stringify({ date, status, checkInTime, checkOutTime, remarks })
+                if (charts.dueTrend) charts.dueTrend.destroy();
+                const ctx = canvas.getContext('2d');
+                charts.dueTrend = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: months.map(m => m.name),
+                        datasets: [{
+                            label: 'Due Amount (₹)',
+                            data: data.map(d => d.due),
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Amount (₹)' } } } }
                 });
-                if (response.success) {
-                    showAlert('Attendance updated', 'success');
-                    await this.loadStudents();
-                    await this.showStudentDashboard(studentId, false);
-                } else {
-                    showAlert(response.message || 'Update failed', 'error');
-                }
             } catch (err) {
-                showAlert('Error updating attendance', 'error');
+                console.error('Chart error:', err);
             }
         }
 
@@ -1078,7 +1028,7 @@
                 if (response.success) {
                     showAlert('Student blocked successfully', 'success');
                     await this.loadStudents();
-                    await this.showStudentDashboard(studentId, false);
+                    closeModal('dashboardModal');
                 } else {
                     showAlert(response.message || 'Block failed', 'error');
                 }
@@ -1090,13 +1040,11 @@
         async unblockStudent(studentId) {
             if (!confirm('Are you sure you want to unblock this student?')) return;
             try {
-                const response = await this.apiCall(`/students/${studentId}/unblock`, {
-                    method: 'POST'
-                });
+                const response = await this.apiCall(`/students/${studentId}/unblock`, { method: 'POST' });
                 if (response.success) {
                     showAlert('Student unblocked successfully', 'success');
                     await this.loadStudents();
-                    await this.showStudentDashboard(studentId, false);
+                    closeModal('dashboardModal');
                 } else {
                     showAlert(response.message || 'Unblock failed', 'error');
                 }
@@ -1108,9 +1056,7 @@
         async deleteStudent(studentId) {
             if (!confirm('Are you sure you want to delete this student? This cannot be undone!')) return;
             try {
-                const response = await this.apiCall(`/students/${studentId}`, {
-                    method: 'DELETE'
-                });
+                const response = await this.apiCall(`/students/${studentId}`, { method: 'DELETE' });
                 if (response.success) {
                     showAlert('Student deleted successfully', 'success');
                     closeModal('dashboardModal');
@@ -1123,40 +1069,11 @@
             }
         }
 
-        async reAdmitStudent(student) {
-            const newSession = prompt('Enter new session (e.g., 2026-2027):', allSessions[allSessions.length - 1]);
-            if (!newSession) return;
-            const newClass = prompt('Enter new class:', student.education?.class || '');
-            if (!newClass) return;
-            const newFees = prompt('Enter new monthly fees:', student.monthlyFees || 1000);
-            
-            try {
-                const response = await this.apiCall(`/students/${student.studentId}/promote`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        newBoard: student.education?.board,
-                        newClass: newClass,
-                        newMonthlyFees: parseInt(newFees),
-                        newJoiningDate: new Date().toISOString().split('T')[0]
-                    })
-                });
-                if (response.success) {
-                    showAlert('Student re-admitted successfully', 'success');
-                    closeModal('dashboardModal');
-                    await this.loadStudents();
-                    await this.loadOldStudents();
-                } else {
-                    showAlert(response.message || 'Re-admission failed', 'error');
-                }
-            } catch (err) {
-                showAlert('Error re-admitting student', 'error');
-            }
-        }
-
         exportStudentReport(student) {
             const printWindow = window.open('', '_blank');
-            const totalFees = student.feesHistory?.reduce((sum, f) => sum + (f.amount || 0), 0) || 0;
-            const paidFees = student.feesHistory?.reduce((sum, f) => sum + (f.paidAmount || 0), 0) || 0;
+            const feesHistory = student.feesHistory || [];
+            const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
+            const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
             const dueFees = totalFees - paidFees;
             
             printWindow.document.write(`
@@ -1170,7 +1087,7 @@
                         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                         th { background: #667eea; color: white; }
                         .header { text-align: center; margin-bottom: 30px; }
-                        .summary { display: flex; gap: 20px; margin-bottom: 30px; }
+                        .summary { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
                         .summary-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; }
                     </style>
                 </head>
@@ -1187,7 +1104,7 @@
                     <h3>Student Details</h3>
                     <table>
                         <tr><th>Field</th><th>Value</th></tr>
-                        <tr><td>Student ID</td><td>${student.studentId}</td></tr>
+                        <tr><td>Student ID</td><td>${student.studentId || '-'}</td></tr>
                         <tr><td>Name</td><td>${student.studentName?.first || ''} ${student.studentName?.last || ''}</td></tr>
                         <tr><td>Mobile</td><td>${student.studentMobile || '-'}</td></tr>
                         <tr><td>Board</td><td>${student.education?.board || '-'}</td></tr>
@@ -1198,7 +1115,7 @@
                     <table>
                         <thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
                         <tbody>
-                            ${(student.feesHistory || []).map(f => `
+                            ${feesHistory.map(f => `
                                 <tr><td>${f.month} ${f.year}</td><td>₹${f.amount}</td><td>₹${f.paidAmount || 0}</td><td>₹${f.dueAmount || 0}</td><td>${f.status}</td></tr>
                             `).join('')}
                         </tbody>
@@ -1228,7 +1145,7 @@
                     board: document.getElementById('board').value,
                     class: document.getElementById('class').value
                 },
-                monthlyFees: parseInt(document.getElementById('monthlyFees').value),
+                monthlyFees: parseInt(document.getElementById('monthlyFees').value) || 1000,
                 joiningDate: document.getElementById('joiningDate').value,
                 address: {
                     current: document.getElementById('currentAddress').value,
@@ -1236,7 +1153,6 @@
                 }
             };
             
-            // Parent data
             const parentType = studentData.parentType;
             if (parentType === 'Father') {
                 studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' };
@@ -1266,7 +1182,7 @@
                 });
                 
                 if (response.success) {
-                    showAlert(`Student registered successfully! ID: ${response.studentId}, Password: ${response.password}`, 'success', 5000);
+                    showAlert(`Student registered successfully! ID: ${response.studentId}`, 'success', 5000);
                     this.resetAdmissionForm();
                     await this.loadStudents();
                     this.switchTab('students');
@@ -1285,7 +1201,6 @@
             document.getElementById('aadharDoc').value = '';
             document.getElementById('photoPreview').style.display = 'none';
             document.getElementById('aadharPreview').style.display = 'none';
-            document.getElementById('password').value = Math.random().toString(36).substring(2, 10);
         }
 
         async captureImage(fieldId, previewId) {
@@ -1296,14 +1211,14 @@
             input.onchange = async (e) => {
                 if (e.target.files && e.target.files[0]) {
                     try {
-                        const compressed = await compressImage(e.target.files[0]);
+                        const compressed = await this.compressImage(e.target.files[0]);
                         document.getElementById(fieldId).value = compressed;
                         const preview = document.getElementById(previewId);
                         if (preview) {
                             preview.src = compressed;
                             preview.style.display = 'block';
                         }
-                        showAlert('Image captured and compressed!', 'success');
+                        showAlert('Image captured successfully!', 'success');
                     } catch (err) {
                         showAlert('Error processing image', 'error');
                     }
@@ -1319,20 +1234,62 @@
             input.onchange = async (e) => {
                 if (e.target.files && e.target.files[0]) {
                     try {
-                        const compressed = await compressImage(e.target.files[0]);
+                        const compressed = await this.compressImage(e.target.files[0]);
                         document.getElementById(fieldId).value = compressed;
                         const preview = document.getElementById(previewId);
                         if (preview) {
                             preview.src = compressed;
                             preview.style.display = 'block';
                         }
-                        showAlert('Image uploaded and compressed!', 'success');
+                        showAlert('Image uploaded successfully!', 'success');
                     } catch (err) {
                         showAlert('Error processing image', 'error');
                     }
                 }
             };
             input.click();
+        }
+
+        async compressImage(file, maxSizeKB = 15) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+                        let quality = 0.7;
+                        
+                        const maxDimension = 200;
+                        if (width > height && width > maxDimension) {
+                            height = (height * maxDimension) / width;
+                            width = maxDimension;
+                        } else if (height > maxDimension) {
+                            width = (width * maxDimension) / height;
+                            height = maxDimension;
+                        }
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        let result = canvas.toDataURL('image/jpeg', quality);
+                        
+                        while (result.length > maxSizeKB * 1024 && quality > 0.1) {
+                            quality -= 0.1;
+                            result = canvas.toDataURL('image/jpeg', quality);
+                        }
+                        
+                        resolve(result);
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
         }
 
         logout() {
