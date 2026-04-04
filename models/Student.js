@@ -1,46 +1,36 @@
 const mongoose = require('mongoose');
 
 const StudentSchema = new mongoose.Schema({
-    studentId: { type: String, required: true, unique: true, index: true },
+    studentId: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    photo: { type: String, required: true, default: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23667eea"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="white" font-size="40"%3E📷%3C/text%3E%3C/svg%3E' },
-    
+    photo: { type: String, default: '' },
     studentName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
         last: { type: String, required: true }
     },
-    
-    parentType: { type: String, enum: ['Father', 'Mother', 'Guardian'], required: true, default: 'Father' },
-    
-    fatherName: { first: String, middle: String, last: String },
+    parentType: { type: String, enum: ['Father', 'Mother', 'Guardian'], default: 'Father' },
+    fatherName: { first: String, last: String },
     fatherMobile: String,
-    motherName: { first: String, middle: String, last: String },
+    motherName: { first: String, last: String },
     motherMobile: String,
-    guardianName: { first: String, middle: String, last: String },
+    guardianName: { first: String, last: String },
     guardianMobile: String,
     guardianRelation: String,
-    
     studentMobile: { type: String, required: true },
-    alternateMobile: String,
     email: String,
-    
     aadharNumber: { type: String, required: true, unique: true },
-    aadharDocument: { type: String, required: true },
-    
+    aadharDocument: { type: String, default: '' },
     education: {
         board: { type: String, required: true },
         class: { type: String, required: true }
     },
-    
     currentSession: {
-        sessionName: { type: String, required: true },
-        startDate: { type: Date, required: true },
-        endDate: { type: Date, required: true }
+        sessionName: String,
+        startDate: Date,
+        endDate: Date
     },
-    
-    monthlyFees: { type: Number, required: true, default: 0 },
-    
+    monthlyFees: { type: Number, default: 0 },
     feesHistory: [{
         sessionName: String,
         month: String,
@@ -49,65 +39,38 @@ const StudentSchema = new mongoose.Schema({
         amount: Number,
         paidAmount: { type: Number, default: 0 },
         dueAmount: { type: Number, default: 0 },
-        status: { type: String, enum: ['paid', 'partial', 'unpaid', 'exempted'], default: 'unpaid' },
+        status: { type: String, enum: ['paid', 'partial', 'unpaid'], default: 'unpaid' },
         paymentDate: Date,
-        lateFee: { type: Number, default: 0 },
-        remarks: String,
-        updatedBy: String
+        remarks: String
     }],
-    
     attendance: [{
         date: String,
         sessionName: String,
-        status: { type: String, enum: ['present', 'absent', 'late', 'half-day', 'holiday'], default: 'absent' },
+        status: { type: String, enum: ['present', 'absent', 'late', 'half-day'], default: 'absent' },
         checkInTime: String,
         checkOutTime: String,
         remarks: String,
-        markedBy: String,
         markedAt: { type: Date, default: Date.now }
     }],
-    
     accountStatus: {
         isBlocked: { type: Boolean, default: false },
         blockedFrom: Date,
-        blockedUntil: Date,
         blockReason: String,
-        blockedBy: String,
-        unblockedAt: Date,
-        unblockedBy: String
+        blockedBy: String
     },
-    
     blockHistory: [{
         blockedFrom: Date,
         blockedUntil: Date,
         reason: String,
         blockedBy: String,
-        unblockedAt: Date,
-        unblockedBy: String,
-        attendanceFrozen: { type: Boolean, default: true },
-        feesFrozen: { type: Boolean, default: true }
+        unblockedAt: Date
     }],
-    
-    sessionCompleted: { type: Boolean, default: false },
-    sessionCompletedAt: Date,
-    movedToOldOn: Date,
-    
-    registrationDate: { type: Date, default: Date.now },
-    joiningDate: { type: Date, required: true },
-    leavingDate: Date,
-    
+    joiningDate: { type: Date, default: Date.now },
     address: {
         current: String,
-        permanent: String,
-        city: String,
-        state: String,
-        pincode: String
+        permanent: String
     },
-    
-    previousSchool: String,
-    remarks: String,
-    createdBy: { type: String, default: 'admin' }
-    
-}, { timestamps: true });
+    createdAt: { type: Date, default: Date.now }
+});
 
 module.exports = mongoose.model('Student', StudentSchema);
