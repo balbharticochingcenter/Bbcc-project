@@ -1,6 +1,6 @@
 // ============================================
 // STUDENT-MANAGEMENT.JS - COMPLETE FIXED VERSION
-// WITH DEMO STUDENT AUTO-CREATE
+// WITH AUTO STUDENT ID FROM AADHAR + EDIT FEATURE
 // ============================================
 
 (function() {
@@ -12,6 +12,7 @@
     let oldStudentsData = [];
     let currentViewStudent = null;
     let isEditMode = false;
+    let currentEditStudentId = null;
     let charts = {};
 
     // ========== BOARDS & CLASSES ==========
@@ -48,6 +49,7 @@
         education: { board: "CBSE", class: "10th" },
         monthlyFees: 2000,
         joiningDate: new Date().toISOString().split('T')[0],
+        currentSession: { sessionName: "2024-2025", startDate: "2024-04-01", endDate: "2025-03-31" },
         address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" }
     };
 
@@ -245,6 +247,7 @@
         .btn-warning { background: #ffc107; color: #333; }
         .btn-success { background: #28a745; color: white; }
         .btn-info { background: #17a2b8; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
         .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
         
@@ -270,6 +273,7 @@
         
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.85rem; }
+        .form-group label .required { color: #dc3545; }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 10px; border: 2px solid #e0e0e0;
             border-radius: 8px; font-size: 0.9rem;
@@ -289,6 +293,18 @@
         
         .empty-state { text-align: center; padding: 50px; color: #999; }
         .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+        
+        /* Edit mode indicator */
+        .edit-mode-badge {
+            background: #ffc107;
+            color: #333;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
         
         @media (max-width: 768px) {
             .form-row, .form-row-3 { grid-template-columns: 1fr; }
@@ -331,50 +347,110 @@
                     <div id="studentsGrid" class="students-grid"></div>
                 </div>
                 
-                <!-- NEW ADMISSION TAB -->
+                <!-- NEW ADMISSION / EDIT STUDENT TAB -->
                 <div class="tab-pane" data-pane="new-admission">
-                    <h3 style="margin-bottom:20px;">📝 Register New Student</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>📝 <span id="formTitle">Register New Student</span></h3>
+                        <div id="editModeIndicator" style="display: none;">
+                            <span class="edit-mode-badge">✏️ Edit Mode - Student ID: <span id="editStudentIdDisplay"></span></span>
+                        </div>
+                    </div>
                     <form id="admissionForm">
+                        <!-- Session and Joining Date -->
                         <div class="form-row">
                             <div class="form-group"><label>Session *</label><select id="admissionSession" required>${allSessions.map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
                             <div class="form-group"><label>Joining Date *</label><input type="date" id="joiningDate" required></div>
                         </div>
+                        
+                        <!-- Student Name -->
                         <div class="form-row-3">
                             <div class="form-group"><label>First Name *</label><input type="text" id="firstName" required></div>
                             <div class="form-group"><label>Middle Name</label><input type="text" id="middleName"></div>
                             <div class="form-group"><label>Last Name *</label><input type="text" id="lastName" required></div>
                         </div>
-                        <div class="form-group"><label>Aadhar Number (Student ID) *</label><input type="text" id="aadharNumber" required maxlength="12" pattern="[0-9]{12}" placeholder="12 digit Aadhar number"></div>
-                        <div class="form-group"><label>Student Mobile *</label><input type="tel" id="studentMobile" required pattern="[0-9]{10}"></div>
-                        <div class="form-group"><label>Email</label><input type="email" id="email"></div>
                         
+                        <!-- Aadhar Number (Student ID) - AUTO COPY -->
+                        <div class="form-group">
+                            <label>Aadhar Number (This will be Student ID) * <span style="color:#dc3545;">(12 digit number)</span></label>
+                            <input type="text" id="aadharNumber" required maxlength="12" pattern="[0-9]{12}" placeholder="Enter 12 digit Aadhar number">
+                            <small style="color: #28a745; display: block; margin-top: 5px;">💡 Student ID will be automatically set to this Aadhar number</small>
+                        </div>
+                        
+                        <!-- Student ID (Read-only, auto-filled) -->
+                        <div class="form-group">
+                            <label>Student ID (Auto from Aadhar) *</label>
+                            <input type="text" id="studentIdField" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                        </div>
+                        
+                        <!-- Contact Info -->
+                        <div class="form-row">
+                            <div class="form-group"><label>Student Mobile *</label><input type="tel" id="studentMobile" required pattern="[0-9]{10}" placeholder="10 digit mobile number"></div>
+                            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="student@example.com"></div>
+                        </div>
+                        
+                        <!-- Parent Info -->
                         <div class="form-group"><label>Parent Type *</label><select id="parentType"><option value="Father">Father</option><option value="Mother">Mother</option><option value="Guardian">Guardian</option></select></div>
                         <div id="fatherFields">
-                            <div class="form-row"><div class="form-group"><label>Father Name *</label><input type="text" id="fatherName"></div><div class="form-group"><label>Father Mobile *</label><input type="tel" id="fatherMobile"></div></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Father Name *</label><input type="text" id="fatherName" placeholder="First and Last name"></div>
+                                <div class="form-group"><label>Father Mobile *</label><input type="tel" id="fatherMobile" placeholder="10 digit mobile"></div>
+                            </div>
                         </div>
                         <div id="motherFields" style="display:none;">
-                            <div class="form-row"><div class="form-group"><label>Mother Name *</label><input type="text" id="motherName"></div><div class="form-group"><label>Mother Mobile *</label><input type="tel" id="motherMobile"></div></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Mother Name *</label><input type="text" id="motherName" placeholder="First and Last name"></div>
+                                <div class="form-group"><label>Mother Mobile *</label><input type="tel" id="motherMobile" placeholder="10 digit mobile"></div>
+                            </div>
                         </div>
                         <div id="guardianFields" style="display:none;">
-                            <div class="form-row"><div class="form-group"><label>Guardian Name *</label><input type="text" id="guardianName"></div><div class="form-group"><label>Guardian Mobile *</label><input type="tel" id="guardianMobile"></div></div>
-                            <div class="form-group"><label>Relation *</label><input type="text" id="guardianRelation" placeholder="e.g., Uncle, Aunt"></div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Guardian Name *</label><input type="text" id="guardianName" placeholder="Full name"></div>
+                                <div class="form-group"><label>Guardian Mobile *</label><input type="tel" id="guardianMobile" placeholder="10 digit mobile"></div>
+                            </div>
+                            <div class="form-group"><label>Relation *</label><input type="text" id="guardianRelation" placeholder="e.g., Uncle, Aunt, Grandfather"></div>
                         </div>
                         
+                        <!-- Education -->
                         <div class="form-row">
                             <div class="form-group"><label>Board *</label><select id="board">${allBoards.map(b => `<option value="${b}">${b}</option>`).join('')}</select></div>
                             <div class="form-group"><label>Class *</label><select id="class">${allClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
                         </div>
-                        <div class="form-group"><label>Monthly Fees (₹) *</label><input type="number" id="monthlyFees" required></div>
                         
-                        <div class="form-group"><label>Student Photo *</label><input type="hidden" id="photo"><img id="photoPreview" class="image-preview" style="display:none;"><div class="image-actions"><button type="button" class="btn btn-primary btn-sm" id="capturePhotoBtn">📷 Capture Photo</button><button type="button" class="btn btn-info btn-sm" id="uploadPhotoBtn">📁 Upload Photo</button></div></div>
-                        <div class="form-group"><label>Aadhar Document *</label><input type="hidden" id="aadharDoc"><img id="aadharPreview" class="image-preview" style="display:none;"><div class="image-actions"><button type="button" class="btn btn-primary btn-sm" id="captureAadharBtn">📷 Capture Aadhar</button><button type="button" class="btn btn-info btn-sm" id="uploadAadharBtn">📁 Upload Aadhar</button></div></div>
+                        <!-- Fees -->
+                        <div class="form-group"><label>Monthly Fees (₹) *</label><input type="number" id="monthlyFees" required min="0" step="100"></div>
                         
-                        <div class="form-group"><label>Current Address *</label><textarea id="currentAddress" rows="2"></textarea></div>
-                        <div class="form-group"><label>Permanent Address</label><textarea id="permanentAddress" rows="2"></textarea></div>
+                        <!-- Documents -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Student Photo *</label>
+                                <input type="hidden" id="photo">
+                                <img id="photoPreview" class="image-preview" style="display:none;">
+                                <div class="image-actions">
+                                    <button type="button" class="btn btn-primary btn-sm" id="capturePhotoBtn">📷 Capture Photo</button>
+                                    <button type="button" class="btn btn-info btn-sm" id="uploadPhotoBtn">📁 Upload Photo</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Aadhar Document *</label>
+                                <input type="hidden" id="aadharDoc">
+                                <img id="aadharPreview" class="image-preview" style="display:none;">
+                                <div class="image-actions">
+                                    <button type="button" class="btn btn-primary btn-sm" id="captureAadharBtn">📷 Capture Aadhar</button>
+                                    <button type="button" class="btn btn-info btn-sm" id="uploadAadharBtn">📁 Upload Aadhar</button>
+                                </div>
+                            </div>
+                        </div>
                         
+                        <!-- Address -->
+                        <div class="form-group"><label>Current Address *</label><textarea id="currentAddress" rows="2" placeholder="House number, Street, City, PIN code"></textarea></div>
+                        <div class="form-group"><label>Permanent Address</label><textarea id="permanentAddress" rows="2" placeholder="Leave blank if same as current address"></textarea></div>
+                        
+                        <!-- Form Buttons -->
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary" id="registerStudentBtn">✅ Register Student</button>
-                            <button type="button" class="btn btn-warning" id="resetFormBtn">🔄 Reset</button>
+                            <button type="button" class="btn btn-warning" id="updateStudentBtn" style="display:none;">✏️ Update Student</button>
+                            <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display:none;">❌ Cancel Edit</button>
+                            <button type="button" class="btn btn-warning" id="resetFormBtn">🔄 Reset Form</button>
                         </div>
                     </form>
                 </div>
@@ -405,6 +481,23 @@
                 <div class="modal-footer" id="dashboardFooter"></div>
             </div>
         </div>
+        
+        <!-- EDIT STUDENT MODAL (Alternative - for inline edit) -->
+        <div id="editStudentModal" class="modal">
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3>✏️ Edit Student Details</h3>
+                    <button class="close-modal" id="closeEditModal">×</button>
+                </div>
+                <div class="modal-body" id="editModalBody">
+                    <div style="text-align: center; padding: 50px;">Loading...</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelEditModalBtn">Cancel</button>
+                    <button class="btn btn-primary" id="saveEditModalBtn">💾 Save Changes</button>
+                </div>
+            </div>
+        </div>
     `;
 
     // ========== MAIN APP CLASS ==========
@@ -426,8 +519,8 @@
             await this.loadOldStudents();
             document.getElementById('joiningDate').value = new Date().toISOString().split('T')[0];
             this.setupParentTypeToggle();
+            this.setupAutoStudentIdFromAadhar(); // NEW: Auto copy Aadhar to Student ID
             
-            // Check if no students, show demo button hint
             if (this.students.length === 0) {
                 showAlert('No students found. Click "Create Demo Student" to add a sample student!', 'info', 5000);
             }
@@ -455,6 +548,8 @@
             
             // Modal close
             document.getElementById('closeDashboardModal')?.addEventListener('click', () => closeModal('dashboardModal'));
+            document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editStudentModal'));
+            document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editStudentModal'));
             
             // Filters
             document.getElementById('filterBoard')?.addEventListener('change', () => this.renderStudentsGrid());
@@ -468,9 +563,13 @@
             document.getElementById('refreshBtn')?.addEventListener('click', () => this.loadStudents());
             document.getElementById('createDemoBtn')?.addEventListener('click', () => this.createDemoStudent());
             
-            // New Admission
+            // New Admission / Edit
             document.getElementById('registerStudentBtn')?.addEventListener('click', () => this.registerStudent());
+            document.getElementById('updateStudentBtn')?.addEventListener('click', () => this.updateStudent());
+            document.getElementById('cancelEditBtn')?.addEventListener('click', () => this.cancelEdit());
             document.getElementById('resetFormBtn')?.addEventListener('click', () => this.resetAdmissionForm());
+            
+            // Image capture/upload
             document.getElementById('capturePhotoBtn')?.addEventListener('click', () => this.captureImage('photo', 'photoPreview'));
             document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => this.uploadImage('photo', 'photoPreview'));
             document.getElementById('captureAadharBtn')?.addEventListener('click', () => this.captureImage('aadharDoc', 'aadharPreview'));
@@ -478,6 +577,32 @@
             
             // Logout
             document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
+        }
+
+        // NEW: Auto copy Aadhar to Student ID
+        setupAutoStudentIdFromAadhar() {
+            const aadharInput = document.getElementById('aadharNumber');
+            const studentIdField = document.getElementById('studentIdField');
+            
+            if (aadharInput && studentIdField) {
+                // Copy on input
+                aadharInput.addEventListener('input', (e) => {
+                    let value = e.target.value;
+                    // Only allow numbers
+                    value = value.replace(/[^0-9]/g, '');
+                    if (value.length > 12) value = value.slice(0, 12);
+                    aadharInput.value = value;
+                    studentIdField.value = value;
+                });
+                
+                // Copy on blur (final check)
+                aadharInput.addEventListener('blur', () => {
+                    if (aadharInput.value.length !== 12) {
+                        showAlert('Aadhar number must be exactly 12 digits!', 'warning', 2000);
+                    }
+                    studentIdField.value = aadharInput.value;
+                });
+            }
         }
 
         setupParentTypeToggle() {
@@ -499,6 +624,11 @@
             document.querySelectorAll('.tab-pane').forEach(pane => {
                 pane.classList.toggle('active', pane.dataset.pane === tab);
             });
+            
+            // Reset edit mode when switching to new admission tab
+            if (tab === 'new-admission') {
+                this.cancelEdit();
+            }
         }
 
         async apiCall(endpoint, options = {}) {
@@ -649,7 +779,7 @@
             try {
                 showAlert('Creating demo student...', 'info');
                 
-                const response = await this.apiCall('/student-register', {
+                const response = await this.apiCall('/students/register', {
                     method: 'POST',
                     body: JSON.stringify(DEMO_STUDENT)
                 });
@@ -704,7 +834,6 @@
             const footer = document.getElementById('dashboardFooter');
             if (!body) return;
             
-            // Safely get values with defaults
             const studentName = `${student.studentName?.first || ''} ${student.studentName?.last || ''}`.trim() || 'N/A';
             const studentId = student.studentId || 'N/A';
             const studentMobile = student.studentMobile || 'N/A';
@@ -713,7 +842,6 @@
             const sessionName = student.currentSession?.sessionName || student.completedSession?.sessionName || 'N/A';
             const monthlyFees = student.monthlyFees || 0;
             
-            // Calculate totals safely
             const feesHistory = student.feesHistory || [];
             const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
             const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
@@ -727,7 +855,6 @@
             const isBlocked = student.accountStatus?.isBlocked || false;
             const blockReason = student.accountStatus?.blockReason || '';
             
-            // Prepare chart data
             const months = this.getLast12Months();
             const attendanceData = this.getAttendanceData(student, months);
             const feesData = this.getFeesData(student, months);
@@ -809,37 +936,290 @@
                 </div>
             `;
             
-            // Populate tables
             this.populateFeesTable(feesHistory);
             this.populateAttendanceTable(attendance);
             this.populateBlockHistory(student.blockHistory || []);
             
-            // Render charts after DOM is ready
             setTimeout(() => {
                 this.renderAttendanceChart(attendanceData, months);
                 this.renderFeesChart(feesData, months);
                 this.renderDueTrendChart(feesData, months);
             }, 100);
             
-            // Setup footer buttons
             footer.innerHTML = `
                 ${!isOld ? `<button class="btn btn-danger" id="deleteStudentBtn">🗑️ Delete Student</button>` : ''}
                 ${!isOld && !isBlocked ? `<button class="btn btn-warning" id="blockStudentBtn">🔴 Block Student</button>` : ''}
                 ${!isOld && isBlocked ? `<button class="btn btn-success" id="unblockStudentBtn">🟢 Unblock Student</button>` : ''}
-                ${!isOld ? `<button class="btn btn-primary" id="editStudentBtn">✏️ Edit</button>` : ''}
+                ${!isOld ? `<button class="btn btn-primary" id="editStudentDashboardBtn">✏️ Edit Student</button>` : ''}
                 <button class="btn btn-info" id="exportReportBtn">📎 Export Report</button>
                 ${isOld ? `<button class="btn btn-primary" id="reAdmitBtn">🔄 Re-admit</button>` : ''}
-                <button class="btn" id="closeDashboardFooterBtn">Close</button>
+                <button class="btn btn-secondary" id="closeDashboardFooterBtn">Close</button>
             `;
             
-            // Attach footer button events
             document.getElementById('deleteStudentBtn')?.addEventListener('click', () => this.deleteStudent(student.studentId));
             document.getElementById('blockStudentBtn')?.addEventListener('click', () => this.blockStudent(student.studentId));
             document.getElementById('unblockStudentBtn')?.addEventListener('click', () => this.unblockStudent(student.studentId));
-            document.getElementById('editStudentBtn')?.addEventListener('click', () => showAlert('Edit feature coming soon!', 'info'));
+            document.getElementById('editStudentDashboardBtn')?.addEventListener('click', () => this.openEditStudentModal(student));
             document.getElementById('exportReportBtn')?.addEventListener('click', () => this.exportStudentReport(student));
             document.getElementById('reAdmitBtn')?.addEventListener('click', () => showAlert('Re-admit feature coming soon!', 'info'));
             document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
+        }
+
+        // NEW: Open Edit Modal
+        openEditStudentModal(student) {
+            // Fill the edit form with student data
+            this.fillEditForm(student);
+            document.getElementById('editStudentModal').classList.add('active');
+            
+            // Setup save button
+            const saveBtn = document.getElementById('saveEditModalBtn');
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', () => this.saveEditStudent(student.studentId));
+        }
+
+        fillEditForm(student) {
+            const modalBody = document.getElementById('editModalBody');
+            
+            modalBody.innerHTML = `
+                <form id="editStudentForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" id="editFirstName" value="${student.studentName?.first || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Middle Name</label>
+                            <input type="text" id="editMiddleName" value="${student.studentName?.middle || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" id="editLastName" value="${student.studentName?.last || ''}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student Mobile *</label>
+                            <input type="tel" id="editStudentMobile" value="${student.studentMobile || ''}" required pattern="[0-9]{10}">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="editEmail" value="${student.email || ''}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Parent Type</label>
+                        <select id="editParentType">
+                            <option value="Father" ${student.parentType === 'Father' ? 'selected' : ''}>Father</option>
+                            <option value="Mother" ${student.parentType === 'Mother' ? 'selected' : ''}>Mother</option>
+                            <option value="Guardian" ${student.parentType === 'Guardian' ? 'selected' : ''}>Guardian</option>
+                        </select>
+                    </div>
+                    
+                    <div id="editParentFields">
+                        ${this.getParentFieldsHtml(student)}
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Board *</label>
+                            <select id="editBoard">
+                                ${allBoards.map(b => `<option value="${b}" ${student.education?.board === b ? 'selected' : ''}>${b}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Class *</label>
+                            <select id="editClass">
+                                ${allClasses.map(c => `<option value="${c}" ${student.education?.class === c ? 'selected' : ''}>${c}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Monthly Fees (₹) *</label>
+                        <input type="number" id="editMonthlyFees" value="${student.monthlyFees || 0}" required min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Current Address</label>
+                        <textarea id="editCurrentAddress" rows="2">${student.address?.current || ''}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Permanent Address</label>
+                        <textarea id="editPermanentAddress" rows="2">${student.address?.permanent || ''}</textarea>
+                    </div>
+                </form>
+            `;
+            
+            // Setup parent type change listener in edit modal
+            const editParentType = document.getElementById('editParentType');
+            if (editParentType) {
+                editParentType.addEventListener('change', () => {
+                    const type = editParentType.value;
+                    this.updateEditParentFields(type, student);
+                });
+            }
+        }
+
+        getParentFieldsHtml(student) {
+            const type = student.parentType || 'Father';
+            if (type === 'Father') {
+                return `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Father Name *</label>
+                            <input type="text" id="editFatherName" value="${student.fatherName?.first || ''} ${student.fatherName?.last || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Father Mobile *</label>
+                            <input type="tel" id="editFatherMobile" value="${student.fatherMobile || ''}">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'Mother') {
+                return `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mother Name *</label>
+                            <input type="text" id="editMotherName" value="${student.motherName?.first || ''} ${student.motherName?.last || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Mother Mobile *</label>
+                            <input type="tel" id="editMotherMobile" value="${student.motherMobile || ''}">
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Guardian Name *</label>
+                            <input type="text" id="editGuardianName" value="${student.guardianName?.first || ''} ${student.guardianName?.last || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Guardian Mobile *</label>
+                            <input type="tel" id="editGuardianMobile" value="${student.guardianMobile || ''}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Relation *</label>
+                        <input type="text" id="editGuardianRelation" value="${student.guardianRelation || ''}">
+                    </div>
+                `;
+            }
+        }
+
+        updateEditParentFields(type, originalStudent) {
+            const container = document.getElementById('editParentFields');
+            if (type === 'Father') {
+                container.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Father Name *</label>
+                            <input type="text" id="editFatherName" value="${originalStudent.fatherName?.first || ''} ${originalStudent.fatherName?.last || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Father Mobile *</label>
+                            <input type="tel" id="editFatherMobile" value="${originalStudent.fatherMobile || ''}">
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'Mother') {
+                container.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mother Name *</label>
+                            <input type="text" id="editMotherName" value="${originalStudent.motherName?.first || ''} ${originalStudent.motherName?.last || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Mother Mobile *</label>
+                            <input type="tel" id="editMotherMobile" value="${originalStudent.motherMobile || ''}">
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Guardian Name *</label>
+                            <input type="text" id="editGuardianName" value="${originalStudent.guardianName?.first || ''} ${originalStudent.guardianName?.last || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Guardian Mobile *</label>
+                            <input type="tel" id="editGuardianMobile" value="${originalStudent.guardianMobile || ''}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Relation *</label>
+                        <input type="text" id="editGuardianRelation" value="${originalStudent.guardianRelation || ''}">
+                    </div>
+                `;
+            }
+        }
+
+        async saveEditStudent(studentId) {
+            try {
+                const parentType = document.getElementById('editParentType').value;
+                
+                const updatedData = {
+                    studentId: studentId,
+                    studentName: {
+                        first: document.getElementById('editFirstName').value,
+                        middle: document.getElementById('editMiddleName').value || '',
+                        last: document.getElementById('editLastName').value
+                    },
+                    studentMobile: document.getElementById('editStudentMobile').value,
+                    email: document.getElementById('editEmail').value,
+                    parentType: parentType,
+                    education: {
+                        board: document.getElementById('editBoard').value,
+                        class: document.getElementById('editClass').value
+                    },
+                    monthlyFees: parseInt(document.getElementById('editMonthlyFees').value),
+                    address: {
+                        current: document.getElementById('editCurrentAddress').value,
+                        permanent: document.getElementById('editPermanentAddress').value || document.getElementById('editCurrentAddress').value
+                    }
+                };
+                
+                // Add parent info based on type
+                if (parentType === 'Father') {
+                    const fatherName = document.getElementById('editFatherName').value.split(' ');
+                    updatedData.fatherName = { first: fatherName[0] || '', last: fatherName.slice(1).join(' ') || '' };
+                    updatedData.fatherMobile = document.getElementById('editFatherMobile').value;
+                } else if (parentType === 'Mother') {
+                    const motherName = document.getElementById('editMotherName').value.split(' ');
+                    updatedData.motherName = { first: motherName[0] || '', last: motherName.slice(1).join(' ') || '' };
+                    updatedData.motherMobile = document.getElementById('editMotherMobile').value;
+                } else if (parentType === 'Guardian') {
+                    const guardianName = document.getElementById('editGuardianName').value.split(' ');
+                    updatedData.guardianName = { first: guardianName[0] || '', last: guardianName.slice(1).join(' ') || '' };
+                    updatedData.guardianMobile = document.getElementById('editGuardianMobile').value;
+                    updatedData.guardianRelation = document.getElementById('editGuardianRelation').value;
+                }
+                
+                const response = await this.apiCall(`/students/${studentId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updatedData)
+                });
+                
+                if (response.success) {
+                    showAlert('Student updated successfully!', 'success');
+                    closeModal('editStudentModal');
+                    await this.loadStudents();
+                    // Refresh dashboard if open
+                    if (currentViewStudent && currentViewStudent.studentId === studentId) {
+                        this.showStudentDashboard(studentId, false);
+                    }
+                } else {
+                    showAlert(response.message || 'Update failed', 'error');
+                }
+            } catch (err) {
+                showAlert('Error updating student: ' + err.message, 'error');
+            }
         }
 
         populateFeesTable(feesHistory) {
@@ -1128,25 +1508,110 @@
         }
 
         async registerStudent() {
+            // Get Aadhar number (which is also student ID)
+            const aadharNumber = document.getElementById('aadharNumber').value;
+            const studentId = aadharNumber; // Auto copy
+            
+            // Validation
+            if (!studentId || studentId.length !== 12) {
+                showAlert('Please enter valid 12-digit Aadhar number', 'error');
+                return;
+            }
+            
+            if (!document.getElementById('studentMobile').value || document.getElementById('studentMobile').value.length !== 10) {
+                showAlert('Please enter valid 10-digit mobile number', 'error');
+                return;
+            }
+            
             const studentData = {
-                studentId: document.getElementById('aadharNumber').value,
-                aadharNumber: document.getElementById('aadharNumber').value,
+                studentId: studentId,
+                aadharNumber: aadharNumber,
                 aadharDocument: document.getElementById('aadharDoc').value || DEFAULT_PHOTO,
                 photo: document.getElementById('photo').value || DEFAULT_PHOTO,
+                password: aadharNumber.slice(-6), // Last 6 digits as password
                 studentName: {
                     first: document.getElementById('firstName').value,
-                    middle: document.getElementById('middleName').value,
+                    middle: document.getElementById('middleName').value || '',
                     last: document.getElementById('lastName').value
                 },
                 parentType: document.getElementById('parentType').value,
                 studentMobile: document.getElementById('studentMobile').value,
-                email: document.getElementById('email').value,
+                email: document.getElementById('email').value || '',
                 education: {
                     board: document.getElementById('board').value,
                     class: document.getElementById('class').value
                 },
                 monthlyFees: parseInt(document.getElementById('monthlyFees').value) || 1000,
                 joiningDate: document.getElementById('joiningDate').value,
+                currentSession: {
+                    sessionName: document.getElementById('admissionSession').value,
+                    startDate: new Date().toISOString().split('T')[0],
+                    endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+                },
+                address: {
+                    current: document.getElementById('currentAddress').value,
+                    permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value
+                },
+                isActive: true,
+                accountStatus: { isBlocked: false, blockReason: null },
+                feesHistory: [],
+                attendance: [],
+                blockHistory: []
+            };
+            
+            const parentType = studentData.parentType;
+            if (parentType === 'Father') {
+                studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' };
+                studentData.fatherMobile = document.getElementById('fatherMobile').value;
+            } else if (parentType === 'Mother') {
+                studentData.motherName = { first: document.getElementById('motherName').value, last: '' };
+                studentData.motherMobile = document.getElementById('motherMobile').value;
+            } else if (parentType === 'Guardian') {
+                studentData.guardianName = { first: document.getElementById('guardianName').value, last: '' };
+                studentData.guardianMobile = document.getElementById('guardianMobile').value;
+                studentData.guardianRelation = document.getElementById('guardianRelation').value;
+            }
+            
+            try {
+                const response = await this.apiCall('/students/register', {
+                    method: 'POST',
+                    body: JSON.stringify(studentData)
+                });
+                
+                if (response.success) {
+                    showAlert(`Student registered successfully! ID: ${response.studentId || studentId}, Password: ${studentData.password}`, 'success', 5000);
+                    this.resetAdmissionForm();
+                    await this.loadStudents();
+                    this.switchTab('students');
+                } else {
+                    showAlert(response.message || 'Registration failed', 'error');
+                }
+            } catch (err) {
+                showAlert('Error registering student: ' + err.message, 'error');
+            }
+        }
+
+        async updateStudent() {
+            if (!currentEditStudentId) {
+                showAlert('No student selected for edit', 'error');
+                return;
+            }
+            
+            const studentData = {
+                studentId: currentEditStudentId,
+                studentName: {
+                    first: document.getElementById('firstName').value,
+                    middle: document.getElementById('middleName').value || '',
+                    last: document.getElementById('lastName').value
+                },
+                studentMobile: document.getElementById('studentMobile').value,
+                email: document.getElementById('email').value || '',
+                parentType: document.getElementById('parentType').value,
+                education: {
+                    board: document.getElementById('board').value,
+                    class: document.getElementById('class').value
+                },
+                monthlyFees: parseInt(document.getElementById('monthlyFees').value),
                 address: {
                     current: document.getElementById('currentAddress').value,
                     permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value
@@ -1166,41 +1631,113 @@
                 studentData.guardianRelation = document.getElementById('guardianRelation').value;
             }
             
-            if (!studentData.studentId || studentData.studentId.length !== 12) {
-                showAlert('Please enter valid 12-digit Aadhar number', 'error');
-                return;
-            }
-            if (!studentData.studentMobile || studentData.studentMobile.length !== 10) {
-                showAlert('Please enter valid 10-digit mobile number', 'error');
-                return;
-            }
-            
             try {
-                const response = await this.apiCall('/student-register', {
-                    method: 'POST',
+                const response = await this.apiCall(`/students/${currentEditStudentId}`, {
+                    method: 'PUT',
                     body: JSON.stringify(studentData)
                 });
                 
                 if (response.success) {
-                    showAlert(`Student registered successfully! ID: ${response.studentId}`, 'success', 5000);
-                    this.resetAdmissionForm();
+                    showAlert('Student updated successfully!', 'success');
+                    this.cancelEdit();
                     await this.loadStudents();
                     this.switchTab('students');
                 } else {
-                    showAlert(response.message || 'Registration failed', 'error');
+                    showAlert(response.message || 'Update failed', 'error');
                 }
             } catch (err) {
-                showAlert('Error registering student', 'error');
+                showAlert('Error updating student', 'error');
             }
         }
 
+        startEditStudent(student) {
+            isEditMode = true;
+            currentEditStudentId = student.studentId;
+            
+            // Fill form with student data
+            document.getElementById('formTitle').innerText = '✏️ Edit Student';
+            document.getElementById('editModeIndicator').style.display = 'block';
+            document.getElementById('editStudentIdDisplay').innerText = student.studentId;
+            document.getElementById('registerStudentBtn').style.display = 'none';
+            document.getElementById('updateStudentBtn').style.display = 'inline-flex';
+            document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+            
+            // Fill all fields
+            document.getElementById('admissionSession').value = student.currentSession?.sessionName || '2024-2025';
+            document.getElementById('joiningDate').value = student.joiningDate || new Date().toISOString().split('T')[0];
+            document.getElementById('firstName').value = student.studentName?.first || '';
+            document.getElementById('middleName').value = student.studentName?.middle || '';
+            document.getElementById('lastName').value = student.studentName?.last || '';
+            document.getElementById('aadharNumber').value = student.aadharNumber || student.studentId || '';
+            document.getElementById('studentIdField').value = student.studentId || '';
+            document.getElementById('studentMobile').value = student.studentMobile || '';
+            document.getElementById('email').value = student.email || '';
+            document.getElementById('parentType').value = student.parentType || 'Father';
+            document.getElementById('board').value = student.education?.board || 'CBSE';
+            document.getElementById('class').value = student.education?.class || '10th';
+            document.getElementById('monthlyFees').value = student.monthlyFees || 1000;
+            document.getElementById('currentAddress').value = student.address?.current || '';
+            document.getElementById('permanentAddress').value = student.address?.permanent || '';
+            
+            // Parent fields
+            if (student.parentType === 'Father') {
+                document.getElementById('fatherName').value = student.fatherName?.first || '';
+                document.getElementById('fatherMobile').value = student.fatherMobile || '';
+            } else if (student.parentType === 'Mother') {
+                document.getElementById('motherName').value = student.motherName?.first || '';
+                document.getElementById('motherMobile').value = student.motherMobile || '';
+            } else if (student.parentType === 'Guardian') {
+                document.getElementById('guardianName').value = student.guardianName?.first || '';
+                document.getElementById('guardianMobile').value = student.guardianMobile || '';
+                document.getElementById('guardianRelation').value = student.guardianRelation || '';
+            }
+            
+            // Trigger parent type change to show correct fields
+            this.setupParentTypeToggle();
+            
+            // Photos
+            if (student.photo) {
+                document.getElementById('photo').value = student.photo;
+                const photoPreview = document.getElementById('photoPreview');
+                photoPreview.src = student.photo;
+                photoPreview.style.display = 'block';
+            }
+            if (student.aadharDocument) {
+                document.getElementById('aadharDoc').value = student.aadharDocument;
+                const aadharPreview = document.getElementById('aadharPreview');
+                aadharPreview.src = student.aadharDocument;
+                aadharPreview.style.display = 'block';
+            }
+            
+            this.switchTab('new-admission');
+        }
+
+        cancelEdit() {
+            isEditMode = false;
+            currentEditStudentId = null;
+            document.getElementById('formTitle').innerText = '📝 Register New Student';
+            document.getElementById('editModeIndicator').style.display = 'none';
+            document.getElementById('registerStudentBtn').style.display = 'inline-flex';
+            document.getElementById('updateStudentBtn').style.display = 'none';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            this.resetAdmissionForm();
+        }
+
         resetAdmissionForm() {
-            document.getElementById('admissionForm').reset();
+            const form = document.getElementById('admissionForm');
+            if (form) form.reset();
             document.getElementById('joiningDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('photo').value = '';
             document.getElementById('aadharDoc').value = '';
             document.getElementById('photoPreview').style.display = 'none';
             document.getElementById('aadharPreview').style.display = 'none';
+            document.getElementById('studentIdField').value = '';
+            document.getElementById('aadharNumber').value = '';
+            
+            // Reset parent fields visibility
+            document.getElementById('fatherFields').style.display = 'block';
+            document.getElementById('motherFields').style.display = 'none';
+            document.getElementById('guardianFields').style.display = 'none';
         }
 
         async captureImage(fieldId, previewId) {
