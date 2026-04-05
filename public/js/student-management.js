@@ -1,6 +1,6 @@
 // ============================================
 // STUDENT-MANAGEMENT.JS - COMPLETE FIXED VERSION
-// WITH AUTO STUDENT ID FROM AADHAR + EDIT FEATURE
+// WITH ATTENDANCE & FEES PAYMENT WORKING
 // ============================================
 
 (function() {
@@ -36,20 +36,20 @@
     // ========== DEMO STUDENT DATA ==========
     const DEMO_STUDENT = {
         studentId: "123456789012",
-        aadharNumber: "123456789012",
-        password: "demo123",
-        photo: DEFAULT_PHOTO,
-        aadharDocument: DEFAULT_PHOTO,
         studentName: { first: "Rahul", middle: "", last: "Sharma" },
+        studentMobile: "9876543210",
+        email: "rahul@example.com",
         parentType: "Father",
         fatherName: { first: "Rajesh", last: "Sharma" },
         fatherMobile: "9876543210",
-        studentMobile: "9876543210",
-        email: "rahul@example.com",
+        motherName: { first: "", last: "" },
+        motherMobile: "",
+        guardianName: { first: "", last: "" },
+        guardianMobile: "",
+        guardianRelation: "",
         education: { board: "CBSE", class: "10th" },
         monthlyFees: 2000,
         joiningDate: new Date().toISOString().split('T')[0],
-        currentSession: { sessionName: "2024-2025", startDate: "2024-04-01", endDate: "2025-03-31" },
         address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" }
     };
 
@@ -294,7 +294,6 @@
         .empty-state { text-align: center; padding: 50px; color: #999; }
         .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
         
-        /* Edit mode indicator */
         .edit-mode-badge {
             background: #ffc107;
             color: #333;
@@ -304,6 +303,13 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
         }
         
         @media (max-width: 768px) {
@@ -356,39 +362,33 @@
                         </div>
                     </div>
                     <form id="admissionForm">
-                        <!-- Session and Joining Date -->
                         <div class="form-row">
                             <div class="form-group"><label>Session *</label><select id="admissionSession" required>${allSessions.map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
                             <div class="form-group"><label>Joining Date *</label><input type="date" id="joiningDate" required></div>
                         </div>
                         
-                        <!-- Student Name -->
                         <div class="form-row-3">
                             <div class="form-group"><label>First Name *</label><input type="text" id="firstName" required></div>
                             <div class="form-group"><label>Middle Name</label><input type="text" id="middleName"></div>
                             <div class="form-group"><label>Last Name *</label><input type="text" id="lastName" required></div>
                         </div>
                         
-                        <!-- Aadhar Number (Student ID) - AUTO COPY -->
                         <div class="form-group">
-                            <label>Aadhar Number (This will be Student ID) * <span style="color:#dc3545;">(12 digit number)</span></label>
+                            <label>Aadhar Number (Student ID) * <span style="color:#dc3545;">(12 digit number)</span></label>
                             <input type="text" id="aadharNumber" required maxlength="12" pattern="[0-9]{12}" placeholder="Enter 12 digit Aadhar number">
                             <small style="color: #28a745; display: block; margin-top: 5px;">💡 Student ID will be automatically set to this Aadhar number</small>
                         </div>
                         
-                        <!-- Student ID (Read-only, auto-filled) -->
                         <div class="form-group">
                             <label>Student ID (Auto from Aadhar) *</label>
                             <input type="text" id="studentIdField" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
                         </div>
                         
-                        <!-- Contact Info -->
                         <div class="form-row">
                             <div class="form-group"><label>Student Mobile *</label><input type="tel" id="studentMobile" required pattern="[0-9]{10}" placeholder="10 digit mobile number"></div>
                             <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="student@example.com"></div>
                         </div>
                         
-                        <!-- Parent Info -->
                         <div class="form-group"><label>Parent Type *</label><select id="parentType"><option value="Father">Father</option><option value="Mother">Mother</option><option value="Guardian">Guardian</option></select></div>
                         <div id="fatherFields">
                             <div class="form-row">
@@ -410,16 +410,13 @@
                             <div class="form-group"><label>Relation *</label><input type="text" id="guardianRelation" placeholder="e.g., Uncle, Aunt, Grandfather"></div>
                         </div>
                         
-                        <!-- Education -->
                         <div class="form-row">
                             <div class="form-group"><label>Board *</label><select id="board">${allBoards.map(b => `<option value="${b}">${b}</option>`).join('')}</select></div>
                             <div class="form-group"><label>Class *</label><select id="class">${allClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
                         </div>
                         
-                        <!-- Fees -->
-                        <div class="form-group"><label>Monthly Fees (₹) *</label><input type="number" id="monthlyFees" required min="0" step="100"></div>
+                        <div class="form-group"><label>Monthly Fees (₹) *</label><input type="number" id="monthlyFees" required min="0" step="100" value="1000"></div>
                         
-                        <!-- Documents -->
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Student Photo *</label>
@@ -441,11 +438,9 @@
                             </div>
                         </div>
                         
-                        <!-- Address -->
                         <div class="form-group"><label>Current Address *</label><textarea id="currentAddress" rows="2" placeholder="House number, Street, City, PIN code"></textarea></div>
                         <div class="form-group"><label>Permanent Address</label><textarea id="permanentAddress" rows="2" placeholder="Leave blank if same as current address"></textarea></div>
                         
-                        <!-- Form Buttons -->
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary" id="registerStudentBtn">✅ Register Student</button>
                             <button type="button" class="btn btn-warning" id="updateStudentBtn" style="display:none;">✏️ Update Student</button>
@@ -482,19 +477,72 @@
             </div>
         </div>
         
-        <!-- EDIT STUDENT MODAL (Alternative - for inline edit) -->
-        <div id="editStudentModal" class="modal">
-            <div class="modal-content" style="max-width: 800px;">
+        <!-- MARK ATTENDANCE MODAL -->
+        <div id="attendanceModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
                 <div class="modal-header">
-                    <h3>✏️ Edit Student Details</h3>
-                    <button class="close-modal" id="closeEditModal">×</button>
+                    <h3>📅 Mark Attendance</h3>
+                    <button class="close-modal" id="closeAttendanceModal">×</button>
                 </div>
-                <div class="modal-body" id="editModalBody">
-                    <div style="text-align: center; padding: 50px;">Loading...</div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="attendanceDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="attendanceStatus" class="form-control">
+                            <option value="present">✅ Present</option>
+                            <option value="absent">❌ Absent</option>
+                            <option value="late">⏰ Late</option>
+                            <option value="half-day">🌓 Half Day</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Check In Time</label>
+                        <input type="time" id="checkInTime" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Check Out Time</label>
+                        <input type="time" id="checkOutTime" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <textarea id="attendanceRemarks" class="form-control" rows="2"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" id="cancelEditModalBtn">Cancel</button>
-                    <button class="btn btn-primary" id="saveEditModalBtn">💾 Save Changes</button>
+                    <button class="btn btn-secondary" id="cancelAttendanceBtn">Cancel</button>
+                    <button class="btn btn-primary" id="saveAttendanceBtn">💾 Save Attendance</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PAY FEES MODAL -->
+        <div id="feesModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>💰 Pay Fees</h3>
+                    <button class="close-modal" id="closeFeesModal">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Select Month</label>
+                        <select id="feesMonth" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount to Pay (₹)</label>
+                        <input type="number" id="feesAmount" class="form-control" min="1" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Remarks</label>
+                        <textarea id="feesRemarks" class="form-control" rows="2" placeholder="Optional remarks..."></textarea>
+                    </div>
+                    <div id="feesInfo" style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 10px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelFeesBtn">Cancel</button>
+                    <button class="btn btn-success" id="saveFeesBtn">💰 Pay Now</button>
                 </div>
             </div>
         </div>
@@ -519,11 +567,7 @@
             await this.loadOldStudents();
             document.getElementById('joiningDate').value = new Date().toISOString().split('T')[0];
             this.setupParentTypeToggle();
-            this.setupAutoStudentIdFromAadhar(); // NEW: Auto copy Aadhar to Student ID
-            
-            if (this.students.length === 0) {
-                showAlert('No students found. Click "Create Demo Student" to add a sample student!', 'info', 5000);
-            }
+            this.setupAutoStudentIdFromAadhar();
         }
 
         injectStyles() {
@@ -541,17 +585,16 @@
         }
 
         attachEventListeners() {
-            // Tab switching
             document.querySelectorAll('.main-tab-btn').forEach(btn => {
                 btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
             });
             
-            // Modal close
             document.getElementById('closeDashboardModal')?.addEventListener('click', () => closeModal('dashboardModal'));
-            document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editStudentModal'));
-            document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editStudentModal'));
+            document.getElementById('closeAttendanceModal')?.addEventListener('click', () => closeModal('attendanceModal'));
+            document.getElementById('closeFeesModal')?.addEventListener('click', () => closeModal('feesModal'));
+            document.getElementById('cancelAttendanceBtn')?.addEventListener('click', () => closeModal('attendanceModal'));
+            document.getElementById('cancelFeesBtn')?.addEventListener('click', () => closeModal('feesModal'));
             
-            // Filters
             document.getElementById('filterBoard')?.addEventListener('change', () => this.renderStudentsGrid());
             document.getElementById('filterClass')?.addEventListener('change', () => this.renderStudentsGrid());
             document.getElementById('filterSession')?.addEventListener('change', () => this.renderStudentsGrid());
@@ -563,41 +606,34 @@
             document.getElementById('refreshBtn')?.addEventListener('click', () => this.loadStudents());
             document.getElementById('createDemoBtn')?.addEventListener('click', () => this.createDemoStudent());
             
-            // New Admission / Edit
             document.getElementById('registerStudentBtn')?.addEventListener('click', () => this.registerStudent());
             document.getElementById('updateStudentBtn')?.addEventListener('click', () => this.updateStudent());
             document.getElementById('cancelEditBtn')?.addEventListener('click', () => this.cancelEdit());
             document.getElementById('resetFormBtn')?.addEventListener('click', () => this.resetAdmissionForm());
             
-            // Image capture/upload
             document.getElementById('capturePhotoBtn')?.addEventListener('click', () => this.captureImage('photo', 'photoPreview'));
             document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => this.uploadImage('photo', 'photoPreview'));
             document.getElementById('captureAadharBtn')?.addEventListener('click', () => this.captureImage('aadharDoc', 'aadharPreview'));
             document.getElementById('uploadAadharBtn')?.addEventListener('click', () => this.uploadImage('aadharDoc', 'aadharPreview'));
             
-            // Logout
             document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
         }
 
-        // NEW: Auto copy Aadhar to Student ID
         setupAutoStudentIdFromAadhar() {
             const aadharInput = document.getElementById('aadharNumber');
             const studentIdField = document.getElementById('studentIdField');
             
             if (aadharInput && studentIdField) {
-                // Copy on input
                 aadharInput.addEventListener('input', (e) => {
                     let value = e.target.value;
-                    // Only allow numbers
                     value = value.replace(/[^0-9]/g, '');
                     if (value.length > 12) value = value.slice(0, 12);
                     aadharInput.value = value;
                     studentIdField.value = value;
                 });
                 
-                // Copy on blur (final check)
                 aadharInput.addEventListener('blur', () => {
-                    if (aadharInput.value.length !== 12) {
+                    if (aadharInput.value.length !== 12 && aadharInput.value.length > 0) {
                         showAlert('Aadhar number must be exactly 12 digits!', 'warning', 2000);
                     }
                     studentIdField.value = aadharInput.value;
@@ -625,7 +661,6 @@
                 pane.classList.toggle('active', pane.dataset.pane === tab);
             });
             
-            // Reset edit mode when switching to new admission tab
             if (tab === 'new-admission') {
                 this.cancelEdit();
             }
@@ -785,7 +820,7 @@
                 });
                 
                 if (response.success) {
-                    showAlert('✅ Demo student created! ID: 123456789012, Password: demo123', 'success', 5000);
+                    showAlert('✅ Demo student created! ID: 123456789012, Password: 9012', 'success', 5000);
                     await this.loadStudents();
                     this.switchTab('students');
                 } else {
@@ -908,7 +943,7 @@
                         <div class="chart-title">📋 Fees History</div>
                         <div style="overflow-x: auto;">
                             <table class="data-table">
-                                <thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr></thead>
                                 <tbody id="feesTableBody"></tbody>
                             </table>
                         </div>
@@ -933,10 +968,15 @@
                             </table>
                         </div>
                     </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-info" id="markAttendanceBtn">📅 Mark Attendance</button>
+                        <button class="btn btn-success" id="payFeesBtn">💰 Pay Fees</button>
+                    </div>
                 </div>
             `;
             
-            this.populateFeesTable(feesHistory);
+            this.populateFeesTable(feesHistory, student.studentId);
             this.populateAttendanceTable(attendance);
             this.populateBlockHistory(student.blockHistory || []);
             
@@ -952,294 +992,179 @@
                 ${!isOld && isBlocked ? `<button class="btn btn-success" id="unblockStudentBtn">🟢 Unblock Student</button>` : ''}
                 ${!isOld ? `<button class="btn btn-primary" id="editStudentDashboardBtn">✏️ Edit Student</button>` : ''}
                 <button class="btn btn-info" id="exportReportBtn">📎 Export Report</button>
-                ${isOld ? `<button class="btn btn-primary" id="reAdmitBtn">🔄 Re-admit</button>` : ''}
                 <button class="btn btn-secondary" id="closeDashboardFooterBtn">Close</button>
             `;
             
             document.getElementById('deleteStudentBtn')?.addEventListener('click', () => this.deleteStudent(student.studentId));
             document.getElementById('blockStudentBtn')?.addEventListener('click', () => this.blockStudent(student.studentId));
             document.getElementById('unblockStudentBtn')?.addEventListener('click', () => this.unblockStudent(student.studentId));
-            document.getElementById('editStudentDashboardBtn')?.addEventListener('click', () => this.openEditStudentModal(student));
+            document.getElementById('editStudentDashboardBtn')?.addEventListener('click', () => this.startEditStudent(student));
             document.getElementById('exportReportBtn')?.addEventListener('click', () => this.exportStudentReport(student));
-            document.getElementById('reAdmitBtn')?.addEventListener('click', () => showAlert('Re-admit feature coming soon!', 'info'));
             document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
+            document.getElementById('markAttendanceBtn')?.addEventListener('click', () => this.openAttendanceModal(student.studentId));
+            document.getElementById('payFeesBtn')?.addEventListener('click', () => this.openFeesModal(student));
         }
 
-        // NEW: Open Edit Modal
-        openEditStudentModal(student) {
-            // Fill the edit form with student data
-            this.fillEditForm(student);
-            document.getElementById('editStudentModal').classList.add('active');
-            
-            // Setup save button
-            const saveBtn = document.getElementById('saveEditModalBtn');
-            const newSaveBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.addEventListener('click', () => this.saveEditStudent(student.studentId));
-        }
-
-        fillEditForm(student) {
-            const modalBody = document.getElementById('editModalBody');
-            
-            modalBody.innerHTML = `
-                <form id="editStudentForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>First Name *</label>
-                            <input type="text" id="editFirstName" value="${student.studentName?.first || ''}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Middle Name</label>
-                            <input type="text" id="editMiddleName" value="${student.studentName?.middle || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Last Name *</label>
-                            <input type="text" id="editLastName" value="${student.studentName?.last || ''}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Student Mobile *</label>
-                            <input type="tel" id="editStudentMobile" value="${student.studentMobile || ''}" required pattern="[0-9]{10}">
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="editEmail" value="${student.email || ''}">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Parent Type</label>
-                        <select id="editParentType">
-                            <option value="Father" ${student.parentType === 'Father' ? 'selected' : ''}>Father</option>
-                            <option value="Mother" ${student.parentType === 'Mother' ? 'selected' : ''}>Mother</option>
-                            <option value="Guardian" ${student.parentType === 'Guardian' ? 'selected' : ''}>Guardian</option>
-                        </select>
-                    </div>
-                    
-                    <div id="editParentFields">
-                        ${this.getParentFieldsHtml(student)}
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Board *</label>
-                            <select id="editBoard">
-                                ${allBoards.map(b => `<option value="${b}" ${student.education?.board === b ? 'selected' : ''}>${b}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Class *</label>
-                            <select id="editClass">
-                                ${allClasses.map(c => `<option value="${c}" ${student.education?.class === c ? 'selected' : ''}>${c}</option>`).join('')}
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Monthly Fees (₹) *</label>
-                        <input type="number" id="editMonthlyFees" value="${student.monthlyFees || 0}" required min="0">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Current Address</label>
-                        <textarea id="editCurrentAddress" rows="2">${student.address?.current || ''}</textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Permanent Address</label>
-                        <textarea id="editPermanentAddress" rows="2">${student.address?.permanent || ''}</textarea>
-                    </div>
-                </form>
-            `;
-            
-            // Setup parent type change listener in edit modal
-            const editParentType = document.getElementById('editParentType');
-            if (editParentType) {
-                editParentType.addEventListener('change', () => {
-                    const type = editParentType.value;
-                    this.updateEditParentFields(type, student);
-                });
-            }
-        }
-
-        getParentFieldsHtml(student) {
-            const type = student.parentType || 'Father';
-            if (type === 'Father') {
-                return `
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Father Name *</label>
-                            <input type="text" id="editFatherName" value="${student.fatherName?.first || ''} ${student.fatherName?.last || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Father Mobile *</label>
-                            <input type="tel" id="editFatherMobile" value="${student.fatherMobile || ''}">
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'Mother') {
-                return `
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Mother Name *</label>
-                            <input type="text" id="editMotherName" value="${student.motherName?.first || ''} ${student.motherName?.last || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Mother Mobile *</label>
-                            <input type="tel" id="editMotherMobile" value="${student.motherMobile || ''}">
-                        </div>
-                    </div>
-                `;
-            } else {
-                return `
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Guardian Name *</label>
-                            <input type="text" id="editGuardianName" value="${student.guardianName?.first || ''} ${student.guardianName?.last || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Guardian Mobile *</label>
-                            <input type="tel" id="editGuardianMobile" value="${student.guardianMobile || ''}">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Relation *</label>
-                        <input type="text" id="editGuardianRelation" value="${student.guardianRelation || ''}">
-                    </div>
-                `;
-            }
-        }
-
-        updateEditParentFields(type, originalStudent) {
-            const container = document.getElementById('editParentFields');
-            if (type === 'Father') {
-                container.innerHTML = `
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Father Name *</label>
-                            <input type="text" id="editFatherName" value="${originalStudent.fatherName?.first || ''} ${originalStudent.fatherName?.last || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Father Mobile *</label>
-                            <input type="tel" id="editFatherMobile" value="${originalStudent.fatherMobile || ''}">
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'Mother') {
-                container.innerHTML = `
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Mother Name *</label>
-                            <input type="text" id="editMotherName" value="${originalStudent.motherName?.first || ''} ${originalStudent.motherName?.last || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Mother Mobile *</label>
-                            <input type="tel" id="editMotherMobile" value="${originalStudent.motherMobile || ''}">
-                        </div>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Guardian Name *</label>
-                            <input type="text" id="editGuardianName" value="${originalStudent.guardianName?.first || ''} ${originalStudent.guardianName?.last || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Guardian Mobile *</label>
-                            <input type="tel" id="editGuardianMobile" value="${originalStudent.guardianMobile || ''}">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Relation *</label>
-                        <input type="text" id="editGuardianRelation" value="${originalStudent.guardianRelation || ''}">
-                    </div>
-                `;
-            }
-        }
-
-        async saveEditStudent(studentId) {
-            try {
-                const parentType = document.getElementById('editParentType').value;
-                
-                const updatedData = {
-                    studentId: studentId,
-                    studentName: {
-                        first: document.getElementById('editFirstName').value,
-                        middle: document.getElementById('editMiddleName').value || '',
-                        last: document.getElementById('editLastName').value
-                    },
-                    studentMobile: document.getElementById('editStudentMobile').value,
-                    email: document.getElementById('editEmail').value,
-                    parentType: parentType,
-                    education: {
-                        board: document.getElementById('editBoard').value,
-                        class: document.getElementById('editClass').value
-                    },
-                    monthlyFees: parseInt(document.getElementById('editMonthlyFees').value),
-                    address: {
-                        current: document.getElementById('editCurrentAddress').value,
-                        permanent: document.getElementById('editPermanentAddress').value || document.getElementById('editCurrentAddress').value
-                    }
-                };
-                
-                // Add parent info based on type
-                if (parentType === 'Father') {
-                    const fatherName = document.getElementById('editFatherName').value.split(' ');
-                    updatedData.fatherName = { first: fatherName[0] || '', last: fatherName.slice(1).join(' ') || '' };
-                    updatedData.fatherMobile = document.getElementById('editFatherMobile').value;
-                } else if (parentType === 'Mother') {
-                    const motherName = document.getElementById('editMotherName').value.split(' ');
-                    updatedData.motherName = { first: motherName[0] || '', last: motherName.slice(1).join(' ') || '' };
-                    updatedData.motherMobile = document.getElementById('editMotherMobile').value;
-                } else if (parentType === 'Guardian') {
-                    const guardianName = document.getElementById('editGuardianName').value.split(' ');
-                    updatedData.guardianName = { first: guardianName[0] || '', last: guardianName.slice(1).join(' ') || '' };
-                    updatedData.guardianMobile = document.getElementById('editGuardianMobile').value;
-                    updatedData.guardianRelation = document.getElementById('editGuardianRelation').value;
-                }
-                
-                const response = await this.apiCall(`/students/${studentId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(updatedData)
-                });
-                
-                if (response.success) {
-                    showAlert('Student updated successfully!', 'success');
-                    closeModal('editStudentModal');
-                    await this.loadStudents();
-                    // Refresh dashboard if open
-                    if (currentViewStudent && currentViewStudent.studentId === studentId) {
-                        this.showStudentDashboard(studentId, false);
-                    }
-                } else {
-                    showAlert(response.message || 'Update failed', 'error');
-                }
-            } catch (err) {
-                showAlert('Error updating student: ' + err.message, 'error');
-            }
-        }
-
-        populateFeesTable(feesHistory) {
+        populateFeesTable(feesHistory, studentId) {
             const tbody = document.getElementById('feesTableBody');
             if (!tbody) return;
             
             if (!feesHistory || feesHistory.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No fees records found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No fees records found</td></tr>';
                 return;
             }
             
-            tbody.innerHTML = feesHistory.map(f => `
+            tbody.innerHTML = feesHistory.map((f, index) => `
                 <tr>
                     <td>${f.month || '-'} ${f.year || ''}</td>
                     <td>₹${f.amount || 0}</td>
                     <td>₹${f.paidAmount || 0}</td>
                     <td>₹${f.dueAmount || 0}</td>
                     <td>${getStatusBadge(f.status)}</td>
+                    <td>
+                        ${f.status !== 'paid' ? `<button class="btn btn-success btn-sm pay-fee-btn" data-month="${f.month}" data-year="${f.year}" data-due="${f.dueAmount}">Pay</button>` : '-'}
+                    </td>
                 </tr>
             `).join('');
+            
+            document.querySelectorAll('.pay-fee-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const month = btn.dataset.month;
+                    const year = btn.dataset.year;
+                    const due = btn.dataset.due;
+                    this.openFeesModalWithMonth(currentViewStudent, month, year, due);
+                });
+            });
+        }
+
+        openAttendanceModal(studentId) {
+            document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('attendanceStatus').value = 'present';
+            document.getElementById('checkInTime').value = '';
+            document.getElementById('checkOutTime').value = '';
+            document.getElementById('attendanceRemarks').value = '';
+            
+            const saveBtn = document.getElementById('saveAttendanceBtn');
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', () => this.saveAttendance(studentId));
+            
+            document.getElementById('attendanceModal').classList.add('active');
+        }
+
+        async saveAttendance(studentId) {
+            const date = document.getElementById('attendanceDate').value;
+            const status = document.getElementById('attendanceStatus').value;
+            const checkInTime = document.getElementById('checkInTime').value;
+            const checkOutTime = document.getElementById('checkOutTime').value;
+            const remarks = document.getElementById('attendanceRemarks').value;
+            
+            if (!date) {
+                showAlert('Please select a date', 'error');
+                return;
+            }
+            
+            try {
+                const response = await this.apiCall(`/students/${studentId}/attendance`, {
+                    method: 'POST',
+                    body: JSON.stringify({ date, status, checkInTime, checkOutTime, remarks })
+                });
+                
+                if (response.success) {
+                    showAlert('Attendance marked successfully!', 'success');
+                    closeModal('attendanceModal');
+                    await this.showStudentDashboard(studentId, false);
+                    await this.loadStudents();
+                } else {
+                    showAlert(response.message || 'Failed to mark attendance', 'error');
+                }
+            } catch (err) {
+                showAlert('Error marking attendance', 'error');
+            }
+        }
+
+        openFeesModal(student) {
+            const feesHistory = student.feesHistory || [];
+            const unpaidMonths = feesHistory.filter(f => f.status !== 'paid');
+            
+            const monthSelect = document.getElementById('feesMonth');
+            monthSelect.innerHTML = '<option value="">Select Month</option>';
+            
+            unpaidMonths.forEach(f => {
+                monthSelect.innerHTML += `<option value="${f.month}|${f.year}" data-due="${f.dueAmount}">${f.month} ${f.year} - Due: ₹${f.dueAmount}</option>`;
+            });
+            
+            document.getElementById('feesAmount').value = '';
+            document.getElementById('feesRemarks').value = '';
+            document.getElementById('feesInfo').innerHTML = '';
+            
+            monthSelect.onchange = () => {
+                const selected = monthSelect.options[monthSelect.selectedIndex];
+                const due = selected?.dataset.due || 0;
+                document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
+                document.getElementById('feesAmount').max = due;
+                if (due > 0) document.getElementById('feesAmount').value = due;
+            };
+            
+            const saveBtn = document.getElementById('saveFeesBtn');
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
+            
+            document.getElementById('feesModal').classList.add('active');
+        }
+
+        openFeesModalWithMonth(student, month, year, due) {
+            const monthSelect = document.getElementById('feesMonth');
+            monthSelect.innerHTML = `<option value="${month}|${year}" data-due="${due}">${month} ${year} - Due: ₹${due}</option>`;
+            
+            document.getElementById('feesAmount').value = due;
+            document.getElementById('feesRemarks').value = '';
+            document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
+            
+            const saveBtn = document.getElementById('saveFeesBtn');
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
+            
+            document.getElementById('feesModal').classList.add('active');
+        }
+
+        async saveFees(studentId) {
+            const monthSelect = document.getElementById('feesMonth');
+            const selectedValue = monthSelect.value;
+            if (!selectedValue) {
+                showAlert('Please select a month', 'error');
+                return;
+            }
+            
+            const [month, year] = selectedValue.split('|');
+            const paidAmount = parseInt(document.getElementById('feesAmount').value);
+            const remarks = document.getElementById('feesRemarks').value;
+            
+            if (!paidAmount || paidAmount <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                const response = await this.apiCall(`/students/${studentId}/fees`, {
+                    method: 'POST',
+                    body: JSON.stringify({ month, year: parseInt(year), paidAmount, remarks })
+                });
+                
+                if (response.success) {
+                    showAlert('Fees paid successfully!', 'success');
+                    closeModal('feesModal');
+                    await this.showStudentDashboard(studentId, false);
+                    await this.loadStudents();
+                } else {
+                    showAlert(response.message || 'Failed to pay fees', 'error');
+                }
+            } catch (err) {
+                showAlert('Error paying fees', 'error');
+            }
         }
 
         populateAttendanceTable(attendance) {
@@ -1508,11 +1433,9 @@
         }
 
         async registerStudent() {
-            // Get Aadhar number (which is also student ID)
             const aadharNumber = document.getElementById('aadharNumber').value;
-            const studentId = aadharNumber; // Auto copy
+            const studentId = aadharNumber;
             
-            // Validation
             if (!studentId || studentId.length !== 12) {
                 showAlert('Please enter valid 12-digit Aadhar number', 'error');
                 return;
@@ -1523,18 +1446,19 @@
                 return;
             }
             
+            const parentType = document.getElementById('parentType').value;
+            
             const studentData = {
                 studentId: studentId,
                 aadharNumber: aadharNumber,
                 aadharDocument: document.getElementById('aadharDoc').value || DEFAULT_PHOTO,
                 photo: document.getElementById('photo').value || DEFAULT_PHOTO,
-                password: aadharNumber.slice(-6), // Last 6 digits as password
                 studentName: {
                     first: document.getElementById('firstName').value,
                     middle: document.getElementById('middleName').value || '',
                     last: document.getElementById('lastName').value
                 },
-                parentType: document.getElementById('parentType').value,
+                parentType: parentType,
                 studentMobile: document.getElementById('studentMobile').value,
                 email: document.getElementById('email').value || '',
                 education: {
@@ -1543,33 +1467,37 @@
                 },
                 monthlyFees: parseInt(document.getElementById('monthlyFees').value) || 1000,
                 joiningDate: document.getElementById('joiningDate').value,
-                currentSession: {
-                    sessionName: document.getElementById('admissionSession').value,
-                    startDate: new Date().toISOString().split('T')[0],
-                    endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
-                },
                 address: {
                     current: document.getElementById('currentAddress').value,
                     permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value
-                },
-                isActive: true,
-                accountStatus: { isBlocked: false, blockReason: null },
-                feesHistory: [],
-                attendance: [],
-                blockHistory: []
+                }
             };
             
-            const parentType = studentData.parentType;
+            // Add parent fields
             if (parentType === 'Father') {
                 studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' };
                 studentData.fatherMobile = document.getElementById('fatherMobile').value;
+                studentData.motherName = { first: '', last: '' };
+                studentData.motherMobile = '';
+                studentData.guardianName = { first: '', last: '' };
+                studentData.guardianMobile = '';
+                studentData.guardianRelation = '';
             } else if (parentType === 'Mother') {
                 studentData.motherName = { first: document.getElementById('motherName').value, last: '' };
                 studentData.motherMobile = document.getElementById('motherMobile').value;
+                studentData.fatherName = { first: '', last: '' };
+                studentData.fatherMobile = '';
+                studentData.guardianName = { first: '', last: '' };
+                studentData.guardianMobile = '';
+                studentData.guardianRelation = '';
             } else if (parentType === 'Guardian') {
                 studentData.guardianName = { first: document.getElementById('guardianName').value, last: '' };
                 studentData.guardianMobile = document.getElementById('guardianMobile').value;
                 studentData.guardianRelation = document.getElementById('guardianRelation').value;
+                studentData.fatherName = { first: '', last: '' };
+                studentData.fatherMobile = '';
+                studentData.motherName = { first: '', last: '' };
+                studentData.motherMobile = '';
             }
             
             try {
@@ -1579,7 +1507,7 @@
                 });
                 
                 if (response.success) {
-                    showAlert(`Student registered successfully! ID: ${response.studentId || studentId}, Password: ${studentData.password}`, 'success', 5000);
+                    showAlert(`Student registered successfully! ID: ${response.studentId || studentId}, Password: ${studentId.slice(-6)}`, 'success', 5000);
                     this.resetAdmissionForm();
                     await this.loadStudents();
                     this.switchTab('students');
@@ -1597,6 +1525,8 @@
                 return;
             }
             
+            const parentType = document.getElementById('parentType').value;
+            
             const studentData = {
                 studentId: currentEditStudentId,
                 studentName: {
@@ -1606,7 +1536,7 @@
                 },
                 studentMobile: document.getElementById('studentMobile').value,
                 email: document.getElementById('email').value || '',
-                parentType: document.getElementById('parentType').value,
+                parentType: parentType,
                 education: {
                     board: document.getElementById('board').value,
                     class: document.getElementById('class').value
@@ -1618,7 +1548,6 @@
                 }
             };
             
-            const parentType = studentData.parentType;
             if (parentType === 'Father') {
                 studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' };
                 studentData.fatherMobile = document.getElementById('fatherMobile').value;
@@ -1654,7 +1583,6 @@
             isEditMode = true;
             currentEditStudentId = student.studentId;
             
-            // Fill form with student data
             document.getElementById('formTitle').innerText = '✏️ Edit Student';
             document.getElementById('editModeIndicator').style.display = 'block';
             document.getElementById('editStudentIdDisplay').innerText = student.studentId;
@@ -1662,9 +1590,8 @@
             document.getElementById('updateStudentBtn').style.display = 'inline-flex';
             document.getElementById('cancelEditBtn').style.display = 'inline-flex';
             
-            // Fill all fields
             document.getElementById('admissionSession').value = student.currentSession?.sessionName || '2024-2025';
-            document.getElementById('joiningDate').value = student.joiningDate || new Date().toISOString().split('T')[0];
+            document.getElementById('joiningDate').value = student.joiningDate ? student.joiningDate.split('T')[0] : new Date().toISOString().split('T')[0];
             document.getElementById('firstName').value = student.studentName?.first || '';
             document.getElementById('middleName').value = student.studentName?.middle || '';
             document.getElementById('lastName').value = student.studentName?.last || '';
@@ -1679,7 +1606,6 @@
             document.getElementById('currentAddress').value = student.address?.current || '';
             document.getElementById('permanentAddress').value = student.address?.permanent || '';
             
-            // Parent fields
             if (student.parentType === 'Father') {
                 document.getElementById('fatherName').value = student.fatherName?.first || '';
                 document.getElementById('fatherMobile').value = student.fatherMobile || '';
@@ -1692,10 +1618,8 @@
                 document.getElementById('guardianRelation').value = student.guardianRelation || '';
             }
             
-            // Trigger parent type change to show correct fields
             this.setupParentTypeToggle();
             
-            // Photos
             if (student.photo) {
                 document.getElementById('photo').value = student.photo;
                 const photoPreview = document.getElementById('photoPreview');
@@ -1709,6 +1633,7 @@
                 aadharPreview.style.display = 'block';
             }
             
+            closeModal('dashboardModal');
             this.switchTab('new-admission');
         }
 
@@ -1733,8 +1658,8 @@
             document.getElementById('aadharPreview').style.display = 'none';
             document.getElementById('studentIdField').value = '';
             document.getElementById('aadharNumber').value = '';
+            document.getElementById('monthlyFees').value = '1000';
             
-            // Reset parent fields visibility
             document.getElementById('fatherFields').style.display = 'block';
             document.getElementById('motherFields').style.display = 'none';
             document.getElementById('guardianFields').style.display = 'none';
