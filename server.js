@@ -65,9 +65,9 @@ const StudentSchema = new mongoose.Schema({
     dateOfBirth: { type: Date }, // FOR FUTURE: Add DOB field
     gender: { 
     type: String, 
-    enum: ['Male', 'Female', 'Other'],
-    default: null,  // Add default
-    required: false  // Make optional
+    enum: ['Male', 'Female', 'Other', null],  // ← null bhi add karo
+    default: null,
+    required: false
 }, // FOR FUTURE
     
     // Parent Information
