@@ -1,6 +1,6 @@
 // ============================================
 // STUDENT-MANAGEMENT.JS - COMPLETE FIXED VERSION
-// WITH ATTENDANCE & FEES PAYMENT WORKING
+// WITH PROPER EDIT, PHOTO DISPLAY, AND NO DUPLICATE ISSUES
 // ============================================
 
 (function() {
@@ -32,26 +32,6 @@
     const allSessions = ['2024-2025', '2025-2026', '2026-2027', '2027-2028'];
 
     const DEFAULT_PHOTO = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23667eea"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="white" font-size="40"%3E📷%3C/text%3E%3C/svg%3E';
-
-    // ========== DEMO STUDENT DATA ==========
-    const DEMO_STUDENT = {
-        studentId: "123456789012",
-        studentName: { first: "Rahul", middle: "", last: "Sharma" },
-        studentMobile: "9876543210",
-        email: "rahul@example.com",
-        parentType: "Father",
-        fatherName: { first: "Rajesh", last: "Sharma" },
-        fatherMobile: "9876543210",
-        motherName: { first: "", last: "" },
-        motherMobile: "",
-        guardianName: { first: "", last: "" },
-        guardianMobile: "",
-        guardianRelation: "",
-        education: { board: "CBSE", class: "10th" },
-        monthlyFees: 2000,
-        joiningDate: new Date().toISOString().split('T')[0],
-        address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" }
-    };
 
     // ========== HELPER FUNCTIONS ==========
     function showAlert(message, type = 'info', duration = 3000) {
@@ -218,9 +198,6 @@
             font-size: 1.1rem; font-weight: 600;
             margin-bottom: 15px; color: #333;
         }
-        .chart-canvas {
-            height: 300px; position: relative;
-        }
         
         .data-table {
             width: 100%; border-collapse: collapse;
@@ -288,11 +265,18 @@
         .badge-partial { background: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
         .badge-unpaid { background: #f8d7da; color: #721c24; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
         
-        .image-preview { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; margin-top: 5px; border: 2px solid #e0e0e0; }
-        .image-actions { display: flex; gap: 10px; margin-top: 5px; }
+        .image-preview { 
+            width: 100px; 
+            height: 100px; 
+            border-radius: 10px; 
+            object-fit: cover; 
+            margin-top: 5px; 
+            border: 2px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+        .image-actions { display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
         
         .empty-state { text-align: center; padding: 50px; color: #999; }
-        .form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
         
         .edit-mode-badge {
             background: #ffc107;
@@ -310,6 +294,14 @@
             gap: 10px;
             margin-top: 15px;
             flex-wrap: wrap;
+        }
+        
+        .student-photo-large {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
         }
         
         @media (max-width: 768px) {
@@ -355,7 +347,7 @@
                 
                 <!-- NEW ADMISSION / EDIT STUDENT TAB -->
                 <div class="tab-pane" data-pane="new-admission">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <h3>📝 <span id="formTitle">Register New Student</span></h3>
                         <div id="editModeIndicator" style="display: none;">
                             <span class="edit-mode-badge">✏️ Edit Mode - Student ID: <span id="editStudentIdDisplay"></span></span>
@@ -374,9 +366,9 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Aadhar Number (Student ID) * <span style="color:#dc3545;">(12 digit number)</span></label>
+                            <label>Aadhar Number (Student ID) * <span style="color:#dc3545;">(12 digit number - UNIQUE)</span></label>
                             <input type="text" id="aadharNumber" required maxlength="12" pattern="[0-9]{12}" placeholder="Enter 12 digit Aadhar number">
-                            <small style="color: #28a745; display: block; margin-top: 5px;">💡 Student ID will be automatically set to this Aadhar number</small>
+                            <small style="color: #28a745; display: block; margin-top: 5px;">💡 Student ID will be automatically set to this Aadhar number (Must be unique)</small>
                         </div>
                         
                         <div class="form-group">
@@ -419,21 +411,23 @@
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Student Photo *</label>
+                                <label>Student Photo</label>
                                 <input type="hidden" id="photo">
                                 <img id="photoPreview" class="image-preview" style="display:none;">
                                 <div class="image-actions">
                                     <button type="button" class="btn btn-primary btn-sm" id="capturePhotoBtn">📷 Capture Photo</button>
                                     <button type="button" class="btn btn-info btn-sm" id="uploadPhotoBtn">📁 Upload Photo</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearPhotoBtn">🗑️ Clear</button>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Aadhar Document *</label>
+                                <label>Aadhar Document</label>
                                 <input type="hidden" id="aadharDoc">
                                 <img id="aadharPreview" class="image-preview" style="display:none;">
                                 <div class="image-actions">
                                     <button type="button" class="btn btn-primary btn-sm" id="captureAadharBtn">📷 Capture Aadhar</button>
                                     <button type="button" class="btn btn-info btn-sm" id="uploadAadharBtn">📁 Upload Aadhar</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" id="clearAadharBtn">🗑️ Clear</button>
                                 </div>
                             </div>
                         </div>
@@ -568,6 +562,7 @@
             document.getElementById('joiningDate').value = new Date().toISOString().split('T')[0];
             this.setupParentTypeToggle();
             this.setupAutoStudentIdFromAadhar();
+            this.setupClearButtons();
         }
 
         injectStyles() {
@@ -617,6 +612,21 @@
             document.getElementById('uploadAadharBtn')?.addEventListener('click', () => this.uploadImage('aadharDoc', 'aadharPreview'));
             
             document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
+        }
+
+        setupClearButtons() {
+            document.getElementById('clearPhotoBtn')?.addEventListener('click', () => {
+                document.getElementById('photo').value = '';
+                const preview = document.getElementById('photoPreview');
+                preview.style.display = 'none';
+                preview.src = '';
+            });
+            document.getElementById('clearAadharBtn')?.addEventListener('click', () => {
+                document.getElementById('aadharDoc').value = '';
+                const preview = document.getElementById('aadharPreview');
+                preview.style.display = 'none';
+                preview.src = '';
+            });
         }
 
         setupAutoStudentIdFromAadhar() {
@@ -812,11 +822,38 @@
 
         async createDemoStudent() {
             try {
+                // Check if demo student already exists
+                const existing = this.students?.find(s => s.studentId === '123456789012');
+                if (existing) {
+                    showAlert('Demo student already exists!', 'info');
+                    this.switchTab('students');
+                    return;
+                }
+                
                 showAlert('Creating demo student...', 'info');
+                
+                const demoData = {
+                    studentId: "123456789012",
+                    studentName: { first: "Rahul", middle: "", last: "Sharma" },
+                    studentMobile: "9876543210",
+                    email: "rahul@example.com",
+                    parentType: "Father",
+                    fatherName: { first: "Rajesh", last: "Sharma" },
+                    fatherMobile: "9876543210",
+                    motherName: { first: "", last: "" },
+                    motherMobile: "",
+                    guardianName: { first: "", last: "" },
+                    guardianMobile: "",
+                    guardianRelation: "",
+                    education: { board: "CBSE", class: "10th" },
+                    monthlyFees: 2000,
+                    joiningDate: new Date().toISOString().split('T')[0],
+                    address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" }
+                };
                 
                 const response = await this.apiCall('/students/register', {
                     method: 'POST',
-                    body: JSON.stringify(DEMO_STUDENT)
+                    body: JSON.stringify(demoData)
                 });
                 
                 if (response.success) {
@@ -824,12 +861,7 @@
                     await this.loadStudents();
                     this.switchTab('students');
                 } else {
-                    if (response.message?.includes('already exists')) {
-                        showAlert('Demo student already exists! You can view it in the Students tab.', 'info');
-                        this.switchTab('students');
-                    } else {
-                        showAlert('Failed to create demo student: ' + response.message, 'error');
-                    }
+                    showAlert('Failed to create demo student: ' + response.message, 'error');
                 }
             } catch (err) {
                 showAlert('Error creating demo student', 'error');
@@ -897,7 +929,7 @@
             body.innerHTML = `
                 <div class="dashboard-container">
                     <div class="dashboard-header">
-                        <img src="${student.photo || DEFAULT_PHOTO}" class="dashboard-photo" onerror="this.src='${DEFAULT_PHOTO}'">
+                        <img src="${student.photo || DEFAULT_PHOTO}" class="student-photo-large" onerror="this.src='${DEFAULT_PHOTO}'">
                         <div class="dashboard-info">
                             <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value"><strong>${studentId}</strong></div></div>
                             <div class="info-row"><div class="info-label">Name:</div><div class="info-value">${studentName}</div></div>
@@ -1014,7 +1046,7 @@
                 return;
             }
             
-            tbody.innerHTML = feesHistory.map((f, index) => `
+            tbody.innerHTML = feesHistory.map(f => `
                 <tr>
                     <td>${f.month || '-'} ${f.year || ''}</td>
                     <td>₹${f.amount || 0}</td>
@@ -1036,135 +1068,6 @@
                     this.openFeesModalWithMonth(currentViewStudent, month, year, due);
                 });
             });
-        }
-
-        openAttendanceModal(studentId) {
-            document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('attendanceStatus').value = 'present';
-            document.getElementById('checkInTime').value = '';
-            document.getElementById('checkOutTime').value = '';
-            document.getElementById('attendanceRemarks').value = '';
-            
-            const saveBtn = document.getElementById('saveAttendanceBtn');
-            const newSaveBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.addEventListener('click', () => this.saveAttendance(studentId));
-            
-            document.getElementById('attendanceModal').classList.add('active');
-        }
-
-        async saveAttendance(studentId) {
-            const date = document.getElementById('attendanceDate').value;
-            const status = document.getElementById('attendanceStatus').value;
-            const checkInTime = document.getElementById('checkInTime').value;
-            const checkOutTime = document.getElementById('checkOutTime').value;
-            const remarks = document.getElementById('attendanceRemarks').value;
-            
-            if (!date) {
-                showAlert('Please select a date', 'error');
-                return;
-            }
-            
-            try {
-                const response = await this.apiCall(`/students/${studentId}/attendance`, {
-                    method: 'POST',
-                    body: JSON.stringify({ date, status, checkInTime, checkOutTime, remarks })
-                });
-                
-                if (response.success) {
-                    showAlert('Attendance marked successfully!', 'success');
-                    closeModal('attendanceModal');
-                    await this.showStudentDashboard(studentId, false);
-                    await this.loadStudents();
-                } else {
-                    showAlert(response.message || 'Failed to mark attendance', 'error');
-                }
-            } catch (err) {
-                showAlert('Error marking attendance', 'error');
-            }
-        }
-
-        openFeesModal(student) {
-            const feesHistory = student.feesHistory || [];
-            const unpaidMonths = feesHistory.filter(f => f.status !== 'paid');
-            
-            const monthSelect = document.getElementById('feesMonth');
-            monthSelect.innerHTML = '<option value="">Select Month</option>';
-            
-            unpaidMonths.forEach(f => {
-                monthSelect.innerHTML += `<option value="${f.month}|${f.year}" data-due="${f.dueAmount}">${f.month} ${f.year} - Due: ₹${f.dueAmount}</option>`;
-            });
-            
-            document.getElementById('feesAmount').value = '';
-            document.getElementById('feesRemarks').value = '';
-            document.getElementById('feesInfo').innerHTML = '';
-            
-            monthSelect.onchange = () => {
-                const selected = monthSelect.options[monthSelect.selectedIndex];
-                const due = selected?.dataset.due || 0;
-                document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
-                document.getElementById('feesAmount').max = due;
-                if (due > 0) document.getElementById('feesAmount').value = due;
-            };
-            
-            const saveBtn = document.getElementById('saveFeesBtn');
-            const newSaveBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
-            
-            document.getElementById('feesModal').classList.add('active');
-        }
-
-        openFeesModalWithMonth(student, month, year, due) {
-            const monthSelect = document.getElementById('feesMonth');
-            monthSelect.innerHTML = `<option value="${month}|${year}" data-due="${due}">${month} ${year} - Due: ₹${due}</option>`;
-            
-            document.getElementById('feesAmount').value = due;
-            document.getElementById('feesRemarks').value = '';
-            document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
-            
-            const saveBtn = document.getElementById('saveFeesBtn');
-            const newSaveBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
-            
-            document.getElementById('feesModal').classList.add('active');
-        }
-
-        async saveFees(studentId) {
-            const monthSelect = document.getElementById('feesMonth');
-            const selectedValue = monthSelect.value;
-            if (!selectedValue) {
-                showAlert('Please select a month', 'error');
-                return;
-            }
-            
-            const [month, year] = selectedValue.split('|');
-            const paidAmount = parseInt(document.getElementById('feesAmount').value);
-            const remarks = document.getElementById('feesRemarks').value;
-            
-            if (!paidAmount || paidAmount <= 0) {
-                showAlert('Please enter a valid amount', 'error');
-                return;
-            }
-            
-            try {
-                const response = await this.apiCall(`/students/${studentId}/fees`, {
-                    method: 'POST',
-                    body: JSON.stringify({ month, year: parseInt(year), paidAmount, remarks })
-                });
-                
-                if (response.success) {
-                    showAlert('Fees paid successfully!', 'success');
-                    closeModal('feesModal');
-                    await this.showStudentDashboard(studentId, false);
-                    await this.loadStudents();
-                } else {
-                    showAlert(response.message || 'Failed to pay fees', 'error');
-                }
-            } catch (err) {
-                showAlert('Error paying fees', 'error');
-            }
         }
 
         populateAttendanceTable(attendance) {
@@ -1322,6 +1225,135 @@
             }
         }
 
+        openAttendanceModal(studentId) {
+            document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('attendanceStatus').value = 'present';
+            document.getElementById('checkInTime').value = '';
+            document.getElementById('checkOutTime').value = '';
+            document.getElementById('attendanceRemarks').value = '';
+            
+            const saveBtn = document.getElementById('saveAttendanceBtn');
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', () => this.saveAttendance(studentId));
+            
+            document.getElementById('attendanceModal').classList.add('active');
+        }
+
+        async saveAttendance(studentId) {
+            const date = document.getElementById('attendanceDate').value;
+            const status = document.getElementById('attendanceStatus').value;
+            const checkInTime = document.getElementById('checkInTime').value;
+            const checkOutTime = document.getElementById('checkOutTime').value;
+            const remarks = document.getElementById('attendanceRemarks').value;
+            
+            if (!date) {
+                showAlert('Please select a date', 'error');
+                return;
+            }
+            
+            try {
+                const response = await this.apiCall(`/students/${studentId}/attendance`, {
+                    method: 'POST',
+                    body: JSON.stringify({ date, status, checkInTime, checkOutTime, remarks })
+                });
+                
+                if (response.success) {
+                    showAlert('Attendance marked successfully!', 'success');
+                    closeModal('attendanceModal');
+                    await this.showStudentDashboard(studentId, false);
+                    await this.loadStudents();
+                } else {
+                    showAlert(response.message || 'Failed to mark attendance', 'error');
+                }
+            } catch (err) {
+                showAlert('Error marking attendance', 'error');
+            }
+        }
+
+        openFeesModal(student) {
+            const feesHistory = student.feesHistory || [];
+            const unpaidMonths = feesHistory.filter(f => f.status !== 'paid');
+            
+            const monthSelect = document.getElementById('feesMonth');
+            monthSelect.innerHTML = '<option value="">Select Month</option>';
+            
+            unpaidMonths.forEach(f => {
+                monthSelect.innerHTML += `<option value="${f.month}|${f.year}" data-due="${f.dueAmount}">${f.month} ${f.year} - Due: ₹${f.dueAmount}</option>`;
+            });
+            
+            document.getElementById('feesAmount').value = '';
+            document.getElementById('feesRemarks').value = '';
+            document.getElementById('feesInfo').innerHTML = '';
+            
+            monthSelect.onchange = () => {
+                const selected = monthSelect.options[monthSelect.selectedIndex];
+                const due = selected?.dataset.due || 0;
+                document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
+                document.getElementById('feesAmount').max = due;
+                if (due > 0) document.getElementById('feesAmount').value = due;
+            };
+            
+            const saveBtn = document.getElementById('saveFeesBtn');
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
+            
+            document.getElementById('feesModal').classList.add('active');
+        }
+
+        openFeesModalWithMonth(student, month, year, due) {
+            const monthSelect = document.getElementById('feesMonth');
+            monthSelect.innerHTML = `<option value="${month}|${year}" data-due="${due}">${month} ${year} - Due: ₹${due}</option>`;
+            
+            document.getElementById('feesAmount').value = due;
+            document.getElementById('feesRemarks').value = '';
+            document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
+            
+            const saveBtn = document.getElementById('saveFeesBtn');
+            const newSaveBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
+            
+            document.getElementById('feesModal').classList.add('active');
+        }
+
+        async saveFees(studentId) {
+            const monthSelect = document.getElementById('feesMonth');
+            const selectedValue = monthSelect.value;
+            if (!selectedValue) {
+                showAlert('Please select a month', 'error');
+                return;
+            }
+            
+            const [month, year] = selectedValue.split('|');
+            const paidAmount = parseInt(document.getElementById('feesAmount').value);
+            const remarks = document.getElementById('feesRemarks').value;
+            
+            if (!paidAmount || paidAmount <= 0) {
+                showAlert('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                const response = await this.apiCall(`/students/${studentId}/fees`, {
+                    method: 'POST',
+                    body: JSON.stringify({ month, year: parseInt(year), paidAmount, remarks })
+                });
+                
+                if (response.success) {
+                    showAlert('Fees paid successfully!', 'success');
+                    closeModal('feesModal');
+                    await this.showStudentDashboard(studentId, false);
+                    await this.loadStudents();
+                } else {
+                    showAlert(response.message || 'Failed to pay fees', 'error');
+                }
+            } catch (err) {
+                showAlert('Error paying fees', 'error');
+            }
+        }
+
         async blockStudent(studentId) {
             const reason = prompt('Enter block reason:', 'Non-payment of fees');
             if (!reason) return;
@@ -1394,12 +1426,14 @@
                         .header { text-align: center; margin-bottom: 30px; }
                         .summary { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
                         .summary-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; }
+                        .student-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
                     </style>
                 </head>
                 <body>
                     <div class="header">
                         <h1>Bal Bharti Coaching Center</h1>
                         <h2>Student Report</h2>
+                        <img src="${student.photo || DEFAULT_PHOTO}" class="student-photo" onerror="this.src='${DEFAULT_PHOTO}'">
                     </div>
                     <div class="summary">
                         <div class="summary-card"><h3>₹${totalFees.toLocaleString()}</h3><p>Total Fees</p></div>
@@ -1436,6 +1470,7 @@
             const aadharNumber = document.getElementById('aadharNumber').value;
             const studentId = aadharNumber;
             
+            // Validation
             if (!studentId || studentId.length !== 12) {
                 showAlert('Please enter valid 12-digit Aadhar number', 'error');
                 return;
@@ -1446,11 +1481,23 @@
                 return;
             }
             
+            if (!document.getElementById('firstName').value || !document.getElementById('lastName').value) {
+                showAlert('Please enter student name (first and last)', 'error');
+                return;
+            }
+            
+            // Check if student ID already exists
+            const existingStudent = this.students?.find(s => s.studentId === studentId);
+            if (existingStudent) {
+                showAlert(`Student with ID ${studentId} already exists! Please use a different Aadhar number.`, 'error');
+                return;
+            }
+            
             const parentType = document.getElementById('parentType').value;
             
             const studentData = {
                 studentId: studentId,
-                aadharNumber: aadharNumber,
+                aadharNumber: studentId,
                 aadharDocument: document.getElementById('aadharDoc').value || DEFAULT_PHOTO,
                 photo: document.getElementById('photo').value || DEFAULT_PHOTO,
                 studentName: {
@@ -1473,7 +1520,7 @@
                 }
             };
             
-            // Add parent fields
+            // Add parent fields based on selection
             if (parentType === 'Father') {
                 studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' };
                 studentData.fatherMobile = document.getElementById('fatherMobile').value;
@@ -1507,12 +1554,17 @@
                 });
                 
                 if (response.success) {
-                    showAlert(`Student registered successfully! ID: ${response.studentId || studentId}, Password: ${studentId.slice(-6)}`, 'success', 5000);
+                    const password = studentId.slice(-6);
+                    showAlert(`✅ Student registered successfully!\nID: ${studentId}\nPassword: ${password}`, 'success', 8000);
                     this.resetAdmissionForm();
                     await this.loadStudents();
                     this.switchTab('students');
                 } else {
-                    showAlert(response.message || 'Registration failed', 'error');
+                    if (response.message?.includes('duplicate') || response.message?.includes('already exists')) {
+                        showAlert(`Student with ID ${studentId} already exists! Please use a different Aadhar number.`, 'error');
+                    } else {
+                        showAlert(response.message || 'Registration failed', 'error');
+                    }
                 }
             } catch (err) {
                 showAlert('Error registering student: ' + err.message, 'error');
@@ -1545,7 +1597,9 @@
                 address: {
                     current: document.getElementById('currentAddress').value,
                     permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value
-                }
+                },
+                photo: document.getElementById('photo').value || DEFAULT_PHOTO,
+                aadharDocument: document.getElementById('aadharDoc').value || DEFAULT_PHOTO
             };
             
             if (parentType === 'Father') {
@@ -1567,7 +1621,7 @@
                 });
                 
                 if (response.success) {
-                    showAlert('Student updated successfully!', 'success');
+                    showAlert('✅ Student updated successfully!', 'success');
                     this.cancelEdit();
                     await this.loadStudents();
                     this.switchTab('students');
@@ -1575,7 +1629,7 @@
                     showAlert(response.message || 'Update failed', 'error');
                 }
             } catch (err) {
-                showAlert('Error updating student', 'error');
+                showAlert('Error updating student: ' + err.message, 'error');
             }
         }
 
@@ -1590,6 +1644,7 @@
             document.getElementById('updateStudentBtn').style.display = 'inline-flex';
             document.getElementById('cancelEditBtn').style.display = 'inline-flex';
             
+            // Fill form with student data
             document.getElementById('admissionSession').value = student.currentSession?.sessionName || '2024-2025';
             document.getElementById('joiningDate').value = student.joiningDate ? student.joiningDate.split('T')[0] : new Date().toISOString().split('T')[0];
             document.getElementById('firstName').value = student.studentName?.first || '';
@@ -1606,6 +1661,7 @@
             document.getElementById('currentAddress').value = student.address?.current || '';
             document.getElementById('permanentAddress').value = student.address?.permanent || '';
             
+            // Set parent fields
             if (student.parentType === 'Father') {
                 document.getElementById('fatherName').value = student.fatherName?.first || '';
                 document.getElementById('fatherMobile').value = student.fatherMobile || '';
@@ -1618,15 +1674,18 @@
                 document.getElementById('guardianRelation').value = student.guardianRelation || '';
             }
             
-            this.setupParentTypeToggle();
+            // Trigger parent type change to show correct fields
+            const parentTypeEvent = new Event('change');
+            document.getElementById('parentType').dispatchEvent(parentTypeEvent);
             
-            if (student.photo) {
+            // Set images
+            if (student.photo && student.photo !== DEFAULT_PHOTO) {
                 document.getElementById('photo').value = student.photo;
                 const photoPreview = document.getElementById('photoPreview');
                 photoPreview.src = student.photo;
                 photoPreview.style.display = 'block';
             }
-            if (student.aadharDocument) {
+            if (student.aadharDocument && student.aadharDocument !== DEFAULT_PHOTO) {
                 document.getElementById('aadharDoc').value = student.aadharDocument;
                 const aadharPreview = document.getElementById('aadharPreview');
                 aadharPreview.src = student.aadharDocument;
@@ -1656,10 +1715,13 @@
             document.getElementById('aadharDoc').value = '';
             document.getElementById('photoPreview').style.display = 'none';
             document.getElementById('aadharPreview').style.display = 'none';
+            document.getElementById('photoPreview').src = '';
+            document.getElementById('aadharPreview').src = '';
             document.getElementById('studentIdField').value = '';
             document.getElementById('aadharNumber').value = '';
             document.getElementById('monthlyFees').value = '1000';
             
+            // Reset parent fields visibility
             document.getElementById('fatherFields').style.display = 'block';
             document.getElementById('motherFields').style.display = 'none';
             document.getElementById('guardianFields').style.display = 'none';
