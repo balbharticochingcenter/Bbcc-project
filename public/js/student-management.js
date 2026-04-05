@@ -1,6 +1,6 @@
 // ============================================
 // STUDENT-MANAGEMENT.JS - COMPLETE FIXED VERSION
-// WITH PROPER EDIT, PHOTO DISPLAY, AND NO DUPLICATE ISSUES
+// WITH PROPER EDIT, PHOTO DISPLAY, DOCUMENT VIEW, AND NO DUPLICATE ISSUES
 // ============================================
 
 (function() {
@@ -93,6 +93,7 @@
         .main-tabs {
             display: flex; background: #f8f9fa;
             border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
         }
         .main-tab-btn {
             flex: 1; padding: 15px 20px; background: none; border: none;
@@ -258,6 +259,10 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none; border-color: #667eea;
         }
+        .form-group input:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         
@@ -302,13 +307,82 @@
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid #667eea;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .student-photo-large:hover {
+            transform: scale(1.05);
         }
         
+        /* Mobile Responsive Styles - APK like feel */
         @media (max-width: 768px) {
             .form-row, .form-row-3 { grid-template-columns: 1fr; }
             .students-grid { grid-template-columns: 1fr; }
             .filter-bar { flex-direction: column; }
             .info-row { grid-template-columns: 1fr; gap: 5px; }
+            .sms-wrapper { margin: 10px; border-radius: 15px; }
+            .sms-header { padding: 12px 15px; }
+            .logo h1 { font-size: 1.2rem; }
+            .main-tab-btn { padding: 12px 10px; font-size: 0.85rem; }
+            .sms-content { padding: 15px; }
+            .student-card { margin-bottom: 10px; }
+            .modal-content { width: 95%; margin: 10px; }
+            .dashboard-header { flex-direction: column; align-items: center; text-align: center; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .btn { padding: 10px 14px; font-size: 0.8rem; }
+            .data-table th, .data-table td { padding: 8px; font-size: 0.75rem; }
+        }
+        
+        /* Desktop optimizations */
+        @media (min-width: 1024px) {
+            .students-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+            .sms-content { padding: 30px; }
+        }
+        
+        /* Document viewer modal */
+        .document-viewer {
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        .document-viewer img {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+        .doc-thumb {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .doc-thumb:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     `;
 
@@ -471,6 +545,40 @@
             </div>
         </div>
         
+        <!-- EDIT STUDENT POPUP MODAL -->
+        <div id="editStudentModal" class="modal">
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3>✏️ Edit Student - <span id="editModalStudentId"></span></h3>
+                    <button class="close-modal" id="closeEditModal">×</button>
+                </div>
+                <div class="modal-body" id="editModalBody">
+                    <!-- Edit form will be dynamically populated -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelEditModalBtn">Cancel</button>
+                    <button class="btn btn-primary" id="saveEditModalBtn">💾 Save Changes</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DOCUMENT VIEWER MODAL -->
+        <div id="documentViewerModal" class="modal">
+            <div class="modal-content document-viewer">
+                <div class="modal-header">
+                    <h3 id="docViewerTitle">Document Viewer</h3>
+                    <button class="close-modal" id="closeDocViewer">×</button>
+                </div>
+                <div class="modal-body" style="text-align: center;">
+                    <img id="docViewerImage" src="" alt="Document" style="max-width: 100%; max-height: 70vh;">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="closeDocViewerBtn">Close</button>
+                    <button class="btn btn-primary" id="downloadDocBtn">📥 Download</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- MARK ATTENDANCE MODAL -->
         <div id="attendanceModal" class="modal">
             <div class="modal-content" style="max-width: 500px;">
@@ -589,6 +697,16 @@
             document.getElementById('closeFeesModal')?.addEventListener('click', () => closeModal('feesModal'));
             document.getElementById('cancelAttendanceBtn')?.addEventListener('click', () => closeModal('attendanceModal'));
             document.getElementById('cancelFeesBtn')?.addEventListener('click', () => closeModal('feesModal'));
+            
+            // Edit modal close buttons
+            document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editStudentModal'));
+            document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editStudentModal'));
+            document.getElementById('saveEditModalBtn')?.addEventListener('click', () => this.saveEditFromModal());
+            
+            // Document viewer close buttons
+            document.getElementById('closeDocViewer')?.addEventListener('click', () => closeModal('documentViewerModal'));
+            document.getElementById('closeDocViewerBtn')?.addEventListener('click', () => closeModal('documentViewerModal'));
+            document.getElementById('downloadDocBtn')?.addEventListener('click', () => this.downloadCurrentDocument());
             
             document.getElementById('filterBoard')?.addEventListener('change', () => this.renderStudentsGrid());
             document.getElementById('filterClass')?.addEventListener('change', () => this.renderStudentsGrid());
@@ -834,6 +952,7 @@
                 
                 const demoData = {
                     studentId: "123456789012",
+                    aadharNumber: "123456789012",
                     studentName: { first: "Rahul", middle: "", last: "Sharma" },
                     studentMobile: "9876543210",
                     email: "rahul@example.com",
@@ -848,7 +967,9 @@
                     education: { board: "CBSE", class: "10th" },
                     monthlyFees: 2000,
                     joiningDate: new Date().toISOString().split('T')[0],
-                    address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" }
+                    address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" },
+                    photo: DEFAULT_PHOTO,
+                    aadharDocument: DEFAULT_PHOTO
                 };
                 
                 const response = await this.apiCall('/students/register', {
@@ -857,7 +978,7 @@
                 });
                 
                 if (response.success) {
-                    showAlert('✅ Demo student created! ID: 123456789012, Password: 9012', 'success', 5000);
+                    showAlert('✅ Demo student created! ID: 123456789012, Password: 789012', 'success', 5000);
                     await this.loadStudents();
                     this.switchTab('students');
                 } else {
@@ -865,6 +986,359 @@
                 }
             } catch (err) {
                 showAlert('Error creating demo student', 'error');
+            }
+        }
+
+        // ========== OPEN EDIT POPUP MODAL ==========
+        openEditPopup(student) {
+            currentEditStudentId = student.studentId;
+            
+            // Create edit form HTML
+            const editFormHtml = `
+                <form id="editStudentForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Session *</label>
+                            <select id="editSession" class="form-control" required>
+                                ${allSessions.map(s => `<option value="${s}" ${student.currentSession?.sessionName === s ? 'selected' : ''}>${s}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Joining Date *</label>
+                            <input type="date" id="editJoiningDate" class="form-control" value="${student.joiningDate ? student.joiningDate.split('T')[0] : ''}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" id="editFirstName" class="form-control" value="${student.studentName?.first || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Middle Name</label>
+                            <input type="text" id="editMiddleName" class="form-control" value="${student.studentName?.middle || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name *</label>
+                            <input type="text" id="editLastName" class="form-control" value="${student.studentName?.last || ''}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Aadhar Number (ID) *</label>
+                            <input type="text" id="editAadharNumber" class="form-control" value="${student.aadharNumber || student.studentId || ''}" disabled>
+                            <small style="color: #dc3545;">Aadhar number cannot be changed</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Student ID *</label>
+                            <input type="text" id="editStudentId" class="form-control" value="${student.studentId || ''}" disabled>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student Mobile *</label>
+                            <input type="tel" id="editStudentMobile" class="form-control" value="${student.studentMobile || ''}" required pattern="[0-9]{10}">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="editEmail" class="form-control" value="${student.email || ''}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Parent Type *</label>
+                        <select id="editParentType" class="form-control">
+                            <option value="Father" ${student.parentType === 'Father' ? 'selected' : ''}>Father</option>
+                            <option value="Mother" ${student.parentType === 'Mother' ? 'selected' : ''}>Mother</option>
+                            <option value="Guardian" ${student.parentType === 'Guardian' ? 'selected' : ''}>Guardian</option>
+                        </select>
+                    </div>
+                    
+                    <div id="editFatherFields" style="display: ${student.parentType === 'Father' ? 'block' : 'none'};">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Father Name *</label>
+                                <input type="text" id="editFatherName" class="form-control" value="${student.fatherName?.first || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Father Mobile *</label>
+                                <input type="tel" id="editFatherMobile" class="form-control" value="${student.fatherMobile || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="editMotherFields" style="display: ${student.parentType === 'Mother' ? 'block' : 'none'};">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Mother Name *</label>
+                                <input type="text" id="editMotherName" class="form-control" value="${student.motherName?.first || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Mother Mobile *</label>
+                                <input type="tel" id="editMotherMobile" class="form-control" value="${student.motherMobile || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="editGuardianFields" style="display: ${student.parentType === 'Guardian' ? 'block' : 'none'};">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Guardian Name *</label>
+                                <input type="text" id="editGuardianName" class="form-control" value="${student.guardianName?.first || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label>Guardian Mobile *</label>
+                                <input type="tel" id="editGuardianMobile" class="form-control" value="${student.guardianMobile || ''}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Relation *</label>
+                            <input type="text" id="editGuardianRelation" class="form-control" value="${student.guardianRelation || ''}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Board *</label>
+                            <select id="editBoard" class="form-control">
+                                ${allBoards.map(b => `<option value="${b}" ${student.education?.board === b ? 'selected' : ''}>${b}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Class *</label>
+                            <select id="editClass" class="form-control">
+                                ${allClasses.map(c => `<option value="${c}" ${student.education?.class === c ? 'selected' : ''}>${c}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Monthly Fees (₹) *</label>
+                        <input type="number" id="editMonthlyFees" class="form-control" value="${student.monthlyFees || 1000}" required min="0" step="100">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student Photo</label>
+                            <input type="hidden" id="editPhoto">
+                            <img id="editPhotoPreview" class="image-preview" src="${student.photo || DEFAULT_PHOTO}" style="display:block; cursor:pointer;" onclick="document.getElementById('editUploadPhotoInput').click()">
+                            <input type="file" id="editUploadPhotoInput" accept="image/*" style="display:none;">
+                            <div class="image-actions">
+                                <button type="button" class="btn btn-primary btn-sm" id="editCapturePhotoBtn">📷 Capture</button>
+                                <button type="button" class="btn btn-info btn-sm" id="editUploadPhotoBtn">📁 Upload</button>
+                                <button type="button" class="btn btn-secondary btn-sm" id="editClearPhotoBtn">🗑️ Clear</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Aadhar Document</label>
+                            <input type="hidden" id="editAadharDoc">
+                            <img id="editAadharPreview" class="image-preview" src="${student.aadharDocument || DEFAULT_PHOTO}" style="display:block; cursor:pointer;" onclick="document.getElementById('editUploadAadharInput').click()">
+                            <input type="file" id="editUploadAadharInput" accept="image/*" style="display:none;">
+                            <div class="image-actions">
+                                <button type="button" class="btn btn-primary btn-sm" id="editCaptureAadharBtn">📷 Capture</button>
+                                <button type="button" class="btn btn-info btn-sm" id="editUploadAadharBtn">📁 Upload</button>
+                                <button type="button" class="btn btn-secondary btn-sm" id="editClearAadharBtn">🗑️ Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Current Address *</label>
+                        <textarea id="editCurrentAddress" class="form-control" rows="2">${student.address?.current || ''}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Permanent Address</label>
+                        <textarea id="editPermanentAddress" class="form-control" rows="2">${student.address?.permanent || ''}</textarea>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('editModalStudentId').innerText = student.studentId;
+            document.getElementById('editModalBody').innerHTML = editFormHtml;
+            
+            // Setup edit form event listeners
+            this.setupEditFormEvents(student);
+            
+            document.getElementById('editStudentModal').classList.add('active');
+        }
+        
+        setupEditFormEvents(student) {
+            // Parent type toggle in edit modal
+            const editParentType = document.getElementById('editParentType');
+            if (editParentType) {
+                editParentType.addEventListener('change', () => {
+                    const type = editParentType.value;
+                    document.getElementById('editFatherFields').style.display = type === 'Father' ? 'block' : 'none';
+                    document.getElementById('editMotherFields').style.display = type === 'Mother' ? 'block' : 'none';
+                    document.getElementById('editGuardianFields').style.display = type === 'Guardian' ? 'block' : 'none';
+                });
+            }
+            
+            // Photo handling in edit modal
+            const editPhotoInput = document.getElementById('editUploadPhotoInput');
+            const editPhotoPreview = document.getElementById('editPhotoPreview');
+            
+            document.getElementById('editCapturePhotoBtn')?.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment';
+                input.onchange = async (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        const compressed = await this.compressImage(e.target.files[0]);
+                        document.getElementById('editPhoto').value = compressed;
+                        editPhotoPreview.src = compressed;
+                        editPhotoPreview.style.display = 'block';
+                        showAlert('Photo captured successfully!', 'success');
+                    }
+                };
+                input.click();
+            });
+            
+            document.getElementById('editUploadPhotoBtn')?.addEventListener('click', () => {
+                editPhotoInput.click();
+            });
+            
+            editPhotoInput?.addEventListener('change', async (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const compressed = await this.compressImage(e.target.files[0]);
+                    document.getElementById('editPhoto').value = compressed;
+                    editPhotoPreview.src = compressed;
+                    showAlert('Photo uploaded successfully!', 'success');
+                }
+            });
+            
+            document.getElementById('editClearPhotoBtn')?.addEventListener('click', () => {
+                document.getElementById('editPhoto').value = '';
+                editPhotoPreview.src = DEFAULT_PHOTO;
+            });
+            
+            // Aadhar document handling in edit modal
+            const editAadharInput = document.getElementById('editUploadAadharInput');
+            const editAadharPreview = document.getElementById('editAadharPreview');
+            
+            document.getElementById('editCaptureAadharBtn')?.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment';
+                input.onchange = async (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        const compressed = await this.compressImage(e.target.files[0]);
+                        document.getElementById('editAadharDoc').value = compressed;
+                        editAadharPreview.src = compressed;
+                        showAlert('Aadhar captured successfully!', 'success');
+                    }
+                };
+                input.click();
+            });
+            
+            document.getElementById('editUploadAadharBtn')?.addEventListener('click', () => {
+                editAadharInput.click();
+            });
+            
+            editAadharInput?.addEventListener('change', async (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const compressed = await this.compressImage(e.target.files[0]);
+                    document.getElementById('editAadharDoc').value = compressed;
+                    editAadharPreview.src = compressed;
+                    showAlert('Aadhar uploaded successfully!', 'success');
+                }
+            });
+            
+            document.getElementById('editClearAadharBtn')?.addEventListener('click', () => {
+                document.getElementById('editAadharDoc').value = '';
+                editAadharPreview.src = DEFAULT_PHOTO;
+            });
+        }
+        
+        async saveEditFromModal() {
+            if (!currentEditStudentId) {
+                showAlert('No student selected for edit', 'error');
+                return;
+            }
+            
+            const parentType = document.getElementById('editParentType').value;
+            
+            const studentData = {
+                studentId: currentEditStudentId,
+                studentName: {
+                    first: document.getElementById('editFirstName').value,
+                    middle: document.getElementById('editMiddleName').value || '',
+                    last: document.getElementById('editLastName').value
+                },
+                studentMobile: document.getElementById('editStudentMobile').value,
+                email: document.getElementById('editEmail').value || '',
+                parentType: parentType,
+                education: {
+                    board: document.getElementById('editBoard').value,
+                    class: document.getElementById('editClass').value
+                },
+                monthlyFees: parseInt(document.getElementById('editMonthlyFees').value),
+                address: {
+                    current: document.getElementById('editCurrentAddress').value,
+                    permanent: document.getElementById('editPermanentAddress').value || document.getElementById('editCurrentAddress').value
+                },
+                photo: document.getElementById('editPhoto').value || DEFAULT_PHOTO,
+                aadharDocument: document.getElementById('editAadharDoc').value || DEFAULT_PHOTO,
+                currentSession: {
+                    sessionName: document.getElementById('editSession').value
+                },
+                joiningDate: document.getElementById('editJoiningDate').value
+            };
+            
+            if (parentType === 'Father') {
+                studentData.fatherName = { first: document.getElementById('editFatherName').value, last: '' };
+                studentData.fatherMobile = document.getElementById('editFatherMobile').value;
+            } else if (parentType === 'Mother') {
+                studentData.motherName = { first: document.getElementById('editMotherName').value, last: '' };
+                studentData.motherMobile = document.getElementById('editMotherMobile').value;
+            } else if (parentType === 'Guardian') {
+                studentData.guardianName = { first: document.getElementById('editGuardianName').value, last: '' };
+                studentData.guardianMobile = document.getElementById('editGuardianMobile').value;
+                studentData.guardianRelation = document.getElementById('editGuardianRelation').value;
+            }
+            
+            try {
+                const response = await this.apiCall(`/students/${currentEditStudentId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(studentData)
+                });
+                
+                if (response.success) {
+                    showAlert('✅ Student updated successfully!', 'success');
+                    closeModal('editStudentModal');
+                    await this.loadStudents();
+                    // Refresh dashboard if open
+                    if (currentViewStudent && currentViewStudent.studentId === currentEditStudentId) {
+                        await this.showStudentDashboard(currentEditStudentId, false);
+                    }
+                } else {
+                    showAlert(response.message || 'Update failed', 'error');
+                }
+            } catch (err) {
+                showAlert('Error updating student: ' + err.message, 'error');
+            }
+        }
+        
+        // ========== VIEW DOCUMENT ==========
+        viewDocument(imageUrl, title) {
+            const docViewerImage = document.getElementById('docViewerImage');
+            const docViewerTitle = document.getElementById('docViewerTitle');
+            docViewerImage.src = imageUrl;
+            docViewerTitle.innerText = title;
+            this.currentDocumentUrl = imageUrl;
+            document.getElementById('documentViewerModal').classList.add('active');
+        }
+        
+        downloadCurrentDocument() {
+            if (this.currentDocumentUrl) {
+                const link = document.createElement('a');
+                link.href = this.currentDocumentUrl;
+                link.download = 'document.jpg';
+                link.click();
             }
         }
 
@@ -929,7 +1403,12 @@
             body.innerHTML = `
                 <div class="dashboard-container">
                     <div class="dashboard-header">
-                        <img src="${student.photo || DEFAULT_PHOTO}" class="student-photo-large" onerror="this.src='${DEFAULT_PHOTO}'">
+                        <div style="position: relative;">
+                            <img src="${student.photo || DEFAULT_PHOTO}" class="student-photo-large" onerror="this.src='${DEFAULT_PHOTO}'" onclick="window.smsInstance.viewDocument('${student.photo || DEFAULT_PHOTO}', 'Student Photo - ${studentName}')">
+                            <div style="text-align: center; margin-top: 5px;">
+                                <button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${student.photo || DEFAULT_PHOTO}', 'Student Photo - ${studentName}')">🔍 View Photo</button>
+                            </div>
+                        </div>
                         <div class="dashboard-info">
                             <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value"><strong>${studentId}</strong></div></div>
                             <div class="info-row"><div class="info-label">Name:</div><div class="info-value">${studentName}</div></div>
@@ -938,6 +1417,7 @@
                             <div class="info-row"><div class="info-label">Session:</div><div class="info-value">${sessionName}</div></div>
                             <div class="info-row"><div class="info-label">Monthly Fees:</div><div class="info-value">₹${monthlyFees}</div></div>
                             <div class="info-row"><div class="info-label">Status:</div><div class="info-value">${isBlocked ? `<span class="badge-blocked">🔴 BLOCKED - ${blockReason}</span>` : '<span class="badge-active">🟢 ACTIVE</span>'}</div></div>
+                            <div class="info-row"><div class="info-label">Aadhar Document:</div><div class="info-value"><button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${student.aadharDocument || DEFAULT_PHOTO}', 'Aadhar Document - ${studentName}')">📄 View Aadhar</button></div></div>
                         </div>
                     </div>
                     
@@ -1004,6 +1484,7 @@
                     <div class="action-buttons">
                         <button class="btn btn-info" id="markAttendanceBtn">📅 Mark Attendance</button>
                         <button class="btn btn-success" id="payFeesBtn">💰 Pay Fees</button>
+                        ${!isOld ? `<button class="btn btn-primary" id="editStudentDashboardBtn">✏️ Edit Student</button>` : ''}
                     </div>
                 </div>
             `;
@@ -1022,7 +1503,6 @@
                 ${!isOld ? `<button class="btn btn-danger" id="deleteStudentBtn">🗑️ Delete Student</button>` : ''}
                 ${!isOld && !isBlocked ? `<button class="btn btn-warning" id="blockStudentBtn">🔴 Block Student</button>` : ''}
                 ${!isOld && isBlocked ? `<button class="btn btn-success" id="unblockStudentBtn">🟢 Unblock Student</button>` : ''}
-                ${!isOld ? `<button class="btn btn-primary" id="editStudentDashboardBtn">✏️ Edit Student</button>` : ''}
                 <button class="btn btn-info" id="exportReportBtn">📎 Export Report</button>
                 <button class="btn btn-secondary" id="closeDashboardFooterBtn">Close</button>
             `;
@@ -1030,7 +1510,7 @@
             document.getElementById('deleteStudentBtn')?.addEventListener('click', () => this.deleteStudent(student.studentId));
             document.getElementById('blockStudentBtn')?.addEventListener('click', () => this.blockStudent(student.studentId));
             document.getElementById('unblockStudentBtn')?.addEventListener('click', () => this.unblockStudent(student.studentId));
-            document.getElementById('editStudentDashboardBtn')?.addEventListener('click', () => this.startEditStudent(student));
+            document.getElementById('editStudentDashboardBtn')?.addEventListener('click', () => this.openEditPopup(student));
             document.getElementById('exportReportBtn')?.addEventListener('click', () => this.exportStudentReport(student));
             document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
             document.getElementById('markAttendanceBtn')?.addEventListener('click', () => this.openAttendanceModal(student.studentId));
@@ -1633,69 +2113,6 @@
             }
         }
 
-        startEditStudent(student) {
-            isEditMode = true;
-            currentEditStudentId = student.studentId;
-            
-            document.getElementById('formTitle').innerText = '✏️ Edit Student';
-            document.getElementById('editModeIndicator').style.display = 'block';
-            document.getElementById('editStudentIdDisplay').innerText = student.studentId;
-            document.getElementById('registerStudentBtn').style.display = 'none';
-            document.getElementById('updateStudentBtn').style.display = 'inline-flex';
-            document.getElementById('cancelEditBtn').style.display = 'inline-flex';
-            
-            // Fill form with student data
-            document.getElementById('admissionSession').value = student.currentSession?.sessionName || '2024-2025';
-            document.getElementById('joiningDate').value = student.joiningDate ? student.joiningDate.split('T')[0] : new Date().toISOString().split('T')[0];
-            document.getElementById('firstName').value = student.studentName?.first || '';
-            document.getElementById('middleName').value = student.studentName?.middle || '';
-            document.getElementById('lastName').value = student.studentName?.last || '';
-            document.getElementById('aadharNumber').value = student.aadharNumber || student.studentId || '';
-            document.getElementById('studentIdField').value = student.studentId || '';
-            document.getElementById('studentMobile').value = student.studentMobile || '';
-            document.getElementById('email').value = student.email || '';
-            document.getElementById('parentType').value = student.parentType || 'Father';
-            document.getElementById('board').value = student.education?.board || 'CBSE';
-            document.getElementById('class').value = student.education?.class || '10th';
-            document.getElementById('monthlyFees').value = student.monthlyFees || 1000;
-            document.getElementById('currentAddress').value = student.address?.current || '';
-            document.getElementById('permanentAddress').value = student.address?.permanent || '';
-            
-            // Set parent fields
-            if (student.parentType === 'Father') {
-                document.getElementById('fatherName').value = student.fatherName?.first || '';
-                document.getElementById('fatherMobile').value = student.fatherMobile || '';
-            } else if (student.parentType === 'Mother') {
-                document.getElementById('motherName').value = student.motherName?.first || '';
-                document.getElementById('motherMobile').value = student.motherMobile || '';
-            } else if (student.parentType === 'Guardian') {
-                document.getElementById('guardianName').value = student.guardianName?.first || '';
-                document.getElementById('guardianMobile').value = student.guardianMobile || '';
-                document.getElementById('guardianRelation').value = student.guardianRelation || '';
-            }
-            
-            // Trigger parent type change to show correct fields
-            const parentTypeEvent = new Event('change');
-            document.getElementById('parentType').dispatchEvent(parentTypeEvent);
-            
-            // Set images
-            if (student.photo && student.photo !== DEFAULT_PHOTO) {
-                document.getElementById('photo').value = student.photo;
-                const photoPreview = document.getElementById('photoPreview');
-                photoPreview.src = student.photo;
-                photoPreview.style.display = 'block';
-            }
-            if (student.aadharDocument && student.aadharDocument !== DEFAULT_PHOTO) {
-                document.getElementById('aadharDoc').value = student.aadharDocument;
-                const aadharPreview = document.getElementById('aadharPreview');
-                aadharPreview.src = student.aadharDocument;
-                aadharPreview.style.display = 'block';
-            }
-            
-            closeModal('dashboardModal');
-            this.switchTab('new-admission');
-        }
-
         cancelEdit() {
             isEditMode = false;
             currentEditStudentId = null;
@@ -1824,6 +2241,7 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
-        new StudentManagementSystem();
+        const sms = new StudentManagementSystem();
+        window.smsInstance = sms;
     });
 })();
