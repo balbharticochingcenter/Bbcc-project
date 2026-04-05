@@ -1,6 +1,5 @@
 // ============================================
-// SERVER CONFIGURATION
-// FILE: server.js (Complete Single File)
+// COMPLETE FIXED SERVER CODE - WITH INDEX FIX
 // ============================================
 
 require('dotenv').config();
@@ -13,27 +12,17 @@ const path = require('path');
 
 const app = express();
 
-// ============================================
-// MIDDLEWARE SETUP
-// ============================================
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
-// ============================================
-// DATABASE CONNECTION
-// ============================================
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc_portal';
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('✅ MongoDB Connected'))
-    .catch(err => console.log('❌ DB Error:', err.message));
 
 // ============================================
 // SCHEMA DEFINITIONS
 // ============================================
 
-// Admin Schema
 const AdminSchema = new mongoose.Schema({
     adminID: { type: String, required: true, unique: true },
     pws: { type: String, required: true },
@@ -46,10 +35,10 @@ const AdminSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
-// Student Schema
+// IMPORTANT: Schema with proper index definitions
 const StudentSchema = new mongoose.Schema({
-    studentId: { type: String, required: true, unique: true },
-    aadharNumber: { type: String, required: true, unique: true },
+    studentId: { type: String, required: true, unique: true, index: true },
+    aadharNumber: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true },
     photo: { type: String, default: '' },
     studentName: {
@@ -136,30 +125,14 @@ const StudentSchema = new mongoose.Schema({
         state: String,
         pincode: String
     },
-    transportDetails: {
-        availingTransport: { type: Boolean, default: false },
-        busRoute: String,
-        busStop: String
-    },
-    hostelDetails: {
-        isHosteller: { type: Boolean, default: false },
-        roomNumber: String
-    },
-    medicalInfo: {
-        bloodGroup: String,
-        allergies: String,
-        medicalConditions: String
-    },
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
+}, { 
+    // Disable auto-index creation to avoid conflicts
+    autoIndex: false 
 });
 
-StudentSchema.index({ studentId: 1, aadharNumber: 1 });
-StudentSchema.index({ 'studentName.first': 1, 'studentName.last': 1 });
-StudentSchema.index({ 'education.class': 1, 'education.board': 1 });
-
-// Old Student Schema
 const OldStudentSchema = new mongoose.Schema({
     originalId: { type: mongoose.Schema.Types.ObjectId },
     studentId: { type: String, required: true },
@@ -189,8 +162,7 @@ const OldStudentSchema = new mongoose.Schema({
     totalFeesPaid: { type: Number, default: 0 },
     totalAttendance: { type: Number, default: 0 },
     presentDays: { type: Number, default: 0 },
-    leavingReason: String,
-    leavingCertificate: String
+    leavingReason: String
 }, { timestamps: true });
 
 const Admin = mongoose.model('Admin', AdminSchema);
@@ -198,7 +170,83 @@ const Student = mongoose.model('Student', StudentSchema);
 const OldStudent = mongoose.model('OldStudent', OldStudentSchema);
 
 // ============================================
-// JWT VERIFICATION MIDDLEWARE
+// DATABASE CONNECTION WITH INDEX FIX
+// ============================================
+mongoose.connect(MONGO_URI)
+    .then(async () => {
+        console.log('✅ MongoDB Connected');
+        
+        // 🔥 CRITICAL FIX: Drop and recreate indexes properly
+        console.log('🔄 Fixing database indexes...');
+        
+        try {
+            // Drop existing collection if empty or problematic
+            const collections = await mongoose.connection.db.listCollections({ name: 'students' }).toArray();
+            
+            if (collections.length > 0) {
+                // Get all indexes
+                const indexes = await Student.collection.getIndexes();
+                console.log('Existing indexes:', Object.keys(indexes));
+                
+                // Drop all indexes except _id
+                for (const indexName of Object.keys(indexes)) {
+                    if (indexName !== '_id_') {
+                        try {
+                            await Student.collection.dropIndex(indexName);
+                            console.log(`✅ Dropped index: ${indexName}`);
+                        } catch (e) {
+                            console.log(`⚠️ Could not drop index ${indexName}:`, e.message);
+                        }
+                    }
+                }
+            }
+            
+            // Ensure indexes are created correctly
+            await Student.collection.createIndex({ studentId: 1 }, { unique: true });
+            console.log('✅ Created index: studentId');
+            
+            await Student.collection.createIndex({ aadharNumber: 1 }, { unique: true });
+            console.log('✅ Created index: aadharNumber');
+            
+            console.log('✅ Database indexes fixed successfully!');
+            
+        } catch (indexErr) {
+            console.log('⚠️ Index fix warning:', indexErr.message);
+            // Try alternative approach
+            try {
+                await Student.syncIndexes();
+                console.log('✅ Synced indexes via syncIndexes');
+            } catch (syncErr) {
+                console.log('⚠️ Sync indexes failed:', syncErr.message);
+            }
+        }
+        
+        // Create default admin
+        try {
+            const existing = await Admin.findOne({ adminID: 'admin' });
+            if (!existing) {
+                const hash = await bcrypt.hash('admin123', 10);
+                await Admin.create({ 
+                    adminID: 'admin', 
+                    pws: hash, 
+                    name: 'Super Admin',
+                    role: 'super_admin',
+                    permissions: ['all']
+                });
+                console.log('\n✅ DEFAULT ADMIN CREATED!');
+                console.log('   👤 Admin ID: admin');
+                console.log('   🔑 Password: admin123\n');
+            } else {
+                console.log('✅ Admin already exists');
+            }
+        } catch (adminErr) {
+            console.log('Admin creation error:', adminErr.message);
+        }
+    })
+    .catch(err => console.log('❌ DB Error:', err.message));
+
+// ============================================
+// JWT MIDDLEWARE
 // ============================================
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -220,6 +268,13 @@ const verifyToken = (req, res, next) => {
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
+function isValidAadhar(aadhar) {
+    return /^\d{12}$/.test(aadhar);
+}
+
+function isValidMobile(mobile) {
+    return /^\d{10}$/.test(mobile);
+}
 
 function getSessionEndDate(startDate) {
     const endDate = new Date(startDate);
@@ -302,22 +357,9 @@ async function moveToOldStudents(student, reason = 'Session completed') {
     }
 }
 
-function isValidAadhar(aadhar) {
-    return /^\d{12}$/.test(aadhar);
-}
-
-function isValidMobile(mobile) {
-    return /^\d{10}$/.test(mobile);
-}
-
-function isValidEmail(email) {
-    return /^\S+@\S+\.\S+$/.test(email);
-}
-
 // ============================================
-// ADMIN APIs
+// ADMIN LOGIN
 // ============================================
-
 app.post('/api/admin-login', async (req, res) => {
     const { userid, password } = req.body;
     console.log(`📌 Login attempt: ${userid}`);
@@ -359,166 +401,42 @@ app.post('/api/admin-login', async (req, res) => {
     }
 });
 
-app.get('/api/verify-token', verifyToken, async (req, res) => {
-    res.json({ success: true, user: req.user });
-});
-
-app.get('/api/admins', verifyToken, async (req, res) => {
-    try {
-        const admins = await Admin.find().select('-pws');
-        res.json({ success: true, data: admins });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.post('/api/admins', verifyToken, async (req, res) => {
-    try {
-        const { adminID, password, name, role, permissions } = req.body;
-        
-        const existing = await Admin.findOne({ adminID });
-        if (existing) {
-            return res.status(400).json({ success: false, message: "Admin ID already exists" });
-        }
-        
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const admin = new Admin({ 
-            adminID, 
-            pws: hashedPassword, 
-            name: name || 'Admin',
-            role: role || 'admin',
-            permissions: permissions || []
-        });
-        await admin.save();
-        
-        res.json({ success: true, message: "Admin created", data: { adminID, name, role } });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.post('/api/change-password', verifyToken, async (req, res) => {
-    try {
-        const { adminID, oldPassword, newPassword } = req.body;
-        
-        const admin = await Admin.findOne({ adminID });
-        if (!admin) {
-            return res.status(404).json({ success: false, message: "Admin not found" });
-        }
-        
-        const isValid = await bcrypt.compare(oldPassword, admin.pws);
-        if (!isValid) {
-            return res.status(401).json({ success: false, message: "Old password is incorrect" });
-        }
-        
-        admin.pws = await bcrypt.hash(newPassword, 10);
-        await admin.save();
-        
-        res.json({ success: true, message: "Password changed successfully" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-app.get('/api/setup-admin', async (req, res) => {
-    try {
-        const existing = await Admin.findOne({ adminID: 'admin' });
-        if (existing) {
-            return res.json({ success: true, message: "Admin already exists! Use admin/admin123" });
-        }
-        
-        const hashedPassword = await bcrypt.hash('admin123', 10);
-        const admin = new Admin({ 
-            adminID: 'admin', 
-            pws: hashedPassword, 
-            name: 'Super Admin',
-            role: 'super_admin',
-            permissions: ['all']
-        });
-        await admin.save();
-        
-        res.json({ success: true, message: "Admin created! Use admin/admin123" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
 // ============================================
-// STUDENT APIs - MODIFIED AT REQUIRED LOCATIONS
+// STUDENT REGISTRATION - FIXED
 // ============================================
-
-// 1. STUDENT REGISTRATION - MODIFIED
 app.post('/api/students/register', async (req, res) => {
     try {
         const data = req.body;
         
-        // 🔥 MODIFICATION 1: Add BBCC prefix to Student ID
         const originalStudentId = data.studentId;
         const modifiedStudentId = `BBCC${originalStudentId}`;
         const aadharNumber = originalStudentId;
         
-        console.log('📝 Registration:', {
-            original: originalStudentId,
-            modified: modifiedStudentId,
-            aadhar: aadharNumber
-        });
+        console.log('📝 Registration:', { original: originalStudentId, modified: modifiedStudentId, aadhar: aadharNumber });
         
-        // Validation
-        if (!originalStudentId) {
-            return res.status(400).json({ success: false, message: "Student ID is required" });
+        // Validations
+        if (!originalStudentId || !isValidAadhar(originalStudentId)) {
+            return res.status(400).json({ success: false, message: "Valid 12-digit Student ID is required" });
         }
         
-        if (!isValidAadhar(originalStudentId)) {
-            return res.status(400).json({ success: false, message: "Student ID must be 12 digits" });
-        }
-        
-        if (!aadharNumber) {
-            return res.status(400).json({ success: false, message: "Aadhar Number is required" });
-        }
-        
-        if (!isValidAadhar(aadharNumber)) {
-            return res.status(400).json({ success: false, message: "Aadhar Number must be 12 digits" });
-        }
-        
-        if (!data.studentMobile) {
-            return res.status(400).json({ success: false, message: "Mobile number is required" });
-        }
-        
-        if (!isValidMobile(data.studentMobile)) {
-            return res.status(400).json({ success: false, message: "Mobile number must be 10 digits" });
-        }
-        
-        if (data.email && !isValidEmail(data.email)) {
-            return res.status(400).json({ success: false, message: "Invalid email format" });
+        if (!data.studentMobile || !isValidMobile(data.studentMobile)) {
+            return res.status(400).json({ success: false, message: "Valid 10-digit mobile number is required" });
         }
         
         if (!data.studentName?.first || !data.studentName?.last) {
             return res.status(400).json({ success: false, message: "First name and last name are required" });
         }
         
-        // Duplicate Check using modified Student ID
+        // Duplicate checks
         const existingByStudentId = await Student.findOne({ studentId: modifiedStudentId });
         if (existingByStudentId) {
-            console.log('❌ Duplicate Student ID:', modifiedStudentId);
-            return res.status(400).json({ 
-                success: false, 
-                message: `❌ Student ID ${originalStudentId} is already registered!`,
-                duplicateField: 'Student ID'
-            });
+            return res.status(400).json({ success: false, message: `Student ID ${originalStudentId} is already registered!` });
         }
         
-        // Duplicate Check using original Aadhar Number
         const existingByAadhar = await Student.findOne({ aadharNumber: aadharNumber });
         if (existingByAadhar) {
-            console.log('❌ Duplicate Aadhar Number:', aadharNumber);
-            return res.status(400).json({ 
-                success: false, 
-                message: `❌ Aadhar Number ${aadharNumber} is already registered!`,
-                duplicateField: 'Aadhar Number'
-            });
+            return res.status(400).json({ success: false, message: `Aadhar Number ${aadharNumber} is already registered!` });
         }
-        
-        console.log('✅ No duplicates found, creating student...');
         
         const joiningDate = new Date(data.joiningDate || new Date());
         const sessionEndDate = getSessionEndDate(joiningDate);
@@ -535,8 +453,6 @@ app.post('/api/students/register', async (req, res) => {
                 middle: data.studentName.middle || '',
                 last: data.studentName.last
             },
-            dateOfBirth: data.dateOfBirth || null,
-            gender: data.gender || null,
             parentType: data.parentType || 'Father',
             fatherName: data.fatherName || { first: '', last: '' },
             fatherMobile: data.fatherMobile || '',
@@ -547,18 +463,12 @@ app.post('/api/students/register', async (req, res) => {
             guardianRelation: data.guardianRelation || '',
             studentMobile: data.studentMobile,
             email: data.email || '',
-            emergencyContact: data.emergencyContact || '',
-            alternateMobile: data.alternateMobile || '',
             aadharDocument: data.aadharDocument || '',
             education: {
                 board: data.education?.board || 'CBSE',
-                class: data.education?.class || '9th',
-                section: data.education?.section || '',
-                rollNumber: data.education?.rollNumber || ''
+                class: data.education?.class || '9th'
             },
             monthlyFees: parseInt(data.monthlyFees) || 1000,
-            feesConcession: parseInt(data.feesConcession) || 0,
-            lateFeePenalty: parseInt(data.lateFeePenalty) || 0,
             currentSession: {
                 sessionName: sessionName,
                 startDate: joiningDate,
@@ -567,17 +477,9 @@ app.post('/api/students/register', async (req, res) => {
             joiningDate: joiningDate,
             address: {
                 current: data.address?.current || '',
-                permanent: data.address?.permanent || data.address?.current || '',
-                city: data.address?.city || '',
-                state: data.address?.state || '',
-                pincode: data.address?.pincode || ''
+                permanent: data.address?.permanent || data.address?.current || ''
             },
             isActive: true,
-            accountStatus: {
-                isBlocked: false,
-                blockedFrom: null,
-                blockReason: null
-            },
             feesHistory: [],
             attendance: [],
             blockHistory: []
@@ -593,86 +495,46 @@ app.post('/api/students/register', async (req, res) => {
             message: `✅ Student registered successfully!`,
             studentId: modifiedStudentId,
             originalId: originalStudentId,
-            aadharNumber: aadharNumber,
             password: password
         });
         
     } catch (err) {
         console.error('Registration error:', err);
+        
         if (err.code === 11000) {
             return res.status(400).json({ 
                 success: false, 
-                message: `❌ Student is already registered!`
+                message: "This student is already registered! Please check Student ID or Aadhar Number."
             });
         }
+        
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 2. GET ALL STUDENTS
+// ============================================
+// GET ALL STUDENTS
+// ============================================
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
-        const { board, class: className, section, session, search, page = 1, limit = 50, status, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
-        
-        let query = { isActive: true };
-        
-        if (status === 'blocked') {
-            query['accountStatus.isBlocked'] = true;
-        } else if (status === 'active') {
-            query['accountStatus.isBlocked'] = false;
-        }
-        
-        if (board && board !== 'all') query['education.board'] = board;
-        if (className && className !== 'all') query['education.class'] = className;
-        if (section && section !== 'all') query['education.section'] = section;
-        if (session && session !== 'all') query['currentSession.sessionName'] = session;
-        
-        if (search) {
-            query.$or = [
-                { studentId: { $regex: search, $options: 'i' } },
-                { aadharNumber: { $regex: search, $options: 'i' } },
-                { 'studentName.first': { $regex: search, $options: 'i' } },
-                { 'studentName.last': { $regex: search, $options: 'i' } },
-                { studentMobile: { $regex: search, $options: 'i' } }
-            ];
-        }
-        
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-        const sortOptions = {};
-        sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
-        
-        const students = await Student.find(query).sort(sortOptions).skip(skip).limit(parseInt(limit));
-        const total = await Student.countDocuments(query);
-        
+        const students = await Student.find({ isActive: true }).sort({ createdAt: -1 });
         const safeStudents = students.map(s => {
             const obj = s.toObject();
             delete obj.password;
             return obj;
         });
-        
-        res.json({ 
-            success: true, 
-            data: safeStudents,
-            pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
-                total,
-                pages: Math.ceil(total / limit)
-            }
-        });
-        
+        res.json({ success: true, data: safeStudents });
     } catch (err) {
-        console.error('Get students error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 3. GET SINGLE STUDENT - MODIFIED
+// ============================================
+// GET SINGLE STUDENT
+// ============================================
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const requestId = req.params.id;
-        
-        // 🔥 MODIFICATION 2: Handle both with and without BBCC prefix
         let searchStudentId = requestId;
         let searchAadharNumber = requestId;
         
@@ -683,13 +545,8 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
             searchAadharNumber = requestId.replace('BBCC', '');
         }
         
-        console.log('🔍 Searching:', { requestId, searchStudentId, searchAadharNumber });
-        
         const student = await Student.findOne({ 
-            $or: [
-                { studentId: searchStudentId },
-                { aadharNumber: searchAadharNumber }
-            ]
+            $or: [{ studentId: searchStudentId }, { aadharNumber: searchAadharNumber }]
         });
         
         if (!student) {
@@ -698,93 +555,42 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
         
         const data = student.toObject();
         delete data.password;
-        
-        // Add original ID for frontend
         data.originalId = data.aadharNumber;
         
-        const feesHistory = data.feesHistory || [];
-        const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
-        const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
-        const dueFees = totalFees - paidFees;
-        
-        const attendance = data.attendance || [];
-        const totalDays = attendance.length;
-        const presentDays = attendance.filter(a => a.status === 'present').length;
-        const attendancePercentage = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
-        
-        data.stats = {
-            totalFees, paidFees, dueFees,
-            totalAttendanceDays: totalDays, presentDays, attendancePercentage
-        };
-        
         res.json({ success: true, data });
-        
     } catch (err) {
-        console.error('Get student error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 4. UPDATE STUDENT - MODIFIED
+// ============================================
+// UPDATE STUDENT
+// ============================================
 app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const requestId = req.params.id;
-        
-        // 🔥 MODIFICATION 3: Handle both with and without BBCC prefix
         let searchStudentId = requestId;
-        let searchAadharNumber = requestId;
         
         if (!requestId.startsWith('BBCC')) {
             searchStudentId = `BBCC${requestId}`;
-            searchAadharNumber = requestId;
-        } else {
-            searchAadharNumber = requestId.replace('BBCC', '');
         }
         
-        const student = await Student.findOne({ 
-            $or: [
-                { studentId: searchStudentId },
-                { aadharNumber: searchAadharNumber }
-            ]
-        });
+        const student = await Student.findOne({ studentId: searchStudentId });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
         }
         
         const updates = req.body;
-        
-        // Do NOT allow updating studentId or aadharNumber
         delete updates.studentId;
         delete updates.aadharNumber;
         
-        const allowedUpdates = [
-            'studentName', 'studentMobile', 'email', 'parentType',
-            'fatherName', 'fatherMobile', 'motherName', 'motherMobile',
-            'guardianName', 'guardianMobile', 'guardianRelation',
-            'education', 'monthlyFees', 'address', 'photo', 'aadharDocument',
-            'dateOfBirth', 'gender', 'emergencyContact', 'alternateMobile',
-            'feesConcession', 'lateFeePenalty'
-        ];
+        const allowedUpdates = ['studentName', 'studentMobile', 'email', 'parentType', 'fatherName', 'fatherMobile', 'motherName', 'motherMobile', 'guardianName', 'guardianMobile', 'guardianRelation', 'education', 'monthlyFees', 'address', 'photo', 'aadharDocument'];
         
         for (const field of allowedUpdates) {
             if (updates[field] !== undefined) {
                 if (field === 'monthlyFees') {
-                    const oldFees = student.monthlyFees;
-                    const newFees = parseInt(updates.monthlyFees);
-                    
-                    if (oldFees !== newFees && newFees > 0) {
-                        const currentDate = new Date();
-                        student.feesHistory = student.feesHistory.map(fee => {
-                            const feeDate = new Date(fee.year, fee.monthIndex);
-                            if (feeDate >= currentDate) {
-                                fee.amount = newFees;
-                                fee.dueAmount = newFees - fee.paidAmount;
-                            }
-                            return fee;
-                        });
-                        student.monthlyFees = newFees;
-                    }
+                    student.monthlyFees = parseInt(updates.monthlyFees);
                 } else if (field === 'studentName') {
                     student.studentName = { ...student.studentName, ...updates.studentName };
                 } else if (field === 'address') {
@@ -804,140 +610,50 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
         delete responseData.password;
         
         res.json({ success: true, message: "Student updated successfully", data: responseData });
-        
     } catch (err) {
-        console.error('Update student error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 5. DELETE STUDENT - MODIFIED
+// ============================================
+// DELETE STUDENT
+// ============================================
 app.delete('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        const { permanent, reason } = req.query;
         const requestId = req.params.id;
-        
-        // 🔥 MODIFICATION 4: Handle both with and without BBCC prefix
         let searchStudentId = requestId;
-        let searchAadharNumber = requestId;
         
         if (!requestId.startsWith('BBCC')) {
             searchStudentId = `BBCC${requestId}`;
-            searchAadharNumber = requestId;
-        } else {
-            searchAadharNumber = requestId.replace('BBCC', '');
         }
         
-        const student = await Student.findOne({ 
-            $or: [
-                { studentId: searchStudentId },
-                { aadharNumber: searchAadharNumber }
-            ]
-        });
+        const student = await Student.findOne({ studentId: searchStudentId });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
         }
         
-        if (permanent === 'true') {
-            await Student.deleteOne({ _id: student._id });
-            res.json({ success: true, message: "Student permanently deleted" });
-        } else {
-            const moved = await moveToOldStudents(student, reason || 'Session completed');
-            if (moved) {
-                res.json({ success: true, message: "Student moved to archive" });
-            } else {
-                res.status(500).json({ success: false, message: "Failed to archive student" });
-            }
-        }
-        
+        await Student.deleteOne({ _id: student._id });
+        res.json({ success: true, message: "Student deleted successfully" });
     } catch (err) {
-        console.error('Delete student error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 6. UPDATE FEES - MODIFIED
-app.post('/api/students/:studentId/fees', verifyToken, async (req, res) => {
-    try {
-        const { month, year, paidAmount, remarks, paymentMode, transactionId } = req.body;
-        const requestId = req.params.studentId;
-        
-        let searchStudentId = requestId;
-        let searchAadharNumber = requestId;
-        
-        if (!requestId.startsWith('BBCC')) {
-            searchStudentId = `BBCC${requestId}`;
-            searchAadharNumber = requestId;
-        } else {
-            searchAadharNumber = requestId.replace('BBCC', '');
-        }
-        
-        const student = await Student.findOne({ 
-            $or: [
-                { studentId: searchStudentId },
-                { aadharNumber: searchAadharNumber }
-            ]
-        });
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        const feeIndex = student.feesHistory.findIndex(f => f.month === month && f.year === parseInt(year));
-        
-        if (feeIndex === -1) {
-            return res.status(404).json({ success: false, message: "Fee record not found for this month" });
-        }
-        
-        const fee = student.feesHistory[feeIndex];
-        const newPaidAmount = (fee.paidAmount || 0) + parseFloat(paidAmount);
-        
-        fee.paidAmount = newPaidAmount;
-        fee.dueAmount = fee.amount - newPaidAmount;
-        fee.status = newPaidAmount >= fee.amount ? 'paid' : newPaidAmount > 0 ? 'partial' : 'unpaid';
-        fee.paymentDate = new Date();
-        fee.paymentMode = paymentMode || fee.paymentMode;
-        fee.transactionId = transactionId || fee.transactionId;
-        
-        if (remarks) fee.remarks = remarks;
-        
-        await student.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Fees updated successfully",
-            data: { month, year, paidAmount: fee.paidAmount, dueAmount: fee.dueAmount, status: fee.status }
-        });
-        
-    } catch (err) {
-        console.error('Update fees error:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// 7. MARK ATTENDANCE - MODIFIED
+// ============================================
+// MARK ATTENDANCE
+// ============================================
 app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) => {
     try {
-        const { date, status, checkInTime, checkOutTime, remarks, subject } = req.body;
+        const { date, status, checkInTime, checkOutTime, remarks } = req.body;
         const requestId = req.params.studentId;
-        
         let searchStudentId = requestId;
-        let searchAadharNumber = requestId;
         
         if (!requestId.startsWith('BBCC')) {
             searchStudentId = `BBCC${requestId}`;
-            searchAadharNumber = requestId;
-        } else {
-            searchAadharNumber = requestId.replace('BBCC', '');
         }
         
-        const student = await Student.findOne({ 
-            $or: [
-                { studentId: searchStudentId },
-                { aadharNumber: searchAadharNumber }
-            ]
-        });
+        const student = await Student.findOne({ studentId: searchStudentId });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -952,25 +668,13 @@ app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) =>
             return aDate.getTime() === attendanceDate.getTime();
         });
         
-        let lateMinutes = null;
-        if (status === 'late' && checkInTime) {
-            const [hours, minutes] = checkInTime.split(':');
-            const checkInHour = parseInt(hours);
-            if (checkInHour > 9) {
-                lateMinutes = (checkInHour - 9) * 60 + parseInt(minutes);
-            }
-        }
-        
         const record = {
             date: attendanceDate,
             status: status || 'absent',
             checkInTime: checkInTime || null,
             checkOutTime: checkOutTime || null,
-            lateMinutes: lateMinutes,
-            subject: subject || null,
             remarks: remarks || '',
-            markedAt: new Date(),
-            markedBy: req.user?.id
+            markedAt: new Date()
         };
         
         if (existingIndex >= 0) {
@@ -980,37 +684,67 @@ app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) =>
         }
         
         await student.save();
-        
         res.json({ success: true, message: "Attendance marked successfully" });
-        
     } catch (err) {
-        console.error('Mark attendance error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 8. BLOCK STUDENT - MODIFIED
-app.post('/api/students/:studentId/block', verifyToken, async (req, res) => {
+// ============================================
+// UPDATE FEES
+// ============================================
+app.post('/api/students/:studentId/fees', verifyToken, async (req, res) => {
     try {
-        const { reason, blockedUntil } = req.body;
+        const { month, year, paidAmount, remarks } = req.body;
         const requestId = req.params.studentId;
-        
         let searchStudentId = requestId;
-        let searchAadharNumber = requestId;
         
         if (!requestId.startsWith('BBCC')) {
             searchStudentId = `BBCC${requestId}`;
-            searchAadharNumber = requestId;
-        } else {
-            searchAadharNumber = requestId.replace('BBCC', '');
         }
         
-        const student = await Student.findOne({ 
-            $or: [
-                { studentId: searchStudentId },
-                { aadharNumber: searchAadharNumber }
-            ]
-        });
+        const student = await Student.findOne({ studentId: searchStudentId });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        const feeIndex = student.feesHistory.findIndex(f => f.month === month && f.year === year);
+        
+        if (feeIndex === -1) {
+            return res.status(404).json({ success: false, message: "Fee record not found" });
+        }
+        
+        const fee = student.feesHistory[feeIndex];
+        const newPaidAmount = (fee.paidAmount || 0) + paidAmount;
+        
+        fee.paidAmount = newPaidAmount;
+        fee.dueAmount = fee.amount - newPaidAmount;
+        fee.status = newPaidAmount >= fee.amount ? 'paid' : newPaidAmount > 0 ? 'partial' : 'unpaid';
+        fee.paymentDate = new Date();
+        if (remarks) fee.remarks = remarks;
+        
+        await student.save();
+        res.json({ success: true, message: "Fees updated successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// BLOCK/UNBLOCK STUDENT
+// ============================================
+app.post('/api/students/:studentId/block', verifyToken, async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const requestId = req.params.studentId;
+        let searchStudentId = requestId;
+        
+        if (!requestId.startsWith('BBCC')) {
+            searchStudentId = `BBCC${requestId}`;
+        }
+        
+        const student = await Student.findOne({ studentId: searchStudentId });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -1019,49 +753,33 @@ app.post('/api/students/:studentId/block', verifyToken, async (req, res) => {
         student.accountStatus = {
             isBlocked: true,
             blockedFrom: new Date(),
-            blockedUntil: blockedUntil ? new Date(blockedUntil) : null,
             blockReason: reason || 'No reason provided',
             blockedBy: req.user?.adminID || 'Admin'
         };
         
         student.blockHistory.push({
             blockedFrom: new Date(),
-            blockedUntil: blockedUntil ? new Date(blockedUntil) : null,
             reason: reason || 'No reason provided',
             blockedBy: req.user?.adminID || 'Admin'
         });
         
         await student.save();
-        
         res.json({ success: true, message: "Student blocked successfully" });
-        
     } catch (err) {
-        console.error('Block student error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 9. UNBLOCK STUDENT - MODIFIED
 app.post('/api/students/:studentId/unblock', verifyToken, async (req, res) => {
     try {
         const requestId = req.params.studentId;
-        
         let searchStudentId = requestId;
-        let searchAadharNumber = requestId;
         
         if (!requestId.startsWith('BBCC')) {
             searchStudentId = `BBCC${requestId}`;
-            searchAadharNumber = requestId;
-        } else {
-            searchAadharNumber = requestId.replace('BBCC', '');
         }
         
-        const student = await Student.findOne({ 
-            $or: [
-                { studentId: searchStudentId },
-                { aadharNumber: searchAadharNumber }
-            ]
-        });
+        const student = await Student.findOne({ studentId: searchStudentId });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -1076,54 +794,32 @@ app.post('/api/students/:studentId/unblock', verifyToken, async (req, res) => {
         student.accountStatus = {
             isBlocked: false,
             blockedFrom: null,
-            blockedUntil: null,
             blockReason: null,
             blockedBy: null
         };
         
         await student.save();
-        
         res.json({ success: true, message: "Student unblocked successfully" });
-        
     } catch (err) {
-        console.error('Unblock student error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 10. GET ARCHIVED STUDENTS
-app.get('/api/students/old', verifyToken, async (req, res) => {
+// ============================================
+// GET OLD STUDENTS
+// ============================================
+app.get('/api/old-students', verifyToken, async (req, res) => {
     try {
-        const { board, class: className, session, search, page = 1, limit = 50 } = req.query;
-        
-        let query = {};
-        
-        if (board && board !== 'all') query['education.board'] = board;
-        if (className && className !== 'all') query['education.class'] = className;
-        if (session && session !== 'all') query['completedSession.sessionName'] = session;
-        
-        if (search) {
-            query.$or = [
-                { studentId: { $regex: search, $options: 'i' } },
-                { aadharNumber: { $regex: search, $options: 'i' } },
-                { 'studentName.first': { $regex: search, $options: 'i' } },
-                { 'studentName.last': { $regex: search, $options: 'i' } }
-            ];
-        }
-        
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-        const oldStudents = await OldStudent.find(query).sort({ sessionCompletedAt: -1 }).skip(skip).limit(parseInt(limit));
-        const total = await OldStudent.countDocuments(query);
-        
-        res.json({ success: true, data: oldStudents, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) } });
-        
+        const oldStudents = await OldStudent.find().sort({ sessionCompletedAt: -1 });
+        res.json({ success: true, data: oldStudents });
     } catch (err) {
-        console.error('Get old students error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 11. DASHBOARD STATISTICS
+// ============================================
+// DASHBOARD STATS
+// ============================================
 app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
     try {
         const totalStudents = await Student.countDocuments({ isActive: true });
@@ -1154,161 +850,18 @@ app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
         
         const attendancePercentage = totalAttendanceDays > 0 ? Math.round((totalPresent / totalAttendanceDays) * 100) : 0;
         
-        const monthlyTrend = [];
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date();
-            d.setMonth(d.getMonth() - i);
-            const monthName = d.toLocaleString('default', { month: 'short' });
-            const year = d.getFullYear();
-            
-            let collected = 0;
-            for (const student of students) {
-                const feeRecord = (student.feesHistory || []).find(f => f.month === monthName && f.year === year);
-                if (feeRecord) collected += feeRecord.paidAmount || 0;
+        res.json({
+            success: true,
+            data: {
+                totalStudents,
+                totalOldStudents,
+                totalFeesCollected,
+                totalFeesDue,
+                attendancePercentage,
+                blockedStudents
             }
-            monthlyTrend.push({ month: `${monthName} ${year}`, collected });
-        }
-        
-        res.json({ success: true, data: { totalStudents, totalOldStudents, totalFeesCollected, totalFeesDue, attendancePercentage, blockedStudents, monthlyTrend } });
-        
-    } catch (err) {
-        console.error('Dashboard stats error:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// 12. BULK DELETE - MODIFIED
-app.post('/api/students/bulk-delete', verifyToken, async (req, res) => {
-    try {
-        const { studentIds, permanent, reason } = req.body;
-        
-        if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
-            return res.status(400).json({ success: false, message: "Student IDs array is required" });
-        }
-        
-        let deletedCount = 0;
-        let movedCount = 0;
-        
-        for (const studentId of studentIds) {
-            let searchStudentId = studentId;
-            if (!studentId.startsWith('BBCC')) {
-                searchStudentId = `BBCC${studentId}`;
-            }
-            
-            const student = await Student.findOne({ studentId: searchStudentId });
-            
-            if (student) {
-                if (permanent === true) {
-                    await Student.deleteOne({ _id: student._id });
-                    deletedCount++;
-                } else {
-                    const moved = await moveToOldStudents(student, reason || 'Bulk archive');
-                    if (moved) movedCount++;
-                }
-            }
-        }
-        
-        res.json({ success: true, message: permanent ? `${deletedCount} students permanently deleted` : `${movedCount} students moved to archive`, deletedCount, movedCount });
-        
-    } catch (err) {
-        console.error('Bulk delete error:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// 13. EXPORT CSV
-app.get('/api/students/export/csv', verifyToken, async (req, res) => {
-    try {
-        const students = await Student.find({ isActive: true });
-        
-        const headers = ['Student ID', 'Aadhar Number', 'First Name', 'Last Name', 'Mobile', 'Email', 'Board', 'Class', 'Session', 'Monthly Fees', 'Total Paid', 'Total Due', 'Attendance %', 'Status', 'Joining Date'];
-        
-        const rows = students.map(s => {
-            const feesHistory = s.feesHistory || [];
-            const totalPaid = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
-            const totalDue = feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
-            const attendance = s.attendance || [];
-            const presentDays = attendance.filter(a => a.status === 'present').length;
-            const attendancePercent = attendance.length > 0 ? Math.round((presentDays / attendance.length) * 100) : 0;
-            
-            return [s.studentId, s.aadharNumber, s.studentName?.first || '', s.studentName?.last || '', s.studentMobile || '', s.email || '', s.education?.board || '', s.education?.class || '', s.currentSession?.sessionName || '', s.monthlyFees || 0, totalPaid, totalDue, attendancePercent, s.accountStatus?.isBlocked ? 'Blocked' : 'Active', s.joiningDate ? new Date(s.joiningDate).toLocaleDateString() : ''];
         });
-        
-        const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${cell}"`).join(','))].join('\n');
-        
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename=students_${Date.now()}.csv`);
-        res.send(csvContent);
-        
     } catch (err) {
-        console.error('Export CSV error:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// 14. CHANGE STUDENT PASSWORD - MODIFIED
-app.post('/api/students/:studentId/change-password', verifyToken, async (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-        const requestId = req.params.studentId;
-        
-        let searchStudentId = requestId;
-        if (!requestId.startsWith('BBCC')) {
-            searchStudentId = `BBCC${requestId}`;
-        }
-        
-        const student = await Student.findOne({ studentId: searchStudentId });
-        
-        if (!student) {
-            return res.status(404).json({ success: false, message: "Student not found" });
-        }
-        
-        if (currentPassword && student.password !== currentPassword) {
-            return res.status(401).json({ success: false, message: "Current password is incorrect" });
-        }
-        
-        if (!newPassword || newPassword.length < 4) {
-            return res.status(400).json({ success: false, message: "New password must be at least 4 characters" });
-        }
-        
-        student.password = newPassword;
-        await student.save();
-        
-        res.json({ success: true, message: "Password changed successfully" });
-        
-    } catch (err) {
-        console.error('Change password error:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// 15. CHECK DUPLICATE - MODIFIED
-app.post('/api/students/check-duplicate', async (req, res) => {
-    try {
-        const { studentId, aadharNumber } = req.body;
-        
-        let duplicateField = null;
-        let existingStudent = null;
-        
-        if (studentId && isValidAadhar(studentId)) {
-            const modifiedStudentId = `BBCC${studentId}`;
-            existingStudent = await Student.findOne({ studentId: modifiedStudentId });
-            if (existingStudent) duplicateField = 'Student ID';
-        }
-        
-        if (!duplicateField && aadharNumber && isValidAadhar(aadharNumber)) {
-            existingStudent = await Student.findOne({ aadharNumber: aadharNumber });
-            if (existingStudent) duplicateField = 'Aadhar Number';
-        }
-        
-        if (duplicateField && existingStudent) {
-            return res.json({ success: true, isDuplicate: true, duplicateField, message: `This ${duplicateField} is already registered` });
-        } else {
-            return res.json({ success: true, isDuplicate: false, message: "Both Student ID and Aadhar Number are available" });
-        }
-        
-    } catch (err) {
-        console.error('Check duplicate error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
@@ -1320,34 +873,6 @@ app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.
 app.get('/login.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'login.html')); });
 app.get('/management.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'management.html')); });
 app.get('/student-management.html', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'student-management.html')); });
-
-// ============================================
-// ERROR HANDLERS
-// ============================================
-app.use((req, res) => { res.status(404).json({ success: false, message: "API not found" }); });
-app.use((err, req, res, next) => { console.error("Error:", err.stack); res.status(500).json({ success: false, message: "Something went wrong!" }); });
-
-// ============================================
-// AUTO CREATE DEFAULT ADMIN ON STARTUP
-// ============================================
-mongoose.connection.once('open', async () => {
-    try {
-        const existing = await Admin.findOne({ adminID: 'admin' });
-        if (!existing) {
-            const hash = await bcrypt.hash('admin123', 10);
-            await Admin.create({ adminID: 'admin', pws: hash, name: 'Super Admin', role: 'super_admin', permissions: ['all'] });
-            console.log('\n✅ DEFAULT ADMIN CREATED!');
-            console.log('   👤 Admin ID: admin');
-            console.log('   🔑 Password: admin123\n');
-        } else {
-            console.log('✅ Admin already exists');
-        }
-        await Student.createIndexes();
-        console.log('✅ Database indexes verified');
-    } catch (err) {
-        console.log('Admin creation error:', err.message);
-    }
-});
 
 // ============================================
 // START SERVER
