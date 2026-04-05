@@ -1,6 +1,6 @@
 // ============================================
-// STUDENT-MANAGEMENT.JS - COMPLETE FIXED VERSION
-// WITH PROPER EDIT, PHOTO DISPLAY, DOCUMENT VIEW, AND NO DUPLICATE ISSUES
+// STUDENT-MANAGEMENT.JS - COMPLETE VERSION
+// WITH ALL FIELDS - SESSION PROMOTION - RE-ADMISSION
 // ============================================
 
 (function() {
@@ -11,7 +11,6 @@
     let studentsData = [];
     let oldStudentsData = [];
     let currentViewStudent = null;
-    let isEditMode = false;
     let currentEditStudentId = null;
     let charts = {};
 
@@ -29,14 +28,26 @@
         '9th', '10th', '11th', '12th', 'Graduation', 'Post Graduation', 'Other'
     ];
 
-    const allSessions = ['2024-2025', '2025-2026', '2026-2027', '2027-2028'];
+    const allSessions = (() => {
+        const sessions = [];
+        for (let year = 2024; year <= 2050; year++) {
+            sessions.push(`${year}-${year + 1}`);
+        }
+        return sessions;
+    })();
 
-    const DEFAULT_PHOTO = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23667eea"/%3E%3Ctext x="50" y="50" text-anchor="middle" dy=".3em" fill="white" font-size="40"%3E📷%3C/text%3E%3C/svg%3E';
+    const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+    const genders = ['Male', 'Female', 'Other'];
+
+    const DEFAULT_PHOTO = 'https://placehold.co/100x100/667eea/white?text=👤';
 
     // ========== HELPER FUNCTIONS ==========
     function showAlert(message, type = 'info', duration = 3000) {
+        const existingAlerts = document.querySelectorAll('.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
         const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type}`;
+        alertDiv.className = `custom-alert alert-${type}`;
         alertDiv.innerHTML = `<span>${message}</span><button class="close-alert-btn">×</button>`;
         alertDiv.style.cssText = `
             position: fixed; top: 20px; right: 20px; z-index: 10000;
@@ -44,12 +55,11 @@
             color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#856404'};
             border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#ffeeba'};
             border-radius: 10px; padding: 12px 20px; display: flex;
-            justify-content: space-between; align-items: center; font-family: Arial, sans-serif; z-index: 10001;
+            justify-content: space-between; align-items: center; font-family: Arial, sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         `;
         document.body.appendChild(alertDiv);
-        const closeBtn = alertDiv.querySelector('.close-alert-btn');
-        closeBtn.style.cssText = 'background: none; border: none; font-size: 1.2rem; cursor: pointer;';
-        closeBtn.onclick = () => alertDiv.remove();
+        alertDiv.querySelector('.close-alert-btn').onclick = () => alertDiv.remove();
         setTimeout(() => { if (alertDiv.parentElement) alertDiv.remove(); }, duration);
     }
 
@@ -60,13 +70,41 @@
 
     function formatDate(date) {
         if (!date) return '-';
-        return new Date(date).toLocaleDateString('en-IN');
+        try {
+            return new Date(date).toLocaleDateString('en-IN');
+        } catch(e) {
+            return '-';
+        }
+    }
+
+    function formatDateTime(date) {
+        if (!date) return '-';
+        try {
+            return new Date(date).toLocaleString('en-IN');
+        } catch(e) {
+            return '-';
+        }
     }
 
     function getStatusBadge(status) {
-        if (status === 'paid') return '<span class="badge badge-paid">✅ Paid</span>';
-        if (status === 'partial') return '<span class="badge badge-partial">⚠️ Partial</span>';
-        return '<span class="badge badge-unpaid">❌ Unpaid</span>';
+        if (status === 'paid') return '<span class="badge-paid">✅ Paid</span>';
+        if (status === 'partial') return '<span class="badge-partial">⚠️ Partial</span>';
+        return '<span class="badge-unpaid">❌ Unpaid</span>';
+    }
+
+    function isSessionEndingSoon(endDate) {
+        if (!endDate) return false;
+        const today = new Date();
+        const end = new Date(endDate);
+        const daysLeft = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+        return daysLeft <= 30 && daysLeft > 0;
+    }
+
+    function isSessionExpired(endDate) {
+        if (!endDate) return false;
+        const today = new Date();
+        const end = new Date(endDate);
+        return today > end;
     }
 
     // ========== STYLES ==========
@@ -120,7 +158,7 @@
         }
         
         .students-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
         .student-card {
@@ -168,16 +206,19 @@
             display: flex; gap: 20px; flex-wrap: wrap;
             margin-bottom: 25px;
         }
-        .dashboard-photo {
+        .student-photo-large {
             width: 120px; height: 120px; border-radius: 50%;
             object-fit: cover; border: 3px solid #667eea;
+            cursor: pointer;
         }
         .dashboard-info {
             flex: 1;
+            min-width: 250px;
         }
         .info-row {
-            display: grid; grid-template-columns: 150px 1fr;
-            margin-bottom: 10px;
+            display: grid; grid-template-columns: 160px 1fr;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
         }
         .info-label { font-weight: 600; color: #666; }
         .info-value { color: #333; }
@@ -226,6 +267,7 @@
         .btn-success { background: #28a745; color: white; }
         .btn-info { background: #17a2b8; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
+        .btn-promote { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
         .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
         
@@ -237,7 +279,7 @@
         .modal.active { display: flex; }
         .modal-content {
             background: white; border-radius: 20px;
-            max-width: 1200px; width: 90%; max-height: 90vh;
+            max-width: 900px; width: 90%; max-height: 90vh;
             overflow-y: auto;
         }
         .modal-header {
@@ -265,125 +307,72 @@
         }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
         
         .badge-paid { background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
         .badge-partial { background: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
         .badge-unpaid { background: #f8d7da; color: #721c24; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
         
         .image-preview { 
-            width: 100px; 
-            height: 100px; 
-            border-radius: 10px; 
-            object-fit: cover; 
-            margin-top: 5px; 
+            width: 100px; height: 100px; border-radius: 10px; 
+            object-fit: cover; margin-top: 5px; 
             border: 2px solid #e0e0e0;
             background: #f8f9fa;
         }
         .image-actions { display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
         
         .empty-state { text-align: center; padding: 50px; color: #999; }
+        .action-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         
-        .edit-mode-badge {
-            background: #ffc107;
-            color: #333;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+        .session-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .session-expired {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .promotion-form, .readmission-form {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
         }
         
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
+        .section-title {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+            color: #667eea;
         }
         
-        .student-photo-large {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #667eea;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .student-photo-large:hover {
-            transform: scale(1.05);
-        }
-        
-        /* Mobile Responsive Styles - APK like feel */
         @media (max-width: 768px) {
-            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            .form-row, .form-row-3, .form-row-4 { grid-template-columns: 1fr; }
             .students-grid { grid-template-columns: 1fr; }
             .filter-bar { flex-direction: column; }
             .info-row { grid-template-columns: 1fr; gap: 5px; }
             .sms-wrapper { margin: 10px; border-radius: 15px; }
-            .sms-header { padding: 12px 15px; }
-            .logo h1 { font-size: 1.2rem; }
-            .main-tab-btn { padding: 12px 10px; font-size: 0.85rem; }
-            .sms-content { padding: 15px; }
-            .student-card { margin-bottom: 10px; }
-            .modal-content { width: 95%; margin: 10px; }
             .dashboard-header { flex-direction: column; align-items: center; text-align: center; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .btn { padding: 10px 14px; font-size: 0.8rem; }
             .data-table th, .data-table td { padding: 8px; font-size: 0.75rem; }
         }
         
-        /* Desktop optimizations */
         @media (min-width: 1024px) {
-            .students-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-            .sms-content { padding: 30px; }
+            .students-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
         }
         
-        /* Document viewer modal */
-        .document-viewer {
-            max-width: 90vw;
-            max-height: 90vh;
-        }
-        .document-viewer img {
-            max-width: 100%;
-            max-height: 70vh;
-            object-fit: contain;
-        }
-        .doc-thumb {
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .doc-thumb:hover {
-            transform: scale(1.02);
-        }
-        
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
-        }
-        
-        /* Loading spinner */
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #667eea; border-radius: 10px; }
     `;
 
     // ========== HTML TEMPLATE ==========
@@ -391,7 +380,7 @@
         <div class="sms-wrapper">
             <div class="sms-header">
                 <div class="logo">
-                    <h1>🎓 Bal Bharti Coaching</h1>
+                    <h1>🎓 Bal Bharti Coaching Center</h1>
                     <p>Complete Student Management System</p>
                 </div>
                 <div class="user-info">
@@ -419,78 +408,104 @@
                     <div id="studentsGrid" class="students-grid"></div>
                 </div>
                 
-                <!-- NEW ADMISSION / EDIT STUDENT TAB -->
+                <!-- NEW ADMISSION TAB - COMPLETE FORM -->
                 <div class="tab-pane" data-pane="new-admission">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                         <h3>📝 <span id="formTitle">Register New Student</span></h3>
                         <div id="editModeIndicator" style="display: none;">
-                            <span class="edit-mode-badge">✏️ Edit Mode - Student ID: <span id="editStudentIdDisplay"></span></span>
+                            <span class="edit-mode-badge" style="background:#ffc107;padding:5px 12px;border-radius:20px;">✏️ Edit Mode</span>
                         </div>
                     </div>
+                    
                     <form id="admissionForm">
+                        <!-- Session Information -->
+                        <div class="section-title">📅 Session Information</div>
                         <div class="form-row">
                             <div class="form-group"><label>Session *</label><select id="admissionSession" required>${allSessions.map(s => `<option value="${s}">${s}</option>`).join('')}</select></div>
                             <div class="form-group"><label>Joining Date *</label><input type="date" id="joiningDate" required></div>
                         </div>
                         
+                        <!-- Student Name -->
+                        <div class="section-title">👤 Student Name</div>
                         <div class="form-row-3">
                             <div class="form-group"><label>First Name *</label><input type="text" id="firstName" required></div>
                             <div class="form-group"><label>Middle Name</label><input type="text" id="middleName"></div>
                             <div class="form-group"><label>Last Name *</label><input type="text" id="lastName" required></div>
                         </div>
                         
-                        <div class="form-group">
-                            <label>Aadhar Number (Student ID) * <span style="color:#dc3545;">(12 digit number - UNIQUE)</span></label>
-                            <input type="text" id="aadharNumber" required maxlength="12" pattern="[0-9]{12}" placeholder="Enter 12 digit Aadhar number">
-                            <small style="color: #28a745; display: block; margin-top: 5px;">💡 Student ID will be automatically set to this Aadhar number (Must be unique)</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Student ID (Auto from Aadhar) *</label>
-                            <input type="text" id="studentIdField" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
-                        </div>
-                        
+                        <!-- Personal Information -->
+                        <div class="section-title">📋 Personal Information</div>
                         <div class="form-row">
-                            <div class="form-group"><label>Student Mobile *</label><input type="tel" id="studentMobile" required pattern="[0-9]{10}" placeholder="10 digit mobile number"></div>
-                            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="student@example.com"></div>
+                            <div class="form-group"><label>Date of Birth</label><input type="date" id="dob"></div>
+                            <div class="form-group"><label>Gender</label><select id="gender"><option value="">Select</option>${genders.map(g => `<option value="${g}">${g}</option>`).join('')}</select></div>
                         </div>
                         
+                        <!-- Aadhar & ID -->
+                        <div class="section-title">🆔 Identification</div>
+                        <div class="form-group">
+                            <label>Aadhar Number (12 digits) *</label>
+                            <input type="text" id="aadharNumber" required maxlength="12" pattern="[0-9]{12}" placeholder="Enter 12 digit Aadhar number">
+                            <small>Student ID will be same as Aadhar number</small>
+                        </div>
+                        
+                        <!-- Contact Information -->
+                        <div class="section-title">📞 Contact Information</div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Student Mobile *</label><input type="tel" id="studentMobile" required pattern="[0-9]{10}" placeholder="10 digit mobile"></div>
+                            <div class="form-group"><label>Alternate Mobile</label><input type="tel" id="alternateMobile" pattern="[0-9]{10}" placeholder="Optional"></div>
+                        </div>
+                        <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="student@example.com"></div>
+                        <div class="form-group"><label>Emergency Contact</label><input type="tel" id="emergencyContact" pattern="[0-9]{10}" placeholder="Emergency contact number"></div>
+                        
+                        <!-- Parent Information -->
+                        <div class="section-title">👪 Parent/Guardian Information</div>
                         <div class="form-group"><label>Parent Type *</label><select id="parentType"><option value="Father">Father</option><option value="Mother">Mother</option><option value="Guardian">Guardian</option></select></div>
+                        
                         <div id="fatherFields">
                             <div class="form-row">
-                                <div class="form-group"><label>Father Name *</label><input type="text" id="fatherName" placeholder="First and Last name"></div>
-                                <div class="form-group"><label>Father Mobile *</label><input type="tel" id="fatherMobile" placeholder="10 digit mobile"></div>
+                                <div class="form-group"><label>Father Full Name</label><input type="text" id="fatherName" placeholder="First and Last name"></div>
+                                <div class="form-group"><label>Father Mobile</label><input type="tel" id="fatherMobile" placeholder="10 digit mobile"></div>
                             </div>
                         </div>
                         <div id="motherFields" style="display:none;">
                             <div class="form-row">
-                                <div class="form-group"><label>Mother Name *</label><input type="text" id="motherName" placeholder="First and Last name"></div>
-                                <div class="form-group"><label>Mother Mobile *</label><input type="tel" id="motherMobile" placeholder="10 digit mobile"></div>
+                                <div class="form-group"><label>Mother Full Name</label><input type="text" id="motherName" placeholder="First and Last name"></div>
+                                <div class="form-group"><label>Mother Mobile</label><input type="tel" id="motherMobile" placeholder="10 digit mobile"></div>
                             </div>
                         </div>
                         <div id="guardianFields" style="display:none;">
                             <div class="form-row">
-                                <div class="form-group"><label>Guardian Name *</label><input type="text" id="guardianName" placeholder="Full name"></div>
-                                <div class="form-group"><label>Guardian Mobile *</label><input type="tel" id="guardianMobile" placeholder="10 digit mobile"></div>
+                                <div class="form-group"><label>Guardian Full Name</label><input type="text" id="guardianName" placeholder="Full name"></div>
+                                <div class="form-group"><label>Guardian Mobile</label><input type="tel" id="guardianMobile" placeholder="10 digit mobile"></div>
                             </div>
-                            <div class="form-group"><label>Relation *</label><input type="text" id="guardianRelation" placeholder="e.g., Uncle, Aunt, Grandfather"></div>
+                            <div class="form-group"><label>Relation with Student</label><input type="text" id="guardianRelation" placeholder="e.g., Uncle, Aunt, Grandfather"></div>
                         </div>
                         
+                        <!-- Academic Information -->
+                        <div class="section-title">📚 Academic Information</div>
                         <div class="form-row">
                             <div class="form-group"><label>Board *</label><select id="board">${allBoards.map(b => `<option value="${b}">${b}</option>`).join('')}</select></div>
                             <div class="form-group"><label>Class *</label><select id="class">${allClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Section</label><input type="text" id="section" placeholder="A, B, C etc."></div>
+                            <div class="form-group"><label>Roll Number</label><input type="text" id="rollNumber" placeholder="Class roll number"></div>
+                        </div>
                         
+                        <!-- Fees Information -->
+                        <div class="section-title">💰 Fees Information</div>
                         <div class="form-group"><label>Monthly Fees (₹) *</label><input type="number" id="monthlyFees" required min="0" step="100" value="1000"></div>
                         
+                        <!-- Documents -->
+                        <div class="section-title">📎 Documents</div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Student Photo</label>
                                 <input type="hidden" id="photo">
                                 <img id="photoPreview" class="image-preview" style="display:none;">
                                 <div class="image-actions">
-                                    <button type="button" class="btn btn-primary btn-sm" id="capturePhotoBtn">📷 Capture Photo</button>
-                                    <button type="button" class="btn btn-info btn-sm" id="uploadPhotoBtn">📁 Upload Photo</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="capturePhotoBtn">📷 Capture</button>
+                                    <button type="button" class="btn btn-info btn-sm" id="uploadPhotoBtn">📁 Upload</button>
                                     <button type="button" class="btn btn-secondary btn-sm" id="clearPhotoBtn">🗑️ Clear</button>
                                 </div>
                             </div>
@@ -499,15 +514,37 @@
                                 <input type="hidden" id="aadharDoc">
                                 <img id="aadharPreview" class="image-preview" style="display:none;">
                                 <div class="image-actions">
-                                    <button type="button" class="btn btn-primary btn-sm" id="captureAadharBtn">📷 Capture Aadhar</button>
-                                    <button type="button" class="btn btn-info btn-sm" id="uploadAadharBtn">📁 Upload Aadhar</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="captureAadharBtn">📷 Capture</button>
+                                    <button type="button" class="btn btn-info btn-sm" id="uploadAadharBtn">📁 Upload</button>
                                     <button type="button" class="btn btn-secondary btn-sm" id="clearAadharBtn">🗑️ Clear</button>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="form-group"><label>Current Address *</label><textarea id="currentAddress" rows="2" placeholder="House number, Street, City, PIN code"></textarea></div>
+                        <!-- Address -->
+                        <div class="section-title">🏠 Address</div>
+                        <div class="form-group"><label>Current Address *</label><textarea id="currentAddress" rows="2" placeholder="House number, Street, Landmark"></textarea></div>
                         <div class="form-group"><label>Permanent Address</label><textarea id="permanentAddress" rows="2" placeholder="Leave blank if same as current address"></textarea></div>
+                        <div class="form-row-3">
+                            <div class="form-group"><label>City</label><input type="text" id="city" placeholder="City"></div>
+                            <div class="form-group"><label>State</label><input type="text" id="state" placeholder="State"></div>
+                            <div class="form-group"><label>Pincode</label><input type="text" id="pincode" maxlength="6" placeholder="Pincode"></div>
+                        </div>
+                        
+                        <!-- Transport & Medical (Optional) -->
+                        <div class="section-title">🚌 Transport Information (Optional)</div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Availing Transport</label><select id="availingTransport"><option value="no">No</option><option value="yes">Yes</option></select></div>
+                            <div class="form-group"><label>Bus Route</label><input type="text" id="busRoute" placeholder="Route number/name"></div>
+                        </div>
+                        <div class="form-group"><label>Bus Stop</label><input type="text" id="busStop" placeholder="Bus stop name"></div>
+                        
+                        <div class="section-title">🏥 Medical Information (Optional)</div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Blood Group</label><select id="bloodGroup"><option value="">Select</option>${bloodGroups.map(bg => `<option value="${bg}">${bg}</option>`).join('')}</select></div>
+                            <div class="form-group"><label>Allergies</label><input type="text" id="allergies" placeholder="Any allergies"></div>
+                        </div>
+                        <div class="form-group"><label>Medical Conditions</label><input type="text" id="medicalConditions" placeholder="Any medical conditions"></div>
                         
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary" id="registerStudentBtn">✅ Register Student</button>
@@ -533,7 +570,7 @@
         
         <!-- STUDENT DASHBOARD MODAL -->
         <div id="dashboardModal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content" style="max-width: 1000px;">
                 <div class="modal-header">
                     <h3 id="dashboardTitle">Student Dashboard</h3>
                     <button class="close-modal" id="closeDashboardModal">×</button>
@@ -545,16 +582,14 @@
             </div>
         </div>
         
-        <!-- EDIT STUDENT POPUP MODAL -->
+        <!-- EDIT STUDENT MODAL -->
         <div id="editStudentModal" class="modal">
-            <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-content" style="max-width: 900px;">
                 <div class="modal-header">
                     <h3>✏️ Edit Student - <span id="editModalStudentId"></span></h3>
                     <button class="close-modal" id="closeEditModal">×</button>
                 </div>
-                <div class="modal-body" id="editModalBody">
-                    <!-- Edit form will be dynamically populated -->
-                </div>
+                <div class="modal-body" id="editModalBody"></div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" id="cancelEditModalBtn">Cancel</button>
                     <button class="btn btn-primary" id="saveEditModalBtn">💾 Save Changes</button>
@@ -562,9 +597,67 @@
             </div>
         </div>
         
+        <!-- PROMOTION MODAL -->
+        <div id="promotionModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>🎓 Promote Student to Next Session</h3>
+                    <button class="close-modal" id="closePromotionModal">×</button>
+                </div>
+                <div class="modal-body">
+                    <div id="promotionInfo"></div>
+                    <div class="form-group">
+                        <label>Select New Session *</label>
+                        <select id="newSessionSelect" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>New Class (Optional)</label>
+                        <select id="newClassSelect" class="form-control"><option value="">Same as current</option>${allClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
+                    </div>
+                    <div class="form-group">
+                        <label>New Monthly Fees (Optional)</label>
+                        <input type="number" id="newFeesAmount" class="form-control" placeholder="Keep same if empty">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelPromotionBtn">Cancel</button>
+                    <button class="btn btn-success" id="confirmPromotionBtn">✅ Promote Student</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RE-ADMISSION MODAL -->
+        <div id="readmissionModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>🔄 Re-admit Student</h3>
+                    <button class="close-modal" id="closeReadmissionModal">×</button>
+                </div>
+                <div class="modal-body">
+                    <div id="readmissionInfo"></div>
+                    <div class="form-group">
+                        <label>Select New Session *</label>
+                        <select id="readmissionSessionSelect" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Class *</label>
+                        <select id="readmissionClassSelect" class="form-control" required>${allClasses.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Fees (₹) *</label>
+                        <input type="number" id="readmissionFeesAmount" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelReadmissionBtn">Cancel</button>
+                    <button class="btn btn-primary" id="confirmReadmissionBtn">✅ Re-admit Student</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- DOCUMENT VIEWER MODAL -->
         <div id="documentViewerModal" class="modal">
-            <div class="modal-content document-viewer">
+            <div class="modal-content document-viewer" style="max-width: 90vw;">
                 <div class="modal-header">
                     <h3 id="docViewerTitle">Document Viewer</h3>
                     <button class="close-modal" id="closeDocViewer">×</button>
@@ -587,31 +680,11 @@
                     <button class="close-modal" id="closeAttendanceModal">×</button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" id="attendanceDate" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="attendanceStatus" class="form-control">
-                            <option value="present">✅ Present</option>
-                            <option value="absent">❌ Absent</option>
-                            <option value="late">⏰ Late</option>
-                            <option value="half-day">🌓 Half Day</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Check In Time</label>
-                        <input type="time" id="checkInTime" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Check Out Time</label>
-                        <input type="time" id="checkOutTime" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Remarks</label>
-                        <textarea id="attendanceRemarks" class="form-control" rows="2"></textarea>
-                    </div>
+                    <div class="form-group"><label>Date</label><input type="date" id="attendanceDate" class="form-control"></div>
+                    <div class="form-group"><label>Status</label><select id="attendanceStatus" class="form-control"><option value="present">✅ Present</option><option value="absent">❌ Absent</option><option value="late">⏰ Late</option><option value="half-day">🌓 Half Day</option></select></div>
+                    <div class="form-group"><label>Check In Time</label><input type="time" id="checkInTime" class="form-control"></div>
+                    <div class="form-group"><label>Check Out Time</label><input type="time" id="checkOutTime" class="form-control"></div>
+                    <div class="form-group"><label>Remarks</label><textarea id="attendanceRemarks" class="form-control" rows="2"></textarea></div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" id="cancelAttendanceBtn">Cancel</button>
@@ -628,18 +701,9 @@
                     <button class="close-modal" id="closeFeesModal">×</button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Select Month</label>
-                        <select id="feesMonth" class="form-control"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount to Pay (₹)</label>
-                        <input type="number" id="feesAmount" class="form-control" min="1" step="100">
-                    </div>
-                    <div class="form-group">
-                        <label>Remarks</label>
-                        <textarea id="feesRemarks" class="form-control" rows="2" placeholder="Optional remarks..."></textarea>
-                    </div>
+                    <div class="form-group"><label>Select Month</label><select id="feesMonth" class="form-control"></select></div>
+                    <div class="form-group"><label>Amount to Pay (₹)</label><input type="number" id="feesAmount" class="form-control" min="1" step="100"></div>
+                    <div class="form-group"><label>Remarks</label><textarea id="feesRemarks" class="form-control" rows="2" placeholder="Optional remarks..."></textarea></div>
                     <div id="feesInfo" style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 10px;"></div>
                 </div>
                 <div class="modal-footer">
@@ -697,16 +761,16 @@
             document.getElementById('closeFeesModal')?.addEventListener('click', () => closeModal('feesModal'));
             document.getElementById('cancelAttendanceBtn')?.addEventListener('click', () => closeModal('attendanceModal'));
             document.getElementById('cancelFeesBtn')?.addEventListener('click', () => closeModal('feesModal'));
-            
-            // Edit modal close buttons
             document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editStudentModal'));
             document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editStudentModal'));
             document.getElementById('saveEditModalBtn')?.addEventListener('click', () => this.saveEditFromModal());
-            
-            // Document viewer close buttons
             document.getElementById('closeDocViewer')?.addEventListener('click', () => closeModal('documentViewerModal'));
             document.getElementById('closeDocViewerBtn')?.addEventListener('click', () => closeModal('documentViewerModal'));
             document.getElementById('downloadDocBtn')?.addEventListener('click', () => this.downloadCurrentDocument());
+            document.getElementById('closePromotionModal')?.addEventListener('click', () => closeModal('promotionModal'));
+            document.getElementById('cancelPromotionBtn')?.addEventListener('click', () => closeModal('promotionModal'));
+            document.getElementById('closeReadmissionModal')?.addEventListener('click', () => closeModal('readmissionModal'));
+            document.getElementById('cancelReadmissionBtn')?.addEventListener('click', () => closeModal('readmissionModal'));
             
             document.getElementById('filterBoard')?.addEventListener('change', () => this.renderStudentsGrid());
             document.getElementById('filterClass')?.addEventListener('change', () => this.renderStudentsGrid());
@@ -750,23 +814,21 @@
         setupAutoStudentIdFromAadhar() {
             const aadharInput = document.getElementById('aadharNumber');
             const studentIdField = document.getElementById('studentIdField');
+            if (!aadharInput || !studentIdField) return;
             
-            if (aadharInput && studentIdField) {
-                aadharInput.addEventListener('input', (e) => {
-                    let value = e.target.value;
-                    value = value.replace(/[^0-9]/g, '');
-                    if (value.length > 12) value = value.slice(0, 12);
-                    aadharInput.value = value;
-                    studentIdField.value = value;
-                });
-                
-                aadharInput.addEventListener('blur', () => {
-                    if (aadharInput.value.length !== 12 && aadharInput.value.length > 0) {
-                        showAlert('Aadhar number must be exactly 12 digits!', 'warning', 2000);
-                    }
-                    studentIdField.value = aadharInput.value;
-                });
-            }
+            aadharInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/[^0-9]/g, '');
+                if (value.length > 12) value = value.slice(0, 12);
+                aadharInput.value = value;
+                studentIdField.value = value;
+            });
+            
+            aadharInput.addEventListener('blur', () => {
+                if (aadharInput.value.length !== 12 && aadharInput.value.length > 0) {
+                    showAlert('Aadhar number must be exactly 12 digits!', 'warning', 2000);
+                }
+                studentIdField.value = aadharInput.value;
+            });
         }
 
         setupParentTypeToggle() {
@@ -788,10 +850,7 @@
             document.querySelectorAll('.tab-pane').forEach(pane => {
                 pane.classList.toggle('active', pane.dataset.pane === tab);
             });
-            
-            if (tab === 'new-admission') {
-                this.cancelEdit();
-            }
+            if (tab === 'new-admission') this.cancelEdit();
         }
 
         async apiCall(endpoint, options = {}) {
@@ -819,15 +878,9 @@
         async loadStudents() {
             try {
                 const response = await this.apiCall('/students');
-                if (response.success) {
-                    this.students = response.data || [];
-                    this.renderStudentsGrid();
-                } else {
-                    this.students = [];
-                    this.renderStudentsGrid();
-                }
+                this.students = response.success ? (response.data || []) : [];
+                this.renderStudentsGrid();
             } catch (err) {
-                console.error('Load students error:', err);
                 this.students = [];
                 this.renderStudentsGrid();
             }
@@ -836,15 +889,9 @@
         async loadOldStudents() {
             try {
                 const response = await this.apiCall('/old-students');
-                if (response.success) {
-                    this.oldStudents = response.data || [];
-                    this.renderOldStudentsGrid();
-                } else {
-                    this.oldStudents = [];
-                    this.renderOldStudentsGrid();
-                }
+                this.oldStudents = response.success ? (response.data || []) : [];
+                this.renderOldStudentsGrid();
             } catch (err) {
-                console.error('Load old students error:', err);
                 this.oldStudents = [];
                 this.renderOldStudentsGrid();
             }
@@ -860,10 +907,7 @@
             if (board !== 'all') filtered = filtered.filter(s => s.education?.board === board);
             if (classVal !== 'all') filtered = filtered.filter(s => s.education?.class === classVal);
             if (session !== 'all') filtered = filtered.filter(s => s.currentSession?.sessionName === session);
-            if (search) filtered = filtered.filter(s => 
-                (s.studentId || '').includes(search) || 
-                `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase().includes(search)
-            );
+            if (search) filtered = filtered.filter(s => (s.studentId || '').includes(search) || `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase().includes(search));
             
             const grid = document.getElementById('studentsGrid');
             if (!grid) return;
@@ -904,10 +948,7 @@
             if (board !== 'all') filtered = filtered.filter(s => s.education?.board === board);
             if (classVal !== 'all') filtered = filtered.filter(s => s.education?.class === classVal);
             if (session !== 'all') filtered = filtered.filter(s => s.completedSession?.sessionName === session);
-            if (search) filtered = filtered.filter(s => 
-                (s.studentId || '').includes(search) || 
-                `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase().includes(search)
-            );
+            if (search) filtered = filtered.filter(s => (s.studentId || '').includes(search) || `${s.studentName?.first || ''} ${s.studentName?.last || ''}`.toLowerCase().includes(search));
             
             const grid = document.getElementById('oldStudentsGrid');
             if (!grid) return;
@@ -939,433 +980,60 @@
         }
 
         async createDemoStudent() {
-            try {
-                // Check if demo student already exists
-                const existing = this.students?.find(s => s.studentId === '123456789012');
-                if (existing) {
-                    showAlert('Demo student already exists!', 'info');
-                    this.switchTab('students');
-                    return;
-                }
-                
-                showAlert('Creating demo student...', 'info');
-                
-                const demoData = {
-                    studentId: "123456789012",
-                    aadharNumber: "123456789012",
-                    studentName: { first: "Rahul", middle: "", last: "Sharma" },
-                    studentMobile: "9876543210",
-                    email: "rahul@example.com",
-                    parentType: "Father",
-                    fatherName: { first: "Rajesh", last: "Sharma" },
-                    fatherMobile: "9876543210",
-                    motherName: { first: "", last: "" },
-                    motherMobile: "",
-                    guardianName: { first: "", last: "" },
-                    guardianMobile: "",
-                    guardianRelation: "",
-                    education: { board: "CBSE", class: "10th" },
-                    monthlyFees: 2000,
-                    joiningDate: new Date().toISOString().split('T')[0],
-                    address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi" },
-                    photo: DEFAULT_PHOTO,
-                    aadharDocument: DEFAULT_PHOTO
-                };
-                
-                const response = await this.apiCall('/students/register', {
-                    method: 'POST',
-                    body: JSON.stringify(demoData)
-                });
-                
-                if (response.success) {
-                    showAlert('✅ Demo student created! ID: 123456789012, Password: 789012', 'success', 5000);
-                    await this.loadStudents();
-                    this.switchTab('students');
-                } else {
-                    showAlert('Failed to create demo student: ' + response.message, 'error');
-                }
-            } catch (err) {
-                showAlert('Error creating demo student', 'error');
-            }
-        }
-
-        // ========== OPEN EDIT POPUP MODAL ==========
-        openEditPopup(student) {
-            currentEditStudentId = student.studentId;
-            
-            // Create edit form HTML
-            const editFormHtml = `
-                <form id="editStudentForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Session *</label>
-                            <select id="editSession" class="form-control" required>
-                                ${allSessions.map(s => `<option value="${s}" ${student.currentSession?.sessionName === s ? 'selected' : ''}>${s}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Joining Date *</label>
-                            <input type="date" id="editJoiningDate" class="form-control" value="${student.joiningDate ? student.joiningDate.split('T')[0] : ''}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row-3">
-                        <div class="form-group">
-                            <label>First Name *</label>
-                            <input type="text" id="editFirstName" class="form-control" value="${student.studentName?.first || ''}" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Middle Name</label>
-                            <input type="text" id="editMiddleName" class="form-control" value="${student.studentName?.middle || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label>Last Name *</label>
-                            <input type="text" id="editLastName" class="form-control" value="${student.studentName?.last || ''}" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Aadhar Number (ID) *</label>
-                            <input type="text" id="editAadharNumber" class="form-control" value="${student.aadharNumber || student.studentId || ''}" disabled>
-                            <small style="color: #dc3545;">Aadhar number cannot be changed</small>
-                        </div>
-                        <div class="form-group">
-                            <label>Student ID *</label>
-                            <input type="text" id="editStudentId" class="form-control" value="${student.studentId || ''}" disabled>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Student Mobile *</label>
-                            <input type="tel" id="editStudentMobile" class="form-control" value="${student.studentMobile || ''}" required pattern="[0-9]{10}">
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="editEmail" class="form-control" value="${student.email || ''}">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Parent Type *</label>
-                        <select id="editParentType" class="form-control">
-                            <option value="Father" ${student.parentType === 'Father' ? 'selected' : ''}>Father</option>
-                            <option value="Mother" ${student.parentType === 'Mother' ? 'selected' : ''}>Mother</option>
-                            <option value="Guardian" ${student.parentType === 'Guardian' ? 'selected' : ''}>Guardian</option>
-                        </select>
-                    </div>
-                    
-                    <div id="editFatherFields" style="display: ${student.parentType === 'Father' ? 'block' : 'none'};">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Father Name *</label>
-                                <input type="text" id="editFatherName" class="form-control" value="${student.fatherName?.first || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label>Father Mobile *</label>
-                                <input type="tel" id="editFatherMobile" class="form-control" value="${student.fatherMobile || ''}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="editMotherFields" style="display: ${student.parentType === 'Mother' ? 'block' : 'none'};">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Mother Name *</label>
-                                <input type="text" id="editMotherName" class="form-control" value="${student.motherName?.first || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label>Mother Mobile *</label>
-                                <input type="tel" id="editMotherMobile" class="form-control" value="${student.motherMobile || ''}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="editGuardianFields" style="display: ${student.parentType === 'Guardian' ? 'block' : 'none'};">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Guardian Name *</label>
-                                <input type="text" id="editGuardianName" class="form-control" value="${student.guardianName?.first || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label>Guardian Mobile *</label>
-                                <input type="tel" id="editGuardianMobile" class="form-control" value="${student.guardianMobile || ''}">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Relation *</label>
-                            <input type="text" id="editGuardianRelation" class="form-control" value="${student.guardianRelation || ''}">
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Board *</label>
-                            <select id="editBoard" class="form-control">
-                                ${allBoards.map(b => `<option value="${b}" ${student.education?.board === b ? 'selected' : ''}>${b}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Class *</label>
-                            <select id="editClass" class="form-control">
-                                ${allClasses.map(c => `<option value="${c}" ${student.education?.class === c ? 'selected' : ''}>${c}</option>`).join('')}
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Monthly Fees (₹) *</label>
-                        <input type="number" id="editMonthlyFees" class="form-control" value="${student.monthlyFees || 1000}" required min="0" step="100">
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Student Photo</label>
-                            <input type="hidden" id="editPhoto">
-                            <img id="editPhotoPreview" class="image-preview" src="${student.photo || DEFAULT_PHOTO}" style="display:block; cursor:pointer;" onclick="document.getElementById('editUploadPhotoInput').click()">
-                            <input type="file" id="editUploadPhotoInput" accept="image/*" style="display:none;">
-                            <div class="image-actions">
-                                <button type="button" class="btn btn-primary btn-sm" id="editCapturePhotoBtn">📷 Capture</button>
-                                <button type="button" class="btn btn-info btn-sm" id="editUploadPhotoBtn">📁 Upload</button>
-                                <button type="button" class="btn btn-secondary btn-sm" id="editClearPhotoBtn">🗑️ Clear</button>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Aadhar Document</label>
-                            <input type="hidden" id="editAadharDoc">
-                            <img id="editAadharPreview" class="image-preview" src="${student.aadharDocument || DEFAULT_PHOTO}" style="display:block; cursor:pointer;" onclick="document.getElementById('editUploadAadharInput').click()">
-                            <input type="file" id="editUploadAadharInput" accept="image/*" style="display:none;">
-                            <div class="image-actions">
-                                <button type="button" class="btn btn-primary btn-sm" id="editCaptureAadharBtn">📷 Capture</button>
-                                <button type="button" class="btn btn-info btn-sm" id="editUploadAadharBtn">📁 Upload</button>
-                                <button type="button" class="btn btn-secondary btn-sm" id="editClearAadharBtn">🗑️ Clear</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Current Address *</label>
-                        <textarea id="editCurrentAddress" class="form-control" rows="2">${student.address?.current || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Permanent Address</label>
-                        <textarea id="editPermanentAddress" class="form-control" rows="2">${student.address?.permanent || ''}</textarea>
-                    </div>
-                </form>
-            `;
-            
-            document.getElementById('editModalStudentId').innerText = student.studentId;
-            document.getElementById('editModalBody').innerHTML = editFormHtml;
-            
-            // Setup edit form event listeners
-            this.setupEditFormEvents(student);
-            
-            document.getElementById('editStudentModal').classList.add('active');
-        }
-        
-        setupEditFormEvents(student) {
-            // Parent type toggle in edit modal
-            const editParentType = document.getElementById('editParentType');
-            if (editParentType) {
-                editParentType.addEventListener('change', () => {
-                    const type = editParentType.value;
-                    document.getElementById('editFatherFields').style.display = type === 'Father' ? 'block' : 'none';
-                    document.getElementById('editMotherFields').style.display = type === 'Mother' ? 'block' : 'none';
-                    document.getElementById('editGuardianFields').style.display = type === 'Guardian' ? 'block' : 'none';
-                });
-            }
-            
-            // Photo handling in edit modal
-            const editPhotoInput = document.getElementById('editUploadPhotoInput');
-            const editPhotoPreview = document.getElementById('editPhotoPreview');
-            
-            document.getElementById('editCapturePhotoBtn')?.addEventListener('click', () => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.capture = 'environment';
-                input.onchange = async (e) => {
-                    if (e.target.files && e.target.files[0]) {
-                        const compressed = await this.compressImage(e.target.files[0]);
-                        document.getElementById('editPhoto').value = compressed;
-                        editPhotoPreview.src = compressed;
-                        editPhotoPreview.style.display = 'block';
-                        showAlert('Photo captured successfully!', 'success');
-                    }
-                };
-                input.click();
-            });
-            
-            document.getElementById('editUploadPhotoBtn')?.addEventListener('click', () => {
-                editPhotoInput.click();
-            });
-            
-            editPhotoInput?.addEventListener('change', async (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const compressed = await this.compressImage(e.target.files[0]);
-                    document.getElementById('editPhoto').value = compressed;
-                    editPhotoPreview.src = compressed;
-                    showAlert('Photo uploaded successfully!', 'success');
-                }
-            });
-            
-            document.getElementById('editClearPhotoBtn')?.addEventListener('click', () => {
-                document.getElementById('editPhoto').value = '';
-                editPhotoPreview.src = DEFAULT_PHOTO;
-            });
-            
-            // Aadhar document handling in edit modal
-            const editAadharInput = document.getElementById('editUploadAadharInput');
-            const editAadharPreview = document.getElementById('editAadharPreview');
-            
-            document.getElementById('editCaptureAadharBtn')?.addEventListener('click', () => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.capture = 'environment';
-                input.onchange = async (e) => {
-                    if (e.target.files && e.target.files[0]) {
-                        const compressed = await this.compressImage(e.target.files[0]);
-                        document.getElementById('editAadharDoc').value = compressed;
-                        editAadharPreview.src = compressed;
-                        showAlert('Aadhar captured successfully!', 'success');
-                    }
-                };
-                input.click();
-            });
-            
-            document.getElementById('editUploadAadharBtn')?.addEventListener('click', () => {
-                editAadharInput.click();
-            });
-            
-            editAadharInput?.addEventListener('change', async (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const compressed = await this.compressImage(e.target.files[0]);
-                    document.getElementById('editAadharDoc').value = compressed;
-                    editAadharPreview.src = compressed;
-                    showAlert('Aadhar uploaded successfully!', 'success');
-                }
-            });
-            
-            document.getElementById('editClearAadharBtn')?.addEventListener('click', () => {
-                document.getElementById('editAadharDoc').value = '';
-                editAadharPreview.src = DEFAULT_PHOTO;
-            });
-        }
-        
-        async saveEditFromModal() {
-            if (!currentEditStudentId) {
-                showAlert('No student selected for edit', 'error');
+            const existing = this.students?.find(s => s.studentId === '123456789012');
+            if (existing) {
+                showAlert('Demo student already exists!', 'info');
+                this.switchTab('students');
                 return;
             }
             
-            const parentType = document.getElementById('editParentType').value;
+            showAlert('Creating demo student...', 'info');
             
-            const studentData = {
-                studentId: currentEditStudentId,
-                studentName: {
-                    first: document.getElementById('editFirstName').value,
-                    middle: document.getElementById('editMiddleName').value || '',
-                    last: document.getElementById('editLastName').value
-                },
-                studentMobile: document.getElementById('editStudentMobile').value,
-                email: document.getElementById('editEmail').value || '',
-                parentType: parentType,
-                education: {
-                    board: document.getElementById('editBoard').value,
-                    class: document.getElementById('editClass').value
-                },
-                monthlyFees: parseInt(document.getElementById('editMonthlyFees').value),
-                address: {
-                    current: document.getElementById('editCurrentAddress').value,
-                    permanent: document.getElementById('editPermanentAddress').value || document.getElementById('editCurrentAddress').value
-                },
-                photo: document.getElementById('editPhoto').value || DEFAULT_PHOTO,
-                aadharDocument: document.getElementById('editAadharDoc').value || DEFAULT_PHOTO,
-                currentSession: {
-                    sessionName: document.getElementById('editSession').value
-                },
-                joiningDate: document.getElementById('editJoiningDate').value
+            const demoData = {
+                studentId: "123456789012",
+                aadharNumber: "123456789012",
+                studentName: { first: "Rahul", middle: "", last: "Sharma" },
+                studentMobile: "9876543210",
+                email: "rahul@example.com",
+                parentType: "Father",
+                fatherName: { first: "Rajesh Sharma", last: "" },
+                fatherMobile: "9876543210",
+                education: { board: "CBSE", class: "10th" },
+                monthlyFees: 2000,
+                joiningDate: new Date().toISOString().split('T')[0],
+                address: { current: "123 Main Street, Delhi", permanent: "123 Main Street, Delhi", city: "Delhi", state: "Delhi", pincode: "110001" },
+                photo: DEFAULT_PHOTO,
+                aadharDocument: DEFAULT_PHOTO
             };
             
-            if (parentType === 'Father') {
-                studentData.fatherName = { first: document.getElementById('editFatherName').value, last: '' };
-                studentData.fatherMobile = document.getElementById('editFatherMobile').value;
-            } else if (parentType === 'Mother') {
-                studentData.motherName = { first: document.getElementById('editMotherName').value, last: '' };
-                studentData.motherMobile = document.getElementById('editMotherMobile').value;
-            } else if (parentType === 'Guardian') {
-                studentData.guardianName = { first: document.getElementById('editGuardianName').value, last: '' };
-                studentData.guardianMobile = document.getElementById('editGuardianMobile').value;
-                studentData.guardianRelation = document.getElementById('editGuardianRelation').value;
-            }
+            const response = await this.apiCall('/students/register', { method: 'POST', body: JSON.stringify(demoData) });
             
-            try {
-                const response = await this.apiCall(`/students/${currentEditStudentId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(studentData)
-                });
-                
-                if (response.success) {
-                    showAlert('✅ Student updated successfully!', 'success');
-                    closeModal('editStudentModal');
-                    await this.loadStudents();
-                    // Refresh dashboard if open
-                    if (currentViewStudent && currentViewStudent.studentId === currentEditStudentId) {
-                        await this.showStudentDashboard(currentEditStudentId, false);
-                    }
-                } else {
-                    showAlert(response.message || 'Update failed', 'error');
-                }
-            } catch (err) {
-                showAlert('Error updating student: ' + err.message, 'error');
-            }
-        }
-        
-        // ========== VIEW DOCUMENT ==========
-        viewDocument(imageUrl, title) {
-            const docViewerImage = document.getElementById('docViewerImage');
-            const docViewerTitle = document.getElementById('docViewerTitle');
-            docViewerImage.src = imageUrl;
-            docViewerTitle.innerText = title;
-            this.currentDocumentUrl = imageUrl;
-            document.getElementById('documentViewerModal').classList.add('active');
-        }
-        
-        downloadCurrentDocument() {
-            if (this.currentDocumentUrl) {
-                const link = document.createElement('a');
-                link.href = this.currentDocumentUrl;
-                link.download = 'document.jpg';
-                link.click();
+            if (response.success) {
+                showAlert('✅ Demo student created! ID: 123456789012, Password: 789012', 'success', 5000);
+                await this.loadStudents();
+                this.switchTab('students');
+            } else {
+                showAlert('Failed to create demo student: ' + response.message, 'error');
             }
         }
 
+        // ========== DASHBOARD RENDERING (COMPLETE WITH ALL FIELDS) ==========
         async showStudentDashboard(studentId, isOld = false) {
             try {
                 showAlert('Loading student data...', 'info');
-                
                 let student;
                 if (isOld) {
                     student = this.oldStudents?.find(s => s.studentId === studentId);
                 } else {
                     const response = await this.apiCall(`/students/${studentId}`);
-                    if (response.success && response.data) {
-                        student = response.data;
-                    }
+                    if (response.success && response.data) student = response.data;
                 }
-                
-                if (!student) {
-                    showAlert('Student not found!', 'error');
-                    return;
-                }
+                if (!student) { showAlert('Student not found!', 'error'); return; }
                 
                 currentViewStudent = student;
                 this.renderDashboard(student, isOld);
                 document.getElementById('dashboardModal').classList.add('active');
             } catch (err) {
-                console.error('Dashboard error:', err);
                 showAlert('Error loading dashboard: ' + err.message, 'error');
             }
         }
@@ -1375,218 +1043,138 @@
             const footer = document.getElementById('dashboardFooter');
             if (!body) return;
             
-            const studentName = `${student.studentName?.first || ''} ${student.studentName?.last || ''}`.trim() || 'N/A';
-            const studentId = student.studentId || 'N/A';
-            const studentMobile = student.studentMobile || 'N/A';
-            const board = student.education?.board || 'N/A';
-            const className = student.education?.class || 'N/A';
-            const sessionName = student.currentSession?.sessionName || student.completedSession?.sessionName || 'N/A';
-            const monthlyFees = student.monthlyFees || 0;
+            const s = student;
+            const studentName = `${s.studentName?.first || ''} ${s.studentName?.middle || ''} ${s.studentName?.last || ''}`.trim() || 'N/A';
+            const sessionEndDate = s.currentSession?.endDate;
+            const sessionEnding = !isOld && isSessionEndingSoon(sessionEndDate);
+            const sessionExpired = !isOld && isSessionExpired(sessionEndDate);
             
-            const feesHistory = student.feesHistory || [];
+            // Calculate stats
+            const feesHistory = s.feesHistory || [];
             const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
             const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
             const dueFees = totalFees - paidFees;
-            
-            const attendance = student.attendance || [];
+            const attendance = s.attendance || [];
             const totalDays = attendance.length;
             const presentDays = attendance.filter(a => a.status === 'present').length;
             const attendancePercent = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+            const isBlocked = s.accountStatus?.isBlocked || false;
             
-            const isBlocked = student.accountStatus?.isBlocked || false;
-            const blockReason = student.accountStatus?.blockReason || '';
-            
-            const months = this.getLast12Months();
-            const attendanceData = this.getAttendanceData(student, months);
-            const feesData = this.getFeesData(student, months);
+            let sessionWarningHtml = '';
+            if (sessionEnding && !isOld) sessionWarningHtml = `<div class="session-warning">⚠️ <strong>Session Ending Soon!</strong> Current session ends on ${formatDate(sessionEndDate)}. Please promote student.</div>`;
+            else if (sessionExpired && !isOld) sessionWarningHtml = `<div class="session-expired">🔴 <strong>Session Expired!</strong> Session ended on ${formatDate(sessionEndDate)}. Must promote to continue.</div>`;
             
             body.innerHTML = `
                 <div class="dashboard-container">
+                    ${sessionWarningHtml}
                     <div class="dashboard-header">
-                        <div style="position: relative;">
-                            <img src="${student.photo || DEFAULT_PHOTO}" class="student-photo-large" onerror="this.src='${DEFAULT_PHOTO}'" onclick="window.smsInstance.viewDocument('${student.photo || DEFAULT_PHOTO}', 'Student Photo - ${studentName}')">
-                            <div style="text-align: center; margin-top: 5px;">
-                                <button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${student.photo || DEFAULT_PHOTO}', 'Student Photo - ${studentName}')">🔍 View Photo</button>
-                            </div>
-                        </div>
+                        <div><img src="${s.photo || DEFAULT_PHOTO}" class="student-photo-large" onerror="this.src='${DEFAULT_PHOTO}'" onclick="window.smsInstance.viewDocument('${s.photo || DEFAULT_PHOTO}', 'Student Photo')"><div style="text-align:center;margin-top:5px;"><button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${s.photo || DEFAULT_PHOTO}', 'Student Photo')">🔍 View Photo</button></div></div>
                         <div class="dashboard-info">
-                            <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value"><strong>${studentId}</strong></div></div>
+                            <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value"><strong>${s.studentId || '-'}</strong></div></div>
+                            <div class="info-row"><div class="info-label">Aadhar Number:</div><div class="info-value">${s.aadharNumber || s.studentId || '-'}</div></div>
                             <div class="info-row"><div class="info-label">Name:</div><div class="info-value">${studentName}</div></div>
-                            <div class="info-row"><div class="info-label">Mobile:</div><div class="info-value">${studentMobile}</div></div>
-                            <div class="info-row"><div class="info-label">Board & Class:</div><div class="info-value">${board} - ${className}</div></div>
-                            <div class="info-row"><div class="info-label">Session:</div><div class="info-value">${sessionName}</div></div>
-                            <div class="info-row"><div class="info-label">Monthly Fees:</div><div class="info-value">₹${monthlyFees}</div></div>
-                            <div class="info-row"><div class="info-label">Status:</div><div class="info-value">${isBlocked ? `<span class="badge-blocked">🔴 BLOCKED - ${blockReason}</span>` : '<span class="badge-active">🟢 ACTIVE</span>'}</div></div>
-                            <div class="info-row"><div class="info-label">Aadhar Document:</div><div class="info-value"><button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${student.aadharDocument || DEFAULT_PHOTO}', 'Aadhar Document - ${studentName}')">📄 View Aadhar</button></div></div>
+                            <div class="info-row"><div class="info-label">Date of Birth:</div><div class="info-value">${formatDate(s.dateOfBirth)}</div></div>
+                            <div class="info-row"><div class="info-label">Gender:</div><div class="info-value">${s.gender || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Mobile:</div><div class="info-value">${s.studentMobile || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Alternate Mobile:</div><div class="info-value">${s.alternateMobile || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Email:</div><div class="info-value">${s.email || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Emergency Contact:</div><div class="info-value">${s.emergencyContact || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Joining Date:</div><div class="info-value">${formatDate(s.joiningDate)}</div></div>
+                            <div class="info-row"><div class="info-label">Current Session:</div><div class="info-value">${s.currentSession?.sessionName || s.completedSession?.sessionName || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Session Start:</div><div class="info-value">${formatDate(s.currentSession?.startDate)}</div></div>
+                            <div class="info-row"><div class="info-label">Session End:</div><div class="info-value">${formatDate(sessionEndDate)}</div></div>
+                            <div class="info-row"><div class="info-label">Board:</div><div class="info-value">${s.education?.board || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Class:</div><div class="info-value">${s.education?.class || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Section:</div><div class="info-value">${s.education?.section || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Roll Number:</div><div class="info-value">${s.education?.rollNumber || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Monthly Fees:</div><div class="info-value">₹${s.monthlyFees || 0}</div></div>
+                            <div class="info-row"><div class="info-label">Parent Type:</div><div class="info-value">${s.parentType || '-'}</div></div>
+                            ${s.parentType === 'Father' ? `<div class="info-row"><div class="info-label">Father:</div><div class="info-value">${s.fatherName?.first || ''} | ${s.fatherMobile || ''}</div></div>` : ''}
+                            ${s.parentType === 'Mother' ? `<div class="info-row"><div class="info-label">Mother:</div><div class="info-value">${s.motherName?.first || ''} | ${s.motherMobile || ''}</div></div>` : ''}
+                            ${s.parentType === 'Guardian' ? `<div class="info-row"><div class="info-label">Guardian:</div><div class="info-value">${s.guardianName?.first || ''} (${s.guardianRelation || ''}) | ${s.guardianMobile || ''}</div></div>` : ''}
+                            <div class="info-row"><div class="info-label">Current Address:</div><div class="info-value">${s.address?.current || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Permanent Address:</div><div class="info-value">${s.address?.permanent || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">City/State/Pincode:</div><div class="info-value">${s.address?.city || ''} ${s.address?.state || ''} ${s.address?.pincode || ''}</div></div>
+                            <div class="info-row"><div class="info-label">Transport:</div><div class="info-value">${s.transportDetails?.availingTransport ? `Yes (${s.transportDetails?.busRoute || ''} - ${s.transportDetails?.busStop || ''})` : 'No'}</div></div>
+                            <div class="info-row"><div class="info-label">Blood Group:</div><div class="info-value">${s.medicalInfo?.bloodGroup || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Allergies/Medical:</div><div class="info-value">${s.medicalInfo?.allergies || '-'} / ${s.medicalInfo?.medicalConditions || '-'}</div></div>
+                            <div class="info-row"><div class="info-label">Status:</div><div class="info-value">${isBlocked ? `<span class="badge-blocked">🔴 BLOCKED</span>` : '<span class="badge-active">🟢 ACTIVE</span>'}</div></div>
+                            <div class="info-row"><div class="info-label">Aadhar Document:</div><div class="info-value"><button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${s.aadharDocument || DEFAULT_PHOTO}', 'Aadhar Document')">📄 View</button></div></div>
                         </div>
                     </div>
-                    
                     <div class="stats-grid">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                            <h3>₹${paidFees.toLocaleString()}</h3><p>Total Paid</p>
-                        </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
-                            <h3>₹${dueFees.toLocaleString()}</h3><p>Total Due</p>
-                        </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">
-                            <h3>${attendancePercent}%</h3><p>Attendance</p>
-                        </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #fd7e14); color: #333;">
-                            <h3>${totalDays}</h3><p>Total Days</p>
-                        </div>
+                        <div class="stat-card" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;"><h3>₹${paidFees.toLocaleString()}</h3><p>Total Paid</p></div>
+                        <div class="stat-card" style="background:linear-gradient(135deg,#dc3545,#c82333);color:white;"><h3>₹${dueFees.toLocaleString()}</h3><p>Total Due</p></div>
+                        <div class="stat-card" style="background:linear-gradient(135deg,#28a745,#20c997);color:white;"><h3>${attendancePercent}%</h3><p>Attendance</p></div>
+                        <div class="stat-card" style="background:linear-gradient(135deg,#ffc107,#fd7e14);color:#333;"><h3>${totalDays}</h3><p>Total Days</p></div>
                     </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">📊 Monthly Attendance (Last 12 Months)</div>
-                        <canvas id="attendanceChart" style="height: 300px; width: 100%;"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">💰 Fees Payment (Paid vs Due)</div>
-                        <canvas id="feesChart" style="height: 300px; width: 100%;"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">📉 Fees Due Trend</div>
-                        <canvas id="dueTrendChart" style="height: 300px; width: 100%;"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">📋 Fees History</div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr></thead>
-                                <tbody id="feesTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">📅 Recent Attendance</div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th></tr></thead>
-                                <tbody id="attendanceTableBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">🔴 Block History</div>
-                        <div style="overflow-x: auto;">
-                            <table class="data-table">
-                                <thead><tr><th>Blocked From</th><th>Blocked Until</th><th>Reason</th><th>Unblocked</th></tr></thead>
-                                <tbody id="blockHistoryBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
+                    <div class="chart-container"><div class="chart-title">📊 Monthly Attendance</div><canvas id="attendanceChart" style="height:300px;"></canvas></div>
+                    <div class="chart-container"><div class="chart-title">💰 Fees Payment</div><canvas id="feesChart" style="height:300px;"></canvas></div>
+                    <div class="chart-container"><div class="chart-title">📋 Fees History</div><div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr></thead><tbody id="feesTableBody"></tbody></table></div></div>
+                    <div class="chart-container"><div class="chart-title">📅 Recent Attendance</div><div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th></tr></thead><tbody id="attendanceTableBody"></tbody></table></div></div>
+                    <div class="chart-container"><div class="chart-title">🔴 Block History</div><div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Blocked From</th><th>Blocked Until</th><th>Reason</th><th>Unblocked</th></tr></thead><tbody id="blockHistoryBody"></tbody></table></div></div>
                     <div class="action-buttons">
                         <button class="btn btn-info" id="markAttendanceBtn">📅 Mark Attendance</button>
                         <button class="btn btn-success" id="payFeesBtn">💰 Pay Fees</button>
                         ${!isOld ? `<button class="btn btn-primary" id="editStudentDashboardBtn">✏️ Edit Student</button>` : ''}
+                        ${!isOld && (sessionEnding || sessionExpired) ? `<button class="btn btn-promote" id="promoteStudentBtn">🎓 Promote to Next Session</button>` : ''}
                     </div>
                 </div>
             `;
             
-            this.populateFeesTable(feesHistory, student.studentId);
-            this.populateAttendanceTable(attendance);
-            this.populateBlockHistory(student.blockHistory || []);
+            // Populate tables
+            const feesTbody = document.getElementById('feesTableBody');
+            if (feesTbody) {
+                feesTbody.innerHTML = (feesHistory || []).map(f => `<tr><td>${f.month} ${f.year}</td><td>₹${f.amount}</td><td>₹${f.paidAmount || 0}</td><td>₹${f.dueAmount || 0}</td><td>${getStatusBadge(f.status)}</td><td>${f.status !== 'paid' ? `<button class="btn btn-success btn-sm pay-fee-btn" data-month="${f.month}" data-year="${f.year}" data-due="${f.dueAmount}">Pay</button>` : '-'}</td></tr>`).join('');
+                document.querySelectorAll('.pay-fee-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); this.openFeesModalWithMonth(currentViewStudent, btn.dataset.month, btn.dataset.year, btn.dataset.due); }));
+            }
+            
+            const attTbody = document.getElementById('attendanceTableBody');
+            if (attTbody) {
+                const recent = [...(attendance || [])].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
+                attTbody.innerHTML = recent.map(a => `<tr><td>${formatDate(a.date)}</td><td>${a.status || '-'}</td><td>${a.checkInTime || '-'}</td><td>${a.checkOutTime || '-'}</td>`).join('');
+            }
+            
+            const blockTbody = document.getElementById('blockHistoryBody');
+            if (blockTbody) {
+                blockTbody.innerHTML = ((s.blockHistory || []).map(b => `<tr><td>${formatDate(b.blockedFrom)}</td><td>${b.blockedUntil ? formatDate(b.blockedUntil) : 'Permanent'}</td><td>${b.reason || '-'}</td><td>${b.unblockedAt ? formatDate(b.unblockedAt) : 'Still Blocked'}</td>`).join('') || '<tr><td colspan="4" class="empty-state">No block history</td></tr>');
+            }
+            
+            // Charts
+            const months = this.getLast12Months();
+            const attData = months.map(m => { const monthAtt = (attendance || []).filter(a => { const d = new Date(a.date); return d.getMonth() === m.monthIndex && d.getFullYear() === m.year; }); const present = monthAtt.filter(a => a.status === 'present').length; return monthAtt.length ? (present/monthAtt.length)*100 : 0; });
+            const feesData = months.map(m => { const fee = (feesHistory || []).find(f => f.monthIndex === m.monthIndex && f.year === m.year); return { paid: fee?.paidAmount || 0, due: fee?.dueAmount || 0 }; });
             
             setTimeout(() => {
-                this.renderAttendanceChart(attendanceData, months);
-                this.renderFeesChart(feesData, months);
-                this.renderDueTrendChart(feesData, months);
+                try {
+                    if (window.Chart) {
+                        const attCtx = document.getElementById('attendanceChart')?.getContext('2d');
+                        if (attCtx) { if (charts.attendance) charts.attendance.destroy(); charts.attendance = new Chart(attCtx, { type: 'line', data: { labels: months.map(m => m.name), datasets: [{ label: 'Attendance %', data: attData, borderColor: '#667eea', fill: true }] }, options: { responsive: true, scales: { y: { min: 0, max: 100 } } } }); }
+                        const feesCtx = document.getElementById('feesChart')?.getContext('2d');
+                        if (feesCtx) { if (charts.fees) charts.fees.destroy(); charts.fees = new Chart(feesCtx, { type: 'bar', data: { labels: months.map(m => m.name), datasets: [{ label: 'Paid', data: feesData.map(d => d.paid), backgroundColor: '#28a745' }, { label: 'Due', data: feesData.map(d => d.due), backgroundColor: '#dc3545' }] }, options: { responsive: true } }); }
+                    }
+                } catch(e) { console.log('Chart error:', e); }
             }, 100);
             
             footer.innerHTML = `
                 ${!isOld ? `<button class="btn btn-danger" id="deleteStudentBtn">🗑️ Delete Student</button>` : ''}
                 ${!isOld && !isBlocked ? `<button class="btn btn-warning" id="blockStudentBtn">🔴 Block Student</button>` : ''}
                 ${!isOld && isBlocked ? `<button class="btn btn-success" id="unblockStudentBtn">🟢 Unblock Student</button>` : ''}
+                ${isOld ? `<button class="btn btn-primary" id="readmitStudentBtn">🔄 Re-admit Student</button>` : ''}
                 <button class="btn btn-info" id="exportReportBtn">📎 Export Report</button>
                 <button class="btn btn-secondary" id="closeDashboardFooterBtn">Close</button>
             `;
             
-            document.getElementById('deleteStudentBtn')?.addEventListener('click', () => this.deleteStudent(student.studentId));
-            document.getElementById('blockStudentBtn')?.addEventListener('click', () => this.blockStudent(student.studentId));
-            document.getElementById('unblockStudentBtn')?.addEventListener('click', () => this.unblockStudent(student.studentId));
-            document.getElementById('editStudentDashboardBtn')?.addEventListener('click', () => this.openEditPopup(student));
-            document.getElementById('exportReportBtn')?.addEventListener('click', () => this.exportStudentReport(student));
+            document.getElementById('deleteStudentBtn')?.addEventListener('click', () => this.deleteStudent(s.studentId));
+            document.getElementById('blockStudentBtn')?.addEventListener('click', () => this.blockStudent(s.studentId));
+            document.getElementById('unblockStudentBtn')?.addEventListener('click', () => this.unblockStudent(s.studentId));
+            document.getElementById('editStudentDashboardBtn')?.addEventListener('click', () => this.openEditPopup(s));
+            document.getElementById('exportReportBtn')?.addEventListener('click', () => this.exportStudentReport(s));
             document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
-            document.getElementById('markAttendanceBtn')?.addEventListener('click', () => this.openAttendanceModal(student.studentId));
-            document.getElementById('payFeesBtn')?.addEventListener('click', () => this.openFeesModal(student));
-        }
-
-        populateFeesTable(feesHistory, studentId) {
-            const tbody = document.getElementById('feesTableBody');
-            if (!tbody) return;
-            
-            if (!feesHistory || feesHistory.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No fees records found</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = feesHistory.map(f => `
-                <tr>
-                    <td>${f.month || '-'} ${f.year || ''}</td>
-                    <td>₹${f.amount || 0}</td>
-                    <td>₹${f.paidAmount || 0}</td>
-                    <td>₹${f.dueAmount || 0}</td>
-                    <td>${getStatusBadge(f.status)}</td>
-                    <td>
-                        ${f.status !== 'paid' ? `<button class="btn btn-success btn-sm pay-fee-btn" data-month="${f.month}" data-year="${f.year}" data-due="${f.dueAmount}">Pay</button>` : '-'}
-                    </td>
-                </tr>
-            `).join('');
-            
-            document.querySelectorAll('.pay-fee-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const month = btn.dataset.month;
-                    const year = btn.dataset.year;
-                    const due = btn.dataset.due;
-                    this.openFeesModalWithMonth(currentViewStudent, month, year, due);
-                });
-            });
-        }
-
-        populateAttendanceTable(attendance) {
-            const tbody = document.getElementById('attendanceTableBody');
-            if (!tbody) return;
-            
-            if (!attendance || attendance.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No attendance records found</td></tr>';
-                return;
-            }
-            
-            const recent = [...attendance].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 20);
-            tbody.innerHTML = recent.map(a => `
-                <tr>
-                    <td>${formatDate(a.date)}</td>
-                    <td>${a.status || '-'}</td>
-                    <td>${a.checkInTime || '-'}</td>
-                    <td>${a.checkOutTime || '-'}</td>
-                </tr>
-            `).join('');
-        }
-
-        populateBlockHistory(blockHistory) {
-            const tbody = document.getElementById('blockHistoryBody');
-            if (!tbody) return;
-            
-            if (!blockHistory || blockHistory.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No block history</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = blockHistory.map(b => `
-                <tr>
-                    <td>${formatDate(b.blockedFrom)}</td>
-                    <td>${b.blockedUntil ? formatDate(b.blockedUntil) : 'Permanent'}</td>
-                    <td>${b.reason || '-'}</td>
-                    <td>${b.unblockedAt ? formatDate(b.unblockedAt) : 'Still Blocked'}</td>
-                </tr>
-            `).join('');
+            document.getElementById('markAttendanceBtn')?.addEventListener('click', () => this.openAttendanceModal(s.studentId));
+            document.getElementById('payFeesBtn')?.addEventListener('click', () => this.openFeesModal(s));
+            document.getElementById('promoteStudentBtn')?.addEventListener('click', () => this.openPromotionModal(s));
+            document.getElementById('readmitStudentBtn')?.addEventListener('click', () => this.openReadmissionModal(s));
         }
 
         getLast12Months() {
@@ -1594,116 +1182,176 @@
             for (let i = 11; i >= 0; i--) {
                 const d = new Date();
                 d.setMonth(d.getMonth() - i);
-                months.push({
-                    name: d.toLocaleString('default', { month: 'short' }) + ' ' + d.getFullYear(),
-                    monthIndex: d.getMonth(),
-                    year: d.getFullYear()
-                });
+                months.push({ name: d.toLocaleString('default', { month: 'short' }) + ' ' + d.getFullYear(), monthIndex: d.getMonth(), year: d.getFullYear() });
             }
             return months;
         }
 
-        getAttendanceData(student, months) {
-            const attendance = student.attendance || [];
-            return months.map(m => {
-                const monthAttendance = attendance.filter(a => {
-                    const d = new Date(a.date);
-                    return d.getMonth() === m.monthIndex && d.getFullYear() === m.year;
-                });
-                const present = monthAttendance.filter(a => a.status === 'present').length;
-                const total = monthAttendance.length;
-                return total > 0 ? (present / total) * 100 : 0;
-            });
+        // ========== PROMOTION ==========
+        openPromotionModal(student) {
+            const currentYear = parseInt(student.currentSession?.sessionName?.split('-')[0]) || 2024;
+            const sessionSelect = document.getElementById('newSessionSelect');
+            sessionSelect.innerHTML = '';
+            for (let year = currentYear + 1; year <= 2050; year++) {
+                const session = `${year}-${year + 1}`;
+                sessionSelect.innerHTML += `<option value="${session}" ${year === currentYear + 1 ? 'selected' : ''}>${session}</option>`;
+            }
+            document.getElementById('promotionInfo').innerHTML = `<div class="promotion-form"><p><strong>Student:</strong> ${student.studentName?.first} ${student.studentName?.last}</p><p><strong>Current Session:</strong> ${student.currentSession?.sessionName}</p><p><strong>Current Class:</strong> ${student.education?.class}</p><p><strong>Current Fees:</strong> ₹${student.monthlyFees}</p><hr><p>⚠️ Student will be archived and new record created.</p></div>`;
+            document.getElementById('promotionModal').classList.add('active');
+            document.getElementById('confirmPromotionBtn').onclick = () => this.confirmPromotion(student);
         }
 
-        getFeesData(student, months) {
-            const feesHistory = student.feesHistory || [];
-            return months.map(m => {
-                const fee = feesHistory.find(f => f.monthIndex === m.monthIndex && f.year === m.year);
-                return {
-                    paid: fee?.paidAmount || 0,
-                    due: fee?.dueAmount || 0,
-                    amount: fee?.amount || 0
-                };
-            });
-        }
-
-        renderAttendanceChart(data, months) {
-            const canvas = document.getElementById('attendanceChart');
-            if (!canvas) return;
+        async confirmPromotion(student) {
+            const newSession = document.getElementById('newSessionSelect').value;
+            const newClass = document.getElementById('newClassSelect').value;
+            const newFees = document.getElementById('newFeesAmount').value;
+            if (!newSession) { showAlert('Select new session', 'error'); return; }
             
             try {
-                if (charts.attendance) charts.attendance.destroy();
-                const ctx = canvas.getContext('2d');
-                charts.attendance = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: months.map(m => m.name),
-                        datasets: [{
-                            label: 'Attendance %',
-                            data: data,
-                            borderColor: '#667eea',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Percentage (%)' } } } }
+                showAlert('Promoting student...', 'info');
+                const response = await this.apiCall(`/students/${student.studentId}/promote`, {
+                    method: 'POST',
+                    body: JSON.stringify({ newSession, newClass: newClass || student.education?.class, newFees: newFees ? parseInt(newFees) : student.monthlyFees })
                 });
-            } catch (err) {
-                console.error('Chart error:', err);
-            }
+                if (response.success) {
+                    showAlert('✅ Student promoted successfully!', 'success');
+                    closeModal('promotionModal');
+                    await this.loadStudents();
+                    closeModal('dashboardModal');
+                } else {
+                    showAlert(response.message || 'Promotion failed', 'error');
+                }
+            } catch(err) { showAlert('Error promoting student', 'error'); }
         }
 
-        renderFeesChart(data, months) {
-            const canvas = document.getElementById('feesChart');
-            if (!canvas) return;
-            
-            try {
-                if (charts.fees) charts.fees.destroy();
-                const ctx = canvas.getContext('2d');
-                charts.fees = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: months.map(m => m.name),
-                        datasets: [
-                            { label: 'Paid Amount (₹)', data: data.map(d => d.paid), backgroundColor: '#28a745' },
-                            { label: 'Due Amount (₹)', data: data.map(d => d.due), backgroundColor: '#dc3545' }
-                        ]
-                    },
-                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Amount (₹)' } } } }
-                });
-            } catch (err) {
-                console.error('Chart error:', err);
+        // ========== RE-ADMISSION ==========
+        openReadmissionModal(student) {
+            const sessionSelect = document.getElementById('readmissionSessionSelect');
+            sessionSelect.innerHTML = '';
+            for (let year = 2024; year <= 2050; year++) {
+                sessionSelect.innerHTML += `<option value="${year}-${year+1}">${year}-${year+1}</option>`;
             }
+            document.getElementById('readmissionInfo').innerHTML = `<div class="readmission-form"><p><strong>Student:</strong> ${student.studentName?.first} ${student.studentName?.last}</p><p><strong>Previous Session:</strong> ${student.completedSession?.sessionName}</p><p><strong>Previous Class:</strong> ${student.education?.class}</p><p><strong>Previous Fees:</strong> ₹${student.monthlyFees}</p><hr><p>📝 Student will be re-admitted with new session.</p></div>`;
+            document.getElementById('readmissionModal').classList.add('active');
+            document.getElementById('confirmReadmissionBtn').onclick = () => this.confirmReadmission(student);
         }
 
-        renderDueTrendChart(data, months) {
-            const canvas = document.getElementById('dueTrendChart');
-            if (!canvas) return;
+        async confirmReadmission(student) {
+            const newSession = document.getElementById('readmissionSessionSelect').value;
+            const newClass = document.getElementById('readmissionClassSelect').value;
+            const newFees = document.getElementById('readmissionFeesAmount').value;
+            if (!newSession || !newClass || !newFees) { showAlert('Please fill all fields', 'error'); return; }
             
             try {
-                if (charts.dueTrend) charts.dueTrend.destroy();
-                const ctx = canvas.getContext('2d');
-                charts.dueTrend = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: months.map(m => m.name),
-                        datasets: [{
-                            label: 'Due Amount (₹)',
-                            data: data.map(d => d.due),
-                            borderColor: '#dc3545',
-                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Amount (₹)' } } } }
+                showAlert('Re-admitting student...', 'info');
+                const response = await this.apiCall('/students/readmit', {
+                    method: 'POST',
+                    body: JSON.stringify({ oldStudentId: student._id, studentId: student.studentId, aadharNumber: student.aadharNumber, studentName: student.studentName, studentMobile: student.studentMobile, email: student.email, parentType: student.parentType, fatherName: student.fatherName, fatherMobile: student.fatherMobile, motherName: student.motherName, motherMobile: student.motherMobile, guardianName: student.guardianName, guardianMobile: student.guardianMobile, guardianRelation: student.guardianRelation, address: student.address, photo: student.photo, aadharDocument: student.aadharDocument, newSession, newClass, newFees: parseInt(newFees) })
                 });
-            } catch (err) {
-                console.error('Chart error:', err);
-            }
+                if (response.success) {
+                    showAlert('✅ Student re-admitted successfully!', 'success');
+                    closeModal('readmissionModal');
+                    await this.loadStudents();
+                    await this.loadOldStudents();
+                    closeModal('dashboardModal');
+                } else {
+                    showAlert(response.message || 'Re-admission failed', 'error');
+                }
+            } catch(err) { showAlert('Error re-admitting student', 'error'); }
         }
+
+        // ========== EDIT POPUP ==========
+        openEditPopup(student) {
+            currentEditStudentId = student.studentId;
+            const editFormHtml = `
+                <form id="editStudentForm">
+                    <div class="section-title">📅 Session Information</div>
+                    <div class="form-row"><div class="form-group"><label>Session *</label><select id="editSession">${allSessions.map(s => `<option value="${s}" ${student.currentSession?.sessionName === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Joining Date *</label><input type="date" id="editJoiningDate" value="${student.joiningDate ? student.joiningDate.split('T')[0] : ''}"></div></div>
+                    <div class="section-title">👤 Student Name</div>
+                    <div class="form-row-3"><div class="form-group"><label>First Name *</label><input type="text" id="editFirstName" value="${student.studentName?.first || ''}"></div><div class="form-group"><label>Middle Name</label><input type="text" id="editMiddleName" value="${student.studentName?.middle || ''}"></div><div class="form-group"><label>Last Name *</label><input type="text" id="editLastName" value="${student.studentName?.last || ''}"></div></div>
+                    <div class="section-title">📋 Personal Info</div>
+                    <div class="form-row"><div class="form-group"><label>DOB</label><input type="date" id="editDob" value="${student.dateOfBirth ? student.dateOfBirth.split('T')[0] : ''}"></div><div class="form-group"><label>Gender</label><select id="editGender"><option value="">Select</option>${genders.map(g => `<option value="${g}" ${student.gender === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div></div>
+                    <div class="section-title">📞 Contact</div>
+                    <div class="form-row"><div class="form-group"><label>Mobile *</label><input type="tel" id="editStudentMobile" value="${student.studentMobile || ''}"></div><div class="form-group"><label>Alternate Mobile</label><input type="tel" id="editAlternateMobile" value="${student.alternateMobile || ''}"></div></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="editEmail" value="${student.email || ''}"></div>
+                    <div class="form-group"><label>Emergency Contact</label><input type="tel" id="editEmergencyContact" value="${student.emergencyContact || ''}"></div>
+                    <div class="section-title">👪 Parent</div>
+                    <div class="form-group"><label>Parent Type</label><select id="editParentType"><option value="Father" ${student.parentType === 'Father' ? 'selected' : ''}>Father</option><option value="Mother" ${student.parentType === 'Mother' ? 'selected' : ''}>Mother</option><option value="Guardian" ${student.parentType === 'Guardian' ? 'selected' : ''}>Guardian</option></select></div>
+                    <div id="editFatherFields" style="display:${student.parentType === 'Father' ? 'block' : 'none'}"><div class="form-row"><div class="form-group"><label>Father Name</label><input type="text" id="editFatherName" value="${student.fatherName?.first || ''}"></div><div class="form-group"><label>Father Mobile</label><input type="tel" id="editFatherMobile" value="${student.fatherMobile || ''}"></div></div></div>
+                    <div id="editMotherFields" style="display:${student.parentType === 'Mother' ? 'block' : 'none'}"><div class="form-row"><div class="form-group"><label>Mother Name</label><input type="text" id="editMotherName" value="${student.motherName?.first || ''}"></div><div class="form-group"><label>Mother Mobile</label><input type="tel" id="editMotherMobile" value="${student.motherMobile || ''}"></div></div></div>
+                    <div id="editGuardianFields" style="display:${student.parentType === 'Guardian' ? 'block' : 'none'}"><div class="form-row"><div class="form-group"><label>Guardian Name</label><input type="text" id="editGuardianName" value="${student.guardianName?.first || ''}"></div><div class="form-group"><label>Guardian Mobile</label><input type="tel" id="editGuardianMobile" value="${student.guardianMobile || ''}"></div></div><div class="form-group"><label>Relation</label><input type="text" id="editGuardianRelation" value="${student.guardianRelation || ''}"></div></div>
+                    <div class="section-title">📚 Academic</div>
+                    <div class="form-row"><div class="form-group"><label>Board</label><select id="editBoard">${allBoards.map(b => `<option value="${b}" ${student.education?.board === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div><div class="form-group"><label>Class</label><select id="editClass">${allClasses.map(c => `<option value="${c}" ${student.education?.class === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div></div>
+                    <div class="form-row"><div class="form-group"><label>Section</label><input type="text" id="editSection" value="${student.education?.section || ''}"></div><div class="form-group"><label>Roll Number</label><input type="text" id="editRollNumber" value="${student.education?.rollNumber || ''}"></div></div>
+                    <div class="section-title">💰 Fees</div>
+                    <div class="form-group"><label>Monthly Fees</label><input type="number" id="editMonthlyFees" value="${student.monthlyFees || 1000}"></div>
+                    <div class="section-title">🏠 Address</div>
+                    <div class="form-group"><label>Current Address</label><textarea id="editCurrentAddress" rows="2">${student.address?.current || ''}</textarea></div>
+                    <div class="form-group"><label>Permanent Address</label><textarea id="editPermanentAddress" rows="2">${student.address?.permanent || ''}</textarea></div>
+                    <div class="form-row-3"><div class="form-group"><label>City</label><input type="text" id="editCity" value="${student.address?.city || ''}"></div><div class="form-group"><label>State</label><input type="text" id="editState" value="${student.address?.state || ''}"></div><div class="form-group"><label>Pincode</label><input type="text" id="editPincode" value="${student.address?.pincode || ''}"></div></div>
+                    <div class="section-title">🚌 Transport</div>
+                    <div class="form-row"><div class="form-group"><label>Availing Transport</label><select id="editAvailingTransport"><option value="no" ${!student.transportDetails?.availingTransport ? 'selected' : ''}>No</option><option value="yes" ${student.transportDetails?.availingTransport ? 'selected' : ''}>Yes</option></select></div><div class="form-group"><label>Bus Route</label><input type="text" id="editBusRoute" value="${student.transportDetails?.busRoute || ''}"></div></div>
+                    <div class="form-group"><label>Bus Stop</label><input type="text" id="editBusStop" value="${student.transportDetails?.busStop || ''}"></div>
+                    <div class="section-title">🏥 Medical</div>
+                    <div class="form-row"><div class="form-group"><label>Blood Group</label><select id="editBloodGroup"><option value="">Select</option>${bloodGroups.map(bg => `<option value="${bg}" ${student.medicalInfo?.bloodGroup === bg ? 'selected' : ''}>${bg}</option>`).join('')}</select></div><div class="form-group"><label>Allergies</label><input type="text" id="editAllergies" value="${student.medicalInfo?.allergies || ''}"></div></div>
+                    <div class="form-group"><label>Medical Conditions</label><input type="text" id="editMedicalConditions" value="${student.medicalInfo?.medicalConditions || ''}"></div>
+                    <div class="section-title">📎 Documents</div>
+                    <div class="form-row"><div class="form-group"><label>Photo</label><input type="hidden" id="editPhoto"><img id="editPhotoPreview" class="image-preview" src="${student.photo || DEFAULT_PHOTO}" style="display:block;"><div class="image-actions"><button type="button" id="editCapturePhotoBtn" class="btn btn-primary btn-sm">📷 Capture</button><button type="button" id="editUploadPhotoBtn" class="btn btn-info btn-sm">📁 Upload</button><button type="button" id="editClearPhotoBtn" class="btn btn-secondary btn-sm">🗑️ Clear</button></div></div>
+                    <div class="form-group"><label>Aadhar Document</label><input type="hidden" id="editAadharDoc"><img id="editAadharPreview" class="image-preview" src="${student.aadharDocument || DEFAULT_PHOTO}" style="display:block;"><div class="image-actions"><button type="button" id="editCaptureAadharBtn" class="btn btn-primary btn-sm">📷 Capture</button><button type="button" id="editUploadAadharBtn" class="btn btn-info btn-sm">📁 Upload</button><button type="button" id="editClearAadharBtn" class="btn btn-secondary btn-sm">🗑️ Clear</button></div></div></div>
+                </form>
+            `;
+            document.getElementById('editModalStudentId').innerText = student.studentId;
+            document.getElementById('editModalBody').innerHTML = editFormHtml;
+            this.setupEditFormEvents();
+            document.getElementById('editStudentModal').classList.add('active');
+        }
+
+        setupEditFormEvents() {
+            const editParentType = document.getElementById('editParentType');
+            if (editParentType) editParentType.addEventListener('change', () => { const t = editParentType.value; document.getElementById('editFatherFields').style.display = t === 'Father' ? 'block' : 'none'; document.getElementById('editMotherFields').style.display = t === 'Mother' ? 'block' : 'none'; document.getElementById('editGuardianFields').style.display = t === 'Guardian' ? 'block' : 'none'; });
+            
+            document.getElementById('editCapturePhotoBtn')?.addEventListener('click', () => this.captureImage('editPhoto', 'editPhotoPreview'));
+            document.getElementById('editUploadPhotoBtn')?.addEventListener('click', () => this.uploadImage('editPhoto', 'editPhotoPreview'));
+            document.getElementById('editClearPhotoBtn')?.addEventListener('click', () => { document.getElementById('editPhoto').value = ''; document.getElementById('editPhotoPreview').src = DEFAULT_PHOTO; });
+            document.getElementById('editCaptureAadharBtn')?.addEventListener('click', () => this.captureImage('editAadharDoc', 'editAadharPreview'));
+            document.getElementById('editUploadAadharBtn')?.addEventListener('click', () => this.uploadImage('editAadharDoc', 'editAadharPreview'));
+            document.getElementById('editClearAadharBtn')?.addEventListener('click', () => { document.getElementById('editAadharDoc').value = ''; document.getElementById('editAadharPreview').src = DEFAULT_PHOTO; });
+        }
+
+        async saveEditFromModal() {
+            if (!currentEditStudentId) { showAlert('No student selected', 'error'); return; }
+            const studentData = {
+                studentName: { first: document.getElementById('editFirstName').value, middle: document.getElementById('editMiddleName').value || '', last: document.getElementById('editLastName').value },
+                dateOfBirth: document.getElementById('editDob').value,
+                gender: document.getElementById('editGender').value,
+                studentMobile: document.getElementById('editStudentMobile').value,
+                alternateMobile: document.getElementById('editAlternateMobile').value,
+                email: document.getElementById('editEmail').value,
+                emergencyContact: document.getElementById('editEmergencyContact').value,
+                parentType: document.getElementById('editParentType').value,
+                education: { board: document.getElementById('editBoard').value, class: document.getElementById('editClass').value, section: document.getElementById('editSection').value, rollNumber: document.getElementById('editRollNumber').value },
+                monthlyFees: parseInt(document.getElementById('editMonthlyFees').value),
+                address: { current: document.getElementById('editCurrentAddress').value, permanent: document.getElementById('editPermanentAddress').value, city: document.getElementById('editCity').value, state: document.getElementById('editState').value, pincode: document.getElementById('editPincode').value },
+                transportDetails: { availingTransport: document.getElementById('editAvailingTransport').value === 'yes', busRoute: document.getElementById('editBusRoute').value, busStop: document.getElementById('editBusStop').value },
+                medicalInfo: { bloodGroup: document.getElementById('editBloodGroup').value, allergies: document.getElementById('editAllergies').value, medicalConditions: document.getElementById('editMedicalConditions').value },
+                photo: document.getElementById('editPhoto').value || DEFAULT_PHOTO,
+                aadharDocument: document.getElementById('editAadharDoc').value || DEFAULT_PHOTO,
+                currentSession: { sessionName: document.getElementById('editSession').value },
+                joiningDate: document.getElementById('editJoiningDate').value
+            };
+            const pType = document.getElementById('editParentType').value;
+            if (pType === 'Father') { studentData.fatherName = { first: document.getElementById('editFatherName').value, last: '' }; studentData.fatherMobile = document.getElementById('editFatherMobile').value; }
+            else if (pType === 'Mother') { studentData.motherName = { first: document.getElementById('editMotherName').value, last: '' }; studentData.motherMobile = document.getElementById('editMotherMobile').value; }
+            else if (pType === 'Guardian') { studentData.guardianName = { first: document.getElementById('editGuardianName').value, last: '' }; studentData.guardianMobile = document.getElementById('editGuardianMobile').value; studentData.guardianRelation = document.getElementById('editGuardianRelation').value; }
+            
+            const response = await this.apiCall(`/students/${currentEditStudentId}`, { method: 'PUT', body: JSON.stringify(studentData) });
+            if (response.success) { showAlert('✅ Student updated!', 'success'); closeModal('editStudentModal'); await this.loadStudents(); if (currentViewStudent && currentViewStudent.studentId === currentEditStudentId) await this.showStudentDashboard(currentEditStudentId, false); }
+            else showAlert(response.message || 'Update failed', 'error');
+        }
+
+        viewDocument(imageUrl, title) { document.getElementById('docViewerImage').src = imageUrl; document.getElementById('docViewerTitle').innerText = title; this.currentDocumentUrl = imageUrl; document.getElementById('documentViewerModal').classList.add('active'); }
+        downloadCurrentDocument() { if (this.currentDocumentUrl) { const a = document.createElement('a'); a.href = this.currentDocumentUrl; a.download = 'document.jpg'; a.click(); } }
 
         openAttendanceModal(studentId) {
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
@@ -1711,410 +1359,160 @@
             document.getElementById('checkInTime').value = '';
             document.getElementById('checkOutTime').value = '';
             document.getElementById('attendanceRemarks').value = '';
-            
             const saveBtn = document.getElementById('saveAttendanceBtn');
-            const newSaveBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.addEventListener('click', () => this.saveAttendance(studentId));
-            
+            const newBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newBtn, saveBtn);
+            newBtn.addEventListener('click', () => this.saveAttendance(studentId));
             document.getElementById('attendanceModal').classList.add('active');
         }
 
         async saveAttendance(studentId) {
             const date = document.getElementById('attendanceDate').value;
-            const status = document.getElementById('attendanceStatus').value;
-            const checkInTime = document.getElementById('checkInTime').value;
-            const checkOutTime = document.getElementById('checkOutTime').value;
-            const remarks = document.getElementById('attendanceRemarks').value;
-            
-            if (!date) {
-                showAlert('Please select a date', 'error');
-                return;
-            }
-            
-            try {
-                const response = await this.apiCall(`/students/${studentId}/attendance`, {
-                    method: 'POST',
-                    body: JSON.stringify({ date, status, checkInTime, checkOutTime, remarks })
-                });
-                
-                if (response.success) {
-                    showAlert('Attendance marked successfully!', 'success');
-                    closeModal('attendanceModal');
-                    await this.showStudentDashboard(studentId, false);
-                    await this.loadStudents();
-                } else {
-                    showAlert(response.message || 'Failed to mark attendance', 'error');
-                }
-            } catch (err) {
-                showAlert('Error marking attendance', 'error');
-            }
+            if (!date) { showAlert('Select date', 'error'); return; }
+            const response = await this.apiCall(`/students/${studentId}/attendance`, { method: 'POST', body: JSON.stringify({ date, status: document.getElementById('attendanceStatus').value, checkInTime: document.getElementById('checkInTime').value, checkOutTime: document.getElementById('checkOutTime').value, remarks: document.getElementById('attendanceRemarks').value }) });
+            if (response.success) { showAlert('Attendance marked!', 'success'); closeModal('attendanceModal'); await this.showStudentDashboard(studentId, false); await this.loadStudents(); }
+            else showAlert(response.message || 'Failed', 'error');
         }
 
         openFeesModal(student) {
-            const feesHistory = student.feesHistory || [];
-            const unpaidMonths = feesHistory.filter(f => f.status !== 'paid');
-            
+            const unpaid = (student.feesHistory || []).filter(f => f.status !== 'paid');
             const monthSelect = document.getElementById('feesMonth');
-            monthSelect.innerHTML = '<option value="">Select Month</option>';
-            
-            unpaidMonths.forEach(f => {
-                monthSelect.innerHTML += `<option value="${f.month}|${f.year}" data-due="${f.dueAmount}">${f.month} ${f.year} - Due: ₹${f.dueAmount}</option>`;
-            });
-            
+            monthSelect.innerHTML = '<option value="">Select Month</option>' + unpaid.map(f => `<option value="${f.month}|${f.year}" data-due="${f.dueAmount}">${f.month} ${f.year} - Due: ₹${f.dueAmount}</option>`).join('');
             document.getElementById('feesAmount').value = '';
             document.getElementById('feesRemarks').value = '';
             document.getElementById('feesInfo').innerHTML = '';
-            
-            monthSelect.onchange = () => {
-                const selected = monthSelect.options[monthSelect.selectedIndex];
-                const due = selected?.dataset.due || 0;
-                document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
-                document.getElementById('feesAmount').max = due;
-                if (due > 0) document.getElementById('feesAmount').value = due;
-            };
-            
+            monthSelect.onchange = () => { const due = monthSelect.options[monthSelect.selectedIndex]?.dataset.due || 0; document.getElementById('feesInfo').innerHTML = `<strong>Due: ₹${due}</strong>`; document.getElementById('feesAmount').max = due; if (due) document.getElementById('feesAmount').value = due; };
             const saveBtn = document.getElementById('saveFeesBtn');
-            const newSaveBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
-            
+            const newBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newBtn, saveBtn);
+            newBtn.addEventListener('click', () => this.saveFees(student.studentId));
             document.getElementById('feesModal').classList.add('active');
         }
 
         openFeesModalWithMonth(student, month, year, due) {
             const monthSelect = document.getElementById('feesMonth');
             monthSelect.innerHTML = `<option value="${month}|${year}" data-due="${due}">${month} ${year} - Due: ₹${due}</option>`;
-            
             document.getElementById('feesAmount').value = due;
             document.getElementById('feesRemarks').value = '';
-            document.getElementById('feesInfo').innerHTML = `<strong>Due Amount: ₹${due}</strong>`;
-            
+            document.getElementById('feesInfo').innerHTML = `<strong>Due: ₹${due}</strong>`;
             const saveBtn = document.getElementById('saveFeesBtn');
-            const newSaveBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-            newSaveBtn.addEventListener('click', () => this.saveFees(student.studentId));
-            
+            const newBtn = saveBtn.cloneNode(true);
+            saveBtn.parentNode.replaceChild(newBtn, saveBtn);
+            newBtn.addEventListener('click', () => this.saveFees(student.studentId));
             document.getElementById('feesModal').classList.add('active');
         }
 
         async saveFees(studentId) {
-            const monthSelect = document.getElementById('feesMonth');
-            const selectedValue = monthSelect.value;
-            if (!selectedValue) {
-                showAlert('Please select a month', 'error');
-                return;
-            }
-            
-            const [month, year] = selectedValue.split('|');
-            const paidAmount = parseInt(document.getElementById('feesAmount').value);
-            const remarks = document.getElementById('feesRemarks').value;
-            
-            if (!paidAmount || paidAmount <= 0) {
-                showAlert('Please enter a valid amount', 'error');
-                return;
-            }
-            
-            try {
-                const response = await this.apiCall(`/students/${studentId}/fees`, {
-                    method: 'POST',
-                    body: JSON.stringify({ month, year: parseInt(year), paidAmount, remarks })
-                });
-                
-                if (response.success) {
-                    showAlert('Fees paid successfully!', 'success');
-                    closeModal('feesModal');
-                    await this.showStudentDashboard(studentId, false);
-                    await this.loadStudents();
-                } else {
-                    showAlert(response.message || 'Failed to pay fees', 'error');
-                }
-            } catch (err) {
-                showAlert('Error paying fees', 'error');
-            }
+            const selected = document.getElementById('feesMonth').value;
+            if (!selected) { showAlert('Select month', 'error'); return; }
+            const [month, year] = selected.split('|');
+            const amount = parseInt(document.getElementById('feesAmount').value);
+            if (!amount || amount <= 0) { showAlert('Enter valid amount', 'error'); return; }
+            const response = await this.apiCall(`/students/${studentId}/fees`, { method: 'POST', body: JSON.stringify({ month, year: parseInt(year), paidAmount: amount, remarks: document.getElementById('feesRemarks').value }) });
+            if (response.success) { showAlert('Fees paid!', 'success'); closeModal('feesModal'); await this.showStudentDashboard(studentId, false); await this.loadStudents(); }
+            else showAlert(response.message || 'Failed', 'error');
         }
 
         async blockStudent(studentId) {
-            const reason = prompt('Enter block reason:', 'Non-payment of fees');
+            const reason = prompt('Block reason:', 'Non-payment of fees');
             if (!reason) return;
-            try {
-                const response = await this.apiCall(`/students/${studentId}/block`, {
-                    method: 'POST',
-                    body: JSON.stringify({ reason })
-                });
-                if (response.success) {
-                    showAlert('Student blocked successfully', 'success');
-                    await this.loadStudents();
-                    closeModal('dashboardModal');
-                } else {
-                    showAlert(response.message || 'Block failed', 'error');
-                }
-            } catch (err) {
-                showAlert('Error blocking student', 'error');
-            }
+            const response = await this.apiCall(`/students/${studentId}/block`, { method: 'POST', body: JSON.stringify({ reason }) });
+            if (response.success) { showAlert('Student blocked', 'success'); await this.loadStudents(); closeModal('dashboardModal'); }
+            else showAlert(response.message || 'Failed', 'error');
         }
 
         async unblockStudent(studentId) {
-            if (!confirm('Are you sure you want to unblock this student?')) return;
-            try {
-                const response = await this.apiCall(`/students/${studentId}/unblock`, { method: 'POST' });
-                if (response.success) {
-                    showAlert('Student unblocked successfully', 'success');
-                    await this.loadStudents();
-                    closeModal('dashboardModal');
-                } else {
-                    showAlert(response.message || 'Unblock failed', 'error');
-                }
-            } catch (err) {
-                showAlert('Error unblocking student', 'error');
-            }
+            if (!confirm('Unblock this student?')) return;
+            const response = await this.apiCall(`/students/${studentId}/unblock`, { method: 'POST' });
+            if (response.success) { showAlert('Student unblocked', 'success'); await this.loadStudents(); closeModal('dashboardModal'); }
+            else showAlert(response.message || 'Failed', 'error');
         }
 
         async deleteStudent(studentId) {
-            if (!confirm('Are you sure you want to delete this student? This cannot be undone!')) return;
-            try {
-                const response = await this.apiCall(`/students/${studentId}`, { method: 'DELETE' });
-                if (response.success) {
-                    showAlert('Student deleted successfully', 'success');
-                    closeModal('dashboardModal');
-                    await this.loadStudents();
-                } else {
-                    showAlert(response.message || 'Delete failed', 'error');
-                }
-            } catch (err) {
-                showAlert('Error deleting student', 'error');
-            }
+            if (!confirm('Delete this student permanently?')) return;
+            const response = await this.apiCall(`/students/${studentId}?permanent=true`, { method: 'DELETE' });
+            if (response.success) { showAlert('Student deleted', 'success'); closeModal('dashboardModal'); await this.loadStudents(); }
+            else showAlert(response.message || 'Failed', 'error');
         }
 
         exportStudentReport(student) {
-            const printWindow = window.open('', '_blank');
+            const win = window.open('', '_blank');
             const feesHistory = student.feesHistory || [];
-            const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
-            const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
-            const dueFees = totalFees - paidFees;
-            
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Student Report - ${student.studentId}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; }
-                        h1 { color: #667eea; }
-                        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background: #667eea; color: white; }
-                        .header { text-align: center; margin-bottom: 30px; }
-                        .summary { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
-                        .summary-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 10px; flex: 1; text-align: center; }
-                        .student-photo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>Bal Bharti Coaching Center</h1>
-                        <h2>Student Report</h2>
-                        <img src="${student.photo || DEFAULT_PHOTO}" class="student-photo" onerror="this.src='${DEFAULT_PHOTO}'">
-                    </div>
-                    <div class="summary">
-                        <div class="summary-card"><h3>₹${totalFees.toLocaleString()}</h3><p>Total Fees</p></div>
-                        <div class="summary-card"><h3>₹${paidFees.toLocaleString()}</h3><p>Paid Fees</p></div>
-                        <div class="summary-card"><h3>₹${dueFees.toLocaleString()}</h3><p>Due Fees</p></div>
-                    </div>
-                    <h3>Student Details</h3>
-                    <table>
-                        <tr><th>Field</th><th>Value</th></tr>
-                        <tr><td>Student ID</td><td>${student.studentId || '-'}</td></tr>
-                        <tr><td>Name</td><td>${student.studentName?.first || ''} ${student.studentName?.last || ''}</td></tr>
-                        <tr><td>Mobile</td><td>${student.studentMobile || '-'}</td></tr>
-                        <tr><td>Board</td><td>${student.education?.board || '-'}</td></tr>
-                        <tr><td>Class</td><td>${student.education?.class || '-'}</td></tr>
-                        <tr><td>Session</td><td>${student.currentSession?.sessionName || '-'}</td></tr>
-                    </table>
-                    <h3>Fees History</h3>
-                    <table>
-                        <thead><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
-                        <tbody>
-                            ${feesHistory.map(f => `
-                                <tr><td>${f.month} ${f.year}</td><td>₹${f.amount}</td><td>₹${f.paidAmount || 0}</td><td>₹${f.dueAmount || 0}</td><td>${f.status}</td></tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    <p style="margin-top: 30px; text-align: center;">Generated on: ${new Date().toLocaleString()}</p>
-                </body>
-                </html>
-            `);
-            printWindow.print();
+            const total = feesHistory.reduce((s,f) => s + (f.amount||0),0);
+            const paid = feesHistory.reduce((s,f) => s + (f.paidAmount||0),0);
+            win.document.write(`<html><head><title>Report - ${student.studentId}</title><style>body{font-family:Arial;padding:20px} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:8px} th{background:#667eea;color:white}</style></head><body><h1>Bal Bharti Coaching Center</h1><h2>Student Report</h2><img src="${student.photo || DEFAULT_PHOTO}" style="width:100px;border-radius:50%"><h3>${student.studentName?.first} ${student.studentName?.last}</h3><p>ID: ${student.studentId} | Class: ${student.education?.class} | Session: ${student.currentSession?.sessionName}</p><h3>Fees Summary</h3><p>Total: ₹${total} | Paid: ₹${paid} | Due: ₹${total-paid}</p><h3>Fees History</h3><table><tr><th>Month</th><th>Amount</th><th>Paid</th><th>Due</th><th>Status</th></tr>${feesHistory.map(f => `<tr><td>${f.month} ${f.year}</td><td>₹${f.amount}</td><td>₹${f.paidAmount||0}</td><td>₹${f.dueAmount||0}</td><td>${f.status}</td></tr>`).join('')}</table><p>Generated: ${new Date().toLocaleString()}</p></body></html>`);
+            win.print();
         }
 
         async registerStudent() {
-            const aadharNumber = document.getElementById('aadharNumber').value;
-            const studentId = aadharNumber;
+            const aadhar = document.getElementById('aadharNumber').value;
+            if (!aadhar || aadhar.length !== 12) { showAlert('Valid 12-digit Aadhar required', 'error'); return; }
+            if (!document.getElementById('studentMobile').value || document.getElementById('studentMobile').value.length !== 10) { showAlert('Valid 10-digit mobile required', 'error'); return; }
+            if (!document.getElementById('firstName').value || !document.getElementById('lastName').value) { showAlert('First and last name required', 'error'); return; }
             
-            // Validation
-            if (!studentId || studentId.length !== 12) {
-                showAlert('Please enter valid 12-digit Aadhar number', 'error');
-                return;
-            }
+            const existing = this.students?.find(s => s.studentId === aadhar);
+            if (existing) { showAlert(`Student ID ${aadhar} already exists!`, 'error'); return; }
             
-            if (!document.getElementById('studentMobile').value || document.getElementById('studentMobile').value.length !== 10) {
-                showAlert('Please enter valid 10-digit mobile number', 'error');
-                return;
-            }
-            
-            if (!document.getElementById('firstName').value || !document.getElementById('lastName').value) {
-                showAlert('Please enter student name (first and last)', 'error');
-                return;
-            }
-            
-            // Check if student ID already exists
-            const existingStudent = this.students?.find(s => s.studentId === studentId);
-            if (existingStudent) {
-                showAlert(`Student with ID ${studentId} already exists! Please use a different Aadhar number.`, 'error');
-                return;
-            }
-            
-            const parentType = document.getElementById('parentType').value;
-            
+            const pType = document.getElementById('parentType').value;
             const studentData = {
-                studentId: studentId,
-                aadharNumber: studentId,
+                studentId: aadhar, aadharNumber: aadhar,
                 aadharDocument: document.getElementById('aadharDoc').value || DEFAULT_PHOTO,
                 photo: document.getElementById('photo').value || DEFAULT_PHOTO,
-                studentName: {
-                    first: document.getElementById('firstName').value,
-                    middle: document.getElementById('middleName').value || '',
-                    last: document.getElementById('lastName').value
-                },
-                parentType: parentType,
+                studentName: { first: document.getElementById('firstName').value, middle: document.getElementById('middleName').value || '', last: document.getElementById('lastName').value },
+                dateOfBirth: document.getElementById('dob').value,
+                gender: document.getElementById('gender').value,
                 studentMobile: document.getElementById('studentMobile').value,
-                email: document.getElementById('email').value || '',
-                education: {
-                    board: document.getElementById('board').value,
-                    class: document.getElementById('class').value
-                },
+                alternateMobile: document.getElementById('alternateMobile').value,
+                email: document.getElementById('email').value,
+                emergencyContact: document.getElementById('emergencyContact').value,
+                parentType: pType,
+                education: { board: document.getElementById('board').value, class: document.getElementById('class').value, section: document.getElementById('section').value, rollNumber: document.getElementById('rollNumber').value },
                 monthlyFees: parseInt(document.getElementById('monthlyFees').value) || 1000,
                 joiningDate: document.getElementById('joiningDate').value,
-                address: {
-                    current: document.getElementById('currentAddress').value,
-                    permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value
-                }
+                address: { current: document.getElementById('currentAddress').value, permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value, city: document.getElementById('city').value, state: document.getElementById('state').value, pincode: document.getElementById('pincode').value },
+                transportDetails: { availingTransport: document.getElementById('availingTransport').value === 'yes', busRoute: document.getElementById('busRoute').value, busStop: document.getElementById('busStop').value },
+                medicalInfo: { bloodGroup: document.getElementById('bloodGroup').value, allergies: document.getElementById('allergies').value, medicalConditions: document.getElementById('medicalConditions').value }
             };
             
-            // Add parent fields based on selection
-            if (parentType === 'Father') {
-                studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' };
-                studentData.fatherMobile = document.getElementById('fatherMobile').value;
-                studentData.motherName = { first: '', last: '' };
-                studentData.motherMobile = '';
-                studentData.guardianName = { first: '', last: '' };
-                studentData.guardianMobile = '';
-                studentData.guardianRelation = '';
-            } else if (parentType === 'Mother') {
-                studentData.motherName = { first: document.getElementById('motherName').value, last: '' };
-                studentData.motherMobile = document.getElementById('motherMobile').value;
-                studentData.fatherName = { first: '', last: '' };
-                studentData.fatherMobile = '';
-                studentData.guardianName = { first: '', last: '' };
-                studentData.guardianMobile = '';
-                studentData.guardianRelation = '';
-            } else if (parentType === 'Guardian') {
-                studentData.guardianName = { first: document.getElementById('guardianName').value, last: '' };
-                studentData.guardianMobile = document.getElementById('guardianMobile').value;
-                studentData.guardianRelation = document.getElementById('guardianRelation').value;
-                studentData.fatherName = { first: '', last: '' };
-                studentData.fatherMobile = '';
-                studentData.motherName = { first: '', last: '' };
-                studentData.motherMobile = '';
-            }
+            if (pType === 'Father') { studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' }; studentData.fatherMobile = document.getElementById('fatherMobile').value; }
+            else if (pType === 'Mother') { studentData.motherName = { first: document.getElementById('motherName').value, last: '' }; studentData.motherMobile = document.getElementById('motherMobile').value; }
+            else if (pType === 'Guardian') { studentData.guardianName = { first: document.getElementById('guardianName').value, last: '' }; studentData.guardianMobile = document.getElementById('guardianMobile').value; studentData.guardianRelation = document.getElementById('guardianRelation').value; }
             
-            try {
-                const response = await this.apiCall('/students/register', {
-                    method: 'POST',
-                    body: JSON.stringify(studentData)
-                });
-                
-                if (response.success) {
-                    const password = studentId.slice(-6);
-                    showAlert(`✅ Student registered successfully!\nID: ${studentId}\nPassword: ${password}`, 'success', 8000);
-                    this.resetAdmissionForm();
-                    await this.loadStudents();
-                    this.switchTab('students');
-                } else {
-                    if (response.message?.includes('duplicate') || response.message?.includes('already exists')) {
-                        showAlert(`Student with ID ${studentId} already exists! Please use a different Aadhar number.`, 'error');
-                    } else {
-                        showAlert(response.message || 'Registration failed', 'error');
-                    }
-                }
-            } catch (err) {
-                showAlert('Error registering student: ' + err.message, 'error');
-            }
+            const response = await this.apiCall('/students/register', { method: 'POST', body: JSON.stringify(studentData) });
+            if (response.success) { showAlert(`✅ Registered! ID: ${aadhar}, Password: ${aadhar.slice(-6)}`, 'success', 8000); this.resetAdmissionForm(); await this.loadStudents(); this.switchTab('students'); }
+            else showAlert(response.message || 'Registration failed', 'error');
         }
 
         async updateStudent() {
-            if (!currentEditStudentId) {
-                showAlert('No student selected for edit', 'error');
-                return;
-            }
-            
-            const parentType = document.getElementById('parentType').value;
-            
+            if (!currentEditStudentId) { showAlert('No student selected', 'error'); return; }
+            const pType = document.getElementById('parentType').value;
             const studentData = {
-                studentId: currentEditStudentId,
-                studentName: {
-                    first: document.getElementById('firstName').value,
-                    middle: document.getElementById('middleName').value || '',
-                    last: document.getElementById('lastName').value
-                },
+                studentName: { first: document.getElementById('firstName').value, middle: document.getElementById('middleName').value || '', last: document.getElementById('lastName').value },
+                dateOfBirth: document.getElementById('dob').value,
+                gender: document.getElementById('gender').value,
                 studentMobile: document.getElementById('studentMobile').value,
-                email: document.getElementById('email').value || '',
-                parentType: parentType,
-                education: {
-                    board: document.getElementById('board').value,
-                    class: document.getElementById('class').value
-                },
+                alternateMobile: document.getElementById('alternateMobile').value,
+                email: document.getElementById('email').value,
+                emergencyContact: document.getElementById('emergencyContact').value,
+                parentType: pType,
+                education: { board: document.getElementById('board').value, class: document.getElementById('class').value, section: document.getElementById('section').value, rollNumber: document.getElementById('rollNumber').value },
                 monthlyFees: parseInt(document.getElementById('monthlyFees').value),
-                address: {
-                    current: document.getElementById('currentAddress').value,
-                    permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value
-                },
+                address: { current: document.getElementById('currentAddress').value, permanent: document.getElementById('permanentAddress').value || document.getElementById('currentAddress').value, city: document.getElementById('city').value, state: document.getElementById('state').value, pincode: document.getElementById('pincode').value },
+                transportDetails: { availingTransport: document.getElementById('availingTransport').value === 'yes', busRoute: document.getElementById('busRoute').value, busStop: document.getElementById('busStop').value },
+                medicalInfo: { bloodGroup: document.getElementById('bloodGroup').value, allergies: document.getElementById('allergies').value, medicalConditions: document.getElementById('medicalConditions').value },
                 photo: document.getElementById('photo').value || DEFAULT_PHOTO,
                 aadharDocument: document.getElementById('aadharDoc').value || DEFAULT_PHOTO
             };
+            if (pType === 'Father') { studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' }; studentData.fatherMobile = document.getElementById('fatherMobile').value; }
+            else if (pType === 'Mother') { studentData.motherName = { first: document.getElementById('motherName').value, last: '' }; studentData.motherMobile = document.getElementById('motherMobile').value; }
+            else if (pType === 'Guardian') { studentData.guardianName = { first: document.getElementById('guardianName').value, last: '' }; studentData.guardianMobile = document.getElementById('guardianMobile').value; studentData.guardianRelation = document.getElementById('guardianRelation').value; }
             
-            if (parentType === 'Father') {
-                studentData.fatherName = { first: document.getElementById('fatherName').value, last: '' };
-                studentData.fatherMobile = document.getElementById('fatherMobile').value;
-            } else if (parentType === 'Mother') {
-                studentData.motherName = { first: document.getElementById('motherName').value, last: '' };
-                studentData.motherMobile = document.getElementById('motherMobile').value;
-            } else if (parentType === 'Guardian') {
-                studentData.guardianName = { first: document.getElementById('guardianName').value, last: '' };
-                studentData.guardianMobile = document.getElementById('guardianMobile').value;
-                studentData.guardianRelation = document.getElementById('guardianRelation').value;
-            }
-            
-            try {
-                const response = await this.apiCall(`/students/${currentEditStudentId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(studentData)
-                });
-                
-                if (response.success) {
-                    showAlert('✅ Student updated successfully!', 'success');
-                    this.cancelEdit();
-                    await this.loadStudents();
-                    this.switchTab('students');
-                } else {
-                    showAlert(response.message || 'Update failed', 'error');
-                }
-            } catch (err) {
-                showAlert('Error updating student: ' + err.message, 'error');
-            }
+            const response = await this.apiCall(`/students/${currentEditStudentId}`, { method: 'PUT', body: JSON.stringify(studentData) });
+            if (response.success) { showAlert('✅ Updated!', 'success'); this.cancelEdit(); await this.loadStudents(); this.switchTab('students'); }
+            else showAlert(response.message || 'Update failed', 'error');
         }
 
         cancelEdit() {
-            isEditMode = false;
             currentEditStudentId = null;
             document.getElementById('formTitle').innerText = '📝 Register New Student';
             document.getElementById('editModeIndicator').style.display = 'none';
@@ -2132,13 +1530,7 @@
             document.getElementById('aadharDoc').value = '';
             document.getElementById('photoPreview').style.display = 'none';
             document.getElementById('aadharPreview').style.display = 'none';
-            document.getElementById('photoPreview').src = '';
-            document.getElementById('aadharPreview').src = '';
-            document.getElementById('studentIdField').value = '';
-            document.getElementById('aadharNumber').value = '';
             document.getElementById('monthlyFees').value = '1000';
-            
-            // Reset parent fields visibility
             document.getElementById('fatherFields').style.display = 'block';
             document.getElementById('motherFields').style.display = 'none';
             document.getElementById('guardianFields').style.display = 'none';
@@ -2151,18 +1543,11 @@
             input.capture = 'environment';
             input.onchange = async (e) => {
                 if (e.target.files && e.target.files[0]) {
-                    try {
-                        const compressed = await this.compressImage(e.target.files[0]);
-                        document.getElementById(fieldId).value = compressed;
-                        const preview = document.getElementById(previewId);
-                        if (preview) {
-                            preview.src = compressed;
-                            preview.style.display = 'block';
-                        }
-                        showAlert('Image captured successfully!', 'success');
-                    } catch (err) {
-                        showAlert('Error processing image', 'error');
-                    }
+                    const compressed = await this.compressImage(e.target.files[0]);
+                    document.getElementById(fieldId).value = compressed;
+                    const preview = document.getElementById(previewId);
+                    if (preview) { preview.src = compressed; preview.style.display = 'block'; }
+                    showAlert('Image captured!', 'success');
                 }
             };
             input.click();
@@ -2174,18 +1559,11 @@
             input.accept = 'image/*';
             input.onchange = async (e) => {
                 if (e.target.files && e.target.files[0]) {
-                    try {
-                        const compressed = await this.compressImage(e.target.files[0]);
-                        document.getElementById(fieldId).value = compressed;
-                        const preview = document.getElementById(previewId);
-                        if (preview) {
-                            preview.src = compressed;
-                            preview.style.display = 'block';
-                        }
-                        showAlert('Image uploaded successfully!', 'success');
-                    } catch (err) {
-                        showAlert('Error processing image', 'error');
-                    }
+                    const compressed = await this.compressImage(e.target.files[0]);
+                    document.getElementById(fieldId).value = compressed;
+                    const preview = document.getElementById(previewId);
+                    if (preview) { preview.src = compressed; preview.style.display = 'block'; }
+                    showAlert('Image uploaded!', 'success');
                 }
             };
             input.click();
@@ -2195,36 +1573,19 @@
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = (event) => {
+                reader.onload = (e) => {
                     const img = new Image();
-                    img.src = event.target.result;
+                    img.src = e.target.result;
                     img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-                        let quality = 0.7;
-                        
-                        const maxDimension = 200;
-                        if (width > height && width > maxDimension) {
-                            height = (height * maxDimension) / width;
-                            width = maxDimension;
-                        } else if (height > maxDimension) {
-                            width = (width * maxDimension) / height;
-                            height = maxDimension;
-                        }
-                        
+                        let width = img.width, height = img.height, quality = 0.7;
+                        const maxDim = 200;
+                        if (width > height && width > maxDim) { height = (height * maxDim) / width; width = maxDim; }
+                        else if (height > maxDim) { width = (width * maxDim) / height; height = maxDim; }
                         const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
+                        canvas.width = width; canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                         let result = canvas.toDataURL('image/jpeg', quality);
-                        
-                        while (result.length > maxSizeKB * 1024 && quality > 0.1) {
-                            quality -= 0.1;
-                            result = canvas.toDataURL('image/jpeg', quality);
-                        }
-                        
+                        while (result.length > maxSizeKB * 1024 && quality > 0.1) { quality -= 0.1; result = canvas.toDataURL('image/jpeg', quality); }
                         resolve(result);
                     };
                     img.onerror = reject;
@@ -2233,15 +1594,8 @@
             });
         }
 
-        logout() {
-            localStorage.removeItem('adminToken');
-            window.location.href = '/login.html';
-        }
+        logout() { localStorage.removeItem('adminToken'); window.location.href = '/login.html'; }
     }
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-        const sms = new StudentManagementSystem();
-        window.smsInstance = sms;
-    });
+    document.addEventListener('DOMContentLoaded', () => { window.smsInstance = new StudentManagementSystem(); });
 })();
