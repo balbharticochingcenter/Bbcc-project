@@ -33,27 +33,39 @@ mongoose.connect(MONGO_URI)
 // SCHEMA DEFINITIONS
 // ============================================
 
-// Admin Schema
+// ------------------- ADMIN SCHEMA -------------------
 const AdminSchema = new mongoose.Schema({
     adminID: { type: String, required: true, unique: true },
     pws: { type: String, required: true },
     name: { type: String, default: 'Admin' },
+    role: { type: String, default: 'admin' }, // For future: 'super_admin', 'teacher', 'accountant'
+    permissions: [String], // For future: ['add_student', 'edit_fees', 'mark_attendance']
     loginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date },
-    lastLogin: { type: Date }
+    lastLogin: { type: Date },
+    isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
-// Student Schema (Student ID and Aadhar Number are separate but can have same value)
+// ------------------- STUDENT SCHEMA -------------------
 const StudentSchema = new mongoose.Schema({
-    studentId: { type: String, required: true, unique: true },  // Unique Student ID
-    aadharNumber: { type: String, required: true, unique: true }, // Unique Aadhar Number
+    // IMPORTANT: studentId and aadharNumber are SEPARATE fields
+    // Both can have SAME value or DIFFERENT values
+    // Both are UNIQUE individually
+    studentId: { type: String, required: true, unique: true },  // Unique Student ID (can be same as Aadhar)
+    aadharNumber: { type: String, required: true, unique: true }, // Unique Aadhar Number (can be same as Student ID)
     password: { type: String, required: true },
     photo: { type: String, default: '' },
+    
+    // Personal Information
     studentName: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
         last: { type: String, required: true }
     },
+    dateOfBirth: { type: Date }, // FOR FUTURE: Add DOB field
+    gender: { type: String, enum: ['Male', 'Female', 'Other'] }, // FOR FUTURE
+    
+    // Parent Information
     parentType: { type: String, enum: ['Father', 'Mother', 'Guardian'], default: 'Father' },
     fatherName: { first: String, last: String },
     fatherMobile: String,
@@ -62,19 +74,40 @@ const StudentSchema = new mongoose.Schema({
     guardianName: { first: String, last: String },
     guardianMobile: String,
     guardianRelation: String,
+    
+    // Contact Information
     studentMobile: { type: String, required: true },
     email: String,
-    aadharDocument: { type: String, default: '' },
+    emergencyContact: { type: String }, // FOR FUTURE: Emergency contact number
+    alternateMobile: { type: String }, // FOR FUTURE: Alternate mobile number
+    
+    // Documents
+    aadharDocument: { type: String, default: '' }, // File path or base64
+    // FOR FUTURE: Add more documents
+    // birthCertificate: { type: String },
+    // previousMarksheet: { type: String },
+    // transferCertificate: { type: String },
+    
+    // Academic Information
     education: {
-        board: { type: String, required: true },
-        class: { type: String, required: true }
+        board: { type: String, required: true }, // CBSE, ICSE, UP Board, etc.
+        class: { type: String, required: true }, // 1st to 12th
+        section: { type: String }, // FOR FUTURE: A, B, C sections
+        rollNumber: { type: String }, // FOR FUTURE: Class roll number
+        previousClassPercentage: { type: Number } // FOR FUTURE: Previous class percentage
     },
+    
+    // Session Information
     currentSession: {
         sessionName: String,
         startDate: Date,
         endDate: Date
     },
+    
+    // Fees Management
     monthlyFees: { type: Number, default: 0 },
+    feesConcession: { type: Number, default: 0 }, // FOR FUTURE: Scholarship or concession
+    lateFeePenalty: { type: Number, default: 0 }, // FOR FUTURE: Late fee penalty amount
     feesHistory: [{
         sessionName: String,
         month: String,
@@ -85,16 +118,27 @@ const StudentSchema = new mongoose.Schema({
         dueAmount: { type: Number, default: 0 },
         status: { type: String, enum: ['paid', 'partial', 'unpaid'], default: 'unpaid' },
         paymentDate: Date,
-        remarks: String
+        paymentMode: { type: String, enum: ['cash', 'cheque', 'online', 'card'] }, // FOR FUTURE
+        transactionId: { type: String }, // FOR FUTURE: For online payments
+        chequeNumber: { type: String }, // FOR FUTURE: For cheque payments
+        remarks: String,
+        collectedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' } // FOR FUTURE: Which admin collected
     }],
+    
+    // Attendance Management
     attendance: [{
         date: { type: Date },
         status: { type: String, enum: ['present', 'absent', 'late', 'half-day'], default: 'absent' },
         checkInTime: String,
         checkOutTime: String,
+        lateMinutes: { type: Number }, // FOR FUTURE: Calculate late minutes
+        subject: { type: String }, // FOR FUTURE: Subject wise attendance
         remarks: String,
-        markedAt: { type: Date, default: Date.now }
+        markedAt: { type: Date, default: Date.now },
+        markedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' } // FOR FUTURE: Who marked attendance
     }],
+    
+    // Account Status
     accountStatus: {
         isBlocked: { type: Boolean, default: false },
         blockedFrom: Date,
@@ -107,23 +151,107 @@ const StudentSchema = new mongoose.Schema({
         blockedUntil: Date,
         reason: String,
         blockedBy: String,
-        unblockedAt: Date
+        unblockedAt: Date,
+        unblockedBy: String // FOR FUTURE: Who unblocked
     }],
+    
+    // Additional Information
     joiningDate: { type: Date, default: Date.now },
     address: {
         current: String,
-        permanent: String
+        permanent: String,
+        // FOR FUTURE: More address details
+        city: String,
+        state: String,
+        pincode: String
     },
+    transportDetails: { // FOR FUTURE: Bus/transport information
+        availingTransport: { type: Boolean, default: false },
+    busRoute: String,
+    busStop: String
+},
+    hostelDetails: { // FOR FUTURE: Hostel information
+        isHosteller: { type: Boolean, default: false },
+        roomNumber: String
+    },
+    medicalInfo: { // FOR FUTURE: Medical information
+        bloodGroup: String,
+        allergies: String,
+        medicalConditions: String
+    },
+    
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
 
-// Create a compound unique index for both fields (optional - for extra safety)
-// This ensures no two students have same combination of studentId AND aadharNumber
-StudentSchema.index({ studentId: 1, aadharNumber: 1 }, { unique: true });
+// Create compound index for better search performance
+StudentSchema.index({ studentId: 1, aadharNumber: 1 });
+StudentSchema.index({ 'studentName.first': 1, 'studentName.last': 1 });
+StudentSchema.index({ 'education.class': 1, 'education.board': 1 });
 
-// Old Student Schema (Archive)
+// ------------------- TEACHER SCHEMA (FOR FUTURE) -------------------
+// WHEN YOU NEED TO ADD TEACHERS, UNCOMMENT AND USE THIS:
+/*
+const TeacherSchema = new mongoose.Schema({
+    teacherId: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    name: {
+        first: { type: String, required: true },
+        middle: String,
+        last: { type: String, required: true }
+    },
+    email: { type: String, required: true, unique: true },
+    mobile: { type: String, required: true },
+    photo: String,
+    qualification: String,
+    subjects: [String], // Subjects they teach
+    assignedClasses: [String], // Which classes they teach
+    joiningDate: { type: Date, default: Date.now },
+    salary: Number,
+    address: String,
+    isActive: { type: Boolean, default: true },
+    permissions: [String], // What teacher can do: ['mark_attendance', 'add_marks', etc.]
+    lastLogin: Date
+}, { timestamps: true });
+*/
+
+// ------------------- CLASS SCHEMA (FOR FUTURE) -------------------
+/*
+const ClassSchema = new mongoose.Schema({
+    className: { type: String, required: true }, // 1st, 2nd, etc.
+    section: String,
+    classTeacher: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' },
+    subjects: [{
+        name: String,
+        teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }
+    }],
+    totalStudents: { type: Number, default: 0 },
+    academicYear: String,
+    isActive: { type: Boolean, default: true }
+});
+*/
+
+// ------------------- EXAM SCHEMA (FOR FUTURE) -------------------
+/*
+const ExamSchema = new mongoose.Schema({
+    examName: { type: String, required: true }, // Mid-term, Final, etc.
+    examDate: Date,
+    class: { type: String, required: true },
+    subject: String,
+    maxMarks: Number,
+    passingMarks: Number,
+    results: [{
+        studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+        marksObtained: Number,
+        percentage: Number,
+        grade: String,
+        remarks: String
+    }]
+});
+*/
+
+// ------------------- OLD STUDENT SCHEMA (Archive) -------------------
 const OldStudentSchema = new mongoose.Schema({
     originalId: { type: mongoose.Schema.Types.ObjectId },
     studentId: { type: String, required: true },
@@ -153,13 +281,37 @@ const OldStudentSchema = new mongoose.Schema({
     totalFeesPaid: { type: Number, default: 0 },
     totalAttendance: { type: Number, default: 0 },
     presentDays: { type: Number, default: 0 },
-    reason: String
+    leavingReason: String, // FOR FUTURE: Why student left
+    leavingCertificate: String // FOR FUTURE: TC document
 }, { timestamps: true });
+
+// ------------------- FEES SETTINGS SCHEMA (FOR FUTURE) -------------------
+/*
+const FeesSettingsSchema = new mongoose.Schema({
+    sessionName: String,
+    class: String,
+    monthlyFees: Number,
+    admissionFees: Number,
+    annualCharges: Number,
+    transportFees: Number,
+    hostelFees: Number,
+    lateFeePerDay: Number,
+    discountForSiblings: Number,
+    effectiveFrom: Date,
+    effectiveTo: Date
+});
+*/
 
 // Create Models
 const Admin = mongoose.model('Admin', AdminSchema);
 const Student = mongoose.model('Student', StudentSchema);
 const OldStudent = mongoose.model('OldStudent', OldStudentSchema);
+
+// FOR FUTURE: Uncomment when needed
+// const Teacher = mongoose.model('Teacher', TeacherSchema);
+// const Class = mongoose.model('Class', ClassSchema);
+// const Exam = mongoose.model('Exam', ExamSchema);
+// const FeesSettings = mongoose.model('FeesSettings', FeesSettingsSchema);
 
 // ============================================
 // JWT VERIFICATION MIDDLEWARE
@@ -223,7 +375,7 @@ function generateFeesHistory(joiningDate, monthlyFees, sessionEndDate) {
 }
 
 // Move student to old students archive
-async function moveToOldStudents(student) {
+async function moveToOldStudents(student, reason = 'Session completed') {
     try {
         const totalFeesPaid = student.feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
         
@@ -255,7 +407,8 @@ async function moveToOldStudents(student) {
             attendance: student.attendance,
             totalFeesPaid: totalFeesPaid,
             totalAttendance: student.attendance.length,
-            presentDays: student.attendance.filter(a => a.status === 'present').length
+            presentDays: student.attendance.filter(a => a.status === 'present').length,
+            leavingReason: reason
         };
         
         const oldStudent = new OldStudent(oldStudentData);
@@ -278,6 +431,11 @@ function isValidMobile(mobile) {
     return /^\d{10}$/.test(mobile);
 }
 
+// Validate email
+function isValidEmail(email) {
+    return /^\S+@\S+\.\S+$/.test(email);
+}
+
 // ============================================
 // ADMIN APIs
 // ============================================
@@ -288,7 +446,7 @@ app.post('/api/admin-login', async (req, res) => {
     console.log(`📌 Login attempt: ${userid}`);
     
     try {
-        const admin = await Admin.findOne({ adminID: userid });
+        const admin = await Admin.findOne({ adminID: userid, isActive: true });
         
         if (!admin) {
             console.log('❌ Admin not found');
@@ -302,10 +460,11 @@ app.post('/api/admin-login', async (req, res) => {
         }
         
         admin.lastLogin = new Date();
+        admin.loginAttempts = 0;
         await admin.save();
         
         const token = jwt.sign(
-            { id: admin._id, adminID: admin.adminID, role: 'admin' },
+            { id: admin._id, adminID: admin.adminID, role: admin.role || 'admin' },
             process.env.JWT_SECRET || 'fallback_secret',
             { expiresIn: '24h' }
         );
@@ -315,7 +474,7 @@ app.post('/api/admin-login', async (req, res) => {
             success: true, 
             message: "Login Successful", 
             token, 
-            admin: { name: admin.name, adminID: admin.adminID } 
+            admin: { name: admin.name, adminID: admin.adminID, role: admin.role } 
         });
     } catch (err) {
         console.error('Login error:', err);
@@ -341,7 +500,7 @@ app.get('/api/admins', verifyToken, async (req, res) => {
 // Create new admin
 app.post('/api/admins', verifyToken, async (req, res) => {
     try {
-        const { adminID, password, name } = req.body;
+        const { adminID, password, name, role, permissions } = req.body;
         
         const existing = await Admin.findOne({ adminID });
         if (existing) {
@@ -349,17 +508,23 @@ app.post('/api/admins', verifyToken, async (req, res) => {
         }
         
         const hashedPassword = await bcrypt.hash(password, 10);
-        const admin = new Admin({ adminID, pws: hashedPassword, name: name || 'Admin' });
+        const admin = new Admin({ 
+            adminID, 
+            pws: hashedPassword, 
+            name: name || 'Admin',
+            role: role || 'admin',
+            permissions: permissions || []
+        });
         await admin.save();
         
-        res.json({ success: true, message: "Admin created", data: { adminID, name } });
+        res.json({ success: true, message: "Admin created", data: { adminID, name, role } });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
 // Change password
-app.post('/api/change-password', async (req, res) => {
+app.post('/api/change-password', verifyToken, async (req, res) => {
     try {
         const { adminID, oldPassword, newPassword } = req.body;
         
@@ -382,35 +547,6 @@ app.post('/api/change-password', async (req, res) => {
     }
 });
 
-// Change admin ID
-app.post('/api/change-admin-id', async (req, res) => {
-    try {
-        const { oldAdminID, newAdminID, password } = req.body;
-        
-        const admin = await Admin.findOne({ adminID: oldAdminID });
-        if (!admin) {
-            return res.status(404).json({ success: false, message: "Admin not found" });
-        }
-        
-        const isValid = await bcrypt.compare(password, admin.pws);
-        if (!isValid) {
-            return res.status(401).json({ success: false, message: "Password is incorrect" });
-        }
-        
-        const existing = await Admin.findOne({ adminID: newAdminID });
-        if (existing && existing._id.toString() !== admin._id.toString()) {
-            return res.status(400).json({ success: false, message: "Admin ID already taken" });
-        }
-        
-        admin.adminID = newAdminID;
-        await admin.save();
-        
-        res.json({ success: true, message: "Admin ID changed successfully", newAdminID });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
 // Setup default admin (one time)
 app.get('/api/setup-admin', async (req, res) => {
     try {
@@ -420,7 +556,13 @@ app.get('/api/setup-admin', async (req, res) => {
         }
         
         const hashedPassword = await bcrypt.hash('admin123', 10);
-        const admin = new Admin({ adminID: 'admin', pws: hashedPassword, name: 'Super Admin' });
+        const admin = new Admin({ 
+            adminID: 'admin', 
+            pws: hashedPassword, 
+            name: 'Super Admin',
+            role: 'super_admin',
+            permissions: ['all']
+        });
         await admin.save();
         
         res.json({ success: true, message: "Admin created! Use admin/admin123" });
@@ -430,67 +572,78 @@ app.get('/api/setup-admin', async (req, res) => {
 });
 
 // ============================================
-// STUDENT APIs (UPDATED - Separate fields but same value allowed)
+// STUDENT APIs
 // ============================================
 
-// 1. STUDENT REGISTRATION (Student ID and Aadhar Number - both fields)
+// 1. STUDENT REGISTRATION
+// IMPORTANT: studentId and aadharNumber are separate fields
+// Both are checked individually for duplicates
 app.post('/api/students/register', async (req, res) => {
     try {
         const data = req.body;
         
+        console.log('📝 New Registration:', {
+            studentId: data.studentId,
+            aadharNumber: data.aadharNumber,
+            name: `${data.studentName?.first} ${data.studentName?.last}`
+        });
+        
+        // ========== VALIDATION ==========
+        
         // Validate Student ID (12 digits)
-        if (!data.studentId || !isValidAadhar(data.studentId)) {
+        if (!data.studentId) {
             return res.status(400).json({ 
                 success: false, 
-                message: "कृपया 12 अंकों का वैध Student ID दर्ज करें | Please enter valid 12-digit Student ID" 
+                message: "Student ID is required" 
+            });
+        }
+        
+        if (!isValidAadhar(data.studentId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Student ID must be 12 digits" 
             });
         }
         
         // Validate Aadhar Number (12 digits)
-        if (!data.aadharNumber || !isValidAadhar(data.aadharNumber)) {
+        if (!data.aadharNumber) {
             return res.status(400).json({ 
                 success: false, 
-                message: "कृपया 12 अंकों का वैध आधार नंबर दर्ज करें | Please enter valid 12-digit Aadhar number" 
+                message: "Aadhar Number is required" 
             });
         }
         
-        // Validate Mobile Number (10 digits)
-        if (!data.studentMobile || !isValidMobile(data.studentMobile)) {
+        if (!isValidAadhar(data.aadharNumber)) {
             return res.status(400).json({ 
                 success: false, 
-                message: "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें | Please enter valid 10-digit mobile number" 
+                message: "Aadhar Number must be 12 digits" 
             });
         }
         
-        // IMPORTANT: Check for duplicate - Student ID OR Aadhar Number should be unique
-        const existingStudent = await Student.findOne({ 
-            $or: [
-                { studentId: data.studentId },
-                { aadharNumber: data.aadharNumber }
-            ]
-        });
-        
-        if (existingStudent) {
-            let duplicateField = '';
-            if (existingStudent.studentId === data.studentId) {
-                duplicateField = 'Student ID';
-            } else if (existingStudent.aadharNumber === data.aadharNumber) {
-                duplicateField = 'Aadhar Number';
-            }
-            
+        // Validate Mobile Number
+        if (!data.studentMobile) {
             return res.status(400).json({ 
                 success: false, 
-                message: `❌ यह ${duplicateField} (${data.studentId === data.studentId ? data.studentId : data.aadharNumber}) पहले से रजिस्टर है! | This ${duplicateField} is already registered!`,
-                duplicate: true,
-                duplicateField: duplicateField,
-                existingStudent: {
-                    studentId: existingStudent.studentId,
-                    name: `${existingStudent.studentName.first} ${existingStudent.studentName.last}`
-                }
+                message: "Mobile number is required" 
             });
         }
         
-        // Validate other required fields
+        if (!isValidMobile(data.studentMobile)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Mobile number must be 10 digits" 
+            });
+        }
+        
+        // Validate Email (if provided)
+        if (data.email && !isValidEmail(data.email)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid email format" 
+            });
+        }
+        
+        // Validate Name
         if (!data.studentName?.first || !data.studentName?.last) {
             return res.status(400).json({ 
                 success: false, 
@@ -498,23 +651,65 @@ app.post('/api/students/register', async (req, res) => {
             });
         }
         
+        // ========== DUPLICATE CHECK ==========
+        // IMPORTANT: Check Student ID separately (NOT using $or)
+        const existingByStudentId = await Student.findOne({ studentId: data.studentId });
+        if (existingByStudentId) {
+            console.log('❌ Duplicate Student ID:', data.studentId);
+            return res.status(400).json({ 
+                success: false, 
+                message: `❌ Student ID ${data.studentId} is already registered!`,
+                duplicateField: 'Student ID',
+                existingStudent: {
+                    studentId: existingByStudentId.studentId,
+                    name: `${existingByStudentId.studentName.first} ${existingByStudentId.studentName.last}`
+                }
+            });
+        }
+        
+        // IMPORTANT: Check Aadhar Number separately (NOT using $or)
+        const existingByAadhar = await Student.findOne({ aadharNumber: data.aadharNumber });
+        if (existingByAadhar) {
+            console.log('❌ Duplicate Aadhar Number:', data.aadharNumber);
+            return res.status(400).json({ 
+                success: false, 
+                message: `❌ Aadhar Number ${data.aadharNumber} is already registered!`,
+                duplicateField: 'Aadhar Number',
+                existingStudent: {
+                    studentId: existingByAadhar.studentId,
+                    name: `${existingByAadhar.studentName.first} ${existingByAadhar.studentName.last}`
+                }
+            });
+        }
+        
+        console.log('✅ No duplicates found, creating student...');
+        
+        // ========== CREATE STUDENT ==========
+        
         const joiningDate = new Date(data.joiningDate || new Date());
         const sessionEndDate = getSessionEndDate(joiningDate);
         const sessionName = `${joiningDate.getFullYear()}-${sessionEndDate.getFullYear()}`;
         
-        // Password = last 6 digits of Student ID (or custom)
+        // Password = last 6 digits of Student ID (or custom password)
         const password = data.password || data.studentId.slice(-6);
         
         const student = new Student({
-            studentId: data.studentId,        // Student ID field
-            aadharNumber: data.aadharNumber,  // Aadhar Number field (can be same as Student ID)
+            // IMPORTANT: Both fields are set separately
+            studentId: data.studentId,
+            aadharNumber: data.aadharNumber,
             password: password,
             photo: data.photo || '',
+            
+            // Personal Information
             studentName: {
-                first: data.studentName?.first || '',
-                middle: data.studentName?.middle || '',
-                last: data.studentName?.last || ''
+                first: data.studentName.first,
+                middle: data.studentName.middle || '',
+                last: data.studentName.last
             },
+            dateOfBirth: data.dateOfBirth || null,
+            gender: data.gender || null,
+            
+            // Parent Information
             parentType: data.parentType || 'Father',
             fatherName: data.fatherName || { first: '', last: '' },
             fatherMobile: data.fatherMobile || '',
@@ -523,59 +718,98 @@ app.post('/api/students/register', async (req, res) => {
             guardianName: data.guardianName || { first: '', last: '' },
             guardianMobile: data.guardianMobile || '',
             guardianRelation: data.guardianRelation || '',
+            
+            // Contact Information
             studentMobile: data.studentMobile,
             email: data.email || '',
+            emergencyContact: data.emergencyContact || '',
+            alternateMobile: data.alternateMobile || '',
+            
+            // Documents
             aadharDocument: data.aadharDocument || '',
+            
+            // Academic Information
             education: {
                 board: data.education?.board || 'CBSE',
-                class: data.education?.class || '9th'
+                class: data.education?.class || '9th',
+                section: data.education?.section || '',
+                rollNumber: data.education?.rollNumber || ''
             },
+            
+            // Fees
             monthlyFees: parseInt(data.monthlyFees) || 1000,
+            feesConcession: parseInt(data.feesConcession) || 0,
+            lateFeePenalty: parseInt(data.lateFeePenalty) || 0,
+            
+            // Session
             currentSession: {
                 sessionName: sessionName,
                 startDate: joiningDate,
                 endDate: sessionEndDate
             },
+            
             joiningDate: joiningDate,
+            
+            // Address
             address: {
                 current: data.address?.current || '',
-                permanent: data.address?.permanent || data.address?.current || ''
+                permanent: data.address?.permanent || data.address?.current || '',
+                city: data.address?.city || '',
+                state: data.address?.state || '',
+                pincode: data.address?.pincode || ''
             },
+            
+            // Status
             isActive: true,
             accountStatus: {
                 isBlocked: false,
                 blockedFrom: null,
                 blockReason: null
             },
+            
+            // Initialize empty arrays
             feesHistory: [],
             attendance: [],
             blockHistory: []
         });
         
+        // Generate fees history
         student.feesHistory = generateFeesHistory(joiningDate, student.monthlyFees, sessionEndDate);
+        
+        // Save to database
         await student.save();
+        
+        console.log('✅ Student registered successfully:', student.studentId);
         
         res.json({ 
             success: true, 
-            message: `✅ छात्र सफलतापूर्वक रजिस्टर हो गया! Student registered successfully!`,
+            message: `✅ Student registered successfully!`,
             studentId: student.studentId,
             aadharNumber: student.aadharNumber,
-            password: password
+            password: password,
+            student: {
+                id: student.studentId,
+                name: `${student.studentName.first} ${student.studentName.last}`,
+                class: student.education.class
+            }
         });
         
     } catch (err) {
         console.error('Registration error:', err);
         
-        // Handle MongoDB duplicate key error
+        // Handle MongoDB duplicate key error (fallback)
         if (err.code === 11000) {
             let duplicateField = 'Student ID or Aadhar Number';
-            if (err.keyPattern?.studentId) duplicateField = 'Student ID';
-            if (err.keyPattern?.aadharNumber) duplicateField = 'Aadhar Number';
+            if (err.keyPattern?.studentId) {
+                duplicateField = 'Student ID';
+            } else if (err.keyPattern?.aadharNumber) {
+                duplicateField = 'Aadhar Number';
+            }
             
             return res.status(400).json({ 
                 success: false, 
-                message: `❌ यह ${duplicateField} पहले से रजिस्टर है! This ${duplicateField} is already registered!`,
-                duplicate: true
+                message: `❌ ${duplicateField} is already registered!`,
+                duplicateField: duplicateField
             });
         }
         
@@ -583,40 +817,70 @@ app.post('/api/students/register', async (req, res) => {
     }
 });
 
-// 2. GET ALL STUDENTS
+// 2. GET ALL STUDENTS (with filters)
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
-        const { board, class: className, session, search, page = 1, limit = 50 } = req.query;
+        const { 
+            board, 
+            class: className, 
+            section,
+            session, 
+            search, 
+            page = 1, 
+            limit = 50,
+            status,
+            sortBy = 'createdAt',
+            sortOrder = 'desc'
+        } = req.query;
         
         let query = { isActive: true };
         
+        // Apply status filter
+        if (status === 'blocked') {
+            query['accountStatus.isBlocked'] = true;
+        } else if (status === 'active') {
+            query['accountStatus.isBlocked'] = false;
+        }
+        
+        // Apply filters
         if (board && board !== 'all') {
             query['education.board'] = board;
         }
         if (className && className !== 'all') {
             query['education.class'] = className;
         }
+        if (section && section !== 'all') {
+            query['education.section'] = section;
+        }
         if (session && session !== 'all') {
             query['currentSession.sessionName'] = session;
         }
+        
+        // Apply search
         if (search) {
             query.$or = [
                 { studentId: { $regex: search, $options: 'i' } },
                 { aadharNumber: { $regex: search, $options: 'i' } },
                 { 'studentName.first': { $regex: search, $options: 'i' } },
                 { 'studentName.last': { $regex: search, $options: 'i' } },
-                { studentMobile: { $regex: search, $options: 'i' } }
+                { studentMobile: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
             ];
         }
         
+        // Pagination
         const skip = (parseInt(page) - 1) * parseInt(limit);
+        const sortOptions = {};
+        sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+        
         const students = await Student.find(query)
-            .sort({ createdAt: -1 })
+            .sort(sortOptions)
             .skip(skip)
             .limit(parseInt(limit));
         
         const total = await Student.countDocuments(query);
         
+        // Remove passwords from response
         const safeStudents = students.map(s => {
             const obj = s.toObject();
             delete obj.password;
@@ -630,19 +894,23 @@ app.get('/api/students', verifyToken, async (req, res) => {
                 page: parseInt(page),
                 limit: parseInt(limit),
                 total,
-                pages: Math.ceil(total / limit)
-            }
+                pages: Math.ceil(total / limit),
+                hasNext: skip + parseInt(limit) < total,
+                hasPrev: page > 1
+            },
+            filters: { board, class: className, section, session, search, status }
         });
+        
     } catch (err) {
         console.error('Get students error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 3. GET STUDENT BY ID (Student ID)
+// 3. GET SINGLE STUDENT (by Student ID or Aadhar Number)
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        // Search by either studentId OR aadharNumber
+        // Search by either Student ID OR Aadhar Number
         const student = await Student.findOne({ 
             $or: [
                 { studentId: req.params.id },
@@ -657,6 +925,7 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
         const data = student.toObject();
         delete data.password;
         
+        // Calculate statistics
         const feesHistory = data.feesHistory || [];
         const totalFees = feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
         const paidFees = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
@@ -665,18 +934,34 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
         const attendance = data.attendance || [];
         const totalDays = attendance.length;
         const presentDays = attendance.filter(a => a.status === 'present').length;
+        const lateDays = attendance.filter(a => a.status === 'late').length;
+        const halfDays = attendance.filter(a => a.status === 'half-day').length;
+        const absentDays = attendance.filter(a => a.status === 'absent').length;
         const attendancePercentage = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
         
         data.stats = {
             totalFees,
             paidFees,
             dueFees,
+            paymentProgress: totalFees > 0 ? Math.round((paidFees / totalFees) * 100) : 0,
             totalAttendanceDays: totalDays,
             presentDays,
+            lateDays,
+            halfDays,
+            absentDays,
             attendancePercentage
         };
         
+        // Get recent attendance (last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        data.recentAttendance = attendance.filter(a => new Date(a.date) >= thirtyDaysAgo);
+        
+        // Get pending fees
+        data.pendingFees = feesHistory.filter(f => f.status !== 'paid');
+        
         res.json({ success: true, data });
+        
     } catch (err) {
         console.error('Get student error:', err);
         res.status(500).json({ success: false, message: err.message });
@@ -699,11 +984,14 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
         
         const updates = req.body;
         
+        // Allowed fields to update
         const allowedUpdates = [
             'studentName', 'studentMobile', 'email', 'parentType',
             'fatherName', 'fatherMobile', 'motherName', 'motherMobile',
             'guardianName', 'guardianMobile', 'guardianRelation',
-            'education', 'monthlyFees', 'address', 'photo', 'aadharDocument'
+            'education', 'monthlyFees', 'address', 'photo', 'aadharDocument',
+            'dateOfBirth', 'gender', 'emergencyContact', 'alternateMobile',
+            'feesConcession', 'lateFeePenalty'
         ];
         
         for (const field of allowedUpdates) {
@@ -750,40 +1038,34 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// 5. DELETE STUDENT (Move to archive)
+// 5. DELETE / MOVE TO ARCHIVE
 app.delete('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        const { permanent } = req.query;
+        const { permanent, reason } = req.query;
+        
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.id },
+                { aadharNumber: req.params.id }
+            ]
+        });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
         
         if (permanent === 'true') {
-            const student = await Student.findOneAndDelete({ 
-                $or: [
-                    { studentId: req.params.id },
-                    { aadharNumber: req.params.id }
-                ]
-            });
-            if (!student) {
-                return res.status(404).json({ success: false, message: "Student not found" });
-            }
+            await Student.deleteOne({ _id: student._id });
             res.json({ success: true, message: "Student permanently deleted" });
         } else {
-            const student = await Student.findOne({ 
-                $or: [
-                    { studentId: req.params.id },
-                    { aadharNumber: req.params.id }
-                ]
-            });
-            if (!student) {
-                return res.status(404).json({ success: false, message: "Student not found" });
-            }
-            
-            const moved = await moveToOldStudents(student);
+            const moved = await moveToOldStudents(student, reason || 'Session completed');
             if (moved) {
-                res.json({ success: true, message: "Student moved to old students archive" });
+                res.json({ success: true, message: "Student moved to archive" });
             } else {
-                res.status(500).json({ success: false, message: "Failed to move student to archive" });
+                res.status(500).json({ success: false, message: "Failed to archive student" });
             }
         }
+        
     } catch (err) {
         console.error('Delete student error:', err);
         res.status(500).json({ success: false, message: err.message });
@@ -793,7 +1075,8 @@ app.delete('/api/students/:id', verifyToken, async (req, res) => {
 // 6. UPDATE FEES
 app.post('/api/students/:studentId/fees', verifyToken, async (req, res) => {
     try {
-        const { month, year, paidAmount, remarks } = req.body;
+        const { month, year, paidAmount, remarks, paymentMode, transactionId } = req.body;
+        
         const student = await Student.findOne({ 
             $or: [
                 { studentId: req.params.studentId },
@@ -805,19 +1088,21 @@ app.post('/api/students/:studentId/fees', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Student not found" });
         }
         
-        const feeIndex = student.feesHistory.findIndex(f => f.month === month && f.year === year);
+        const feeIndex = student.feesHistory.findIndex(f => f.month === month && f.year === parseInt(year));
         
         if (feeIndex === -1) {
             return res.status(404).json({ success: false, message: "Fee record not found for this month" });
         }
         
         const fee = student.feesHistory[feeIndex];
-        const newPaidAmount = (fee.paidAmount || 0) + paidAmount;
+        const newPaidAmount = (fee.paidAmount || 0) + parseFloat(paidAmount);
         
         fee.paidAmount = newPaidAmount;
         fee.dueAmount = fee.amount - newPaidAmount;
         fee.status = newPaidAmount >= fee.amount ? 'paid' : newPaidAmount > 0 ? 'partial' : 'unpaid';
         fee.paymentDate = new Date();
+        fee.paymentMode = paymentMode || fee.paymentMode;
+        fee.transactionId = transactionId || fee.transactionId;
         
         if (remarks) fee.remarks = remarks;
         
@@ -843,7 +1128,8 @@ app.post('/api/students/:studentId/fees', verifyToken, async (req, res) => {
 // 7. MARK ATTENDANCE
 app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) => {
     try {
-        const { date, status, checkInTime, checkOutTime, remarks } = req.body;
+        const { date, status, checkInTime, checkOutTime, remarks, subject } = req.body;
+        
         const student = await Student.findOne({ 
             $or: [
                 { studentId: req.params.studentId },
@@ -864,13 +1150,26 @@ app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) =>
             return aDate.getTime() === attendanceDate.getTime();
         });
         
+        // Calculate late minutes if status is 'late'
+        let lateMinutes = null;
+        if (status === 'late' && checkInTime) {
+            const [hours, minutes] = checkInTime.split(':');
+            const checkInHour = parseInt(hours);
+            if (checkInHour > 9) { // Assuming 9 AM is school start time
+                lateMinutes = (checkInHour - 9) * 60 + parseInt(minutes);
+            }
+        }
+        
         const record = {
             date: attendanceDate,
             status: status || 'absent',
             checkInTime: checkInTime || null,
             checkOutTime: checkOutTime || null,
+            lateMinutes: lateMinutes,
+            subject: subject || null,
             remarks: remarks || '',
-            markedAt: new Date()
+            markedAt: new Date(),
+            markedBy: req.user?.id
         };
         
         if (existingIndex >= 0) {
@@ -893,6 +1192,7 @@ app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) =>
 app.post('/api/students/:studentId/block', verifyToken, async (req, res) => {
     try {
         const { reason, blockedUntil } = req.body;
+        
         const student = await Student.findOne({ 
             $or: [
                 { studentId: req.params.studentId },
@@ -946,6 +1246,7 @@ app.post('/api/students/:studentId/unblock', verifyToken, async (req, res) => {
         const lastBlock = student.blockHistory[student.blockHistory.length - 1];
         if (lastBlock && !lastBlock.unblockedAt) {
             lastBlock.unblockedAt = new Date();
+            lastBlock.unblockedBy = req.user?.adminID || 'Admin';
         }
         
         student.accountStatus = {
@@ -966,7 +1267,7 @@ app.post('/api/students/:studentId/unblock', verifyToken, async (req, res) => {
     }
 });
 
-// 10. GET OLD STUDENTS (Archive)
+// 10. GET ARCHIVED STUDENTS
 app.get('/api/students/old', verifyToken, async (req, res) => {
     try {
         const { board, class: className, session, search, page = 1, limit = 50 } = req.query;
@@ -1016,22 +1317,39 @@ app.get('/api/students/old', verifyToken, async (req, res) => {
     }
 });
 
-// 11. DASHBOARD STATS
+// 11. DASHBOARD STATISTICS
 app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
     try {
+        // Student counts
         const totalStudents = await Student.countDocuments({ isActive: true });
         const totalOldStudents = await OldStudent.countDocuments();
+        const blockedStudents = await Student.countDocuments({ 'accountStatus.isBlocked': true });
         
+        // Gender distribution
+        const maleStudents = await Student.countDocuments({ gender: 'Male', isActive: true });
+        const femaleStudents = await Student.countDocuments({ gender: 'Female', isActive: true });
+        
+        // Class wise distribution
+        const classWise = await Student.aggregate([
+            { $match: { isActive: true } },
+            { $group: { _id: '$education.class', count: { $sum: 1 } } },
+            { $sort: { _id: 1 } }
+        ]);
+        
+        // Fees collection
         const students = await Student.find({ isActive: true });
         let totalFeesCollected = 0;
         let totalFeesDue = 0;
+        let totalFeesAmount = 0;
         
         for (const student of students) {
             const feesHistory = student.feesHistory || [];
+            totalFeesAmount += feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0);
             totalFeesCollected += feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
             totalFeesDue += feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
         }
         
+        // Attendance (last 30 days)
         const last30Days = new Date();
         last30Days.setDate(last30Days.getDate() - 30);
         
@@ -1048,8 +1366,7 @@ app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
             ? Math.round((totalPresent / totalAttendanceDays) * 100) 
             : 0;
         
-        const blockedStudents = await Student.countDocuments({ 'accountStatus.isBlocked': true });
-        
+        // Monthly fees trend (last 6 months)
         const monthlyTrend = [];
         for (let i = 5; i >= 0; i--) {
             const d = new Date();
@@ -1058,25 +1375,49 @@ app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
             const year = d.getFullYear();
             
             let collected = 0;
+            let expected = 0;
+            
             for (const student of students) {
                 const feeRecord = (student.feesHistory || []).find(f => f.month === monthName && f.year === year);
                 if (feeRecord) {
                     collected += feeRecord.paidAmount || 0;
+                    expected += feeRecord.amount || 0;
                 }
             }
-            monthlyTrend.push({ month: `${monthName} ${year}`, collected });
+            monthlyTrend.push({ 
+                month: `${monthName} ${year}`, 
+                collected,
+                expected,
+                percentage: expected > 0 ? Math.round((collected / expected) * 100) : 0
+            });
         }
+        
+        // Recent registrations (last 30 days)
+        const recentRegistrations = await Student.find({ isActive: true })
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .select('studentId studentName createdAt education.class');
         
         res.json({
             success: true,
             data: {
-                totalStudents,
-                totalOldStudents,
-                totalFeesCollected,
-                totalFeesDue,
-                attendancePercentage,
-                blockedStudents,
-                monthlyTrend
+                overview: {
+                    totalStudents,
+                    totalOldStudents,
+                    blockedStudents,
+                    maleStudents,
+                    femaleStudents,
+                    attendancePercentage
+                },
+                fees: {
+                    totalAmount: totalFeesAmount,
+                    collected: totalFeesCollected,
+                    due: totalFeesDue,
+                    collectionRate: totalFeesAmount > 0 ? Math.round((totalFeesCollected / totalFeesAmount) * 100) : 0
+                },
+                classWise,
+                monthlyTrend,
+                recentRegistrations
             }
         });
         
@@ -1089,7 +1430,7 @@ app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
 // 12. BULK DELETE
 app.post('/api/students/bulk-delete', verifyToken, async (req, res) => {
     try {
-        const { studentIds, permanent } = req.body;
+        const { studentIds, permanent, reason } = req.body;
         
         if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
             return res.status(400).json({ success: false, message: "Student IDs array is required" });
@@ -1097,6 +1438,7 @@ app.post('/api/students/bulk-delete', verifyToken, async (req, res) => {
         
         let deletedCount = 0;
         let movedCount = 0;
+        let notFoundCount = 0;
         
         for (const studentId of studentIds) {
             const student = await Student.findOne({ 
@@ -1105,14 +1447,17 @@ app.post('/api/students/bulk-delete', verifyToken, async (req, res) => {
                     { aadharNumber: studentId }
                 ]
             });
+            
             if (student) {
                 if (permanent === true) {
                     await Student.deleteOne({ _id: student._id });
                     deletedCount++;
                 } else {
-                    const moved = await moveToOldStudents(student);
+                    const moved = await moveToOldStudents(student, reason || 'Bulk archive');
                     if (moved) movedCount++;
                 }
+            } else {
+                notFoundCount++;
             }
         }
         
@@ -1120,7 +1465,8 @@ app.post('/api/students/bulk-delete', verifyToken, async (req, res) => {
             success: true,
             message: permanent ? `${deletedCount} students permanently deleted` : `${movedCount} students moved to archive`,
             deletedCount,
-            movedCount
+            movedCount,
+            notFoundCount
         });
         
     } catch (err) {
@@ -1129,15 +1475,26 @@ app.post('/api/students/bulk-delete', verifyToken, async (req, res) => {
     }
 });
 
-// 13. EXPORT CSV
+// 13. EXPORT STUDENTS (CSV)
 app.get('/api/students/export/csv', verifyToken, async (req, res) => {
     try {
-        const students = await Student.find({ isActive: true });
+        const { board, class: className, section, status } = req.query;
+        
+        let query = {};
+        
+        if (board && board !== 'all') query['education.board'] = board;
+        if (className && className !== 'all') query['education.class'] = className;
+        if (section && section !== 'all') query['education.section'] = section;
+        if (status === 'active') query['accountStatus.isBlocked'] = false;
+        if (status === 'blocked') query['accountStatus.isBlocked'] = true;
+        
+        const students = await Student.find(query);
         
         const headers = [
-            'Student ID', 'Aadhar Number', 'First Name', 'Last Name', 'Mobile', 'Email',
-            'Board', 'Class', 'Session', 'Monthly Fees', 'Total Paid',
-            'Total Due', 'Attendance %', 'Status', 'Joining Date'
+            'Student ID', 'Aadhar Number', 'First Name', 'Last Name', 
+            'Mobile', 'Email', 'Board', 'Class', 'Section',
+            'Session', 'Monthly Fees', 'Total Paid', 'Total Due',
+            'Attendance %', 'Status', 'Joining Date', 'Gender', 'DOB'
         ];
         
         const rows = students.map(s => {
@@ -1157,13 +1514,16 @@ app.get('/api/students/export/csv', verifyToken, async (req, res) => {
                 s.email || '',
                 s.education?.board || '',
                 s.education?.class || '',
+                s.education?.section || '',
                 s.currentSession?.sessionName || '',
                 s.monthlyFees || 0,
                 totalPaid,
                 totalDue,
                 attendancePercent,
                 s.accountStatus?.isBlocked ? 'Blocked' : 'Active',
-                s.joiningDate ? new Date(s.joiningDate).toLocaleDateString() : ''
+                s.joiningDate ? new Date(s.joiningDate).toLocaleDateString() : '',
+                s.gender || '',
+                s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString() : ''
             ];
         });
         
@@ -1173,7 +1533,7 @@ app.get('/api/students/export/csv', verifyToken, async (req, res) => {
         ].join('\n');
         
         res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename=students_export.csv');
+        res.setHeader('Content-Disposition', `attachment; filename=students_${Date.now()}.csv`);
         res.send(csvContent);
         
     } catch (err) {
@@ -1186,6 +1546,7 @@ app.get('/api/students/export/csv', verifyToken, async (req, res) => {
 app.post('/api/students/:studentId/change-password', verifyToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
+        
         const student = await Student.findOne({ 
             $or: [
                 { studentId: req.params.studentId },
@@ -1216,7 +1577,7 @@ app.post('/api/students/:studentId/change-password', verifyToken, async (req, re
     }
 });
 
-// 15. CHECK DUPLICATE (Check both Student ID and Aadhar Number)
+// 15. CHECK DUPLICATE (Separate checks for Student ID and Aadhar Number)
 app.post('/api/students/check-duplicate', async (req, res) => {
     try {
         const { studentId, aadharNumber } = req.body;
@@ -1224,6 +1585,7 @@ app.post('/api/students/check-duplicate', async (req, res) => {
         let duplicateField = null;
         let existingStudent = null;
         
+        // Check Student ID separately
         if (studentId && isValidAadhar(studentId)) {
             existingStudent = await Student.findOne({ studentId: studentId });
             if (existingStudent) {
@@ -1231,6 +1593,7 @@ app.post('/api/students/check-duplicate', async (req, res) => {
             }
         }
         
+        // Check Aadhar Number separately (only if no duplicate found yet)
         if (!duplicateField && aadharNumber && isValidAadhar(aadharNumber)) {
             existingStudent = await Student.findOne({ aadharNumber: aadharNumber });
             if (existingStudent) {
@@ -1247,7 +1610,8 @@ app.post('/api/students/check-duplicate', async (req, res) => {
                 student: {
                     studentId: existingStudent.studentId,
                     aadharNumber: existingStudent.aadharNumber,
-                    name: `${existingStudent.studentName.first} ${existingStudent.studentName.last}`
+                    name: `${existingStudent.studentName.first} ${existingStudent.studentName.last}`,
+                    class: existingStudent.education?.class
                 }
             });
         } else {
@@ -1263,6 +1627,182 @@ app.post('/api/students/check-duplicate', async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
+// 16. GET STUDENTS BY CLASS
+app.get('/api/students/class/:className', verifyToken, async (req, res) => {
+    try {
+        const { className } = req.params;
+        const { section, board } = req.query;
+        
+        let query = { 
+            isActive: true,
+            'education.class': className 
+        };
+        
+        if (section) query['education.section'] = section;
+        if (board && board !== 'all') query['education.board'] = board;
+        
+        const students = await Student.find(query)
+            .sort({ 'studentName.first': 1 })
+            .select('-password');
+        
+        res.json({ 
+            success: true, 
+            count: students.length,
+            data: students 
+        });
+        
+    } catch (err) {
+        console.error('Get students by class error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// 17. GET ATTENDANCE REPORT
+app.get('/api/students/:studentId/attendance-report', verifyToken, async (req, res) => {
+    try {
+        const { month, year } = req.query;
+        
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.studentId },
+                { aadharNumber: req.params.studentId }
+            ]
+        });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        let attendance = student.attendance || [];
+        
+        // Filter by month/year if provided
+        if (month && year) {
+            attendance = attendance.filter(a => {
+                const date = new Date(a.date);
+                return date.getMonth() === parseInt(month) - 1 && date.getFullYear() === parseInt(year);
+            });
+        }
+        
+        const totalDays = attendance.length;
+        const presentDays = attendance.filter(a => a.status === 'present').length;
+        const lateDays = attendance.filter(a => a.status === 'late').length;
+        const halfDays = attendance.filter(a => a.status === 'half-day').length;
+        const absentDays = attendance.filter(a => a.status === 'absent').length;
+        
+        res.json({
+            success: true,
+            data: {
+                attendance,
+                summary: {
+                    totalDays,
+                    presentDays,
+                    lateDays,
+                    halfDays,
+                    absentDays,
+                    percentage: totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0
+                }
+            }
+        });
+        
+    } catch (err) {
+        console.error('Attendance report error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// 18. GET FEES REPORT
+app.get('/api/students/:studentId/fees-report', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.studentId },
+                { aadharNumber: req.params.studentId }
+            ]
+        });
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        const feesHistory = student.feesHistory || [];
+        
+        const summary = {
+            totalAmount: feesHistory.reduce((sum, f) => sum + (f.amount || 0), 0),
+            totalPaid: feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0),
+            totalDue: feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0),
+            paidMonths: feesHistory.filter(f => f.status === 'paid').length,
+            partialMonths: feesHistory.filter(f => f.status === 'partial').length,
+            unpaidMonths: feesHistory.filter(f => f.status === 'unpaid').length
+        };
+        
+        summary.percentage = summary.totalAmount > 0 
+            ? Math.round((summary.totalPaid / summary.totalAmount) * 100) 
+            : 0;
+        
+        res.json({
+            success: true,
+            data: {
+                feesHistory,
+                summary,
+                student: {
+                    id: student.studentId,
+                    name: `${student.studentName.first} ${student.studentName.last}`,
+                    class: student.education?.class,
+                    monthlyFees: student.monthlyFees
+                }
+            }
+        });
+        
+    } catch (err) {
+        console.error('Fees report error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// ========== FUTURE TEACHER APIs ==========
+// ============================================
+// 
+// जब आपको TEACHER functionality add करनी हो तो यहाँ पर APIs add करें:
+//
+// 1. Teacher Registration: POST /api/teachers/register
+// 2. Get All Teachers: GET /api/teachers
+// 3. Get Single Teacher: GET /api/teachers/:id
+// 4. Update Teacher: PUT /api/teachers/:id
+// 5. Delete Teacher: DELETE /api/teachers/:id
+// 6. Teacher Login: POST /api/teacher-login
+// 7. Assign Class to Teacher: POST /api/teachers/assign-class
+// 8. Get Teacher's Students: GET /api/teachers/:teacherId/students
+//
+// Teacher ke liye alag se JWT middleware bhi banana hoga:
+// const verifyTeacherToken = (req, res, next) => { ... }
+//
+// ========== FUTURE CLASS APIs ==========
+// 
+// 1. Create Class: POST /api/classes
+// 2. Get All Classes: GET /api/classes
+// 3. Update Class: PUT /api/classes/:id
+// 4. Delete Class: DELETE /api/classes/:id
+// 5. Assign Teacher to Class: POST /api/classes/assign-teacher
+// 6. Get Class Students: GET /api/classes/:classId/students
+//
+// ========== FUTURE EXAM APIs ==========
+//
+// 1. Create Exam: POST /api/exams
+// 2. Get All Exams: GET /api/exams
+// 3. Add Marks: POST /api/exams/:examId/marks
+// 4. Get Result: GET /api/exams/:examId/result
+// 5. Generate Report Card: GET /api/students/:studentId/report-card
+//
+// ========== FUTURE NOTICE APIs ==========
+//
+// 1. Create Notice: POST /api/notices
+// 2. Get All Notices: GET /api/notices
+// 3. Delete Notice: DELETE /api/notices/:id
+// 4. Send Notification: POST /api/notifications/send
+//
+// ============================================
 
 // ============================================
 // SERVE HTML FILES
@@ -1297,10 +1837,17 @@ app.use((err, req, res, next) => {
 // ============================================
 mongoose.connection.once('open', async () => {
     try {
+        // Create default admin if not exists
         const existing = await Admin.findOne({ adminID: 'admin' });
         if (!existing) {
             const hash = await bcrypt.hash('admin123', 10);
-            await Admin.create({ adminID: 'admin', pws: hash, name: 'Super Admin' });
+            await Admin.create({ 
+                adminID: 'admin', 
+                pws: hash, 
+                name: 'Super Admin',
+                role: 'super_admin',
+                permissions: ['all']
+            });
             console.log('\n✅ =====================================');
             console.log('✅ DEFAULT ADMIN CREATED!');
             console.log('✅ =====================================');
@@ -1310,6 +1857,11 @@ mongoose.connection.once('open', async () => {
         } else {
             console.log('✅ Admin already exists');
         }
+        
+        // Ensure indexes are created
+        await Student.createIndexes();
+        console.log('✅ Database indexes verified');
+        
     } catch (err) {
         console.log('Admin creation error:', err.message);
     }
@@ -1322,5 +1874,14 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`\n✅ Server running on http://localhost:${PORT}`);
     console.log(`🔗 Login: http://localhost:${PORT}/login.html`);
-    console.log(`🔑 Credentials: admin / admin123\n`);
+    console.log(`🔑 Credentials: admin / admin123`);
+    console.log(`\n📌 API Endpoints:`);
+    console.log(`   POST   /api/students/register - Register student`);
+    console.log(`   GET    /api/students - Get all students`);
+    console.log(`   GET    /api/students/:id - Get student by ID/Aadhar`);
+    console.log(`   PUT    /api/students/:id - Update student`);
+    console.log(`   DELETE /api/students/:id - Delete/Archive student`);
+    console.log(`   POST   /api/students/:studentId/fees - Update fees`);
+    console.log(`   POST   /api/students/:studentId/attendance - Mark attendance`);
+    console.log(`   POST   /api/students/check-duplicate - Check duplicate\n`);
 });
