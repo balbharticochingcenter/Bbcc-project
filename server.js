@@ -43,9 +43,10 @@ const AdminSchema = new mongoose.Schema({
     lastLogin: { type: Date }
 }, { timestamps: true });
 
-// Student Schema
+// Student Schema (Student ID and Aadhar Number are separate but can have same value)
 const StudentSchema = new mongoose.Schema({
-    studentId: { type: String, required: true, unique: true },
+    studentId: { type: String, required: true, unique: true },  // Unique Student ID
+    aadharNumber: { type: String, required: true, unique: true }, // Unique Aadhar Number
     password: { type: String, required: true },
     photo: { type: String, default: '' },
     studentName: {
@@ -63,7 +64,6 @@ const StudentSchema = new mongoose.Schema({
     guardianRelation: String,
     studentMobile: { type: String, required: true },
     email: String,
-    aadharNumber: { type: String, required: true, unique: true },
     aadharDocument: { type: String, default: '' },
     education: {
         board: { type: String, required: true },
@@ -119,10 +119,15 @@ const StudentSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
+// Create a compound unique index for both fields (optional - for extra safety)
+// This ensures no two students have same combination of studentId AND aadharNumber
+StudentSchema.index({ studentId: 1, aadharNumber: 1 }, { unique: true });
+
 // Old Student Schema (Archive)
 const OldStudentSchema = new mongoose.Schema({
     originalId: { type: mongoose.Schema.Types.ObjectId },
     studentId: { type: String, required: true },
+    aadharNumber: { type: String, required: true },
     password: String,
     photo: String,
     studentName: { first: String, last: String, middle: String },
@@ -136,7 +141,6 @@ const OldStudentSchema = new mongoose.Schema({
     guardianRelation: String,
     studentMobile: String,
     email: String,
-    aadharNumber: String,
     aadharDocument: String,
     education: { board: String, class: String },
     monthlyFees: Number,
@@ -226,6 +230,7 @@ async function moveToOldStudents(student) {
         const oldStudentData = {
             originalId: student._id,
             studentId: student.studentId,
+            aadharNumber: student.aadharNumber,
             password: student.password,
             photo: student.photo,
             studentName: student.studentName,
@@ -239,7 +244,6 @@ async function moveToOldStudents(student) {
             guardianRelation: student.guardianRelation,
             studentMobile: student.studentMobile,
             email: student.email,
-            aadharNumber: student.aadharNumber,
             aadharDocument: student.aadharDocument,
             education: student.education,
             monthlyFees: student.monthlyFees,
@@ -264,31 +268,14 @@ async function moveToOldStudents(student) {
     }
 }
 
-// Validate student data
-function validateStudentData(data, isUpdate = false) {
-    const errors = [];
-    
-    if (!isUpdate) {
-        if (!data.studentId || data.studentId.length !== 12) {
-            errors.push('Valid 12-digit Aadhar number (Student ID) is required');
-        }
-        if (!data.studentMobile || data.studentMobile.length !== 10) {
-            errors.push('Valid 10-digit mobile number is required');
-        }
-        if (!data.studentName?.first || !data.studentName?.last) {
-            errors.push('First name and last name are required');
-        }
-    }
-    
-    if (data.monthlyFees && (data.monthlyFees < 0 || isNaN(data.monthlyFees))) {
-        errors.push('Monthly fees must be a positive number');
-    }
-    
-    if (data.email && !/^\S+@\S+\.\S+$/.test(data.email)) {
-        errors.push('Invalid email format');
-    }
-    
-    return errors;
+// Validate Aadhar number (12 digits)
+function isValidAadhar(aadhar) {
+    return /^\d{12}$/.test(aadhar);
+}
+
+// Validate mobile number (10 digits)
+function isValidMobile(mobile) {
+    return /^\d{10}$/.test(mobile);
 }
 
 // ============================================
@@ -443,31 +430,84 @@ app.get('/api/setup-admin', async (req, res) => {
 });
 
 // ============================================
-// STUDENT APIs
+// STUDENT APIs (UPDATED - Separate fields but same value allowed)
 // ============================================
 
-// 1. STUDENT REGISTRATION
+// 1. STUDENT REGISTRATION (Student ID and Aadhar Number - both fields)
 app.post('/api/students/register', async (req, res) => {
     try {
         const data = req.body;
         
-        const validationErrors = validateStudentData(data, false);
-        if (validationErrors.length > 0) {
-            return res.status(400).json({ success: false, message: validationErrors.join(', ') });
+        // Validate Student ID (12 digits)
+        if (!data.studentId || !isValidAadhar(data.studentId)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "कृपया 12 अंकों का वैध Student ID दर्ज करें | Please enter valid 12-digit Student ID" 
+            });
         }
         
-        const existing = await Student.findOne({ studentId: data.studentId });
-        if (existing) {
-            return res.status(400).json({ success: false, message: "Student with this Aadhar number already exists" });
+        // Validate Aadhar Number (12 digits)
+        if (!data.aadharNumber || !isValidAadhar(data.aadharNumber)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "कृपया 12 अंकों का वैध आधार नंबर दर्ज करें | Please enter valid 12-digit Aadhar number" 
+            });
+        }
+        
+        // Validate Mobile Number (10 digits)
+        if (!data.studentMobile || !isValidMobile(data.studentMobile)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें | Please enter valid 10-digit mobile number" 
+            });
+        }
+        
+        // IMPORTANT: Check for duplicate - Student ID OR Aadhar Number should be unique
+        const existingStudent = await Student.findOne({ 
+            $or: [
+                { studentId: data.studentId },
+                { aadharNumber: data.aadharNumber }
+            ]
+        });
+        
+        if (existingStudent) {
+            let duplicateField = '';
+            if (existingStudent.studentId === data.studentId) {
+                duplicateField = 'Student ID';
+            } else if (existingStudent.aadharNumber === data.aadharNumber) {
+                duplicateField = 'Aadhar Number';
+            }
+            
+            return res.status(400).json({ 
+                success: false, 
+                message: `❌ यह ${duplicateField} (${data.studentId === data.studentId ? data.studentId : data.aadharNumber}) पहले से रजिस्टर है! | This ${duplicateField} is already registered!`,
+                duplicate: true,
+                duplicateField: duplicateField,
+                existingStudent: {
+                    studentId: existingStudent.studentId,
+                    name: `${existingStudent.studentName.first} ${existingStudent.studentName.last}`
+                }
+            });
+        }
+        
+        // Validate other required fields
+        if (!data.studentName?.first || !data.studentName?.last) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "First name and last name are required" 
+            });
         }
         
         const joiningDate = new Date(data.joiningDate || new Date());
         const sessionEndDate = getSessionEndDate(joiningDate);
         const sessionName = `${joiningDate.getFullYear()}-${sessionEndDate.getFullYear()}`;
+        
+        // Password = last 6 digits of Student ID (or custom)
         const password = data.password || data.studentId.slice(-6);
         
         const student = new Student({
-            studentId: data.studentId,
+            studentId: data.studentId,        // Student ID field
+            aadharNumber: data.aadharNumber,  // Aadhar Number field (can be same as Student ID)
             password: password,
             photo: data.photo || '',
             studentName: {
@@ -485,7 +525,6 @@ app.post('/api/students/register', async (req, res) => {
             guardianRelation: data.guardianRelation || '',
             studentMobile: data.studentMobile,
             email: data.email || '',
-            aadharNumber: data.studentId,
             aadharDocument: data.aadharDocument || '',
             education: {
                 board: data.education?.board || 'CBSE',
@@ -518,16 +557,28 @@ app.post('/api/students/register', async (req, res) => {
         
         res.json({ 
             success: true, 
-            message: "Student registered successfully",
+            message: `✅ छात्र सफलतापूर्वक रजिस्टर हो गया! Student registered successfully!`,
             studentId: student.studentId,
+            aadharNumber: student.aadharNumber,
             password: password
         });
         
     } catch (err) {
         console.error('Registration error:', err);
+        
+        // Handle MongoDB duplicate key error
         if (err.code === 11000) {
-            return res.status(400).json({ success: false, message: "Duplicate entry - Student ID already exists" });
+            let duplicateField = 'Student ID or Aadhar Number';
+            if (err.keyPattern?.studentId) duplicateField = 'Student ID';
+            if (err.keyPattern?.aadharNumber) duplicateField = 'Aadhar Number';
+            
+            return res.status(400).json({ 
+                success: false, 
+                message: `❌ यह ${duplicateField} पहले से रजिस्टर है! This ${duplicateField} is already registered!`,
+                duplicate: true
+            });
         }
+        
         res.status(500).json({ success: false, message: err.message });
     }
 });
@@ -551,6 +602,7 @@ app.get('/api/students', verifyToken, async (req, res) => {
         if (search) {
             query.$or = [
                 { studentId: { $regex: search, $options: 'i' } },
+                { aadharNumber: { $regex: search, $options: 'i' } },
                 { 'studentName.first': { $regex: search, $options: 'i' } },
                 { 'studentName.last': { $regex: search, $options: 'i' } },
                 { studentMobile: { $regex: search, $options: 'i' } }
@@ -587,10 +639,16 @@ app.get('/api/students', verifyToken, async (req, res) => {
     }
 });
 
-// 3. GET STUDENT BY ID
+// 3. GET STUDENT BY ID (Student ID)
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        const student = await Student.findOne({ studentId: req.params.id });
+        // Search by either studentId OR aadharNumber
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.id },
+                { aadharNumber: req.params.id }
+            ]
+        });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -628,7 +686,12 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
 // 4. UPDATE STUDENT
 app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
-        const student = await Student.findOne({ studentId: req.params.id });
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.id },
+                { aadharNumber: req.params.id }
+            ]
+        });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -693,13 +756,23 @@ app.delete('/api/students/:id', verifyToken, async (req, res) => {
         const { permanent } = req.query;
         
         if (permanent === 'true') {
-            const student = await Student.findOneAndDelete({ studentId: req.params.id });
+            const student = await Student.findOneAndDelete({ 
+                $or: [
+                    { studentId: req.params.id },
+                    { aadharNumber: req.params.id }
+                ]
+            });
             if (!student) {
                 return res.status(404).json({ success: false, message: "Student not found" });
             }
             res.json({ success: true, message: "Student permanently deleted" });
         } else {
-            const student = await Student.findOne({ studentId: req.params.id });
+            const student = await Student.findOne({ 
+                $or: [
+                    { studentId: req.params.id },
+                    { aadharNumber: req.params.id }
+                ]
+            });
             if (!student) {
                 return res.status(404).json({ success: false, message: "Student not found" });
             }
@@ -721,7 +794,12 @@ app.delete('/api/students/:id', verifyToken, async (req, res) => {
 app.post('/api/students/:studentId/fees', verifyToken, async (req, res) => {
     try {
         const { month, year, paidAmount, remarks } = req.body;
-        const student = await Student.findOne({ studentId: req.params.studentId });
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.studentId },
+                { aadharNumber: req.params.studentId }
+            ]
+        });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -766,7 +844,12 @@ app.post('/api/students/:studentId/fees', verifyToken, async (req, res) => {
 app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) => {
     try {
         const { date, status, checkInTime, checkOutTime, remarks } = req.body;
-        const student = await Student.findOne({ studentId: req.params.studentId });
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.studentId },
+                { aadharNumber: req.params.studentId }
+            ]
+        });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -810,7 +893,12 @@ app.post('/api/students/:studentId/attendance', verifyToken, async (req, res) =>
 app.post('/api/students/:studentId/block', verifyToken, async (req, res) => {
     try {
         const { reason, blockedUntil } = req.body;
-        const student = await Student.findOne({ studentId: req.params.studentId });
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.studentId },
+                { aadharNumber: req.params.studentId }
+            ]
+        });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -820,13 +908,15 @@ app.post('/api/students/:studentId/block', verifyToken, async (req, res) => {
             isBlocked: true,
             blockedFrom: new Date(),
             blockedUntil: blockedUntil ? new Date(blockedUntil) : null,
-            blockReason: reason || 'No reason provided'
+            blockReason: reason || 'No reason provided',
+            blockedBy: req.user?.adminID || 'Admin'
         };
         
         student.blockHistory.push({
             blockedFrom: new Date(),
             blockedUntil: blockedUntil ? new Date(blockedUntil) : null,
-            reason: reason || 'No reason provided'
+            reason: reason || 'No reason provided',
+            blockedBy: req.user?.adminID || 'Admin'
         });
         
         await student.save();
@@ -842,7 +932,12 @@ app.post('/api/students/:studentId/block', verifyToken, async (req, res) => {
 // 9. UNBLOCK STUDENT
 app.post('/api/students/:studentId/unblock', verifyToken, async (req, res) => {
     try {
-        const student = await Student.findOne({ studentId: req.params.studentId });
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.studentId },
+                { aadharNumber: req.params.studentId }
+            ]
+        });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -857,7 +952,8 @@ app.post('/api/students/:studentId/unblock', verifyToken, async (req, res) => {
             isBlocked: false,
             blockedFrom: null,
             blockedUntil: null,
-            blockReason: null
+            blockReason: null,
+            blockedBy: null
         };
         
         await student.save();
@@ -889,6 +985,7 @@ app.get('/api/students/old', verifyToken, async (req, res) => {
         if (search) {
             query.$or = [
                 { studentId: { $regex: search, $options: 'i' } },
+                { aadharNumber: { $regex: search, $options: 'i' } },
                 { 'studentName.first': { $regex: search, $options: 'i' } },
                 { 'studentName.last': { $regex: search, $options: 'i' } }
             ];
@@ -1002,10 +1099,15 @@ app.post('/api/students/bulk-delete', verifyToken, async (req, res) => {
         let movedCount = 0;
         
         for (const studentId of studentIds) {
-            const student = await Student.findOne({ studentId });
+            const student = await Student.findOne({ 
+                $or: [
+                    { studentId: studentId },
+                    { aadharNumber: studentId }
+                ]
+            });
             if (student) {
                 if (permanent === true) {
-                    await Student.deleteOne({ studentId });
+                    await Student.deleteOne({ _id: student._id });
                     deletedCount++;
                 } else {
                     const moved = await moveToOldStudents(student);
@@ -1033,7 +1135,7 @@ app.get('/api/students/export/csv', verifyToken, async (req, res) => {
         const students = await Student.find({ isActive: true });
         
         const headers = [
-            'Student ID', 'First Name', 'Last Name', 'Mobile', 'Email',
+            'Student ID', 'Aadhar Number', 'First Name', 'Last Name', 'Mobile', 'Email',
             'Board', 'Class', 'Session', 'Monthly Fees', 'Total Paid',
             'Total Due', 'Attendance %', 'Status', 'Joining Date'
         ];
@@ -1048,6 +1150,7 @@ app.get('/api/students/export/csv', verifyToken, async (req, res) => {
             
             return [
                 s.studentId,
+                s.aadharNumber,
                 s.studentName?.first || '',
                 s.studentName?.last || '',
                 s.studentMobile || '',
@@ -1083,7 +1186,12 @@ app.get('/api/students/export/csv', verifyToken, async (req, res) => {
 app.post('/api/students/:studentId/change-password', verifyToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        const student = await Student.findOne({ studentId: req.params.studentId });
+        const student = await Student.findOne({ 
+            $or: [
+                { studentId: req.params.studentId },
+                { aadharNumber: req.params.studentId }
+            ]
+        });
         
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
@@ -1104,6 +1212,54 @@ app.post('/api/students/:studentId/change-password', verifyToken, async (req, re
         
     } catch (err) {
         console.error('Change password error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// 15. CHECK DUPLICATE (Check both Student ID and Aadhar Number)
+app.post('/api/students/check-duplicate', async (req, res) => {
+    try {
+        const { studentId, aadharNumber } = req.body;
+        
+        let duplicateField = null;
+        let existingStudent = null;
+        
+        if (studentId && isValidAadhar(studentId)) {
+            existingStudent = await Student.findOne({ studentId: studentId });
+            if (existingStudent) {
+                duplicateField = 'Student ID';
+            }
+        }
+        
+        if (!duplicateField && aadharNumber && isValidAadhar(aadharNumber)) {
+            existingStudent = await Student.findOne({ aadharNumber: aadharNumber });
+            if (existingStudent) {
+                duplicateField = 'Aadhar Number';
+            }
+        }
+        
+        if (duplicateField && existingStudent) {
+            return res.json({
+                success: true,
+                isDuplicate: true,
+                duplicateField: duplicateField,
+                message: `This ${duplicateField} is already registered`,
+                student: {
+                    studentId: existingStudent.studentId,
+                    aadharNumber: existingStudent.aadharNumber,
+                    name: `${existingStudent.studentName.first} ${existingStudent.studentName.last}`
+                }
+            });
+        } else {
+            return res.json({
+                success: true,
+                isDuplicate: false,
+                message: "Both Student ID and Aadhar Number are available"
+            });
+        }
+        
+    } catch (err) {
+        console.error('Check duplicate error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
