@@ -3,12 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Management System</title>
+    <title>Bal Bharti - Complete Management System</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Main Layout */
+        .management-app {
+            max-width: 1400px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        /* Navigation Bar */
+        .nav-bar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 0 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 3px solid #e94560;
+        }
+        
+        .logo {
+            padding: 15px 0;
+        }
+        
+        .logo h1 {
+            color: white;
+            font-size: 1.3rem;
+        }
+        
+        .logo p {
+            color: #e94560;
+            font-size: 0.7rem;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: #e94560;
+            color: white;
+        }
+        
+        .nav-btn.student.active {
+            background: #007bff;
+        }
+        
+        .nav-btn.teacher.active {
+            background: #28a745;
+        }
+        
+        .logout-btn {
+            background: #dc3545;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
+        }
+        
+        /* Content Area */
+        .content-area {
+            min-height: 600px;
+            position: relative;
+        }
+        
+        .module-container {
+            display: none;
+        }
+        
+        .module-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Loading Indicator */
+        .loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 10000;
+            display: none;
+        }
+        
+        .loading-indicator.active {
+            display: block;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .nav-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+            .nav-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="app"></div>
-    <script src="js/student-management.js"></script>
-    <script src="js/teachar-management.js"></script>
+    <div class="management-app">
+        <div class="nav-bar">
+            <div class="logo">
+                <h1>🏫 Bal Bharti Coaching Center</h1>
+                <p>Complete Management System</p>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn student" onclick="switchModule('student')">
+                    👨‍🎓 Student Management
+                </button>
+                <button class="nav-btn teacher" onclick="switchModule('teacher')">
+                    👨‍🏫 Teacher Management
+                </button>
+                <button class="nav-btn logout-btn" onclick="handleLogout()">
+                    🚪 Logout
+                </button>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div id="student-module" class="module-container">
+                <div id="student-app"></div>
+            </div>
+            <div id="teacher-module" class="module-container">
+                <div id="teacher-app"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="loading-indicator" id="loadingIndicator">
+        Loading... <span class="spinner"></span>
+    </div>
+
+    <script>
+        // Global state management
+        let currentModule = 'student';
+        let studentModuleLoaded = false;
+        let teacherModuleLoaded = false;
+        
+        // Switch between modules
+        window.switchModule = function(module) {
+            currentModule = module;
+            sessionStorage.setItem('activeModule', module);
+            
+            // Update active button styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.nav-btn.${module}`).classList.add('active');
+            
+            // Show/hide modules
+            document.getElementById('student-module').classList.remove('active');
+            document.getElementById('teacher-module').classList.remove('active');
+            document.getElementById(`${module}-module`).classList.add('active');
+            
+            // Load module if not loaded yet
+            if (module === 'student' && !studentModuleLoaded) {
+                loadStudentModule();
+            } else if (module === 'teacher' && !teacherModuleLoaded) {
+                loadTeacherModule();
+            }
+            
+            // Trigger resize for charts if any
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 100);
+        };
+        
+        // Load Student Module
+        function loadStudentModule() {
+            if (studentModuleLoaded) return;
+            
+            showLoading(true);
+            
+            // Clear and prepare container
+            const container = document.getElementById('student-app');
+            container.innerHTML = '';
+            
+            // Create and load student script
+            const script = document.createElement('script');
+            script.src = 'js/student-management.js';
+            script.onload = function() {
+                studentModuleLoaded = true;
+                showLoading(false);
+                
+                // Initialize student module if it has init function
+                if (window.initStudentModule) {
+                    window.initStudentModule('student-app');
+                } else if (window.StudentManagementSystem) {
+                    new window.StudentManagementSystem('student-app');
+                }
+            };
+            script.onerror = function() {
+                showLoading(false);
+                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Student Management module. Please check if student-management.js exists.</div>';
+            };
+            document.body.appendChild(script);
+        }
+        
+        // Load Teacher Module
+        function loadTeacherModule() {
+            if (teacherModuleLoaded) return;
+            
+            showLoading(true);
+            
+            // Clear and prepare container
+            const container = document.getElementById('teacher-app');
+            container.innerHTML = '';
+            
+            // Create and load teacher script
+            const script = document.createElement('script');
+            script.src = 'js/teacher-management.js';
+            script.onload = function() {
+                teacherModuleLoaded = true;
+                showLoading(false);
+                
+                // Initialize teacher module if it has init function
+                if (window.initTeacherModule) {
+                    window.initTeacherModule('teacher-app');
+                } else if (window.TeacherManagementSystem) {
+                    new window.TeacherManagementSystem('teacher-app');
+                }
+            };
+            script.onerror = function() {
+                showLoading(false);
+                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Teacher Management module. Please check if teacher-management.js exists.</div>';
+            };
+            document.body.appendChild(script);
+        }
+        
+        // Show/hide loading indicator
+        function showLoading(show) {
+            const loader = document.getElementById('loadingIndicator');
+            if (show) {
+                loader.classList.add('active');
+            } else {
+                loader.classList.remove('active');
+            }
+        }
+        
+        // Handle logout
+        window.handleLogout = function() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('teacherToken');
+                sessionStorage.clear();
+                window.location.href = '/login.html';
+            }
+        };
+        
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+        
+        // Initialize default module based on URL hash or session storage
+        function initialize() {
+            if (!checkAuth()) return;
+            
+            const savedModule = sessionStorage.getItem('activeModule');
+            const hashModule = window.location.hash.substring(1);
+            
+            let defaultModule = 'student';
+            if (hashModule === 'teacher' || hashModule === 'teachers') {
+                defaultModule = 'teacher';
+            } else if (savedModule === 'teacher') {
+                defaultModule = 'teacher';
+            }
+            
+            switchModule(defaultModule);
+        }
+        
+        // Start the application
+        initialize();
+    </script>
 </body>
 </html>
