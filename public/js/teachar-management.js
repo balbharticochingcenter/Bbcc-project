@@ -526,8 +526,9 @@
         `;
     }
 
-    class TeacherManagementSystem {
-        constructor() {
+     class TeacherManagementSystem {
+        constructor(containerId = 'app') {
+            this.containerId = containerId;
             this.token = localStorage.getItem('adminToken');
             if (!this.token) {
                 window.location.href = '/login.html';
@@ -556,8 +557,8 @@
             }
         }
 
-        injectHTML() {
-            const app = document.getElementById('app');
+                      injectHTML() {
+            const app = document.getElementById(this.containerId);
             if (app && !document.querySelector('.tms-wrapper')) {
                 app.insertAdjacentHTML('beforeend', getHTMLTemplate());
             }
@@ -1207,7 +1208,20 @@
         }
     }
 
+        window.TeacherManagementSystem = TeacherManagementSystem;
+    
+    window.initTeacherModule = function(containerId = 'app') {
+        if (window.teacherInstance) {
+            return window.teacherInstance;
+        }
+        window.teacherInstance = new TeacherManagementSystem(containerId);
+        return window.teacherInstance;
+    };
+    
     document.addEventListener('DOMContentLoaded', () => {
-        window.tmsInstance = new TeacherManagementSystem();
+        const activeModule = sessionStorage.getItem('activeModule');
+        if (activeModule !== 'student') {
+            window.initTeacherModule();
+        }
     });
 })();
