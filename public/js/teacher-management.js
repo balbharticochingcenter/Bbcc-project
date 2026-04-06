@@ -639,15 +639,32 @@
             }
         }
 
-        async loadTeachers() {
+                async loadTeachers() {
+            // Try API first
             const response = await this.apiCall('/teachers');
-            this.teachersData = response.success ? (response.data || []) : [];
+            if (response.success && response.data && response.data.length > 0) {
+                this.teachersData = response.data;
+                // Save to localStorage as backup
+                localStorage.setItem('activeTeachers', JSON.stringify(response.data));
+            } else {
+                // Fallback to localStorage
+                const stored = localStorage.getItem('activeTeachers');
+                this.teachersData = stored ? JSON.parse(stored) : [];
+            }
             this.renderTeachersGrid();
         }
 
-        async loadLeftTeachers() {
+               async loadLeftTeachers() {
+            // Try API first
             const response = await this.apiCall('/teachers/left');
-            this.leftTeachersData = response.success ? (response.data || []) : [];
+            if (response.success && response.data && response.data.length > 0) {
+                this.leftTeachersData = response.data;
+                localStorage.setItem('leftTeachers', JSON.stringify(response.data));
+            } else {
+                // Fallback to localStorage
+                const stored = localStorage.getItem('leftTeachers');
+                this.leftTeachersData = stored ? JSON.parse(stored) : [];
+            }
             this.renderLeftTeachersGrid();
         }
 
@@ -693,7 +710,7 @@
             });
         }
 
-        renderLeftTeachersGrid() {
+                renderLeftTeachersGrid() {
             const search = document.getElementById('searchLeft')?.value.toLowerCase() || '';
             let filtered = this.leftTeachersData || [];
             if (search) filtered = filtered.filter(t => (t.teacherId || '').includes(search) || (t.personal?.name || '').toLowerCase().includes(search));
@@ -703,7 +720,7 @@
             if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state">📦 No left teachers</div>'; return; }
             
             grid.innerHTML = filtered.map(t => `
-                <div class="teacher-card">
+                <div class="teacher-card" data-id="${t.teacherId}">
                     <div class="teacher-card-header">
                         <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-card-img" onerror="this.src='${DEFAULT_PHOTO}'">
                         <div class="teacher-card-name">${t.personal?.name || 'N/A'}</div>
@@ -712,9 +729,28 @@
                     <div class="teacher-card-body">
                         <div class="teacher-card-info"><span>📞 Mobile:</span><span>${t.personal?.mobile || '-'}</span></div>
                         <div class="teacher-card-info"><span>📅 Left:</span><span>${formatDate(t.status?.leavingDate)}</span></div>
+                        <div class="teacher-card-info"><span>📝 Reason:</span><span>${t.status?.leavingReason || '-'}</span></div>
+                        <div class="teacher-card-info"><span> </span><span><button class="btn btn-success btn-sm rejoin-teacher-btn" data-id="${t.teacherId}">🔄 Rejoin Teacher</button></span></div>
                     </div>
                 </div>
             `).join('');
+            
+            // Add rejoin button event listeners
+            document.querySelectorAll('.rejoin-teacher-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.rejoinTeacher(btn.dataset.id);
+                });
+            });
+            
+            // Keep card click for dashboard
+            document.querySelectorAll('#leftTeachersGrid .teacher-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('rejoin-teacher-btn')) {
+                        this.showTeacherDashboard(card.dataset.id, true);
+                    }
+                });
+            });
         }
 
         renderNotices(notices) {
@@ -1083,11 +1119,53 @@
             if (response.success) { showAlert('Teacher unblocked', 'success'); await this.loadTeachers(); closeModal('dashboardModal'); }
         }
 
-        async moveToLeft(teacherId) {
+                async moveToLeft(teacherId) {
             const reason = prompt('Reason for leaving:');
             if (!reason) return;
-            const response = await this.apiCall(`/teachers/${teacherId}/move-to-left`, { method: 'POST', body: JSON.stringify({ leavingReason: reason, lastWorkingDay: new Date().toISOString().split('T')[0] }) });
-            if (response.success) { showAlert('Teacher moved to left', 'success'); await this.loadTeachers(); await this.loadLeftTeachers(); closeModal('dashboardModal'); }
+            
+            // Find teacher from current list
+            const teacher = this.teachersData.find(t => t.teacherId === teacherId);
+            if (!teacher) {
+                showAlert('Teacher not found', 'error');
+                return;
+            }
+            
+            // Add to left teachers array with left info
+            const leftTeacher = {
+                ...teacher,
+                status: {
+                    ...teacher.status,
+                    isLeft: true,
+                    leavingReason: reason,
+                    leavingDate: new Date().toISOString().split('T')[0],
+                    isBlocked: false
+                }
+            };
+            
+            // Save to localStorage (temporary database)
+            let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
+            // Check if already exists
+            const exists = leftTeachers.find(t => t.teacherId === teacherId);
+            if (!exists) {
+                leftTeachers.push(leftTeacher);
+                localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
+            }
+            
+            // Remove from active teachers in localStorage
+            let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
+            activeTeachers = activeTeachers.filter(t => t.teacherId !== teacherId);
+            localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
+            
+            // Update current data arrays
+            this.teachersData = activeTeachers;
+            this.leftTeachersData = leftTeachers;
+            
+            // Refresh displays
+            this.renderTeachersGrid();
+            this.renderLeftTeachersGrid();
+            
+            showAlert(`✅ Teacher moved to left! Reason: ${reason}`, 'success');
+            closeModal('dashboardModal');
         }
 
         openNoticeModal() {
@@ -1201,7 +1279,52 @@
             document.getElementById('docViewerTitle').innerText = title;
             document.getElementById('documentViewerModal').classList.add('active');
         }
-
+        // ========== REJOIN TEACHER FUNCTION ==========
+        async rejoinTeacher(teacherId) {
+            if (!confirm('Do you want to rejoin this teacher?')) return;
+            
+            // Find teacher from left list
+            const teacher = this.leftTeachersData.find(t => t.teacherId === teacherId);
+            if (!teacher) {
+                showAlert('Teacher not found', 'error');
+                return;
+            }
+            
+            // Remove left status and add rejoined info
+            const rejoinedTeacher = {
+                ...teacher,
+                status: {
+                    ...teacher.status,
+                    isLeft: false,
+                    leavingReason: null,
+                    leavingDate: null,
+                    rejoinedAt: new Date().toISOString().split('T')[0]
+                }
+            };
+            
+            // Remove from left teachers in localStorage
+            let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
+            leftTeachers = leftTeachers.filter(t => t.teacherId !== teacherId);
+            localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
+            
+            // Add to active teachers in localStorage
+            let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
+            const exists = activeTeachers.find(t => t.teacherId === teacherId);
+            if (!exists) {
+                activeTeachers.push(rejoinedTeacher);
+                localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
+            }
+            
+            // Update current data arrays
+            this.teachersData = activeTeachers;
+            this.leftTeachersData = leftTeachers;
+            
+            // Refresh displays
+            this.renderTeachersGrid();
+            this.renderLeftTeachersGrid();
+            
+            showAlert(`✅ Teacher rejoined successfully!`, 'success');
+        }
         logout() {
             localStorage.removeItem('adminToken');
             window.location.href = '/login.html';
