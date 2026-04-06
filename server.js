@@ -1628,7 +1628,21 @@ app.get('/api/teachers/left', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-
+// ========== GET LEFT TEACHERS (Teachers who left) ==========
+app.get('/api/teachers/left', verifyToken, async (req, res) => {
+    try {
+        const leftTeachers = await Teacher.find({ 'status.isActive': false }).sort({ updatedAt: -1 });
+        const safeTeachers = leftTeachers.map(t => {
+            const obj = t.toObject();
+            delete obj.password;
+            return obj;
+        });
+        res.json({ success: true, data: safeTeachers });
+    } catch (err) {
+        console.error('Error fetching left teachers:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 // ========== 17. MOVE TEACHER TO LEFT ==========
 app.post('/api/teachers/:id/move-to-left', verifyToken, async (req, res) => {
     try {
