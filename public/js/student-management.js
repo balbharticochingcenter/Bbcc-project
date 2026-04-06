@@ -716,7 +716,8 @@
 
     // ========== MAIN APP CLASS ==========
     class StudentManagementSystem {
-        constructor() {
+        constructor(containerId = 'app') {
+            this.containerId = containerId;
             this.token = localStorage.getItem('adminToken');
             if (!this.token) {
                 window.location.href = '/login.html';
@@ -743,12 +744,20 @@
             document.head.appendChild(styleSheet);
         }
 
-        injectHTML() {
+                injectHTML() {
             const appContainer = document.createElement('div');
             appContainer.id = 'smsApp';
             appContainer.innerHTML = htmlTemplate;
-            document.body.innerHTML = '';
-            document.body.appendChild(appContainer);
+            
+            // Find container or use body
+            const targetContainer = document.getElementById(this.containerId);
+            if (targetContainer) {
+                targetContainer.innerHTML = '';
+                targetContainer.appendChild(appContainer);
+            } else {
+                document.body.innerHTML = '';
+                document.body.appendChild(appContainer);
+            }
         }
 
         attachEventListeners() {
@@ -1597,5 +1606,20 @@
         logout() { localStorage.removeItem('adminToken'); window.location.href = '/login.html'; }
     }
 
-    document.addEventListener('DOMContentLoaded', () => { window.smsInstance = new StudentManagementSystem(); });
+        window.StudentManagementSystem = StudentManagementSystem;
+    
+    window.initStudentModule = function(containerId = 'app') {
+        if (window.studentInstance) {
+            return window.studentInstance;
+        }
+        window.studentInstance = new StudentManagementSystem(containerId);
+        return window.studentInstance;
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const activeModule = sessionStorage.getItem('activeModule');
+        if (activeModule !== 'teacher') {
+            window.initStudentModule();
+        }
+    });
 })();
