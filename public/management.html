@@ -164,7 +164,7 @@
                 <p>Complete Management System</p>
             </div>
             <div class="nav-buttons">
-                <button class="nav-btn student" onclick="switchModule('student')">
+                <button class="nav-btn student active" onclick="switchModule('student')">
                     👨‍🎓 Student Management
                 </button>
                 <button class="nav-btn teacher" onclick="switchModule('teacher')">
@@ -177,7 +177,7 @@
         </div>
         
         <div class="content-area">
-            <div id="student-module" class="module-container">
+            <div id="student-module" class="module-container active">
                 <div id="student-app"></div>
             </div>
             <div id="teacher-module" class="module-container">
@@ -236,8 +236,8 @@
             container.innerHTML = '';
             
             // Create and load student script
-                       const script = document.createElement('script');
-            script.src = '/public/js/student-management.js';   // ← YAHAN
+            const script = document.createElement('script');
+            script.src = 'js/student-management.js';
             script.onload = function() {
                 studentModuleLoaded = true;
                 showLoading(false);
@@ -267,8 +267,8 @@
             container.innerHTML = '';
             
             // Create and load teacher script
-                       const script = document.createElement('script');
-            script.src = '/public/js/teacher-management.js';   // ← YAHAN
+            const script = document.createElement('script');
+            script.src = 'js/teacher-management.js';
             script.onload = function() {
                 teacherModuleLoaded = true;
                 showLoading(false);
