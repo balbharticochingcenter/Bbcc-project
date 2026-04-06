@@ -1,5 +1,6 @@
 // ============================================
 // TEACHER-MANAGEMENT.JS - COMPLETE FINAL VERSION
+// WITH API SYNC FOR MOVE TO LEFT & REJOIN
 // FOR BAL BHARTI COACHING CENTER
 // ============================================
 
@@ -1111,61 +1112,83 @@
             if (!reason) return;
             const response = await this.apiCall(`/teachers/${teacherId}/block`, { method: 'POST', body: JSON.stringify({ reason }) });
             if (response.success) { showAlert('Teacher blocked', 'success'); await this.loadTeachers(); closeModal('dashboardModal'); }
+            else { showAlert(response.message || 'Block failed', 'error'); }
         }
 
         async unblockTeacher(teacherId) {
             if (!confirm('Unblock this teacher?')) return;
             const response = await this.apiCall(`/teachers/${teacherId}/unblock`, { method: 'POST' });
             if (response.success) { showAlert('Teacher unblocked', 'success'); await this.loadTeachers(); closeModal('dashboardModal'); }
+            else { showAlert(response.message || 'Unblock failed', 'error'); }
         }
 
-                async moveToLeft(teacherId) {
+        // ========== MOVE TO LEFT WITH API SYNC ==========
+        async moveToLeft(teacherId) {
             const reason = prompt('Reason for leaving:');
             if (!reason) return;
             
-            // Find teacher from current list
-            const teacher = this.teachersData.find(t => t.teacherId === teacherId);
-            if (!teacher) {
-                showAlert('Teacher not found', 'error');
-                return;
-            }
+            showAlert('Moving teacher to left...', 'info');
             
-            // Add to left teachers array with left info
-            const leftTeacher = {
-                ...teacher,
-                status: {
-                    ...teacher.status,
-                    isLeft: true,
-                    leavingReason: reason,
-                    leavingDate: new Date().toISOString().split('T')[0],
-                    isBlocked: false
+            try {
+                // Call backend API first
+                const response = await this.apiCall(`/teachers/${teacherId}/move-to-left`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        leavingReason: reason, 
+                        lastWorkingDay: new Date().toISOString().split('T')[0] 
+                    })
+                });
+                
+                if (response.success) {
+                    // Refresh data from server
+                    await this.loadTeachers();
+                    await this.loadLeftTeachers();
+                    showAlert(`✅ Teacher moved to left! Reason: ${reason}`, 'success');
+                    closeModal('dashboardModal');
+                } else {
+                    // Fallback to localStorage if API fails
+                    console.warn('API failed, using localStorage fallback');
+                    
+                    const teacher = this.teachersData.find(t => t.teacherId === teacherId);
+                    if (!teacher) {
+                        showAlert('Teacher not found', 'error');
+                        return;
+                    }
+                    
+                    const leftTeacher = {
+                        ...teacher,
+                        status: {
+                            ...teacher.status,
+                            isLeft: true,
+                            leavingReason: reason,
+                            leavingDate: new Date().toISOString().split('T')[0],
+                            isBlocked: false
+                        }
+                    };
+                    
+                    let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
+                    const exists = leftTeachers.find(t => t.teacherId === teacherId);
+                    if (!exists) {
+                        leftTeachers.push(leftTeacher);
+                        localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
+                    }
+                    
+                    let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
+                    activeTeachers = activeTeachers.filter(t => t.teacherId !== teacherId);
+                    localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
+                    
+                    this.teachersData = activeTeachers;
+                    this.leftTeachersData = leftTeachers;
+                    
+                    this.renderTeachersGrid();
+                    this.renderLeftTeachersGrid();
+                    
+                    showAlert(`✅ Teacher moved to left (offline mode)! Reason: ${reason}`, 'success');
+                    closeModal('dashboardModal');
                 }
-            };
-            
-            // Save to localStorage (temporary database)
-            let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
-            // Check if already exists
-            const exists = leftTeachers.find(t => t.teacherId === teacherId);
-            if (!exists) {
-                leftTeachers.push(leftTeacher);
-                localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
+            } catch (err) {
+                showAlert('Error moving teacher: ' + err.message, 'error');
             }
-            
-            // Remove from active teachers in localStorage
-            let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
-            activeTeachers = activeTeachers.filter(t => t.teacherId !== teacherId);
-            localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
-            
-            // Update current data arrays
-            this.teachersData = activeTeachers;
-            this.leftTeachersData = leftTeachers;
-            
-            // Refresh displays
-            this.renderTeachersGrid();
-            this.renderLeftTeachersGrid();
-            
-            showAlert(`✅ Teacher moved to left! Reason: ${reason}`, 'success');
-            closeModal('dashboardModal');
         }
 
         openNoticeModal() {
@@ -1279,59 +1302,79 @@
             document.getElementById('docViewerTitle').innerText = title;
             document.getElementById('documentViewerModal').classList.add('active');
         }
-        // ========== REJOIN TEACHER FUNCTION ==========
+
+        // ========== REJOIN TEACHER WITH API SYNC ==========
         async rejoinTeacher(teacherId) {
             if (!confirm('Do you want to rejoin this teacher?')) return;
             
-            // Find teacher from left list
-            const teacher = this.leftTeachersData.find(t => t.teacherId === teacherId);
-            if (!teacher) {
-                showAlert('Teacher not found', 'error');
-                return;
-            }
+            showAlert('Rejoining teacher...', 'info');
             
-            // Remove left status and add rejoined info
-            const rejoinedTeacher = {
-                ...teacher,
-                status: {
-                    ...teacher.status,
-                    isLeft: false,
-                    leavingReason: null,
-                    leavingDate: null,
-                    rejoinedAt: new Date().toISOString().split('T')[0]
+            try {
+                // Call backend API for rejoin
+                const response = await this.apiCall(`/teachers/${teacherId}/rejoin`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        rejoinedAt: new Date().toISOString().split('T')[0]
+                    })
+                });
+                
+                if (response.success) {
+                    // Refresh data from server
+                    await this.loadTeachers();
+                    await this.loadLeftTeachers();
+                    showAlert(`✅ Teacher rejoined successfully!`, 'success');
+                } else {
+                    // Fallback to localStorage if API fails
+                    console.warn('API failed, using localStorage fallback');
+                    
+                    const teacher = this.leftTeachersData.find(t => t.teacherId === teacherId);
+                    if (!teacher) {
+                        showAlert('Teacher not found', 'error');
+                        return;
+                    }
+                    
+                    const rejoinedTeacher = {
+                        ...teacher,
+                        status: {
+                            ...teacher.status,
+                            isLeft: false,
+                            leavingReason: null,
+                            leavingDate: null,
+                            rejoinedAt: new Date().toISOString().split('T')[0]
+                        }
+                    };
+                    
+                    let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
+                    leftTeachers = leftTeachers.filter(t => t.teacherId !== teacherId);
+                    localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
+                    
+                    let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
+                    const exists = activeTeachers.find(t => t.teacherId === teacherId);
+                    if (!exists) {
+                        activeTeachers.push(rejoinedTeacher);
+                        localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
+                    }
+                    
+                    this.teachersData = activeTeachers;
+                    this.leftTeachersData = leftTeachers;
+                    
+                    this.renderTeachersGrid();
+                    this.renderLeftTeachersGrid();
+                    
+                    showAlert(`✅ Teacher rejoined successfully (offline mode)!`, 'success');
                 }
-            };
-            
-            // Remove from left teachers in localStorage
-            let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
-            leftTeachers = leftTeachers.filter(t => t.teacherId !== teacherId);
-            localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
-            
-            // Add to active teachers in localStorage
-            let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
-            const exists = activeTeachers.find(t => t.teacherId === teacherId);
-            if (!exists) {
-                activeTeachers.push(rejoinedTeacher);
-                localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
+            } catch (err) {
+                showAlert('Error rejoining teacher: ' + err.message, 'error');
             }
-            
-            // Update current data arrays
-            this.teachersData = activeTeachers;
-            this.leftTeachersData = leftTeachers;
-            
-            // Refresh displays
-            this.renderTeachersGrid();
-            this.renderLeftTeachersGrid();
-            
-            showAlert(`✅ Teacher rejoined successfully!`, 'success');
         }
+
         logout() {
             localStorage.removeItem('adminToken');
             window.location.href = '/login.html';
         }
     }
 
-        window.TeacherManagementSystem = TeacherManagementSystem;
+    window.TeacherManagementSystem = TeacherManagementSystem;
     
     window.initTeacherModule = function(containerId = 'app') {
         if (window.teacherInstance) {
