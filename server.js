@@ -168,7 +168,137 @@ const OldStudentSchema = new mongoose.Schema({
 const Admin = mongoose.model('Admin', AdminSchema);
 const Student = mongoose.model('Student', StudentSchema);
 const OldStudent = mongoose.model('OldStudent', OldStudentSchema);
+// ============================================
+// TEACHER SCHEMA (Add after StudentSchema)
+// ============================================
+const TeacherSchema = new mongoose.Schema({
+    teacherId: { type: String, required: true, unique: true, index: true }, // Aadhar number
+    aadharNumber: { type: String, required: true, unique: true, index: true },
+    password: { type: String, required: true }, // DOB as password (DDMMYYYY)
+    
+    // Personal Information
+    personal: {
+        photo: { type: String, default: '' },
+        name: { type: String, required: true },
+        dob: { type: Date, required: true },
+        gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
+        mobile: { type: String, required: true },
+        email: { type: String, required: true },
+        currentAddress: { type: String, required: true },
+        permanentAddress: { type: String, default: '' }
+    },
+    
+    // Documents
+    documents: {
+        aadharCopy: { type: String, default: '' },
+        qualificationDoc: { type: String, default: '' },
+        qualificationName: { type: String, required: true }
+    },
+    
+    // Professional Information
+    professional: {
+        joiningDate: { type: Date, required: true },
+        experience: { type: Number, default: 0 },
+        subjects: [{ type: String }], // Multi-select
+        classes: [{ type: String }],   // Multi-select
+        boards: [{ type: String }],    // Multi-select
+        branches: [{ type: String }],  // Multi-select (if multiple branches)
+        
+        // Change history tracking
+        assignmentHistory: [{
+            date: { type: Date, default: Date.now },
+            changes: { type: Object },
+            reason: { type: String }
+        }]
+    },
+    
+    // Salary
+    salary: {
+        defaultSalary: { type: Number, default: 0 },
+        monthlySalaryHistory: [{
+            month: String,
+            year: Number,
+            amount: Number
+        }]
+    },
+    
+    // Bank Details (Optional)
+    bankDetails: {
+        bankName: { type: String, default: '' },
+        accountNumber: { type: String, default: '' },
+        ifsc: { type: String, default: '' },
+        upiId: { type: String, default: '' }
+    },
+    
+    // Working Days (Admin defined)
+    workingDays: {
+        startDay: { type: String, default: 'Monday' },
+        endDay: { type: String, default: 'Saturday' },
+        isHoliday: [{ type: Date }]  // Holiday list
+    },
+    
+    // Attendance
+    attendance: [{
+        date: { type: Date, required: true },
+        status: { type: String, enum: ['present', 'absent', 'holiday', 'leave'], default: 'absent' },
+        checkIn: { type: String },
+        checkOut: { type: String },
+        photo: { type: String, default: '' },  // Live photo optional
+        remarks: { type: String },
+        markedAt: { type: Date, default: Date.now },
+        markedBy: { type: String }
+    }],
+    
+    // Salary Payments
+    salaryPayments: [{
+        month: String,
+        year: Number,
+        baseSalary: Number,
+        workingDays: Number,
+        presentDays: Number,
+        calculatedAmount: Number,
+        paidAmount: Number,
+        dueAmount: Number,
+        status: { type: String, enum: ['paid', 'partial', 'unpaid'], default: 'unpaid' },
+        paymentDate: Date,
+        paymentMode: { type: String, enum: ['cash', 'bank', 'upi'] },
+        remarks: String
+    }],
+    
+    // Notices (Both ways)
+    notices: [{
+        id: { type: String, required: true },
+        from: { type: String, enum: ['admin', 'teacher'], required: true },
+        to: { type: String, enum: ['admin', 'teacher'], required: true },
+        title: { type: String, required: true },
+        message: { type: String, required: true },
+        sentAt: { type: Date, default: Date.now },
+        isRead: { type: Boolean, default: false },
+        readAt: Date,
+        reply: { type: String, default: null },
+        replyAt: Date
+    }],
+    
+    // Status
+    status: {
+        isActive: { type: Boolean, default: true },
+        isBlocked: { type: Boolean, default: false },
+        blockedReason: { type: String },
+        blockedAt: Date,
+        unblockedAt: Date,
+        leavingDate: Date,
+        leavingReason: String
+    },
+    
+    // Login tracking
+    login: {
+        lastLogin: Date,
+        loginAttempts: { type: Number, default: 0 }
+    }
+    
+}, { timestamps: true });
 
+const Teacher = mongoose.model('Teacher', TeacherSchema);
 // ============================================
 // DATABASE CONNECTION WITH INDEX FIX
 // ============================================
@@ -209,7 +339,12 @@ mongoose.connect(MONGO_URI)
             console.log('✅ Created index: aadharNumber');
             
             console.log('✅ Database indexes fixed successfully!');
-            
+            // Teacher indexes
+await Teacher.collection.createIndex({ teacherId: 1 }, { unique: true });
+console.log('✅ Created index: teacherId');
+
+await Teacher.collection.createIndex({ aadharNumber: 1 }, { unique: true });
+console.log('✅ Created index: aadharNumber');
         } catch (indexErr) {
             console.log('⚠️ Index fix warning:', indexErr.message);
             // Try alternative approach
@@ -865,7 +1000,750 @@ app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+// ============================================
+// TEACHER APIs
+// ============================================
 
+// Helper: Format DOB to password (DDMMYYYY)
+function formatDOBToPassword(dob) {
+    const d = new Date(dob);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}${month}${year}`;
+}
+
+// Helper: Check if attendance can be marked (before 10 PM)
+function canMarkAttendance() {
+    const now = new Date();
+    const hour = now.getHours();
+    return hour < 22; // Before 10 PM
+}
+
+// Helper: Calculate salary based on attendance
+function calculateSalary(baseSalary, workingDays, presentDays) {
+    if (workingDays === 0) return 0;
+    return Math.round((baseSalary / workingDays) * presentDays);
+}
+
+// ========== 1. REGISTER TEACHER ==========
+app.post('/api/teachers/register', verifyToken, async (req, res) => {
+    try {
+        const data = req.body;
+        const aadharNumber = data.aadharNumber;
+        
+        // Validation
+        if (!aadharNumber || !/^\d{12}$/.test(aadharNumber)) {
+            return res.status(400).json({ success: false, message: "Valid 12-digit Aadhar number required" });
+        }
+        
+        if (!data.personal?.mobile || !/^\d{10}$/.test(data.personal.mobile)) {
+            return res.status(400).json({ success: false, message: "Valid 10-digit mobile number required" });
+        }
+        
+        // Check duplicate
+        const existing = await Teacher.findOne({ $or: [{ teacherId: aadharNumber }, { aadharNumber: aadharNumber }] });
+        if (existing) {
+            return res.status(400).json({ success: false, message: "Teacher already registered with this Aadhar" });
+        }
+        
+        // Create password from DOB
+        const password = formatDOBToPassword(data.personal.dob);
+        
+        const teacher = new Teacher({
+            teacherId: aadharNumber,
+            aadharNumber: aadharNumber,
+            password: password,
+            personal: {
+                photo: data.personal.photo || '',
+                name: data.personal.name,
+                dob: new Date(data.personal.dob),
+                gender: data.personal.gender,
+                mobile: data.personal.mobile,
+                email: data.personal.email,
+                currentAddress: data.personal.currentAddress,
+                permanentAddress: data.personal.permanentAddress || ''
+            },
+            documents: {
+                aadharCopy: data.documents?.aadharCopy || '',
+                qualificationDoc: data.documents?.qualificationDoc || '',
+                qualificationName: data.documents?.qualificationName
+            },
+            professional: {
+                joiningDate: new Date(data.professional.joiningDate),
+                experience: data.professional.experience || 0,
+                subjects: data.professional.subjects || [],
+                classes: data.professional.classes || [],
+                boards: data.professional.boards || [],
+                branches: data.professional.branches || [],
+                assignmentHistory: [{
+                    date: new Date(),
+                    changes: {
+                        subjects: data.professional.subjects || [],
+                        classes: data.professional.classes || [],
+                        boards: data.professional.boards || []
+                    },
+                    reason: "Initial joining"
+                }]
+            },
+            salary: {
+                defaultSalary: data.salary?.defaultSalary || 0,
+                monthlySalaryHistory: []
+            },
+            bankDetails: {
+                bankName: data.bankDetails?.bankName || '',
+                accountNumber: data.bankDetails?.accountNumber || '',
+                ifsc: data.bankDetails?.ifsc || '',
+                upiId: data.bankDetails?.upiId || ''
+            },
+            status: {
+                isActive: true,
+                isBlocked: false
+            }
+        });
+        
+        await teacher.save();
+        
+        console.log('✅ Teacher registered:', teacher.teacherId);
+        res.json({ 
+            success: true, 
+            message: "Teacher registered successfully!",
+            teacherId: aadharNumber,
+            password: password
+        });
+        
+    } catch (err) {
+        console.error('Teacher registration error:', err);
+        if (err.code === 11000) {
+            return res.status(400).json({ success: false, message: "Teacher already exists!" });
+        }
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 2. GET ALL TEACHERS ==========
+app.get('/api/teachers', verifyToken, async (req, res) => {
+    try {
+        const teachers = await Teacher.find({ 'status.isActive': true }).sort({ createdAt: -1 });
+        const safeTeachers = teachers.map(t => {
+            const obj = t.toObject();
+            delete obj.password;
+            return obj;
+        });
+        res.json({ success: true, data: safeTeachers });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 3. GET SINGLE TEACHER ==========
+app.get('/api/teachers/:id', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const data = teacher.toObject();
+        delete data.password;
+        res.json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 4. UPDATE TEACHER (All fields except Aadhar) ==========
+app.put('/api/teachers/:id', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const updates = req.body;
+        
+        // Update allowed fields
+        if (updates.personal) {
+            Object.assign(teacher.personal, updates.personal);
+        }
+        if (updates.documents) {
+            Object.assign(teacher.documents, updates.documents);
+        }
+        if (updates.professional) {
+            // Track changes for history
+            const changes = {};
+            if (updates.professional.subjects) changes.subjects = updates.professional.subjects;
+            if (updates.professional.classes) changes.classes = updates.professional.classes;
+            if (updates.professional.boards) changes.boards = updates.professional.boards;
+            
+            if (Object.keys(changes).length > 0) {
+                teacher.professional.assignmentHistory.push({
+                    date: new Date(),
+                    changes: changes,
+                    reason: updates.professional.changeReason || "Manual update"
+                });
+            }
+            
+            Object.assign(teacher.professional, updates.professional);
+        }
+        if (updates.salary) {
+            Object.assign(teacher.salary, updates.salary);
+        }
+        if (updates.bankDetails) {
+            Object.assign(teacher.bankDetails, updates.bankDetails);
+        }
+        
+        teacher.updatedAt = new Date();
+        await teacher.save();
+        
+        res.json({ success: true, message: "Teacher updated successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 5. MARK TEACHER ATTENDANCE ==========
+app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
+    try {
+        if (!canMarkAttendance()) {
+            return res.status(400).json({ success: false, message: "Attendance can only be marked before 10 PM" });
+        }
+        
+        const teacherId = req.params.id;
+        const { date, status, checkIn, checkOut, photo, remarks } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const attendanceDate = new Date(date);
+        attendanceDate.setHours(0, 0, 0, 0);
+        
+        // Check if already marked
+        const existingIndex = teacher.attendance.findIndex(a => {
+            const aDate = new Date(a.date);
+            aDate.setHours(0, 0, 0, 0);
+            return aDate.getTime() === attendanceDate.getTime();
+        });
+        
+        const record = {
+            date: attendanceDate,
+            status: status,
+            checkIn: checkIn || new Date().toLocaleTimeString(),
+            checkOut: checkOut || '',
+            photo: photo || '',
+            remarks: remarks || '',
+            markedAt: new Date(),
+            markedBy: req.user?.adminID || 'Admin'
+        };
+        
+        if (existingIndex >= 0) {
+            teacher.attendance[existingIndex] = record;
+        } else {
+            teacher.attendance.push(record);
+        }
+        
+        await teacher.save();
+        res.json({ success: true, message: "Attendance marked successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 6. UPDATE ATTENDANCE (Edit History) ==========
+app.put('/api/teachers/:id/attendance/:date', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const dateParam = req.params.date;
+        const { status, checkIn, checkOut, remarks } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const attendanceDate = new Date(dateParam);
+        attendanceDate.setHours(0, 0, 0, 0);
+        
+        const attendanceIndex = teacher.attendance.findIndex(a => {
+            const aDate = new Date(a.date);
+            aDate.setHours(0, 0, 0, 0);
+            return aDate.getTime() === attendanceDate.getTime();
+        });
+        
+        if (attendanceIndex === -1) {
+            return res.status(404).json({ success: false, message: "Attendance record not found" });
+        }
+        
+        if (status) teacher.attendance[attendanceIndex].status = status;
+        if (checkIn) teacher.attendance[attendanceIndex].checkIn = checkIn;
+        if (checkOut) teacher.attendance[attendanceIndex].checkOut = checkOut;
+        if (remarks) teacher.attendance[attendanceIndex].remarks = remarks;
+        
+        await teacher.save();
+        res.json({ success: true, message: "Attendance updated successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 7. GENERATE SALARY (Auto + Manual) ==========
+app.post('/api/teachers/:id/salary/generate', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const { month, year, customSalary } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        // Get working days for the month
+        const startDate = new Date(year, new Date(Date.parse(month + " 1, " + year)).getMonth(), 1);
+        const endDate = new Date(year, startDate.getMonth() + 1, 0);
+        
+        // Filter attendance for the month
+        const monthAttendance = teacher.attendance.filter(a => {
+            const aDate = new Date(a.date);
+            return aDate.getMonth() === startDate.getMonth() && aDate.getFullYear() === year;
+        });
+        
+        // Calculate working days (Mon-Sat, excluding holidays)
+        let workingDays = 0;
+        let presentDays = 0;
+        
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const dayOfWeek = d.getDay();
+            // Monday=1 to Saturday=6 are working days (Sunday=0 is off)
+            if (dayOfWeek >= 1 && dayOfWeek <= 6) {
+                workingDays++;
+                const attendanceRecord = monthAttendance.find(a => {
+                    const aDate = new Date(a.date);
+                    return aDate.getDate() === d.getDate();
+                });
+                if (attendanceRecord && (attendanceRecord.status === 'present' || attendanceRecord.status === 'holiday')) {
+                    presentDays++;
+                }
+            }
+        }
+        
+        // Get base salary (custom or default)
+        const monthlySalaryRecord = teacher.salary.monthlySalaryHistory.find(
+            s => s.month === month && s.year === year
+        );
+        const baseSalary = customSalary || monthlySalaryRecord?.amount || teacher.salary.defaultSalary;
+        
+        // Calculate salary
+        const calculatedAmount = calculateSalary(baseSalary, workingDays, presentDays);
+        
+        // Check if already exists
+        const existingIndex = teacher.salaryPayments.findIndex(
+            s => s.month === month && s.year === year
+        );
+        
+        const salaryRecord = {
+            month: month,
+            year: year,
+            baseSalary: baseSalary,
+            workingDays: workingDays,
+            presentDays: presentDays,
+            calculatedAmount: calculatedAmount,
+            paidAmount: 0,
+            dueAmount: calculatedAmount,
+            status: 'unpaid'
+        };
+        
+        if (existingIndex >= 0) {
+            teacher.salaryPayments[existingIndex] = { ...teacher.salaryPayments[existingIndex], ...salaryRecord };
+        } else {
+            teacher.salaryPayments.push(salaryRecord);
+        }
+        
+        await teacher.save();
+        res.json({ success: true, message: "Salary generated successfully", data: salaryRecord });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 8. PAY SALARY ==========
+app.post('/api/teachers/:id/salary/pay', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const { month, year, paidAmount, paymentMode, remarks } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const salaryIndex = teacher.salaryPayments.findIndex(
+            s => s.month === month && s.year === year
+        );
+        
+        if (salaryIndex === -1) {
+            return res.status(404).json({ success: false, message: "Salary record not found. Generate first." });
+        }
+        
+        const salary = teacher.salaryPayments[salaryIndex];
+        const newPaidAmount = (salary.paidAmount || 0) + paidAmount;
+        
+        salary.paidAmount = newPaidAmount;
+        salary.dueAmount = salary.calculatedAmount - newPaidAmount;
+        salary.status = newPaidAmount >= salary.calculatedAmount ? 'paid' : newPaidAmount > 0 ? 'partial' : 'unpaid';
+        salary.paymentDate = new Date();
+        salary.paymentMode = paymentMode;
+        if (remarks) salary.remarks = remarks;
+        
+        await teacher.save();
+        res.json({ success: true, message: "Salary paid successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 9. UPDATE MONTHLY SALARY AMOUNT ==========
+app.post('/api/teachers/:id/salary/monthly-update', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const { month, year, amount } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const existingIndex = teacher.salary.monthlySalaryHistory.findIndex(
+            s => s.month === month && s.year === year
+        );
+        
+        if (existingIndex >= 0) {
+            teacher.salary.monthlySalaryHistory[existingIndex].amount = amount;
+        } else {
+            teacher.salary.monthlySalaryHistory.push({ month, year, amount });
+        }
+        
+        await teacher.save();
+        res.json({ success: true, message: "Monthly salary updated successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 10. BLOCK TEACHER ==========
+app.post('/api/teachers/:id/block', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const { reason } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        teacher.status.isBlocked = true;
+        teacher.status.blockedReason = reason || "No reason provided";
+        teacher.status.blockedAt = new Date();
+        
+        await teacher.save();
+        res.json({ success: true, message: "Teacher blocked successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 11. UNBLOCK TEACHER ==========
+app.post('/api/teachers/:id/unblock', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        teacher.status.isBlocked = false;
+        teacher.status.unblockedAt = new Date();
+        
+        await teacher.save();
+        res.json({ success: true, message: "Teacher unblocked successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 12. SEND NOTICE ==========
+app.post('/api/teachers/notice', verifyToken, async (req, res) => {
+    try {
+        const { teacherId, title, message, from } = req.body;
+        const noticeId = Date.now().toString();
+        
+        const notice = {
+            id: noticeId,
+            from: from,
+            to: teacherId ? 'teacher' : 'admin',
+            title: title,
+            message: message,
+            sentAt: new Date(),
+            isRead: false
+        };
+        
+        if (teacherId) {
+            // Send to specific teacher
+            const teacher = await Teacher.findOne({ teacherId: teacherId });
+            if (teacher) {
+                teacher.notices.push(notice);
+                await teacher.save();
+            }
+        } else {
+            // Broadcast to all teachers
+            const teachers = await Teacher.find({ 'status.isActive': true });
+            for (const teacher of teachers) {
+                teacher.notices.push(notice);
+                await teacher.save();
+            }
+        }
+        
+        res.json({ success: true, message: "Notice sent successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 13. GET ALL NOTICES (Admin View) ==========
+app.get('/api/notices', verifyToken, async (req, res) => {
+    try {
+        const teachers = await Teacher.find({ 'status.isActive': true });
+        let allNotices = [];
+        
+        for (const teacher of teachers) {
+            for (const notice of teacher.notices) {
+                allNotices.push({
+                    ...notice.toObject(),
+                    teacherName: teacher.personal.name,
+                    teacherId: teacher.teacherId
+                });
+            }
+        }
+        
+        allNotices.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+        res.json({ success: true, data: allNotices });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 14. TEACHER LOGIN ==========
+app.post('/api/teacher-login', async (req, res) => {
+    try {
+        const { teacherId, password } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        
+        if (!teacher) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+        
+        if (teacher.status.isBlocked) {
+            return res.status(401).json({ success: false, message: "Your account is blocked. Contact admin." });
+        }
+        
+        if (teacher.password !== password) {
+            teacher.login.loginAttempts += 1;
+            await teacher.save();
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
+        
+        teacher.login.lastLogin = new Date();
+        teacher.login.loginAttempts = 0;
+        await teacher.save();
+        
+        const token = jwt.sign(
+            { id: teacher._id, teacherId: teacher.teacherId, role: 'teacher' },
+            process.env.JWT_SECRET || 'fallback_secret',
+            { expiresIn: '24h' }
+        );
+        
+        res.json({
+            success: true,
+            message: "Login successful",
+            token,
+            teacher: {
+                name: teacher.personal.name,
+                teacherId: teacher.teacherId
+            }
+        });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 15. TEACHER DASHBOARD DATA ==========
+app.get('/api/teacher/my-data', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'teacher') {
+            return res.status(403).json({ success: false, message: "Access denied" });
+        }
+        
+        const teacher = await Teacher.findOne({ teacherId: req.user.teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const data = teacher.toObject();
+        delete data.password;
+        res.json({ success: true, data });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 16. GET LEFT TEACHERS ==========
+app.get('/api/teachers/left', verifyToken, async (req, res) => {
+    try {
+        const teachers = await Teacher.find({ 'status.isActive': false }).sort({ updatedAt: -1 });
+        const safeTeachers = teachers.map(t => {
+            const obj = t.toObject();
+            delete obj.password;
+            return obj;
+        });
+        res.json({ success: true, data: safeTeachers });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 17. MOVE TEACHER TO LEFT ==========
+app.post('/api/teachers/:id/move-to-left', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const { leavingReason, lastWorkingDay } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        teacher.status.isActive = false;
+        teacher.status.leavingDate = lastWorkingDay ? new Date(lastWorkingDay) : new Date();
+        teacher.status.leavingReason = leavingReason || "No reason provided";
+        
+        await teacher.save();
+        res.json({ success: true, message: "Teacher moved to left list" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 18. WORKING DAYS SETTINGS ==========
+app.post('/api/settings/working-days', verifyToken, async (req, res) => {
+    try {
+        const { startDay, endDay, holidays } = req.body;
+        
+        // Update all teachers
+        await Teacher.updateMany({}, {
+            $set: {
+                'workingDays.startDay': startDay,
+                'workingDays.endDay': endDay,
+                'workingDays.isHoliday': holidays || []
+            }
+        });
+        
+        res.json({ success: true, message: "Working days updated for all teachers" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ========== 19. REPORTS ==========
+app.get('/api/reports/teacher/:id/:type', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const type = req.params.type; // salary, attendance, performance
+        const { month, year } = req.query;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        let reportData = {};
+        
+        switch(type) {
+            case 'salary':
+                const salaryData = teacher.salaryPayments.find(s => s.month === month && s.year === parseInt(year));
+                reportData = {
+                    teacherName: teacher.personal.name,
+                    teacherId: teacher.teacherId,
+                    month: month,
+                    year: year,
+                    ...salaryData
+                };
+                break;
+                
+            case 'attendance':
+                const startDate = new Date(year, new Date(Date.parse(month + " 1, " + year)).getMonth(), 1);
+                const monthAttendance = teacher.attendance.filter(a => {
+                    const aDate = new Date(a.date);
+                    return aDate.getMonth() === startDate.getMonth() && aDate.getFullYear() === parseInt(year);
+                });
+                reportData = {
+                    teacherName: teacher.personal.name,
+                    teacherId: teacher.teacherId,
+                    month: month,
+                    year: year,
+                    attendance: monthAttendance,
+                    totalPresent: monthAttendance.filter(a => a.status === 'present').length,
+                    totalAbsent: monthAttendance.filter(a => a.status === 'absent').length,
+                    totalHolidays: monthAttendance.filter(a => a.status === 'holiday').length,
+                    totalLeaves: monthAttendance.filter(a => a.status === 'leave').length
+                };
+                break;
+                
+            case 'performance':
+                const totalSalaryPaid = teacher.salaryPayments.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
+                const totalAttendance = teacher.attendance.length;
+                const totalPresent = teacher.attendance.filter(a => a.status === 'present').length;
+                reportData = {
+                    teacherName: teacher.personal.name,
+                    teacherId: teacher.teacherId,
+                    joiningDate: teacher.professional.joiningDate,
+                    subjects: teacher.professional.subjects,
+                    classes: teacher.professional.classes,
+                    totalSalaryPaid: totalSalaryPaid,
+                    attendancePercentage: totalAttendance > 0 ? Math.round((totalPresent / totalAttendance) * 100) : 0,
+                    totalStudentsAssigned: 0, // Can be calculated if student-teacher mapping exists
+                    performanceRemarks: "Good"
+                };
+                break;
+        }
+        
+        res.json({ success: true, data: reportData });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+console.log('✅ Teacher APIs loaded successfully');
 // ============================================
 // SERVE HTML FILES
 // ============================================
