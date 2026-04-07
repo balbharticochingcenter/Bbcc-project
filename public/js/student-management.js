@@ -1077,7 +1077,7 @@
                 <div class="dashboard-container">
                     ${sessionWarningHtml}
                     <div class="dashboard-header">
-                        <div><img src="${s.photo || DEFAULT_PHOTO}" class="student-photo-large" onerror="this.src='${DEFAULT_PHOTO}'" onclick="window.smsInstance.viewDocument('${s.photo || DEFAULT_PHOTO}', 'Student Photo')"><div style="text-align:center;margin-top:5px;"><button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${s.photo || DEFAULT_PHOTO}', 'Student Photo')">🔍 View Photo</button></div></div>
+                        <div><img src="${s.photo || DEFAULT_PHOTO}" class="student-photo-large" onerror="this.src='${DEFAULT_PHOTO}'" onclick="window.viewStudentDocument('${s.photo || DEFAULT_PHOTO}', 'Student Photo')"><div style="text-align:center;margin-top:5px;"><button class="btn btn-sm btn-info" onclick="window.viewStudentDocument('${s.photo || DEFAULT_PHOTO}', 'Student Photo')">🔍 View Photo</button></div></div>
                         <div class="dashboard-info">
                             <div class="info-row"><div class="info-label">Student ID:</div><div class="info-value"><strong>${s.studentId || '-'}</strong></div></div>
                             <div class="info-row"><div class="info-label">Aadhar Number:</div><div class="info-value">${s.aadharNumber || s.studentId || '-'}</div></div>
@@ -1108,7 +1108,7 @@
                             <div class="info-row"><div class="info-label">Blood Group:</div><div class="info-value">${s.medicalInfo?.bloodGroup || '-'}</div></div>
                             <div class="info-row"><div class="info-label">Allergies/Medical:</div><div class="info-value">${s.medicalInfo?.allergies || '-'} / ${s.medicalInfo?.medicalConditions || '-'}</div></div>
                             <div class="info-row"><div class="info-label">Status:</div><div class="info-value">${isBlocked ? `<span class="badge-blocked">🔴 BLOCKED</span>` : '<span class="badge-active">🟢 ACTIVE</span>'}</div></div>
-                            <div class="info-row"><div class="info-label">Aadhar Document:</div><div class="info-value"><button class="btn btn-sm btn-info" onclick="window.smsInstance.viewDocument('${s.aadharDocument || DEFAULT_PHOTO}', 'Aadhar Document')">📄 View</button></div></div>
+                            <div class="info-row"><div class="info-label">Aadhar Document:</div><div class="info-value"><button class="btn btn-sm btn-info" onclick="window.viewStudentDocument('${s.aadharDocument || DEFAULT_PHOTO}', 'Aadhar Document')">📄 View</button></div></div>
                         </div>
                     </div>
                     <div class="stats-grid">
@@ -1359,8 +1359,17 @@
             else showAlert(response.message || 'Update failed', 'error');
         }
 
-        viewDocument(imageUrl, title) { document.getElementById('docViewerImage').src = imageUrl; document.getElementById('docViewerTitle').innerText = title; this.currentDocumentUrl = imageUrl; document.getElementById('documentViewerModal').classList.add('active'); }
-        downloadCurrentDocument() { if (this.currentDocumentUrl) { const a = document.createElement('a'); a.href = this.currentDocumentUrl; a.download = 'document.jpg'; a.click(); } }
+       viewDocument(imageUrl, title) { 
+    const modal = document.getElementById('documentViewerModal');
+    const img = document.getElementById('docViewerImage');
+    const titleSpan = document.getElementById('docViewerTitle');
+    if (modal && img && titleSpan) {
+        img.src = imageUrl; 
+        titleSpan.innerText = title; 
+        this.currentDocumentUrl = imageUrl; 
+        modal.classList.add('active');
+    }
+}
 
         openAttendanceModal(studentId) {
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
@@ -1606,13 +1615,27 @@
         logout() { localStorage.removeItem('adminToken'); window.location.href = '/login.html'; }
     }
 
-        window.StudentManagementSystem = StudentManagementSystem;
+           // ✅ GLOBAL FUNCTION FOR STUDENT DOCUMENT VIEWER
+    window.viewStudentDocument = function(url, title) {
+        const modal = document.getElementById('documentViewerModal');
+        const img = document.getElementById('docViewerImage');
+        const titleSpan = document.getElementById('docViewerTitle');
+        if (modal && img && titleSpan) {
+            img.src = url;
+            titleSpan.innerText = title;
+            modal.classList.add('active');
+        }
+    };
+    
+    window.StudentManagementSystem = StudentManagementSystem;
     
     window.initStudentModule = function(containerId = 'app') {
         if (window.studentInstance) {
+            window.smsInstance = window.studentInstance;
             return window.studentInstance;
         }
         window.studentInstance = new StudentManagementSystem(containerId);
+        window.smsInstance = window.studentInstance;
         return window.studentInstance;
     };
     
