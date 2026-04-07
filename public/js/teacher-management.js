@@ -1,6 +1,6 @@
 // ============================================
 // TEACHER-MANAGEMENT.JS - COMPLETE FINAL VERSION
-// ALL FEATURES WORKING - NO MISSING CODE
+// ALL FEATURES WORKING - ATTENDANCE, SALARY, HISTORY TAB, GRAPHS
 // FOR BAL BHARTI COACHING CENTER
 // ============================================
 
@@ -12,6 +12,9 @@
     let leftTeachersData = [];
     let currentViewTeacher = null;
     let currentEditTeacherId = null;
+    let selectedHistoryTeacherId = null;
+    let attendanceChart = null;
+    let salaryChart = null;
 
     const subjectsList = [
         'Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 
@@ -116,6 +119,7 @@
             teachersData = [];
         }
         renderTeachersGrid();
+        updateHistoryTeacherDropdown();
     }
 
     async function loadLeftTeachers() {
@@ -297,6 +301,22 @@
                 <div class="chart-container"><div class="chart-title">📚 Subjects</div><div>${(t.professional?.subjects || []).map(s => `<span style="background:#28a74520;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${s}</span>`).join('') || '-'}</div></div>
                 <div class="chart-container"><div class="chart-title">🏫 Classes</div><div>${(t.professional?.classes || []).map(c => `<span style="background:#17a2b820;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${c}</span>`).join('') || '-'}</div></div>
                 <div class="chart-container"><div class="chart-title">🎓 Boards</div><div>${(t.professional?.boards || []).map(b => `<span style="background:#ffc10720;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${b}</span>`).join('') || '-'}</div></div>
+                <div class="chart-container"><div class="chart-title">📅 Recent Attendance</div>
+                    <div style="overflow-x:auto; max-height:200px;">
+                        <table class="data-table">
+                            <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th></tr></thead>
+                            <tbody>${(attendance || []).slice(-10).reverse().map(a => `<tr><td>${formatDate(a.date)}</td><td>${a.status}</td><td>${a.checkIn || '-'}</td><td>${a.checkOut || '-'}</td></tr>`).join('')}</tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="chart-container"><div class="chart-title">💰 Recent Salary</div>
+                    <div style="overflow-x:auto; max-height:200px;">
+                        <table class="data-table">
+                            <thead><tr><th>Month/Year</th><th>Calculated</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
+                            <tbody>${(salaryPayments || []).slice(-6).reverse().map(s => `<tr><td>${s.month} ${s.year}</td><td>₹${s.calculatedAmount || 0}</td><td>₹${s.paidAmount || 0}</td><td>₹${s.dueAmount || 0}</td><td>${s.status === 'paid' ? '✅ Paid' : s.status === 'partial' ? '⚠️ Partial' : '❌ Unpaid'}</td></tr>`).join('')}</tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         `;
         
@@ -335,7 +355,7 @@
     async function openAttendanceModal(teacherId) {
         document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
         document.getElementById('attendanceStatus').value = 'present';
-        document.getElementById('checkInTime').value = '';
+        document.getElementById('checkInTime').value = new Date().toLocaleTimeString();
         document.getElementById('checkOutTime').value = '';
         document.getElementById('attendancePhoto').value = '';
         document.getElementById('attendancePhotoPreview').style.display = 'none';
@@ -790,553 +810,128 @@
         window.location.href = '/login.html';
     }
 
-    async function init() {
-        await loadTeachers();
-        await loadLeftTeachers();
-        await loadNotices();
-        const joiningDateInput = document.getElementById('joiningDate');
-        if (joiningDateInput) joiningDateInput.value = new Date().toISOString().split('T')[0];
-        setupEventListeners();
+    function updateHistoryTeacherDropdown() {
+        const historyFilter = document.getElementById('historyTeacherFilter');
+        if (historyFilter) {
+            historyFilter.innerHTML = '<option value="">-- Select Teacher --</option>' + 
+                teachersData.map(t => `<option value="${t.teacherId}">${t.personal?.name} (${t.teacherId})</option>`).join('');
+        }
     }
 
-    function setupEventListeners() {
-        document.querySelectorAll('.main-tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tab = btn.dataset.tab;
-                document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('.tab-pane').forEach(pane => {
-                    pane.classList.toggle('active', pane.dataset.pane === tab);
-                });
-                if (tab === 'new-teacher') cancelEdit();
-                if (tab === 'notices') loadNotices();
-            });
+    async function loadHistoryData(teacherId) {
+        if (!teacherId) return;
+        selectedHistoryTeacherId = teacherId;
+        
+        const response = await apiCall(`/teachers/${teacherId}`);
+        if (!response.success || !response.data) {
+            showAlert('Teacher not found!', 'error');
+            return;
+        }
+        
+        const teacher = response.data;
+        const yearFilter = document.getElementById('historyYearFilter')?.value || 'all';
+        
+        document.getElementById('historyTeacherInfo').style.display = 'block';
+        document.getElementById('historyTeacherName').innerText = teacher.personal?.name || 'N/A';
+        document.getElementById('historyTeacherId').innerText = teacher.teacherId;
+        document.getElementById('historyTeacherMobile').innerText = teacher.personal?.mobile || '-';
+        document.getElementById('historyTeacherEmail').innerText = teacher.personal?.email || '-';
+        
+        let attendance = teacher.attendance || [];
+        if (yearFilter !== 'all') {
+            attendance = attendance.filter(a => new Date(a.date).getFullYear() === parseInt(yearFilter));
+        }
+        
+        const totalPresent = attendance.filter(a => a.status === 'present').length;
+        const totalAbsent = attendance.filter(a => a.status === 'absent').length;
+        const totalLeave = attendance.filter(a => a.status === 'leave').length;
+        const totalDays = attendance.length;
+        const attPercent = totalDays > 0 ? Math.round((totalPresent / totalDays) * 100) : 0;
+        
+        document.getElementById('totalPresentCount').innerText = totalPresent;
+        document.getElementById('totalAbsentCount').innerText = totalAbsent;
+        document.getElementById('totalLeaveCount').innerText = totalLeave;
+        document.getElementById('attendancePercent').innerText = attPercent + '%';
+        document.getElementById('historyStats').style.display = 'grid';
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyData = {};
+        months.forEach(m => monthlyData[m] = { present: 0, total: 0 });
+        
+        attendance.forEach(a => {
+            const date = new Date(a.date);
+            const monthName = months[date.getMonth()];
+            if (monthlyData[monthName]) {
+                monthlyData[monthName].total++;
+                if (a.status === 'present') monthlyData[monthName].present++;
+            }
         });
         
-        document.getElementById('filterSubject')?.addEventListener('change', () => renderTeachersGrid());
-        document.getElementById('filterClass')?.addEventListener('change', () => renderTeachersGrid());
-        document.getElementById('filterBoard')?.addEventListener('change', () => renderTeachersGrid());
-        document.getElementById('searchTeacher')?.addEventListener('input', () => renderTeachersGrid());
-        document.getElementById('searchLeft')?.addEventListener('input', () => renderLeftTeachersGrid());
-        document.getElementById('refreshBtn')?.addEventListener('click', () => loadTeachers());
-        document.getElementById('backToMainBtn')?.addEventListener('click', () => window.location.href = '/management.html');
-        document.getElementById('logoutBtn')?.addEventListener('click', () => logout());
+        const chartLabels = months;
+        const chartData = chartLabels.map(m => monthlyData[m].total > 0 ? Math.round((monthlyData[m].present / monthlyData[m].total) * 100) : 0);
         
-        document.getElementById('registerTeacherBtn')?.addEventListener('click', () => registerTeacher());
-        document.getElementById('updateTeacherBtn')?.addEventListener('click', () => registerTeacher());
-        document.getElementById('cancelEditBtn')?.addEventListener('click', () => cancelEdit());
-        document.getElementById('resetFormBtn')?.addEventListener('click', () => resetForm());
-        document.getElementById('sendNoticeBtn')?.addEventListener('click', () => openNoticeModal());
-        document.getElementById('sendNoticeConfirmBtn')?.addEventListener('click', () => sendNotice());
+        const attCtx = document.getElementById('attendanceTrendChart')?.getContext('2d');
+        if (attCtx) {
+            if (attendanceChart) attendanceChart.destroy();
+            attendanceChart = new Chart(attCtx, {
+                type: 'line',
+                data: { labels: chartLabels, datasets: [{ label: 'Attendance %', data: chartData, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Percentage (%)' } } } }
+            });
+        }
         
-        document.getElementById('closeDashboardModal')?.addEventListener('click', () => closeModal('dashboardModal'));
-        document.getElementById('closeAttendanceModal')?.addEventListener('click', () => closeModal('attendanceModal'));
-        document.getElementById('closeSalaryModal')?.addEventListener('click', () => closeModal('salaryModal'));
-        document.getElementById('closeNoticeModal')?.addEventListener('click', () => closeModal('noticeModal'));
-        document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editTeacherModal'));
-        document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editTeacherModal'));
-        document.getElementById('cancelAttendanceBtn')?.addEventListener('click', () => closeModal('attendanceModal'));
-        document.getElementById('cancelSalaryBtn')?.addEventListener('click', () => closeModal('salaryModal'));
-        document.getElementById('cancelNoticeBtn')?.addEventListener('click', () => closeModal('noticeModal'));
-        document.getElementById('closeDocViewer')?.addEventListener('click', () => closeModal('documentViewerModal'));
-        document.getElementById('closeDocViewerBtn')?.addEventListener('click', () => closeModal('documentViewerModal'));
+        let salaryPayments = teacher.salaryPayments || [];
+        if (yearFilter !== 'all') {
+            salaryPayments = salaryPayments.filter(s => s.year === parseInt(yearFilter));
+        }
         
-        document.getElementById('capturePhotoBtn')?.addEventListener('click', () => captureImage('photo', 'photoPreview'));
-        document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => uploadImage('photo', 'photoPreview'));
-        document.getElementById('clearPhotoBtn')?.addEventListener('click', () => clearImage('photo', 'photoPreview'));
-        document.getElementById('captureAadharBtn')?.addEventListener('click', () => captureImage('aadharCopy', 'aadharPreview'));
-        document.getElementById('uploadAadharBtn')?.addEventListener('click', () => uploadImage('aadharCopy', 'aadharPreview'));
-        document.getElementById('clearAadharBtn')?.addEventListener('click', () => clearImage('aadharCopy', 'aadharPreview'));
-        document.getElementById('captureQualificationBtn')?.addEventListener('click', () => captureImage('qualificationDoc', 'qualificationPreview'));
-        document.getElementById('uploadQualificationBtn')?.addEventListener('click', () => uploadImage('qualificationDoc', 'qualificationPreview'));
-        document.getElementById('clearQualificationBtn')?.addEventListener('click', () => clearImage('qualificationDoc', 'qualificationPreview'));
+        const salarySorted = [...salaryPayments].sort((a,b) => {
+            const dateA = new Date(`${a.month} 1, ${a.year}`);
+            const dateB = new Date(`${b.month} 1, ${b.year}`);
+            return dateA - dateB;
+        });
+        
+        const salaryLabels = salarySorted.map(s => `${s.month} ${s.year}`);
+        const salaryPaidData = salarySorted.map(s => s.paidAmount || 0);
+        const salaryDueData = salarySorted.map(s => s.dueAmount || 0);
+        
+        const salaryCtx = document.getElementById('salaryTrendChart')?.getContext('2d');
+        if (salaryCtx) {
+            if (salaryChart) salaryChart.destroy();
+            salaryChart = new Chart(salaryCtx, {
+                type: 'bar',
+                data: { labels: salaryLabels, datasets: [{ label: 'Paid Amount (₹)', data: salaryPaidData, backgroundColor: '#28a745' }, { label: 'Due Amount (₹)', data: salaryDueData, backgroundColor: '#dc3545' }] },
+                options: { responsive: true, scales: { y: { title: { display: true, text: 'Amount (₹)' } } } }
+            });
+        }
+        
+        const attBody = document.getElementById('attendanceHistoryBody');
+        const sortedAtt = [...attendance].sort((a,b) => new Date(b.date) - new Date(a.date));
+        attBody.innerHTML = sortedAtt.map(a => `
+            <tr>
+                <td>${formatDate(a.date)}</td>
+                <td>${a.status === 'present' ? '✅ Present' : a.status === 'absent' ? '❌ Absent' : a.status === 'holiday' ? '🎉 Holiday' : '🏖️ Leave'}</td>
+                <td>${a.checkIn || '-'}</td>
+                <td>${a.checkOut || '-'}</td>
+                <td>${a.remarks || '-'}</td>
+            </tr>
+        `).join('');
+        
+        const salaryBody = document.getElementById('salaryHistoryBody');
+        const sortedSalary = [...salaryPayments].sort((a,b) => b.year - a.year);
+        salaryBody.innerHTML = sortedSalary.map(s => `
+            <tr>
+                <td>${s.month} ${s.year}</td>
+                <td>₹${s.baseSalary || 0}</td>
+                <td>${s.workingDays || 0}</td>
+                <td>${s.presentDays || 0}</td>
+                <td>₹${s.calculatedAmount || 0}</td>
+                <td>₹${s.paidAmount || 0}</td>
+                <td>₹${s.dueAmount || 0}</td>
+                <td>${s.status === 'paid' ? '✅ Paid' : s.status === 'partial' ? '⚠️ Partial' : '❌ Unpaid'}</td>
+            </tr>
+        `).join('');
     }
-
-    // ========== STYLES (COMPLETE) ==========
-    const styles = `
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            min-height: 100vh;
-        }
-        .tms-wrapper {
-            max-width: 1400px; margin: 20px auto; background: white;
-            border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .tms-header {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white; padding: 15px 25px;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 15px;
-        }
-        .logo h1 { font-size: 1.5rem; }
-        .logo p { font-size: 0.75rem; opacity: 0.9; }
-        .main-tabs {
-            display: flex; background: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
-            flex-wrap: wrap;
-        }
-        .main-tab-btn {
-            flex: 1; padding: 15px 20px; background: none; border: none;
-            font-size: 1rem; font-weight: 600; color: #666;
-            cursor: pointer; transition: all 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .main-tab-btn.active { color: #28a745; border-bottom: 3px solid #28a745; background: white; }
-        .tms-content { padding: 25px; min-height: 500px; }
-        .tab-pane { display: none; animation: fadeIn 0.3s ease; }
-        .tab-pane.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .filter-bar {
-            display: flex; gap: 15px; margin-bottom: 25px;
-            flex-wrap: wrap; align-items: center;
-        }
-        .filter-bar select, .filter-bar input {
-            padding: 10px 15px; border: 2px solid #e0e0e0;
-            border-radius: 10px; font-size: 0.9rem; background: white;
-        }
-        .filter-bar select:focus, .filter-bar input:focus {
-            outline: none; border-color: #28a745;
-        }
-        
-        .teachers-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
-        .teacher-card {
-            background: white; border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            overflow: hidden; cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .teacher-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-        .teacher-card-header {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            padding: 20px; text-align: center;
-        }
-        .teacher-card-img {
-            width: 100px; height: 100px; border-radius: 50%;
-            object-fit: cover; border: 3px solid white;
-            margin-bottom: 10px;
-        }
-        .teacher-card-name {
-            color: white; font-size: 1.1rem; font-weight: bold;
-        }
-        .teacher-card-id {
-            color: rgba(255,255,255,0.8); font-size: 0.8rem;
-        }
-        .teacher-card-body {
-            padding: 15px;
-        }
-        .teacher-card-info {
-            display: flex; justify-content: space-between;
-            margin-bottom: 8px; font-size: 0.85rem;
-        }
-        .teacher-card-info span:first-child { color: #666; }
-        .teacher-card-info span:last-child { font-weight: 500; color: #333; }
-        .badge-blocked { background: #dc3545; color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
-        .badge-active { background: #28a745; color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
-        
-        .dashboard-container {
-            background: #f8f9fa; border-radius: 15px;
-            padding: 20px;
-        }
-        .teacher-photo-large {
-            width: 120px; height: 120px; border-radius: 50%;
-            object-fit: cover; border: 3px solid #28a745;
-            cursor: pointer;
-        }
-        
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px; margin-bottom: 20px;
-        }
-        .stat-card {
-            padding: 15px; border-radius: 10px; text-align: center;
-        }
-        
-        .chart-container {
-            background: white; border-radius: 15px;
-            padding: 20px; margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .chart-title {
-            font-size: 1.1rem; font-weight: 600;
-            margin-bottom: 15px; color: #333;
-        }
-        
-        .data-table {
-            width: 100%; border-collapse: collapse;
-            background: white; border-radius: 15px;
-            overflow: hidden;
-        }
-        .data-table th, .data-table td {
-            padding: 12px; text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .data-table th {
-            background: #f8f9fa; font-weight: 600;
-        }
-        .data-table tr:hover { background: #f8f9fa; }
-        
-        .btn {
-            padding: 8px 16px; border: none; border-radius: 8px;
-            cursor: pointer; font-size: 0.85rem;
-            transition: all 0.3s; display: inline-flex;
-            align-items: center; gap: 5px;
-        }
-        .btn-primary { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-warning { background: #ffc107; color: #333; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-info { background: #17a2b8; color: white; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
-        
-        .modal {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
-            z-index: 1000; justify-content: center; align-items: center;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: white; border-radius: 20px;
-            max-width: 900px; width: 90%; max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            padding: 20px; background: linear-gradient(135deg, #28a745, #20c997);
-            color: white; display: flex; justify-content: space-between;
-            align-items: center; position: sticky; top: 0;
-        }
-        .modal-body { padding: 20px; }
-        .modal-footer { padding: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e0e0e0; }
-        .close-modal { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.85rem; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 10px; border: 2px solid #e0e0e0;
-            border-radius: 8px; font-size: 0.9rem;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: #28a745;
-        }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        
-        .checkbox-group {
-            display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px;
-        }
-        .checkbox-group label {
-            display: flex; align-items: center; gap: 5px; font-weight: normal;
-        }
-        .checkbox-group input {
-            width: auto; margin: 0;
-        }
-        
-        .image-preview { 
-            width: 100px; height: 100px; border-radius: 10px; 
-            object-fit: cover; margin-top: 5px; 
-            border: 2px solid #e0e0e0;
-            background: #f8f9fa;
-        }
-        .image-actions { display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
-        
-        .empty-state { text-align: center; padding: 50px; color: #999; }
-        .section-title {
-            background: #f0f0f0;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin: 15px 0 10px 0;
-            font-weight: bold;
-            color: #28a745;
-        }
-        
-        .info-row {
-            margin-bottom: 8px;
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        @media (max-width: 768px) {
-            .form-row { grid-template-columns: 1fr; }
-            .teachers-grid { grid-template-columns: 1fr; }
-            .filter-bar { flex-direction: column; }
-        }
-    `;
-
-    function injectStyles() {
-        if (!document.querySelector('#tms-styles')) {
-            const style = document.createElement('style');
-            style.id = 'tms-styles';
-            style.textContent = styles;
-            document.head.appendChild(style);
-        }
-    }
-
-    function getHTMLTemplate() {
-        return `
-        <div class="tms-wrapper">
-            <div class="tms-header">
-                <div class="logo">
-                    <h1>👨‍🏫 Bal Bharti Coaching Center</h1>
-                    <p>Teacher Management System</p>
-                </div>
-                <div>
-                    <button class="btn btn-info" id="backToMainBtn" style="background:rgba(255,255,255,0.2);">🏠 Main Menu</button>
-                    <button class="btn btn-info" id="logoutBtn" style="background:rgba(255,255,255,0.2);">🚪 Logout</button>
-                </div>
-            </div>
-            
-            <div class="main-tabs">
-                <button class="main-tab-btn active" data-tab="teachers">👨‍🏫 Teachers</button>
-                <button class="main-tab-btn" data-tab="new-teacher">➕ New Teacher</button>
-                <button class="main-tab-btn" data-tab="left-teachers">📦 Left</button>
-                <button class="main-tab-btn" data-tab="notices">📢 Notices</button>
-            </div>
-            
-            <div class="tms-content">
-                <div class="tab-pane active" data-pane="teachers">
-                    <div class="filter-bar">
-                        <select id="filterSubject"><option value="all">All Subjects</option>${subjectsList.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
-                        <select id="filterClass"><option value="all">All Classes</option>${classesList.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
-                        <select id="filterBoard"><option value="all">All Boards</option>${boardsList.map(b => `<option value="${b}">${b}</option>`).join('')}</select>
-                        <input type="text" id="searchTeacher" placeholder="🔍 Search by name or ID...">
-                        <button class="btn btn-primary" id="refreshBtn">🔄 Refresh</button>
-                    </div>
-                    <div id="teachersGrid" class="teachers-grid"></div>
-                </div>
-                
-                <div class="tab-pane" data-pane="new-teacher">
-                    <h3>📝 <span id="formTitle">Register New Teacher</span></h3>
-                    <form id="teacherForm">
-                        <div class="section-title">📎 Documents</div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Teacher Photo *</label>
-                                <input type="hidden" id="photo">
-                                <img id="photoPreview" class="image-preview" style="display:none;">
-                                <div class="image-actions">
-                                    <button type="button" class="btn btn-primary btn-sm" id="capturePhotoBtn">📷 Capture</button>
-                                    <button type="button" class="btn btn-info btn-sm" id="uploadPhotoBtn">📁 Upload</button>
-                                    <button type="button" class="btn btn-secondary btn-sm" id="clearPhotoBtn">🗑️ Clear</button>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Aadhar Copy *</label>
-                                <input type="hidden" id="aadharCopy">
-                                <img id="aadharPreview" class="image-preview" style="display:none;">
-                                <div class="image-actions">
-                                    <button type="button" class="btn btn-primary btn-sm" id="captureAadharBtn">📷 Capture</button>
-                                    <button type="button" class="btn btn-info btn-sm" id="uploadAadharBtn">📁 Upload</button>
-                                    <button type="button" class="btn btn-secondary btn-sm" id="clearAadharBtn">🗑️ Clear</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Qualification Document *</label>
-                            <input type="hidden" id="qualificationDoc">
-                            <img id="qualificationPreview" class="image-preview" style="display:none;">
-                            <div class="image-actions">
-                                <button type="button" class="btn btn-primary btn-sm" id="captureQualificationBtn">📷 Capture</button>
-                                <button type="button" class="btn btn-info btn-sm" id="uploadQualificationBtn">📁 Upload</button>
-                                <button type="button" class="btn btn-secondary btn-sm" id="clearQualificationBtn">🗑️ Clear</button>
-                            </div>
-                        </div>
-                        
-                        <div class="section-title">👤 Personal Information</div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" required placeholder="Enter full name"></div>
-                            <div class="form-group"><label>Aadhar Number (12 digits) *</label><input type="text" id="aadharNumber" required maxlength="12" pattern="[0-9]{12}" placeholder="12 digit Aadhar (Teacher ID)"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Date of Birth *</label><input type="date" id="dob" required></div>
-                            <div class="form-group"><label>Gender *</label><select id="gender" required><option value="">Select</option>${genders.map(g => `<option value="${g}">${g}</option>`).join('')}</select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Mobile Number (10 digits) *</label><input type="tel" id="mobile" required pattern="[0-9]{10}" placeholder="10 digit mobile"></div>
-                            <div class="form-group"><label>Email *</label><input type="email" id="email" required placeholder="teacher@example.com"></div>
-                        </div>
-                        
-                        <div class="section-title">🏠 Address</div>
-                        <div class="form-group"><label>Current Address *</label><textarea id="currentAddress" rows="2" required placeholder="House number, Street, Landmark"></textarea></div>
-                        <div class="form-group"><label>Permanent Address</label><textarea id="permanentAddress" rows="2" placeholder="Leave blank if same as current address"></textarea></div>
-                        
-                        <div class="section-title">📚 Professional Information</div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Qualification *</label><input type="text" id="qualificationName" required placeholder="e.g., M.Sc, B.Ed"></div>
-                            <div class="form-group"><label>Experience (Years) *</label><input type="number" id="experience" required min="0" step="1"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Joining Date *</label><input type="date" id="joiningDate" required></div>
-                            <div class="form-group"><label>Monthly Salary (₹) *</label><input type="number" id="defaultSalary" required min="0" step="1000"></div>
-                        </div>
-                        
-                        <div class="section-title">📖 Subjects (Select all that apply) *</div>
-                        <div class="checkbox-group" id="subjectsGroup">
-                            ${subjectsList.map(s => `<label><input type="checkbox" value="${s}"> ${s}</label>`).join('')}
-                        </div>
-                        
-                        <div class="section-title">🏫 Classes (Select all that apply) *</div>
-                        <div class="checkbox-group" id="classesGroup">
-                            ${classesList.map(c => `<label><input type="checkbox" value="${c}"> ${c}</label>`).join('')}
-                        </div>
-                        
-                        <div class="section-title">🎓 Boards (Select all that apply) *</div>
-                        <div class="checkbox-group" id="boardsGroup">
-                            ${boardsList.map(b => `<label><input type="checkbox" value="${b}"> ${b}</label>`).join('')}
-                        </div>
-                        
-                        <div class="section-title">🏦 Bank Details (Optional)</div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Bank Name</label><input type="text" id="bankName" placeholder="Bank name"></div>
-                            <div class="form-group"><label>Account Number</label><input type="text" id="accountNumber" placeholder="Account number"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>IFSC Code</label><input type="text" id="ifsc" placeholder="IFSC code"></div>
-                            <div class="form-group"><label>UPI ID</label><input type="text" id="upiId" placeholder="example@okhdfcbank"></div>
-                        </div>
-                        
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-primary" id="registerTeacherBtn">✅ Register Teacher</button>
-                            <button type="button" class="btn btn-warning" id="updateTeacherBtn" style="display:none;">✏️ Update Teacher</button>
-                            <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display:none;">❌ Cancel Edit</button>
-                            <button type="button" class="btn btn-warning" id="resetFormBtn">🔄 Reset Form</button>
-                        </div>
-                    </form>
-                </div>
-                
-                <div class="tab-pane" data-pane="left-teachers">
-                    <div class="filter-bar">
-                        <input type="text" id="searchLeft" placeholder="🔍 Search by name or ID...">
-                    </div>
-                    <div id="leftTeachersGrid" class="teachers-grid"></div>
-                </div>
-                
-                <div class="tab-pane" data-pane="notices">
-                    <div style="margin-bottom: 20px;">
-                        <button class="btn btn-primary" id="sendNoticeBtn">➕ Send Notice to Teacher</button>
-                    </div>
-                    <div id="noticesList" class="notices-container"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="dashboardModal" class="modal">
-            <div class="modal-content" style="max-width: 1000px;">
-                <div class="modal-header"><h3>Teacher Dashboard</h3><button class="close-modal" id="closeDashboardModal">×</button></div>
-                <div class="modal-body" id="dashboardBody"><div style="text-align:center;padding:50px;">Loading...</div></div>
-                <div class="modal-footer" id="dashboardFooter"></div>
-            </div>
-        </div>
-        
-        <div id="attendanceModal" class="modal">
-            <div class="modal-content" style="max-width: 500px;">
-                <div class="modal-header"><h3>📅 Mark Attendance</h3><button class="close-modal" id="closeAttendanceModal">×</button></div>
-                <div class="modal-body">
-                    <div class="form-group"><label>Date *</label><input type="date" id="attendanceDate" required></div>
-                    <div class="form-group"><label>Status *</label><select id="attendanceStatus">
-                        <option value="present">✅ Present</option>
-                        <option value="absent">❌ Absent</option>
-                        <option value="holiday">🎉 Holiday</option>
-                        <option value="leave">🏖️ Leave</option>
-                    </select></div>
-                    <div class="form-group"><label>Check In Time</label><input type="time" id="checkInTime"></div>
-                    <div class="form-group"><label>Check Out Time</label><input type="time" id="checkOutTime"></div>
-                    <div class="form-group">
-                        <label>Live Photo (Optional)</label>
-                        <input type="hidden" id="attendancePhoto">
-                        <img id="attendancePhotoPreview" class="image-preview" style="display:none;">
-                        <div class="image-actions">
-                            <button type="button" class="btn btn-primary btn-sm" id="captureAttendancePhotoBtn">📷 Capture</button>
-                            <button type="button" class="btn btn-secondary btn-sm" id="clearAttendancePhotoBtn">🗑️ Clear</button>
-                        </div>
-                    </div>
-                    <div class="form-group"><label>Remarks</label><textarea id="attendanceRemarks" rows="2"></textarea></div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="cancelAttendanceBtn">Cancel</button>
-                    <button class="btn btn-primary" id="saveAttendanceBtn">💾 Save Attendance</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="salaryModal" class="modal">
-            <div class="modal-content" style="max-width: 550px;">
-                <div class="modal-header"><h3>💰 Salary Management</h3><button class="close-modal" id="closeSalaryModal">×</button></div>
-                <div class="modal-body">
-                    <div class="form-group"><label>Select Month *</label><select id="salaryMonth"></select></div>
-                    <div class="form-group"><label>Custom Salary Amount (Optional)</label><input type="number" id="customSalaryAmount" placeholder="Leave empty for default"></div>
-                    <div class="form-group"><button class="btn btn-info" id="generateSalaryBtn">📊 Generate Salary</button></div>
-                    <div id="salaryResult" style="background:#f8f9fa; padding:15px; border-radius:8px; margin-top:15px; display:none;"></div>
-                    <hr>
-                    <div class="form-group"><label>Pay Amount (₹)</label><input type="number" id="payAmount" placeholder="Amount to pay"></div>
-                    <div class="form-group"><label>Payment Mode</label><select id="paymentMode"><option value="">Select</option>${paymentModes.map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('')}</select></div>
-                    <div class="form-group"><label>Remarks</label><textarea id="paymentRemarks" rows="2"></textarea></div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="cancelSalaryBtn">Cancel</button>
-                    <button class="btn btn-success" id="paySalaryBtn">💰 Pay Salary</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="noticeModal" class="modal">
-            <div class="modal-content" style="max-width: 500px;">
-                <div class="modal-header"><h3>📢 Send Notice</h3><button class="close-modal" id="closeNoticeModal">×</button></div>
-                <div class="modal-body">
-                    <div class="form-group"><label>To</label><select id="noticeTo"><option value="all">All Teachers</option></select></div>
-                    <div class="form-group"><label>Title *</label><input type="text" id="noticeTitle" required></div>
-                    <div class="form-group"><label>Message *</label><textarea id="noticeMessage" rows="4" required></textarea></div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="cancelNoticeBtn">Cancel</button>
-                    <button class="btn btn-primary" id="sendNoticeConfirmBtn">📤 Send Notice</button>
-                </div>
-            </div>
-        </div>
-        
-        <div id="documentViewerModal" class="modal">
-            <div class="modal-content" style="max-width: 90vw;">
-                <div class="modal-header"><h3 id="docViewerTitle">Document Viewer</h3><button class="close-modal" id="closeDocViewer">×</button></div>
-                <div class="modal-body" style="text-align:center;"><img id="docViewerImage" src="" style="max-width:100%; max-height:70vh;"></div>
-                <div class="modal-footer"><button class="btn btn-secondary" id="closeDocViewerBtn">Close</button></div>
-            </div>
-        </div>
-        
-        <div id="editTeacherModal" class="modal">
-            <div class="modal-content" style="max-width: 900px;">
-                <div class="modal-header"><h3>✏️ Edit Teacher - <span id="editTeacherId"></span></h3><button class="close-modal" id="closeEditModal">×</button></div>
-                <div class="modal-body" id="editModalBody"></div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" id="cancelEditModalBtn">Cancel</button>
-                    <button class="btn btn-primary" id="saveEditModalBtn">💾 Save Changes</button>
-                </div>
-            </div>
-        </div>
-        `;
-    }
-
-    function injectHTML() {
-        const app = document.getElementById('teacher-app');
-        if (app && !document.querySelector('.tms-wrapper')) {
-            app.innerHTML = getHTMLTemplate();
-        }
-    }
-       // ============================================
-    // ========== ATTENDANCE & SALARY HISTORY TAB ==========
-    // ============================================
-
-    let selectedHistoryTeacherId = null;
-    let attendanceChart = null;
-    let salaryChart = null;
 
     function addHistoryTab() {
         const mainTabs = document.querySelector('.main-tabs');
@@ -1415,115 +1010,9 @@
         }
     }
 
-    async function loadHistoryData(teacherId) {
-        if (!teacherId) return;
-        selectedHistoryTeacherId = teacherId;
-        
-        const response = await apiCall(`/teachers/${teacherId}`);
-        if (!response.success || !response.data) {
-            showAlert('Teacher not found!', 'error');
-            return;
-        }
-        
-        const teacher = response.data;
-        const yearFilter = document.getElementById('historyYearFilter')?.value || 'all';
-        
-        document.getElementById('historyTeacherInfo').style.display = 'block';
-        document.getElementById('historyTeacherName').innerText = teacher.personal?.name || 'N/A';
-        document.getElementById('historyTeacherId').innerText = teacher.teacherId;
-        document.getElementById('historyTeacherMobile').innerText = teacher.personal?.mobile || '-';
-        document.getElementById('historyTeacherEmail').innerText = teacher.personal?.email || '-';
-        
-        let attendance = teacher.attendance || [];
-        if (yearFilter !== 'all') {
-            attendance = attendance.filter(a => new Date(a.date).getFullYear() === parseInt(yearFilter));
-        }
-        
-        const totalPresent = attendance.filter(a => a.status === 'present').length;
-        const totalAbsent = attendance.filter(a => a.status === 'absent').length;
-        const totalLeave = attendance.filter(a => a.status === 'leave').length;
-        const totalDays = attendance.length;
-        const attPercent = totalDays > 0 ? Math.round((totalPresent / totalDays) * 100) : 0;
-        
-        document.getElementById('totalPresentCount').innerText = totalPresent;
-        document.getElementById('totalAbsentCount').innerText = totalAbsent;
-        document.getElementById('totalLeaveCount').innerText = totalLeave;
-        document.getElementById('attendancePercent').innerText = attPercent + '%';
-        document.getElementById('historyStats').style.display = 'grid';
-        
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyData = {};
-        months.forEach(m => monthlyData[m] = { present: 0, total: 0 });
-        
-        attendance.forEach(a => {
-            const date = new Date(a.date);
-            const monthName = months[date.getMonth()];
-            if (monthlyData[monthName]) {
-                monthlyData[monthName].total++;
-                if (a.status === 'present') monthlyData[monthName].present++;
-            }
-        });
-        
-        const chartLabels = months;
-        const chartData = chartLabels.map(m => monthlyData[m].total > 0 ? Math.round((monthlyData[m].present / monthlyData[m].total) * 100) : 0);
-        
-        const attCtx = document.getElementById('attendanceTrendChart')?.getContext('2d');
-        if (attCtx) {
-            if (attendanceChart) attendanceChart.destroy();
-            attendanceChart = new Chart(attCtx, {
-                type: 'line',
-                data: { labels: chartLabels, datasets: [{ label: 'Attendance %', data: chartData, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, scales: { y: { min: 0, max: 100 } } }
-            });
-        }
-        
-        let salaryPayments = teacher.salaryPayments || [];
-        if (yearFilter !== 'all') {
-            salaryPayments = salaryPayments.filter(s => s.year === parseInt(yearFilter));
-        }
-        
-        const salarySorted = [...salaryPayments].sort((a,b) => {
-            const dateA = new Date(`${a.month} 1, ${a.year}`);
-            const dateB = new Date(`${b.month} 1, ${b.year}`);
-            return dateA - dateB;
-        });
-        
-        const salaryLabels = salarySorted.map(s => `${s.month} ${s.year}`);
-        const salaryPaidData = salarySorted.map(s => s.paidAmount || 0);
-        const salaryDueData = salarySorted.map(s => s.dueAmount || 0);
-        
-        const salaryCtx = document.getElementById('salaryTrendChart')?.getContext('2d');
-        if (salaryCtx) {
-            if (salaryChart) salaryChart.destroy();
-            salaryChart = new Chart(salaryCtx, {
-                type: 'bar',
-                data: { labels: salaryLabels, datasets: [{ label: 'Paid Amount (₹)', data: salaryPaidData, backgroundColor: '#28a745' }, { label: 'Due Amount (₹)', data: salaryDueData, backgroundColor: '#dc3545' }] },
-                options: { responsive: true }
-            });
-        }
-        
-        const attBody = document.getElementById('attendanceHistoryBody');
-        const sortedAtt = [...attendance].sort((a,b) => new Date(b.date) - new Date(a.date));
-        attBody.innerHTML = sortedAtt.map(a => `
-            <tr><td>${formatDate(a.date)}</td><td>${a.status === 'present' ? '✅ Present' : a.status === 'absent' ? '❌ Absent' : a.status === 'holiday' ? '🎉 Holiday' : '🏖️ Leave'}</td><td>${a.checkIn || '-'}</td><td>${a.checkOut || '-'}</td><td>${a.remarks || '-'}</td></tr>
-        `).join('');
-        
-        const salaryBody = document.getElementById('salaryHistoryBody');
-        const sortedSalary = [...salaryPayments].sort((a,b) => b.year - a.year);
-        salaryBody.innerHTML = sortedSalary.map(s => `
-            <tr><td>${s.month} ${s.year}</td><td>₹${s.baseSalary || 0}</td><td>${s.workingDays || 0}</td><td>${s.presentDays || 0}</td><td>₹${s.calculatedAmount || 0}</td><td>₹${s.paidAmount || 0}</td><td>₹${s.dueAmount || 0}</td><td>${s.status === 'paid' ? '✅ Paid' : s.status === 'partial' ? '⚠️ Partial' : '❌ Unpaid'}</td></tr>
-        `).join('');
-    }
-
     function setupHistoryTabEvents() {
         const historyFilter = document.getElementById('historyTeacherFilter');
         if (historyFilter) {
-            const updateOptions = () => {
-                historyFilter.innerHTML = '<option value="">-- Select Teacher --</option>' + 
-                    teachersData.map(t => `<option value="${t.teacherId}">${t.personal?.name} (${t.teacherId})</option>`).join('');
-            };
-            updateOptions();
-            
             historyFilter.addEventListener('change', async (e) => {
                 if (e.target.value) {
                     await loadHistoryData(e.target.value);
@@ -1544,13 +1033,304 @@
         });
     }
 
-    // Override to add history tab after init
-    const originalInitForHistory = init;
-    window.initTeacherModule = async function() {
-        await originalInitForHistory();
+    async function init() {
+        await loadTeachers();
+        await loadLeftTeachers();
+        await loadNotices();
         addHistoryTab();
         setupHistoryTabEvents();
-    };
+        updateHistoryTeacherDropdown();
+        
+        const joiningDateInput = document.getElementById('joiningDate');
+        if (joiningDateInput) joiningDateInput.value = new Date().toISOString().split('T')[0];
+        setupEventListeners();
+    }
+
+    function setupEventListeners() {
+        document.querySelectorAll('.main-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.toggle('active', pane.dataset.pane === tab);
+                });
+                if (tab === 'new-teacher') cancelEdit();
+                if (tab === 'notices') loadNotices();
+                if (tab === 'history') updateHistoryTeacherDropdown();
+            });
+        });
+        
+        document.getElementById('filterSubject')?.addEventListener('change', () => renderTeachersGrid());
+        document.getElementById('filterClass')?.addEventListener('change', () => renderTeachersGrid());
+        document.getElementById('filterBoard')?.addEventListener('change', () => renderTeachersGrid());
+        document.getElementById('searchTeacher')?.addEventListener('input', () => renderTeachersGrid());
+        document.getElementById('searchLeft')?.addEventListener('input', () => renderLeftTeachersGrid());
+        document.getElementById('refreshBtn')?.addEventListener('click', () => loadTeachers());
+        document.getElementById('backToMainBtn')?.addEventListener('click', () => window.location.href = '/management.html');
+        document.getElementById('logoutBtn')?.addEventListener('click', () => logout());
+        
+        document.getElementById('registerTeacherBtn')?.addEventListener('click', () => registerTeacher());
+        document.getElementById('updateTeacherBtn')?.addEventListener('click', () => registerTeacher());
+        document.getElementById('cancelEditBtn')?.addEventListener('click', () => cancelEdit());
+        document.getElementById('resetFormBtn')?.addEventListener('click', () => resetForm());
+        document.getElementById('sendNoticeBtn')?.addEventListener('click', () => openNoticeModal());
+        document.getElementById('sendNoticeConfirmBtn')?.addEventListener('click', () => sendNotice());
+        
+        document.getElementById('closeDashboardModal')?.addEventListener('click', () => closeModal('dashboardModal'));
+        document.getElementById('closeAttendanceModal')?.addEventListener('click', () => closeModal('attendanceModal'));
+        document.getElementById('closeSalaryModal')?.addEventListener('click', () => closeModal('salaryModal'));
+        document.getElementById('closeNoticeModal')?.addEventListener('click', () => closeModal('noticeModal'));
+        document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editTeacherModal'));
+        document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editTeacherModal'));
+        document.getElementById('cancelAttendanceBtn')?.addEventListener('click', () => closeModal('attendanceModal'));
+        document.getElementById('cancelSalaryBtn')?.addEventListener('click', () => closeModal('salaryModal'));
+        document.getElementById('cancelNoticeBtn')?.addEventListener('click', () => closeModal('noticeModal'));
+        document.getElementById('closeDocViewer')?.addEventListener('click', () => closeModal('documentViewerModal'));
+        document.getElementById('closeDocViewerBtn')?.addEventListener('click', () => closeModal('documentViewerModal'));
+        
+        document.getElementById('capturePhotoBtn')?.addEventListener('click', () => captureImage('photo', 'photoPreview'));
+        document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => uploadImage('photo', 'photoPreview'));
+        document.getElementById('clearPhotoBtn')?.addEventListener('click', () => clearImage('photo', 'photoPreview'));
+        document.getElementById('captureAadharBtn')?.addEventListener('click', () => captureImage('aadharCopy', 'aadharPreview'));
+        document.getElementById('uploadAadharBtn')?.addEventListener('click', () => uploadImage('aadharCopy', 'aadharPreview'));
+        document.getElementById('clearAadharBtn')?.addEventListener('click', () => clearImage('aadharCopy', 'aadharPreview'));
+        document.getElementById('captureQualificationBtn')?.addEventListener('click', () => captureImage('qualificationDoc', 'qualificationPreview'));
+        document.getElementById('uploadQualificationBtn')?.addEventListener('click', () => uploadImage('qualificationDoc', 'qualificationPreview'));
+        document.getElementById('clearQualificationBtn')?.addEventListener('click', () => clearImage('qualificationDoc', 'qualificationPreview'));
+    }
+
+    // ========== STYLES ==========
+    const styles = `
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            min-height: 100vh;
+        }
+        .tms-wrapper {
+            max-width: 1400px; margin: 20px auto; background: white;
+            border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .tms-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white; padding: 15px 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 15px;
+        }
+        .logo h1 { font-size: 1.5rem; }
+        .logo p { font-size: 0.75rem; opacity: 0.9; }
+        .main-tabs {
+            display: flex; background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+        .main-tab-btn {
+            flex: 1; padding: 15px 20px; background: none; border: none;
+            font-size: 1rem; font-weight: 600; color: #666;
+            cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .main-tab-btn.active { color: #28a745; border-bottom: 3px solid #28a745; background: white; }
+        .tms-content { padding: 25px; min-height: 500px; }
+        .tab-pane { display: none; animation: fadeIn 0.3s ease; }
+        .tab-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .filter-bar {
+            display: flex; gap: 15px; margin-bottom: 25px;
+            flex-wrap: wrap; align-items: center;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 10px 15px; border: 2px solid #e0e0e0;
+            border-radius: 10px; font-size: 0.9rem; background: white;
+        }
+        .teachers-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .teacher-card {
+            background: white; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden; cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .teacher-card:hover { transform: translateY(-5px); }
+        .teacher-card-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            padding: 20px; text-align: center;
+        }
+        .teacher-card-img {
+            width: 100px; height: 100px; border-radius: 50%;
+            object-fit: cover; border: 3px solid white;
+        }
+        .teacher-card-name { color: white; font-size: 1.1rem; font-weight: bold; margin-top: 10px; }
+        .teacher-card-body { padding: 15px; }
+        .teacher-card-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+        .badge-blocked { background: #dc3545; color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
+        .badge-active { background: #28a745; color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; }
+        
+        .dashboard-container { background: #f8f9fa; border-radius: 15px; padding: 20px; }
+        .teacher-photo-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #28a745; cursor: pointer; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { padding: 15px; border-radius: 10px; text-align: center; }
+        .chart-container { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .chart-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: #333; }
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 15px; overflow: hidden; }
+        .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        .data-table th { background: #f8f9fa; font-weight: 600; }
+        
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-primary { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px; background: linear-gradient(135deg, #28a745, #20c997); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e0e0e0; }
+        .close-modal { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.85rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
+        .checkbox-group label { display: flex; align-items: center; gap: 5px; font-weight: normal; }
+        
+        .image-preview { width: 100px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 5px; border: 2px solid #e0e0e0; }
+        .image-actions { display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
+        .empty-state { text-align: center; padding: 50px; color: #999; }
+        .section-title { background: #f0f0f0; padding: 10px 15px; border-radius: 8px; margin: 15px 0 10px 0; font-weight: bold; color: #28a745; }
+        .info-row { margin-bottom: 8px; padding: 5px 0; border-bottom: 1px solid #eee; }
+        
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .teachers-grid { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; }
+        }
+    `;
+
+    function injectStyles() {
+        if (!document.querySelector('#tms-styles')) {
+            const style = document.createElement('style');
+            style.id = 'tms-styles';
+            style.textContent = styles;
+            document.head.appendChild(style);
+        }
+    }
+
+    function getHTMLTemplate() {
+        return `
+        <div class="tms-wrapper">
+            <div class="tms-header">
+                <div class="logo">
+                    <h1>👨‍🏫 Bal Bharti Coaching Center</h1>
+                    <p>Teacher Management System</p>
+                </div>
+                <div>
+                    <button class="btn btn-info" id="backToMainBtn" style="background:rgba(255,255,255,0.2);">🏠 Main Menu</button>
+                    <button class="btn btn-info" id="logoutBtn" style="background:rgba(255,255,255,0.2);">🚪 Logout</button>
+                </div>
+            </div>
+            
+            <div class="main-tabs">
+                <button class="main-tab-btn active" data-tab="teachers">👨‍🏫 Teachers</button>
+                <button class="main-tab-btn" data-tab="new-teacher">➕ New Teacher</button>
+                <button class="main-tab-btn" data-tab="left-teachers">📦 Left</button>
+                <button class="main-tab-btn" data-tab="notices">📢 Notices</button>
+            </div>
+            
+            <div class="tms-content">
+                <div class="tab-pane active" data-pane="teachers">
+                    <div class="filter-bar">
+                        <select id="filterSubject"><option value="all">All Subjects</option>${subjectsList.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+                        <select id="filterClass"><option value="all">All Classes</option>${classesList.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
+                        <select id="filterBoard"><option value="all">All Boards</option>${boardsList.map(b => `<option value="${b}">${b}</option>`).join('')}</select>
+                        <input type="text" id="searchTeacher" placeholder="🔍 Search by name or ID...">
+                        <button class="btn btn-primary" id="refreshBtn">🔄 Refresh</button>
+                    </div>
+                    <div id="teachersGrid" class="teachers-grid"></div>
+                </div>
+                
+                <div class="tab-pane" data-pane="new-teacher">
+                    <h3>📝 <span id="formTitle">Register New Teacher</span></h3>
+                    <form id="teacherForm">
+                        <div class="section-title">📎 Documents</div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Teacher Photo</label><input type="hidden" id="photo"><img id="photoPreview" class="image-preview" style="display:none;"><div class="image-actions"><button type="button" class="btn btn-primary btn-sm" id="capturePhotoBtn">📷 Capture</button><button type="button" class="btn btn-info btn-sm" id="uploadPhotoBtn">📁 Upload</button><button type="button" class="btn btn-secondary btn-sm" id="clearPhotoBtn">🗑️ Clear</button></div></div>
+                            <div class="form-group"><label>Aadhar Copy</label><input type="hidden" id="aadharCopy"><img id="aadharPreview" class="image-preview" style="display:none;"><div class="image-actions"><button type="button" class="btn btn-primary btn-sm" id="captureAadharBtn">📷 Capture</button><button type="button" class="btn btn-info btn-sm" id="uploadAadharBtn">📁 Upload</button><button type="button" class="btn btn-secondary btn-sm" id="clearAadharBtn">🗑️ Clear</button></div></div>
+                        </div>
+                        <div class="form-group"><label>Qualification Document</label><input type="hidden" id="qualificationDoc"><img id="qualificationPreview" class="image-preview" style="display:none;"><div class="image-actions"><button type="button" class="btn btn-primary btn-sm" id="captureQualificationBtn">📷 Capture</button><button type="button" class="btn btn-info btn-sm" id="uploadQualificationBtn">📁 Upload</button><button type="button" class="btn btn-secondary btn-sm" id="clearQualificationBtn">🗑️ Clear</button></div></div>
+                        
+                        <div class="section-title">👤 Personal Information</div>
+                        <div class="form-row"><div class="form-group"><label>Full Name</label><input type="text" id="fullName" required></div><div class="form-group"><label>Aadhar Number (12 digits)</label><input type="text" id="aadharNumber" required maxlength="12"></div></div>
+                        <div class="form-row"><div class="form-group"><label>Date of Birth</label><input type="date" id="dob" required></div><div class="form-group"><label>Gender</label><select id="gender" required>${genders.map(g => `<option value="${g}">${g}</option>`).join('')}</select></div></div>
+                        <div class="form-row"><div class="form-group"><label>Mobile Number</label><input type="tel" id="mobile" required pattern="[0-9]{10}"></div><div class="form-group"><label>Email</label><input type="email" id="email" required></div></div>
+                        
+                        <div class="section-title">🏠 Address</div>
+                        <div class="form-group"><label>Current Address</label><textarea id="currentAddress" rows="2" required></textarea></div>
+                        <div class="form-group"><label>Permanent Address</label><textarea id="permanentAddress" rows="2"></textarea></div>
+                        
+                        <div class="section-title">📚 Professional Information</div>
+                        <div class="form-row"><div class="form-group"><label>Qualification</label><input type="text" id="qualificationName" required></div><div class="form-group"><label>Experience (Years)</label><input type="number" id="experience" required min="0"></div></div>
+                        <div class="form-row"><div class="form-group"><label>Joining Date</label><input type="date" id="joiningDate" required></div><div class="form-group"><label>Monthly Salary (₹)</label><input type="number" id="defaultSalary" required min="0"></div></div>
+                        
+                        <div class="section-title">📖 Subjects</div>
+                        <div class="checkbox-group" id="subjectsGroup">${subjectsList.map(s => `<label><input type="checkbox" value="${s}"> ${s}</label>`).join('')}</div>
+                        <div class="section-title">🏫 Classes</div>
+                        <div class="checkbox-group" id="classesGroup">${classesList.map(c => `<label><input type="checkbox" value="${c}"> ${c}</label>`).join('')}</div>
+                        <div class="section-title">🎓 Boards</div>
+                        <div class="checkbox-group" id="boardsGroup">${boardsList.map(b => `<label><input type="checkbox" value="${b}"> ${b}</label>`).join('')}</div>
+                        
+                        <div class="section-title">🏦 Bank Details</div>
+                        <div class="form-row"><div class="form-group"><label>Bank Name</label><input type="text" id="bankName"></div><div class="form-group"><label>Account Number</label><input type="text" id="accountNumber"></div></div>
+                        <div class="form-row"><div class="form-group"><label>IFSC Code</label><input type="text" id="ifsc"></div><div class="form-group"><label>UPI ID</label><input type="text" id="upiId"></div></div>
+                        
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary" id="registerTeacherBtn">✅ Register Teacher</button>
+                            <button type="button" class="btn btn-warning" id="updateTeacherBtn" style="display:none;">✏️ Update Teacher</button>
+                            <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display:none;">❌ Cancel Edit</button>
+                            <button type="button" class="btn btn-warning" id="resetFormBtn">🔄 Reset Form</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="tab-pane" data-pane="left-teachers">
+                    <div class="filter-bar"><input type="text" id="searchLeft" placeholder="🔍 Search by name or ID..."></div>
+                    <div id="leftTeachersGrid" class="teachers-grid"></div>
+                </div>
+                
+                <div class="tab-pane" data-pane="notices">
+                    <div style="margin-bottom:20px;"><button class="btn btn-primary" id="sendNoticeBtn">➕ Send Notice to Teacher</button></div>
+                    <div id="noticesList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="dashboardModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Teacher Dashboard</h3><button class="close-modal" id="closeDashboardModal">×</button></div><div class="modal-body" id="dashboardBody"><div style="text-align:center;padding:50px;">Loading...</div></div><div class="modal-footer" id="dashboardFooter"></div></div></div>
+        <div id="attendanceModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>📅 Mark Attendance</h3><button class="close-modal" id="closeAttendanceModal">×</button></div><div class="modal-body"><div class="form-group"><label>Date</label><input type="date" id="attendanceDate"></div><div class="form-group"><label>Status</label><select id="attendanceStatus"><option value="present">✅ Present</option><option value="absent">❌ Absent</option><option value="holiday">🎉 Holiday</option><option value="leave">🏖️ Leave</option></select></div><div class="form-group"><label>Check In Time</label><input type="time" id="checkInTime"></div><div class="form-group"><label>Check Out Time</label><input type="time" id="checkOutTime"></div><div class="form-group"><label>Remarks</label><textarea id="attendanceRemarks" rows="2"></textarea></div></div><div class="modal-footer"><button class="btn btn-secondary" id="cancelAttendanceBtn">Cancel</button><button class="btn btn-primary" id="saveAttendanceBtn">💾 Save Attendance</button></div></div></div>
+        <div id="salaryModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>💰 Salary Management</h3><button class="close-modal" id="closeSalaryModal">×</button></div><div class="modal-body"><div class="form-group"><label>Select Month</label><select id="salaryMonth"></select></div><div class="form-group"><label>Custom Salary Amount</label><input type="number" id="customSalaryAmount"></div><div class="form-group"><button class="btn btn-info" id="generateSalaryBtn">📊 Generate Salary</button></div><div id="salaryResult" style="display:none;"></div><hr><div class="form-group"><label>Pay Amount (₹)</label><input type="number" id="payAmount"></div><div class="form-group"><label>Payment Mode</label><select id="paymentMode"><option value="cash">Cash</option><option value="bank">Bank</option><option value="upi">UPI</option></select></div><div class="form-group"><label>Remarks</label><textarea id="paymentRemarks" rows="2"></textarea></div></div><div class="modal-footer"><button class="btn btn-secondary" id="cancelSalaryBtn">Cancel</button><button class="btn btn-success" id="paySalaryBtn">💰 Pay Salary</button></div></div></div>
+        <div id="noticeModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>📢 Send Notice</h3><button class="close-modal" id="closeNoticeModal">×</button></div><div class="modal-body"><div class="form-group"><label>To</label><select id="noticeTo"><option value="all">All Teachers</option></select></div><div class="form-group"><label>Title</label><input type="text" id="noticeTitle"></div><div class="form-group"><label>Message</label><textarea id="noticeMessage" rows="4"></textarea></div></div><div class="modal-footer"><button class="btn btn-secondary" id="cancelNoticeBtn">Cancel</button><button class="btn btn-primary" id="sendNoticeConfirmBtn">📤 Send Notice</button></div></div></div>
+        <div id="documentViewerModal" class="modal"><div class="modal-content"><div class="modal-header"><h3 id="docViewerTitle">Document Viewer</h3><button class="close-modal" id="closeDocViewer">×</button></div><div class="modal-body"><img id="docViewerImage" src="" style="max-width:100%; max-height:70vh;"></div><div class="modal-footer"><button class="btn btn-secondary" id="closeDocViewerBtn">Close</button></div></div></div>
+        <div id="editTeacherModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>✏️ Edit Teacher - <span id="editTeacherId"></span></h3><button class="close-modal" id="closeEditModal">×</button></div><div class="modal-body" id="editModalBody"></div><div class="modal-footer"><button class="btn btn-secondary" id="cancelEditModalBtn">Cancel</button><button class="btn btn-primary" id="saveEditModalBtn">💾 Save Changes</button></div></div></div>
+        `;
+    }
+
+    function injectHTML() {
+        const app = document.getElementById('teacher-app');
+        if (app && !document.querySelector('.tms-wrapper')) {
+            app.innerHTML = getHTMLTemplate();
+        }
+    }
+
     window.viewDocumentImage = viewDocument;
     window.TeacherManagementSystem = class { constructor() { init(); } };
     window.initTeacherModule = function() { init(); };
