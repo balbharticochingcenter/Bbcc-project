@@ -123,15 +123,26 @@
         renderTeachersGrid();
     }
 
-    async function loadLeftTeachers() {
+   async function loadLeftTeachers() {
+    try {
         const response = await apiCall('/teachers/left');
-        if (response.success && response.data) {
+        if (response.success && response.data && response.data.length > 0) {
             leftTeachersData = response.data;
         } else {
-            leftTeachersData = [];
+            // FALLBACK: Active teachers se left wale filter karo
+            const allTeachers = await apiCall('/teachers');
+            if (allTeachers.success && allTeachers.data) {
+                leftTeachersData = allTeachers.data.filter(t => t.status?.isActive === false);
+            } else {
+                leftTeachersData = [];
+            }
         }
-        renderLeftTeachersGrid();
+    } catch (err) {
+        console.log('Left teachers API failed, using fallback');
+        leftTeachersData = [];
     }
+    renderLeftTeachersGrid();
+}
 
     async function loadNotices() {
         const response = await apiCall('/notices');
