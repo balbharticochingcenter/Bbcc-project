@@ -124,21 +124,17 @@
     }
 
    async function loadLeftTeachers() {
+    // DIRECT FALLBACK - Skip /teachers/left API completely
     try {
-        const response = await apiCall('/teachers/left');
-        if (response.success && response.data && response.data.length > 0) {
-            leftTeachersData = response.data;
+        const allTeachers = await apiCall('/teachers');
+        if (allTeachers.success && allTeachers.data) {
+            // Filter teachers where isActive === false (left teachers)
+            leftTeachersData = allTeachers.data.filter(t => t.status?.isActive === false);
         } else {
-            // FALLBACK: Active teachers se left wale filter karo
-            const allTeachers = await apiCall('/teachers');
-            if (allTeachers.success && allTeachers.data) {
-                leftTeachersData = allTeachers.data.filter(t => t.status?.isActive === false);
-            } else {
-                leftTeachersData = [];
-            }
+            leftTeachersData = [];
         }
     } catch (err) {
-        console.log('Left teachers API failed, using fallback');
+        console.log('Failed to load left teachers:', err);
         leftTeachersData = [];
     }
     renderLeftTeachersGrid();
