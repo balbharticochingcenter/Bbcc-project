@@ -1,6 +1,6 @@
 // ============================================
 // TEACHER-MANAGEMENT.JS - COMPLETE FINAL VERSION
-// ALL FEATURES WORKING - NO ERRORS
+// ALL FEATURES WORKING - NO SERVER CHANGES NEEDED
 // FOR BAL BHARTI COACHING CENTER
 // ============================================
 
@@ -75,15 +75,6 @@
         }
     }
 
-    function formatTimeForInput(time) {
-        if (!time) return '';
-        if (time.includes(':')) {
-            const parts = time.split(':');
-            return `${parts[0].padStart(2,'0')}:${parts[1].padStart(2,'0')}`;
-        }
-        return '';
-    }
-
     function getCurrentTime() {
         const now = new Date();
         return `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
@@ -145,7 +136,6 @@
                 leftTeachersData = [];
             }
         } catch (err) {
-            console.log('Failed to load left teachers:', err);
             leftTeachersData = [];
         }
         renderLeftTeachersGrid();
@@ -529,6 +519,7 @@
                     <div class="form-group"><label>Email</label><input type="email" id="editEmail" value="${(teacher.personal?.email || '').replace(/</g, '&lt;')}"></div>
                 </div>
                 <div class="form-group"><label>Address</label><textarea id="editAddress" rows="2">${(teacher.personal?.currentAddress || '').replace(/</g, '&lt;')}</textarea></div>
+                <div class="form-group"><label>Permanent Address</label><textarea id="editPermanentAddress" rows="2">${(teacher.personal?.permanentAddress || '').replace(/</g, '&lt;')}</textarea></div>
                 
                 <div class="section-title">📚 Professional</div>
                 <div class="form-row">
@@ -591,6 +582,7 @@
                 mobile: document.getElementById('editMobile')?.value,
                 email: document.getElementById('editEmail')?.value,
                 currentAddress: document.getElementById('editAddress')?.value,
+                permanentAddress: document.getElementById('editPermanentAddress')?.value,
                 photo: document.getElementById('editPhoto')?.value || DEFAULT_PHOTO
             },
             documents: {
@@ -1177,29 +1169,34 @@
         if (sendNoticeBtn) sendNoticeBtn.addEventListener('click', () => openNoticeModal());
         if (sendConfirmBtn) sendConfirmBtn.addEventListener('click', () => sendNotice());
         
-        const closeModals = ['closeDashboardModal', 'closeAttendanceModal', 'closeSalaryModal', 'closeNoticeModal', 'closeEditModal', 'cancelEditModalBtn', 'cancelAttendanceBtn', 'cancelSalaryBtn', 'cancelNoticeBtn', 'closeDocViewer', 'closeDocViewerBtn'];
-        closeModals.forEach(id => {
+        const closeButtons = ['closeDashboardModal', 'closeAttendanceModal', 'closeSalaryModal', 'closeNoticeModal', 'closeEditModal', 'cancelEditModalBtn', 'cancelAttendanceBtn', 'cancelSalaryBtn', 'cancelNoticeBtn', 'closeDocViewer', 'closeDocViewerBtn'];
+        closeButtons.forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.addEventListener('click', () => closeModal(id.replace('close', '').replace('cancel', '').replace('Modal', 'Modal').replace('Btn', '')));
+            if (el) el.addEventListener('click', () => {
+                const modalId = id.replace('close', '').replace('cancel', '').replace('Modal', 'Modal').replace('Btn', '');
+                closeModal(modalId);
+            });
         });
         
         const captureBtns = ['capturePhotoBtn', 'captureAadharBtn', 'captureQualificationBtn'];
         const uploadBtns = ['uploadPhotoBtn', 'uploadAadharBtn', 'uploadQualificationBtn'];
         const clearBtns = ['clearPhotoBtn', 'clearAadharBtn', 'clearQualificationBtn'];
+        const fields = ['photo', 'aadharCopy', 'qualificationDoc'];
+        const previews = ['photoPreview', 'aadharPreview', 'qualificationPreview'];
         
         captureBtns.forEach((id, i) => {
             const btn = document.getElementById(id);
-            if (btn) btn.addEventListener('click', () => captureImage(['photo', 'aadharCopy', 'qualificationDoc'][i], ['photoPreview', 'aadharPreview', 'qualificationPreview'][i]));
+            if (btn) btn.addEventListener('click', () => captureImage(fields[i], previews[i]));
         });
         
         uploadBtns.forEach((id, i) => {
             const btn = document.getElementById(id);
-            if (btn) btn.addEventListener('click', () => uploadImage(['photo', 'aadharCopy', 'qualificationDoc'][i], ['photoPreview', 'aadharPreview', 'qualificationPreview'][i]));
+            if (btn) btn.addEventListener('click', () => uploadImage(fields[i], previews[i]));
         });
         
         clearBtns.forEach((id, i) => {
             const btn = document.getElementById(id);
-            if (btn) btn.addEventListener('click', () => clearImage(['photo', 'aadharCopy', 'qualificationDoc'][i], ['photoPreview', 'aadharPreview', 'qualificationPreview'][i]));
+            if (btn) btn.addEventListener('click', () => clearImage(fields[i], previews[i]));
         });
     }
 
