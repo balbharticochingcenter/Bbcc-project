@@ -337,7 +337,6 @@
                 <div class="chart-container">
                     <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>📋 Attendance History</span>
-                        <button class="btn btn-sm btn-warning" id="editAttendanceModeBtn">✏️ Edit Mode</button>
                     </div>
                     <div style="overflow-x:auto; max-height:300px;">
                         <table class="data-table">
@@ -350,7 +349,6 @@
                 <div class="chart-container">
                     <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>💰 Salary History</span>
-                        <button class="btn btn-sm btn-warning" id="editSalaryModeBtn">✏️ Edit Mode</button>
                     </div>
                     <div style="overflow-x:auto; max-height:300px;">
                         <table class="data-table">
@@ -385,7 +383,7 @@
                 <td>${a.photo ? `<button class="btn btn-sm btn-info view-att-photo" data-url="${a.photo}">📷 View</button>` : '-'}</td>
                 <td>${a.remarks || '-'}</td>
                 <td><button class="btn btn-sm btn-warning edit-attendance-btn" data-date="${a.date}">✏️ Edit</button></td>
-            </table>
+            </tr>
         `).join('');
         
         // Populate salary history table
@@ -439,7 +437,7 @@
         document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
     }
     
-    // Edit Attendance Modal
+    // Edit Attendance Modal with Fallback
     function openEditAttendanceModal(teacherId, dateStr, record) {
         const modalHtml = `
             <div id="editAttendanceModal" class="modal active">
@@ -470,19 +468,47 @@
         const existing = document.getElementById('editAttendanceModal');
         if (existing) existing.remove();
         document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
         document.getElementById('saveAttEditBtn').onclick = async () => {
-            const response = await apiCall(`/teachers/${teacherId}/attendance/${new Date(dateStr).toISOString().split('T')[0]}`, {
+            const attDate = new Date(dateStr).toISOString().split('T')[0];
+            const newStatus = document.getElementById('editAttStatus').value;
+            const newCheckIn = document.getElementById('editAttCheckIn').value;
+            const newCheckOut = document.getElementById('editAttCheckOut').value;
+            const newPhoto = document.getElementById('editAttPhoto').value;
+            const newRemarks = document.getElementById('editAttRemarks').value;
+            
+            showAlert('Updating attendance...', 'info');
+            
+            // Try PUT first
+            let response = await apiCall(`/teachers/${teacherId}/attendance/${attDate}`, {
                 method: 'PUT',
                 body: JSON.stringify({
-                    status: document.getElementById('editAttStatus').value,
-                    checkIn: document.getElementById('editAttCheckIn').value,
-                    checkOut: document.getElementById('editAttCheckOut').value,
-                    photo: document.getElementById('editAttPhoto').value,
-                    remarks: document.getElementById('editAttRemarks').value
+                    status: newStatus,
+                    checkIn: newCheckIn,
+                    checkOut: newCheckOut,
+                    photo: newPhoto,
+                    remarks: newRemarks
                 })
             });
+            
+            // If PUT fails, try DELETE + POST
+            if (!response.success) {
+                await apiCall(`/teachers/${teacherId}/attendance/${attDate}`, { method: 'DELETE' }).catch(e => console.log('Delete failed'));
+                response = await apiCall(`/teachers/${teacherId}/attendance`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        date: attDate,
+                        status: newStatus,
+                        checkIn: newCheckIn,
+                        checkOut: newCheckOut,
+                        photo: newPhoto,
+                        remarks: newRemarks
+                    })
+                });
+            }
+            
             if (response.success) {
-                showAlert('Attendance updated!', 'success');
+                showAlert('✅ Attendance updated!', 'success');
                 closeModal('editAttendanceModal');
                 await loadTeachers();
                 await showTeacherDashboard(teacherId);
@@ -492,7 +518,7 @@
         };
     }
     
-    // Edit Salary Modal
+    // Edit Salary Modal with Generate+Pay Fallback
     function openEditSalaryModal(teacherId, month, year, record) {
         const modalHtml = `
             <div id="editSalaryModal" class="modal active">
@@ -524,36 +550,45 @@
         const existing = document.getElementById('editSalaryModal');
         if (existing) existing.remove();
         document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
         document.getElementById('saveSalaryEditBtn').onclick = async () => {
-            const dueAmount = parseInt(document.getElementById('editSalaryCalculated').value) - parseInt(document.getElementById('editSalaryPaid').value);
-            const status = parseInt(document.getElementById('editSalaryPaid').value) >= parseInt(document.getElementById('editSalaryCalculated').value) ? 'paid' : 
-                           parseInt(document.getElementById('editSalaryPaid').value) > 0 ? 'partial' : 'unpaid';
-            const response = await apiCall(`/teachers/${teacherId}/salary/update`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    month: month, year: year,
-                    baseSalary: parseInt(document.getElementById('editSalaryBase').value),
-                    workingDays: parseInt(document.getElementById('editSalaryWorking').value),
-                    presentDays: parseInt(document.getElementById('editSalaryPresent').value),
-                    calculatedAmount: parseInt(document.getElementById('editSalaryCalculated').value),
-                    paidAmount: parseInt(document.getElementById('editSalaryPaid').value),
-                    dueAmount: dueAmount,
-                    status: status,
-                    paymentMode: document.getElementById('editSalaryMode').value,
-                    remarks: document.getElementById('editSalaryRemarks').value
-                })
+            const baseSalary = parseInt(document.getElementById('editSalaryBase').value);
+            const paidAmount = parseInt(document.getElementById('editSalaryPaid').value);
+            const paymentMode = document.getElementById('editSalaryMode').value;
+            const remarks = document.getElementById('editSalaryRemarks').value;
+            
+            showAlert('Updating salary...', 'info');
+            
+            // Generate salary with new base salary
+            const generateRes = await apiCall(`/teachers/${teacherId}/salary/generate`, {
+                method: 'POST',
+                body: JSON.stringify({ month, year, customSalary: baseSalary })
             });
-            if (response.success) {
-                showAlert('Salary updated!', 'success');
-                closeModal('editSalaryModal');
-                await loadTeachers();
-                await showTeacherDashboard(teacherId);
-            } else {
-                showAlert(response.message || 'Update failed', 'error');
+            
+            if (!generateRes.success) {
+                showAlert(generateRes.message || 'Generation failed', 'error');
+                return;
             }
+            
+            // Pay if amount > 0
+            if (paidAmount > 0) {
+                const payRes = await apiCall(`/teachers/${teacherId}/salary/pay`, {
+                    method: 'POST',
+                    body: JSON.stringify({ month, year, paidAmount, paymentMode, remarks })
+                });
+                if (!payRes.success) {
+                    showAlert(payRes.message || 'Payment failed', 'error');
+                    return;
+                }
+            }
+            
+            showAlert('✅ Salary updated successfully!', 'success');
+            closeModal('editSalaryModal');
+            await loadTeachers();
+            await showTeacherDashboard(teacherId);
         };
     }
-
+    
     function viewDocument(url, title) {
         const modal = document.getElementById('documentViewerModal');
         const img = document.getElementById('docViewerImage');
