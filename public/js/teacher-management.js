@@ -77,9 +77,12 @@
     }
 
        // ========== API CALL ==========
+      // ========== API CALL ==========
     async function apiCall(endpoint, options = {}) {
         try {
             const token = getToken();
+            
+            // Agar token nahi hai toh login page pe bhejo
             if (!token) {
                 window.location.href = '/login.html';
                 return { success: false, message: "No token" };
@@ -94,7 +97,7 @@
                 }
             });
             
-            // ✅ Handle 401 specifically
+            // Agar 401 (Unauthorized) aata hai toh logout karo
             if (response.status === 401) {
                 localStorage.removeItem('adminToken');
                 alert('Session expired! Please login again.');
@@ -109,7 +112,6 @@
             return { success: false, message: err.message, data: [] };
         }
     }
-
     // ========== LOAD DATA ==========
     async function loadTeachers() {
         const response = await apiCall('/teachers');
