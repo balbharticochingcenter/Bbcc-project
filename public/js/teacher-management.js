@@ -799,7 +799,7 @@
             body.innerHTML = `
                 <div class="dashboard-container">
                     <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                        <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-photo-large" onclick="window.tmsInstance.viewDocument('${t.personal?.photo || DEFAULT_PHOTO}', 'Photo')">
+                       <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-photo-large" onclick="window.viewDocumentImage('${t.personal?.photo || DEFAULT_PHOTO}', 'Photo')">
                         <div style="flex:1;">
                             <div class="info-row"><strong>${t.personal?.name}</strong> (${t.teacherId})</div>
                             <div class="info-row">📞 ${t.personal?.mobile} | ✉️ ${t.personal?.email}</div>
@@ -1283,11 +1283,16 @@
             });
         }
 
-        viewDocument(url, title) {
-            document.getElementById('docViewerImage').src = url;
-            document.getElementById('docViewerTitle').innerText = title;
-            document.getElementById('documentViewerModal').classList.add('active');
-        }
+       viewDocument(url, title) {
+    const modal = document.getElementById('documentViewerModal');
+    const img = document.getElementById('docViewerImage');
+    const titleSpan = document.getElementById('docViewerTitle');
+    if (modal && img && titleSpan) {
+        img.src = url;
+        titleSpan.innerText = title;
+        modal.classList.add('active');
+    }
+}
 
         async rejoinTeacher(teacherId) {
             if (!confirm('Do you want to rejoin this teacher?')) return;
@@ -1329,13 +1334,27 @@
         }
     }
 
-    window.TeacherManagementSystem = TeacherManagementSystem;
+      window.TeacherManagementSystem = TeacherManagementSystem;
+    
+    // ✅ GLOBAL FUNCTION FOR DOCUMENT VIEWER
+    window.viewDocumentImage = function(url, title) {
+        const modal = document.getElementById('documentViewerModal');
+        const img = document.getElementById('docViewerImage');
+        const titleSpan = document.getElementById('docViewerTitle');
+        if (modal && img && titleSpan) {
+            img.src = url;
+            titleSpan.innerText = title;
+            modal.classList.add('active');
+        }
+    };
     
     window.initTeacherModule = function(containerId = 'app') {
         if (window.teacherInstance) {
+            window.tmsInstance = window.teacherInstance;
             return window.teacherInstance;
         }
         window.teacherInstance = new TeacherManagementSystem(containerId);
+        window.tmsInstance = window.teacherInstance;
         return window.teacherInstance;
     };
     
