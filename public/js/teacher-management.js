@@ -1330,17 +1330,14 @@
             app.innerHTML = getHTMLTemplate();
         }
     }
-    // ============================================
-    // ========== NEW FEATURES ADDED ==========
-    // TEACHER ATTENDANCE HISTORY WITH GRAPH
-    // TEACHER SALARY HISTORY WITH GRAPH
-    // TEACHER FILTER & EDIT HISTORY
+       // ============================================
+    // ========== ATTENDANCE & SALARY HISTORY TAB ==========
     // ============================================
 
-    // Global variable for selected teacher in history view
     let selectedHistoryTeacherId = null;
+    let attendanceChart = null;
+    let salaryChart = null;
 
-    // Add new tab button to main-tabs
     function addHistoryTab() {
         const mainTabs = document.querySelector('.main-tabs');
         if (mainTabs && !document.querySelector('.main-tab-btn[data-tab="history"]')) {
@@ -1350,7 +1347,6 @@
             historyBtn.innerHTML = '📊 Attendance & Salary History';
             mainTabs.appendChild(historyBtn);
             
-            // Add new pane
             const tmsContent = document.querySelector('.tms-content');
             if (tmsContent) {
                 const historyPane = document.createElement('div');
@@ -1361,7 +1357,6 @@
                         <div class="filter-bar" style="margin-bottom:20px;">
                             <select id="historyTeacherFilter" style="min-width:250px;">
                                 <option value="">-- Select Teacher --</option>
-                                ${teachersData.map(t => `<option value="${t.teacherId}">${t.personal?.name} (${t.teacherId})</option>`).join('')}
                             </select>
                             <select id="historyYearFilter">
                                 <option value="all">All Years</option>
@@ -1395,35 +1390,21 @@
                         </div>
                         
                         <div class="chart-container">
-                            <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
-                                <span>📋 Detailed Attendance History</span>
-                                <button class="btn btn-sm btn-warning" id="editAttendanceHistoryBtn" style="display:none;">✏️ Edit Attendance</button>
-                            </div>
+                            <div class="chart-title">📋 Detailed Attendance History</div>
                             <div style="overflow-x:auto; max-height:400px;">
-                                <table class="data-table" id="attendanceHistoryTable">
-                                    <thead>
-                                        <tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th><th>Action</th></tr>
-                                    </thead>
-                                    <tbody id="attendanceHistoryBody">
-                                        <tr><td colspan="6" class="empty-state">Select a teacher to view attendance history</td></tr>
-                                    </tbody>
+                                <table class="data-table">
+                                    <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th></tr></thead>
+                                    <tbody id="attendanceHistoryBody"><tr><td colspan="5" class="empty-state">Select a teacher</td></tr></tbody>
                                 </table>
                             </div>
                         </div>
                         
                         <div class="chart-container">
-                            <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
-                                <span>💰 Detailed Salary History</span>
-                                <button class="btn btn-sm btn-warning" id="editSalaryHistoryBtn" style="display:none;">✏️ Edit Salary</button>
-                            </div>
+                            <div class="chart-title">💰 Detailed Salary History</div>
                             <div style="overflow-x:auto; max-height:400px;">
-                                <table class="data-table" id="salaryHistoryTable">
-                                    <thead>
-                                        <tr><th>Month/Year</th><th>Base Salary</th><th>Working Days</th><th>Present Days</th><th>Calculated</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr>
-                                    </thead>
-                                    <tbody id="salaryHistoryBody">
-                                        <tr><td colspan="9" class="empty-state">Select a teacher to view salary history</td></tr>
-                                    </tbody>
+                                <table class="data-table">
+                                    <thead><tr><th>Month/Year</th><th>Base</th><th>Working</th><th>Present</th><th>Calculated</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
+                                    <tbody id="salaryHistoryBody"><tr><td colspan="8" class="empty-state">Select a teacher</td></tr></tbody>
                                 </table>
                             </div>
                         </div>
@@ -1434,149 +1415,10 @@
         }
     }
 
-    // Edit attendance record modal
-    function showEditAttendanceModal(teacherId, attendanceRecord) {
-        const modalHtml = `
-            <div id="editAttendanceRecordModal" class="modal active">
-                <div class="modal-content" style="max-width:500px;">
-                    <div class="modal-header">
-                        <h3>✏️ Edit Attendance Record</h3>
-                        <button class="close-modal" onclick="closeModal('editAttendanceRecordModal')">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group"><label>Date</label><input type="date" id="editAttDate" value="${attendanceRecord.date?.split('T')[0] || ''}" disabled></div>
-                        <div class="form-group"><label>Status</label>
-                            <select id="editAttStatus">
-                                <option value="present" ${attendanceRecord.status === 'present' ? 'selected' : ''}>✅ Present</option>
-                                <option value="absent" ${attendanceRecord.status === 'absent' ? 'selected' : ''}>❌ Absent</option>
-                                <option value="holiday" ${attendanceRecord.status === 'holiday' ? 'selected' : ''}>🎉 Holiday</option>
-                                <option value="leave" ${attendanceRecord.status === 'leave' ? 'selected' : ''}>🏖️ Leave</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>Check In Time</label><input type="time" id="editAttCheckIn" value="${attendanceRecord.checkIn || ''}"></div>
-                        <div class="form-group"><label>Check Out Time</label><input type="time" id="editAttCheckOut" value="${attendanceRecord.checkOut || ''}"></div>
-                        <div class="form-group"><label>Remarks</label><textarea id="editAttRemarks" rows="2">${attendanceRecord.remarks || ''}</textarea></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="closeModal('editAttendanceRecordModal')">Cancel</button>
-                        <button class="btn btn-primary" id="saveAttEditBtn">💾 Save Changes</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Remove if exists
-        const existing = document.getElementById('editAttendanceRecordModal');
-        if (existing) existing.remove();
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        document.getElementById('saveAttEditBtn').onclick = async () => {
-            const updatedRecord = {
-                date: attendanceRecord.date,
-                status: document.getElementById('editAttStatus').value,
-                checkIn: document.getElementById('editAttCheckIn').value,
-                checkOut: document.getElementById('editAttCheckOut').value,
-                remarks: document.getElementById('editAttRemarks').value
-            };
-            
-            const response = await apiCall(`/teachers/${teacherId}/attendance/${attendanceRecord.date?.split('T')[0]}`, {
-                method: 'PUT',
-                body: JSON.stringify(updatedRecord)
-            });
-            
-            if (response.success) {
-                showAlert('Attendance updated!', 'success');
-                closeModal('editAttendanceRecordModal');
-                await loadTeachers();
-                await loadHistoryData(selectedHistoryTeacherId);
-                if (currentViewTeacher && currentViewTeacher.teacherId === teacherId) {
-                    await showTeacherDashboard(teacherId);
-                }
-            } else {
-                showAlert(response.message || 'Update failed', 'error');
-            }
-        };
-    }
-
-    // Edit salary record modal
-    function showEditSalaryModal(teacherId, salaryRecord) {
-        const modalHtml = `
-            <div id="editSalaryRecordModal" class="modal active">
-                <div class="modal-content" style="max-width:500px;">
-                    <div class="modal-header">
-                        <h3>✏️ Edit Salary Record</h3>
-                        <button class="close-modal" onclick="closeModal('editSalaryRecordModal')">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group"><label>Month/Year</label><input type="text" value="${salaryRecord.month} ${salaryRecord.year}" disabled></div>
-                        <div class="form-group"><label>Base Salary (₹)</label><input type="number" id="editSalaryBase" value="${salaryRecord.baseSalary || 0}"></div>
-                        <div class="form-group"><label>Working Days</label><input type="number" id="editSalaryWorkingDays" value="${salaryRecord.workingDays || 0}"></div>
-                        <div class="form-group"><label>Present Days</label><input type="number" id="editSalaryPresentDays" value="${salaryRecord.presentDays || 0}"></div>
-                        <div class="form-group"><label>Calculated Amount (₹)</label><input type="number" id="editSalaryCalculated" value="${salaryRecord.calculatedAmount || 0}"></div>
-                        <div class="form-group"><label>Paid Amount (₹)</label><input type="number" id="editSalaryPaid" value="${salaryRecord.paidAmount || 0}"></div>
-                        <div class="form-group"><label>Payment Mode</label>
-                            <select id="editSalaryMode">
-                                <option value="cash" ${salaryRecord.paymentMode === 'cash' ? 'selected' : ''}>Cash</option>
-                                <option value="bank" ${salaryRecord.paymentMode === 'bank' ? 'selected' : ''}>Bank Transfer</option>
-                                <option value="upi" ${salaryRecord.paymentMode === 'upi' ? 'selected' : ''}>UPI</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>Remarks</label><textarea id="editSalaryRemarks" rows="2">${salaryRecord.remarks || ''}</textarea></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="closeModal('editSalaryRecordModal')">Cancel</button>
-                        <button class="btn btn-primary" id="saveSalaryEditBtn">💾 Save Changes</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const existing = document.getElementById('editSalaryRecordModal');
-        if (existing) existing.remove();
-        
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        document.getElementById('saveSalaryEditBtn').onclick = async () => {
-            const updatedSalary = {
-                month: salaryRecord.month,
-                year: salaryRecord.year,
-                baseSalary: parseInt(document.getElementById('editSalaryBase').value) || 0,
-                workingDays: parseInt(document.getElementById('editSalaryWorkingDays').value) || 0,
-                presentDays: parseInt(document.getElementById('editSalaryPresentDays').value) || 0,
-                calculatedAmount: parseInt(document.getElementById('editSalaryCalculated').value) || 0,
-                paidAmount: parseInt(document.getElementById('editSalaryPaid').value) || 0,
-                paymentMode: document.getElementById('editSalaryMode').value,
-                remarks: document.getElementById('editSalaryRemarks').value
-            };
-            
-            updatedSalary.dueAmount = updatedSalary.calculatedAmount - updatedSalary.paidAmount;
-            updatedSalary.status = updatedSalary.paidAmount >= updatedSalary.calculatedAmount ? 'paid' : updatedSalary.paidAmount > 0 ? 'partial' : 'unpaid';
-            
-            const response = await apiCall(`/teachers/${teacherId}/salary/update`, {
-                method: 'PUT',
-                body: JSON.stringify(updatedSalary)
-            });
-            
-            if (response.success) {
-                showAlert('Salary record updated!', 'success');
-                closeModal('editSalaryRecordModal');
-                await loadTeachers();
-                await loadHistoryData(selectedHistoryTeacherId);
-                if (currentViewTeacher && currentViewTeacher.teacherId === teacherId) {
-                    await showTeacherDashboard(teacherId);
-                }
-            } else {
-                showAlert(response.message || 'Update failed', 'error');
-            }
-        };
-    }
-
-    // Load history data for selected teacher
     async function loadHistoryData(teacherId) {
         if (!teacherId) return;
-        
         selectedHistoryTeacherId = teacherId;
+        
         const response = await apiCall(`/teachers/${teacherId}`);
         if (!response.success || !response.data) {
             showAlert('Teacher not found!', 'error');
@@ -1586,20 +1428,17 @@
         const teacher = response.data;
         const yearFilter = document.getElementById('historyYearFilter')?.value || 'all';
         
-        // Show teacher info
         document.getElementById('historyTeacherInfo').style.display = 'block';
         document.getElementById('historyTeacherName').innerText = teacher.personal?.name || 'N/A';
         document.getElementById('historyTeacherId').innerText = teacher.teacherId;
         document.getElementById('historyTeacherMobile').innerText = teacher.personal?.mobile || '-';
         document.getElementById('historyTeacherEmail').innerText = teacher.personal?.email || '-';
         
-        // Filter attendance by year
         let attendance = teacher.attendance || [];
         if (yearFilter !== 'all') {
             attendance = attendance.filter(a => new Date(a.date).getFullYear() === parseInt(yearFilter));
         }
         
-        // Calculate stats
         const totalPresent = attendance.filter(a => a.status === 'present').length;
         const totalAbsent = attendance.filter(a => a.status === 'absent').length;
         const totalLeave = attendance.filter(a => a.status === 'leave').length;
@@ -1612,7 +1451,6 @@
         document.getElementById('attendancePercent').innerText = attPercent + '%';
         document.getElementById('historyStats').style.display = 'grid';
         
-        // Prepare monthly attendance data for chart
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyData = {};
         months.forEach(m => monthlyData[m] = { present: 0, total: 0 });
@@ -1629,24 +1467,21 @@
         const chartLabels = months;
         const chartData = chartLabels.map(m => monthlyData[m].total > 0 ? Math.round((monthlyData[m].present / monthlyData[m].total) * 100) : 0);
         
-        // Render attendance chart
         const attCtx = document.getElementById('attendanceTrendChart')?.getContext('2d');
         if (attCtx) {
-            if (window.attendanceChart) window.attendanceChart.destroy();
-            window.attendanceChart = new Chart(attCtx, {
+            if (attendanceChart) attendanceChart.destroy();
+            attendanceChart = new Chart(attCtx, {
                 type: 'line',
                 data: { labels: chartLabels, datasets: [{ label: 'Attendance %', data: chartData, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Percentage (%)' } }, x: { title: { display: true, text: 'Month' } } } }
+                options: { responsive: true, scales: { y: { min: 0, max: 100 } } }
             });
         }
         
-        // Filter salary by year
         let salaryPayments = teacher.salaryPayments || [];
         if (yearFilter !== 'all') {
             salaryPayments = salaryPayments.filter(s => s.year === parseInt(yearFilter));
         }
         
-        // Prepare salary chart data
         const salarySorted = [...salaryPayments].sort((a,b) => {
             const dateA = new Date(`${a.month} 1, ${a.year}`);
             const dateB = new Date(`${b.month} 1, ${b.year}`);
@@ -1657,76 +1492,32 @@
         const salaryPaidData = salarySorted.map(s => s.paidAmount || 0);
         const salaryDueData = salarySorted.map(s => s.dueAmount || 0);
         
-        // Render salary chart
         const salaryCtx = document.getElementById('salaryTrendChart')?.getContext('2d');
         if (salaryCtx) {
-            if (window.salaryChart) window.salaryChart.destroy();
-            window.salaryChart = new Chart(salaryCtx, {
+            if (salaryChart) salaryChart.destroy();
+            salaryChart = new Chart(salaryCtx, {
                 type: 'bar',
                 data: { labels: salaryLabels, datasets: [{ label: 'Paid Amount (₹)', data: salaryPaidData, backgroundColor: '#28a745' }, { label: 'Due Amount (₹)', data: salaryDueData, backgroundColor: '#dc3545' }] },
-                options: { responsive: true, scales: { y: { title: { display: true, text: 'Amount (₹)' } }, x: { title: { display: true, text: 'Month' } } } }
+                options: { responsive: true }
             });
         }
         
-        // Render attendance history table with edit buttons
         const attBody = document.getElementById('attendanceHistoryBody');
         const sortedAtt = [...attendance].sort((a,b) => new Date(b.date) - new Date(a.date));
         attBody.innerHTML = sortedAtt.map(a => `
-            <tr>
-                <td>${formatDate(a.date)}</td>
-                <td>${a.status === 'present' ? '✅ Present' : a.status === 'absent' ? '❌ Absent' : a.status === 'holiday' ? '🎉 Holiday' : '🏖️ Leave'}</td>
-                <td>${a.checkIn || '-'}</td>
-                <td>${a.checkOut || '-'}</td>
-                <td>${a.remarks || '-'}</td>
-                <td><button class="btn btn-sm btn-warning edit-attendance-btn" data-date="${a.date}">✏️ Edit</button></td>
-            </tr>
+            <tr><td>${formatDate(a.date)}</td><td>${a.status === 'present' ? '✅ Present' : a.status === 'absent' ? '❌ Absent' : a.status === 'holiday' ? '🎉 Holiday' : '🏖️ Leave'}</td><td>${a.checkIn || '-'}</td><td>${a.checkOut || '-'}</td><td>${a.remarks || '-'}</td></tr>
         `).join('');
         
-        document.querySelectorAll('.edit-attendance-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const date = btn.dataset.date;
-                const record = attendance.find(a => a.date === date || new Date(a.date).toISOString().split('T')[0] === date.split('T')[0]);
-                if (record) showEditAttendanceModal(teacherId, record);
-            });
-        });
-        
-        // Render salary history table with edit buttons
         const salaryBody = document.getElementById('salaryHistoryBody');
         const sortedSalary = [...salaryPayments].sort((a,b) => b.year - a.year);
         salaryBody.innerHTML = sortedSalary.map(s => `
-            <tr>
-                <td>${s.month} ${s.year}</td>
-                <td>₹${s.baseSalary || 0}</td>
-                <td>${s.workingDays || 0}</td>
-                <td>${s.presentDays || 0}</td>
-                <td>₹${s.calculatedAmount || 0}</td>
-                <td>₹${s.paidAmount || 0}</td>
-                <td>₹${s.dueAmount || 0}</td>
-                <td>${s.status === 'paid' ? '✅ Paid' : s.status === 'partial' ? '⚠️ Partial' : '❌ Unpaid'}</td>
-                <td><button class="btn btn-sm btn-warning edit-salary-btn" data-month="${s.month}" data-year="${s.year}">✏️ Edit</button></td>
-            </tr>
+            <tr><td>${s.month} ${s.year}</td><td>₹${s.baseSalary || 0}</td><td>${s.workingDays || 0}</td><td>${s.presentDays || 0}</td><td>₹${s.calculatedAmount || 0}</td><td>₹${s.paidAmount || 0}</td><td>₹${s.dueAmount || 0}</td><td>${s.status === 'paid' ? '✅ Paid' : s.status === 'partial' ? '⚠️ Partial' : '❌ Unpaid'}</td></tr>
         `).join('');
-        
-        document.querySelectorAll('.edit-salary-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const month = btn.dataset.month;
-                const year = parseInt(btn.dataset.year);
-                const record = salaryPayments.find(s => s.month === month && s.year === year);
-                if (record) showEditSalaryModal(teacherId, record);
-            });
-        });
-        
-        document.getElementById('editAttendanceHistoryBtn').style.display = 'inline-flex';
-        document.getElementById('editSalaryHistoryBtn').style.display = 'inline-flex';
     }
 
-    // Setup history tab event listeners
     function setupHistoryTabEvents() {
         const historyFilter = document.getElementById('historyTeacherFilter');
         if (historyFilter) {
-            // Update dropdown options when teachers change
             const updateOptions = () => {
                 historyFilter.innerHTML = '<option value="">-- Select Teacher --</option>' + 
                     teachersData.map(t => `<option value="${t.teacherId}">${t.personal?.name} (${t.teacherId})</option>`).join('');
@@ -1751,44 +1542,14 @@
                 await loadHistoryData(selectedHistoryTeacherId);
             }
         });
-        
-        document.getElementById('editAttendanceHistoryBtn')?.addEventListener('click', () => {
-            if (selectedHistoryTeacherId) {
-                window.location.href = `#attendance-${selectedHistoryTeacherId}`;
-                showAlert('Click on Edit button next to any attendance record to modify it', 'info', 3000);
-            }
-        });
-        
-        document.getElementById('editSalaryHistoryBtn')?.addEventListener('click', () => {
-            if (selectedHistoryTeacherId) {
-                showAlert('Click on Edit button next to any salary record to modify it', 'info', 3000);
-            }
-        });
     }
 
-    // Add server endpoint for salary update
-    async function addSalaryUpdateEndpoint() {
-        // This is a frontend function that calls the existing API with PUT
-        // The actual server endpoint needs to be added separately
-        console.log('Salary update endpoint ready');
-    }
-
-    // Override the original init to include new features
-    const originalInit = init;
+    // Override to add history tab after init
+    const originalInitForHistory = init;
     window.initTeacherModule = async function() {
-        await originalInit();
+        await originalInitForHistory();
         addHistoryTab();
         setupHistoryTabEvents();
-        // Re-populate teacher dropdown when data loads
-        const originalLoadTeachers = loadTeachers;
-        window.loadTeachers = async () => {
-            await originalLoadTeachers();
-            const historyFilter = document.getElementById('historyTeacherFilter');
-            if (historyFilter) {
-                historyFilter.innerHTML = '<option value="">-- Select Teacher --</option>' + 
-                    teachersData.map(t => `<option value="${t.teacherId}">${t.personal?.name} (${t.teacherId})</option>`).join('');
-            }
-        };
     };
     window.viewDocumentImage = viewDocument;
     window.TeacherManagementSystem = class { constructor() { init(); } };
