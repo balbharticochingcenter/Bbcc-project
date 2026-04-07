@@ -1,6 +1,6 @@
 // ============================================
-// TEACHER-MANAGEMENT.JS - COMPLETE FINAL VERSION
-// WITH ALL FIELDS IN CARD, DASHBOARD & EDIT
+// TEACHER-MANAGEMENT.JS - SERVER API VERSION
+// FULLY WORKING WITH BACKEND API
 // FOR BAL BHARTI COACHING CENTER
 // ============================================
 
@@ -13,7 +13,6 @@
     let currentViewTeacher = null;
     let currentEditTeacherId = null;
 
-    // ENHANCED LISTS
     const subjectsList = [
         'Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 
         'Hindi', 'Sanskrit', 'Computer Science', 'Social Science', 
@@ -36,7 +35,6 @@
 
     const genders = ['Male', 'Female', 'Other'];
     const paymentModes = ['cash', 'bank', 'upi'];
-
     const DEFAULT_PHOTO = 'https://placehold.co/100x100/28a745/white?text=👨‍🏫';
 
     function showAlert(message, type = 'info', duration = 3000) {
@@ -78,6 +76,779 @@
         return localStorage.getItem('adminToken');
     }
 
+    // ========== API CALL ==========
+    async function apiCall(endpoint, options = {}) {
+        try {
+            const token = getToken();
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+            const data = await response.json();
+            if (!data.success && response.status === 401) {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/login.html';
+            }
+            return data;
+        } catch (err) {
+            console.error('API Error:', err);
+            return { success: false, message: err.message, data: [] };
+        }
+    }
+
+    // ========== LOAD DATA ==========
+    async function loadTeachers() {
+        const response = await apiCall('/teachers');
+        if (response.success && response.data) {
+            teachersData = response.data;
+        } else {
+            teachersData = [];
+        }
+        renderTeachersGrid();
+    }
+
+    async function loadLeftTeachers() {
+        const response = await apiCall('/teachers/left');
+        if (response.success && response.data) {
+            leftTeachersData = response.data;
+        } else {
+            leftTeachersData = [];
+        }
+        renderLeftTeachersGrid();
+    }
+
+    async function loadNotices() {
+        const response = await apiCall('/notices');
+        if (response.success && response.data) {
+            renderNotices(response.data);
+        }
+    }
+
+    // ========== RENDER FUNCTIONS ==========
+    function renderTeachersGrid() {
+        const subject = document.getElementById('filterSubject')?.value || 'all';
+        const classVal = document.getElementById('filterClass')?.value || 'all';
+        const board = document.getElementById('filterBoard')?.value || 'all';
+        const search = document.getElementById('searchTeacher')?.value.toLowerCase() || '';
+        
+        let filtered = teachersData || [];
+        if (subject !== 'all') filtered = filtered.filter(t => t.professional?.subjects?.includes(subject));
+        if (classVal !== 'all') filtered = filtered.filter(t => t.professional?.classes?.includes(classVal));
+        if (board !== 'all') filtered = filtered.filter(t => t.professional?.boards?.includes(board));
+        if (search) filtered = filtered.filter(t => (t.teacherId || '').includes(search) || (t.personal?.name || '').toLowerCase().includes(search));
+        
+        const grid = document.getElementById('teachersGrid');
+        if (!grid) return;
+        
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="empty-state">📭 No teachers found</div>';
+            return;
+        }
+        
+        grid.innerHTML = filtered.map(t => `
+            <div class="teacher-card" data-id="${t.teacherId}">
+                <div class="teacher-card-header">
+                    <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-card-img" onerror="this.src='${DEFAULT_PHOTO}'">
+                    <div class="teacher-card-name">${t.personal?.name || 'N/A'}</div>
+                    <div class="teacher-card-id">${t.teacherId || '-'}</div>
+                </div>
+                <div class="teacher-card-body">
+                    <div class="teacher-card-info"><span>📞 Mobile:</span><span>${t.personal?.mobile || '-'}</span></div>
+                    <div class="teacher-card-info"><span>📚 Subjects:</span><span>${(t.professional?.subjects || []).slice(0,2).join(', ')}${(t.professional?.subjects || []).length > 2 ? '...' : ''}</span></div>
+                    <div class="teacher-card-info"><span>🏫 Classes:</span><span>${(t.professional?.classes || []).slice(0,2).join(', ')}</span></div>
+                    <div class="teacher-card-info"><span>🎓 Boards:</span><span>${(t.professional?.boards || []).slice(0,2).join(', ')}</span></div>
+                    <div class="teacher-card-info"><span>💰 Salary:</span><span>₹${t.salary?.defaultSalary || 0}</span></div>
+                    <div class="teacher-card-info"><span>Status:</span><span>${t.status?.isBlocked ? '<span class="badge-blocked">Blocked</span>' : '<span class="badge-active">Active</span>'}</span></div>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('#teachersGrid .teacher-card').forEach(card => {
+            card.addEventListener('click', () => showTeacherDashboard(card.dataset.id));
+        });
+    }
+
+    function renderLeftTeachersGrid() {
+        const search = document.getElementById('searchLeft')?.value.toLowerCase() || '';
+        let filtered = leftTeachersData || [];
+        if (search) filtered = filtered.filter(t => (t.teacherId || '').includes(search) || (t.personal?.name || '').toLowerCase().includes(search));
+        
+        const grid = document.getElementById('leftTeachersGrid');
+        if (!grid) return;
+        
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="empty-state">📦 No left teachers</div>';
+            return;
+        }
+        
+        grid.innerHTML = filtered.map(t => `
+            <div class="teacher-card" data-id="${t.teacherId}">
+                <div class="teacher-card-header">
+                    <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-card-img" onerror="this.src='${DEFAULT_PHOTO}'">
+                    <div class="teacher-card-name">${t.personal?.name || 'N/A'}</div>
+                    <div class="teacher-card-id">${t.teacherId || '-'}</div>
+                </div>
+                <div class="teacher-card-body">
+                    <div class="teacher-card-info"><span>📞 Mobile:</span><span>${t.personal?.mobile || '-'}</span></div>
+                    <div class="teacher-card-info"><span>📚 Subjects:</span><span>${(t.professional?.subjects || []).slice(0,2).join(', ')}</span></div>
+                    <div class="teacher-card-info"><span>📅 Left:</span><span>${formatDate(t.status?.leavingDate)}</span></div>
+                    <div class="teacher-card-info"><span>📝 Reason:</span><span>${t.status?.leavingReason || '-'}</span></div>
+                    <div class="teacher-card-info"><span> </span><span><button class="btn btn-success btn-sm rejoin-teacher-btn" data-id="${t.teacherId}">🔄 Rejoin</button></span></div>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.rejoin-teacher-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                rejoinTeacher(btn.dataset.id);
+            });
+        });
+        
+        document.querySelectorAll('#leftTeachersGrid .teacher-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('rejoin-teacher-btn')) {
+                    showTeacherDashboard(card.dataset.id);
+                }
+            });
+        });
+    }
+
+    function renderNotices(notices) {
+        const container = document.getElementById('noticesList');
+        if (!container) return;
+        if (!notices || notices.length === 0) { 
+            container.innerHTML = '<div class="empty-state">📭 No notices</div>'; 
+            return; 
+        }
+        
+        container.innerHTML = notices.map(n => `
+            <div style="background:#e8f5e9; padding:15px; border-radius:10px; margin-bottom:10px; border-left:4px solid #28a745">
+                <strong>${n.title}</strong> <small>${formatDate(n.sentAt)}</small>
+                <div style="margin-top:8px;">${n.message}</div>
+                <div style="margin-top:8px; font-size:0.8rem;">From: ${n.from === 'admin' ? 'Admin' : n.teacherName}</div>
+            </div>
+        `).join('');
+    }
+
+    // ========== DASHBOARD ==========
+    async function showTeacherDashboard(teacherId) {
+        showAlert('Loading teacher data...', 'info');
+        const response = await apiCall(`/teachers/${teacherId}`);
+        if (!response.success || !response.data) {
+            showAlert('Teacher not found!', 'error');
+            return;
+        }
+        currentViewTeacher = response.data;
+        renderDashboard(currentViewTeacher);
+        document.getElementById('dashboardModal').classList.add('active');
+    }
+
+    function renderDashboard(t) {
+        const body = document.getElementById('dashboardBody');
+        const footer = document.getElementById('dashboardFooter');
+        if (!body) return;
+        
+        const salaryPayments = t.salaryPayments || [];
+        const totalPaid = salaryPayments.reduce((s, p) => s + (p.paidAmount || 0), 0);
+        const totalDue = salaryPayments.reduce((s, p) => s + (p.dueAmount || 0), 0);
+        const attendance = t.attendance || [];
+        const attPercent = attendance.length ? Math.round((attendance.filter(a => a.status === 'present').length / attendance.length) * 100) : 0;
+        
+        body.innerHTML = `
+            <div class="dashboard-container">
+                <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                    <div>
+                        <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-photo-large" style="cursor:pointer;" id="dashboardPhoto">
+                        <div style="text-align:center;margin-top:5px;">
+                            <button class="btn btn-sm btn-info" id="viewPhotoBtn">🔍 View Photo</button>
+                        </div>
+                    </div>
+                    <div style="flex:1;">
+                        <div class="info-row"><strong>${t.personal?.name || 'N/A'}</strong> (${t.teacherId})</div>
+                        <div class="info-row">📞 ${t.personal?.mobile || '-'} | ✉️ ${t.personal?.email || '-'}</div>
+                        <div class="info-row">🎓 ${t.personal?.gender || '-'} | 📅 DOB: ${formatDate(t.personal?.dob)}</div>
+                        <div class="info-row">📚 ${t.documents?.qualificationName || '-'} | 🎓 ${t.professional?.experience || 0} years</div>
+                        <div class="info-row">🏠 ${t.personal?.currentAddress || '-'}</div>
+                        <div class="info-row">🏦 Bank: ${t.bankDetails?.bankName || '-'} | A/c: ${t.bankDetails?.accountNumber || '-'}</div>
+                        <div class="info-row">📄 Aadhar: <button class="btn btn-sm btn-info" id="viewAadharBtn">View</button></div>
+                        <div class="info-row">📄 Qualification: <button class="btn btn-sm btn-info" id="viewQualificationBtn">View</button></div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card" style="background:#28a745;color:white;"><h3>₹${totalPaid.toLocaleString()}</h3><p>Paid</p></div>
+                    <div class="stat-card" style="background:#dc3545;color:white;"><h3>₹${totalDue.toLocaleString()}</h3><p>Due</p></div>
+                    <div class="stat-card" style="background:#17a2b8;color:white;"><h3>${attPercent}%</h3><p>Attendance</p></div>
+                </div>
+                <div class="chart-container"><div class="chart-title">📚 Subjects</div><div>${(t.professional?.subjects || []).map(s => `<span style="background:#28a74520;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${s}</span>`).join('') || '-'}</div></div>
+                <div class="chart-container"><div class="chart-title">🏫 Classes</div><div>${(t.professional?.classes || []).map(c => `<span style="background:#17a2b820;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${c}</span>`).join('') || '-'}</div></div>
+                <div class="chart-container"><div class="chart-title">🎓 Boards</div><div>${(t.professional?.boards || []).map(b => `<span style="background:#ffc10720;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${b}</span>`).join('') || '-'}</div></div>
+            </div>
+        `;
+        
+        footer.innerHTML = `
+            <button class="btn btn-primary" id="editTeacherDashboardBtn">✏️ Edit Teacher</button>
+            ${!t.status?.isBlocked ? '<button class="btn btn-warning" id="blockTeacherBtn">🔴 Block</button>' : '<button class="btn btn-success" id="unblockTeacherBtn">🟢 Unblock</button>'}
+            <button class="btn btn-danger" id="moveToLeftBtn">📦 Move to Left</button>
+            <button class="btn btn-secondary" id="closeDashboardFooterBtn">Close</button>
+        `;
+        
+        document.getElementById('viewPhotoBtn')?.addEventListener('click', () => viewDocument(t.personal?.photo || DEFAULT_PHOTO, 'Teacher Photo'));
+        document.getElementById('viewAadharBtn')?.addEventListener('click', () => viewDocument(t.documents?.aadharCopy || DEFAULT_PHOTO, 'Aadhar Document'));
+        document.getElementById('viewQualificationBtn')?.addEventListener('click', () => viewDocument(t.documents?.qualificationDoc || DEFAULT_PHOTO, 'Qualification Document'));
+        document.getElementById('editTeacherDashboardBtn')?.addEventListener('click', () => openEditTeacherPopup(t));
+        document.getElementById('blockTeacherBtn')?.addEventListener('click', () => blockTeacher(t.teacherId));
+        document.getElementById('unblockTeacherBtn')?.addEventListener('click', () => unblockTeacher(t.teacherId));
+        document.getElementById('moveToLeftBtn')?.addEventListener('click', () => moveToLeft(t.teacherId));
+        document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
+    }
+
+    // ========== DOCUMENT VIEWER ==========
+    function viewDocument(url, title) {
+        const modal = document.getElementById('documentViewerModal');
+        const img = document.getElementById('docViewerImage');
+        const titleSpan = document.getElementById('docViewerTitle');
+        if (modal && img && titleSpan) {
+            img.src = url;
+            titleSpan.innerText = title;
+            modal.classList.add('active');
+        }
+    }
+
+    // ========== EDIT TEACHER ==========
+    function openEditTeacherPopup(teacher) {
+        currentEditTeacherId = teacher.teacherId;
+        document.getElementById('editTeacherId').innerText = teacher.teacherId;
+        
+        const editForm = `
+            <form id="editTeacherForm">
+                <div class="section-title">👤 Personal Info</div>
+                <div class="form-row">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="editFullName" value="${escapeHtml(teacher.personal?.name || '')}"></div>
+                    <div class="form-group"><label>Aadhar</label><input type="text" value="${escapeHtml(teacher.teacherId || '')}" disabled></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>DOB</label><input type="date" id="editDob" value="${teacher.personal?.dob ? teacher.personal.dob.split('T')[0] : ''}"></div>
+                    <div class="form-group"><label>Gender</label><select id="editGender">${genders.map(g => `<option ${teacher.personal?.gender === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Mobile</label><input type="text" id="editMobile" value="${escapeHtml(teacher.personal?.mobile || '')}"></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="editEmail" value="${escapeHtml(teacher.personal?.email || '')}"></div>
+                </div>
+                <div class="form-group"><label>Address</label><textarea id="editAddress" rows="2">${escapeHtml(teacher.personal?.currentAddress || '')}</textarea></div>
+                <div class="form-group"><label>Permanent Address</label><textarea id="editPermanentAddress" rows="2">${escapeHtml(teacher.personal?.permanentAddress || '')}</textarea></div>
+                
+                <div class="section-title">📚 Professional</div>
+                <div class="form-row">
+                    <div class="form-group"><label>Qualification</label><input type="text" id="editQualification" value="${escapeHtml(teacher.documents?.qualificationName || '')}"></div>
+                    <div class="form-group"><label>Experience</label><input type="number" id="editExperience" value="${teacher.professional?.experience || 0}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Joining Date</label><input type="date" id="editJoiningDate" value="${teacher.professional?.joiningDate ? teacher.professional.joiningDate.split('T')[0] : ''}"></div>
+                    <div class="form-group"><label>Salary</label><input type="number" id="editSalary" value="${teacher.salary?.defaultSalary || 0}"></div>
+                </div>
+                
+                <div class="section-title">📖 Subjects</div>
+                <div class="checkbox-group" id="editSubjectsGroup">${subjectsList.map(s => `<label><input type="checkbox" value="${s}" ${(teacher.professional?.subjects || []).includes(s) ? 'checked' : ''}> ${s}</label>`).join('')}</div>
+                
+                <div class="section-title">🏫 Classes</div>
+                <div class="checkbox-group" id="editClassesGroup">${classesList.map(c => `<label><input type="checkbox" value="${c}" ${(teacher.professional?.classes || []).includes(c) ? 'checked' : ''}> ${c}</label>`).join('')}</div>
+                
+                <div class="section-title">🎓 Boards</div>
+                <div class="checkbox-group" id="editBoardsGroup">${boardsList.map(b => `<label><input type="checkbox" value="${b}" ${(teacher.professional?.boards || []).includes(b) ? 'checked' : ''}> ${b}</label>`).join('')}</div>
+                
+                <div class="section-title">🏦 Bank</div>
+                <div class="form-row">
+                    <div class="form-group"><label>Bank Name</label><input type="text" id="editBankName" value="${escapeHtml(teacher.bankDetails?.bankName || '')}"></div>
+                    <div class="form-group"><label>Account No</label><input type="text" id="editAccountNo" value="${escapeHtml(teacher.bankDetails?.accountNumber || '')}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>IFSC</label><input type="text" id="editIfsc" value="${escapeHtml(teacher.bankDetails?.ifsc || '')}"></div>
+                    <div class="form-group"><label>UPI ID</label><input type="text" id="editUpiId" value="${escapeHtml(teacher.bankDetails?.upiId || '')}"></div>
+                </div>
+            </form>
+        `;
+        
+        document.getElementById('editModalBody').innerHTML = editForm;
+        document.getElementById('editTeacherModal').classList.add('active');
+        
+        document.getElementById('saveEditModalBtn').onclick = () => saveEditFromModal();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    async function saveEditFromModal() {
+        const selectedSubjects = Array.from(document.querySelectorAll('#editSubjectsGroup input:checked')).map(cb => cb.value);
+        const selectedClasses = Array.from(document.querySelectorAll('#editClassesGroup input:checked')).map(cb => cb.value);
+        const selectedBoards = Array.from(document.querySelectorAll('#editBoardsGroup input:checked')).map(cb => cb.value);
+        
+        const teacherData = {
+            personal: {
+                name: document.getElementById('editFullName').value,
+                dob: document.getElementById('editDob').value,
+                gender: document.getElementById('editGender').value,
+                mobile: document.getElementById('editMobile').value,
+                email: document.getElementById('editEmail').value,
+                currentAddress: document.getElementById('editAddress').value,
+                permanentAddress: document.getElementById('editPermanentAddress').value
+            },
+            documents: { qualificationName: document.getElementById('editQualification').value },
+            professional: {
+                joiningDate: document.getElementById('editJoiningDate').value,
+                experience: parseInt(document.getElementById('editExperience').value) || 0,
+                subjects: selectedSubjects,
+                classes: selectedClasses,
+                boards: selectedBoards
+            },
+            salary: { defaultSalary: parseInt(document.getElementById('editSalary').value) || 0 },
+            bankDetails: {
+                bankName: document.getElementById('editBankName').value,
+                accountNumber: document.getElementById('editAccountNo').value,
+                ifsc: document.getElementById('editIfsc').value,
+                upiId: document.getElementById('editUpiId').value
+            }
+        };
+        
+        const response = await apiCall(`/teachers/${currentEditTeacherId}`, { method: 'PUT', body: JSON.stringify(teacherData) });
+        if (response.success) {
+            showAlert('✅ Teacher updated successfully!', 'success');
+            closeModal('editTeacherModal');
+            await loadTeachers();
+        } else {
+            showAlert(response.message || 'Update failed', 'error');
+        }
+    }
+
+    // ========== ACTIONS ==========
+    async function blockTeacher(teacherId) {
+        const reason = prompt('Block reason:');
+        if (!reason) return;
+        const response = await apiCall(`/teachers/${teacherId}/block`, { method: 'POST', body: JSON.stringify({ reason }) });
+        if (response.success) {
+            showAlert('Teacher blocked', 'success');
+            await loadTeachers();
+            closeModal('dashboardModal');
+        } else {
+            showAlert(response.message || 'Block failed', 'error');
+        }
+    }
+
+    async function unblockTeacher(teacherId) {
+        if (!confirm('Unblock this teacher?')) return;
+        const response = await apiCall(`/teachers/${teacherId}/unblock`, { method: 'POST' });
+        if (response.success) {
+            showAlert('Teacher unblocked', 'success');
+            await loadTeachers();
+            closeModal('dashboardModal');
+        } else {
+            showAlert(response.message || 'Unblock failed', 'error');
+        }
+    }
+
+    async function moveToLeft(teacherId) {
+        const reason = prompt('Reason for leaving:');
+        if (!reason) return;
+        
+        const response = await apiCall(`/teachers/${teacherId}/move-to-left`, {
+            method: 'POST',
+            body: JSON.stringify({ leavingReason: reason, lastWorkingDay: new Date().toISOString().split('T')[0] })
+        });
+        
+        if (response.success) {
+            showAlert(`✅ Teacher moved to left!`, 'success');
+            await loadTeachers();
+            await loadLeftTeachers();
+            closeModal('dashboardModal');
+        } else {
+            showAlert(response.message || 'Move failed', 'error');
+        }
+    }
+
+    async function rejoinTeacher(teacherId) {
+        if (!confirm('Rejoin this teacher?')) return;
+        
+        const response = await apiCall(`/teachers/${teacherId}/rejoin`, { 
+            method: 'POST', 
+            body: JSON.stringify({ rejoinedAt: new Date().toISOString().split('T')[0] }) 
+        });
+        
+        if (response.success) {
+            showAlert(`✅ Teacher rejoined successfully!`, 'success');
+            await loadTeachers();
+            await loadLeftTeachers();
+        } else {
+            showAlert(response.message || 'Rejoin failed', 'error');
+        }
+    }
+
+    // ========== REGISTER TEACHER ==========
+    async function registerTeacher() {
+        const aadhar = document.getElementById('aadharNumber').value;
+        if (!aadhar || aadhar.length !== 12) { showAlert('Valid 12-digit Aadhar required', 'error'); return; }
+        
+        const subjects = Array.from(document.querySelectorAll('#subjectsGroup input:checked')).map(cb => cb.value);
+        const classes = Array.from(document.querySelectorAll('#classesGroup input:checked')).map(cb => cb.value);
+        const boards = Array.from(document.querySelectorAll('#boardsGroup input:checked')).map(cb => cb.value);
+        
+        if (!subjects.length || !classes.length || !boards.length) { 
+            showAlert('Select subjects, classes and boards', 'error'); 
+            return; 
+        }
+        
+        const data = {
+            aadharNumber: aadhar,
+            personal: {
+                name: document.getElementById('fullName').value,
+                dob: document.getElementById('dob').value,
+                gender: document.getElementById('gender').value,
+                mobile: document.getElementById('mobile').value,
+                email: document.getElementById('email').value,
+                currentAddress: document.getElementById('currentAddress').value,
+                permanentAddress: document.getElementById('permanentAddress').value,
+                photo: document.getElementById('photo').value || DEFAULT_PHOTO
+            },
+            documents: {
+                aadharCopy: document.getElementById('aadharCopy').value || DEFAULT_PHOTO,
+                qualificationDoc: document.getElementById('qualificationDoc').value || DEFAULT_PHOTO,
+                qualificationName: document.getElementById('qualificationName').value
+            },
+            professional: {
+                joiningDate: document.getElementById('joiningDate').value,
+                experience: parseInt(document.getElementById('experience').value) || 0,
+                subjects: subjects,
+                classes: classes,
+                boards: boards,
+                branches: ['Main']
+            },
+            salary: { defaultSalary: parseInt(document.getElementById('defaultSalary').value) || 0 },
+            bankDetails: {
+                bankName: document.getElementById('bankName').value,
+                accountNumber: document.getElementById('accountNumber').value,
+                ifsc: document.getElementById('ifsc').value,
+                upiId: document.getElementById('upiId').value
+            }
+        };
+        
+        const response = await apiCall('/teachers/register', { method: 'POST', body: JSON.stringify(data) });
+        if (response.success) {
+            showAlert(`✅ Teacher registered! ID: ${aadhar}, Password: ${response.password}`, 'success', 8000);
+            resetForm();
+            await loadTeachers();
+            document.querySelector('[data-tab="teachers"]').click();
+        } else {
+            showAlert(response.message || 'Registration failed', 'error');
+        }
+    }
+
+    // ========== SALARY FUNCTIONS ==========
+    async function openSalaryModal(teacher) {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const year = new Date().getFullYear();
+        const select = document.getElementById('salaryMonth');
+        select.innerHTML = months.map(m => `<option value="${m}|${year}">${m} ${year}</option>`).join('');
+        
+        document.getElementById('customSalaryAmount').value = '';
+        document.getElementById('payAmount').value = '';
+        document.getElementById('salaryResult').style.display = 'none';
+        
+        const genBtn = document.getElementById('generateSalaryBtn');
+        const newGen = genBtn.cloneNode(true);
+        genBtn.parentNode.replaceChild(newGen, genBtn);
+        newGen.addEventListener('click', () => generateSalary(teacher.teacherId));
+        
+        const payBtn = document.getElementById('paySalaryBtn');
+        const newPay = payBtn.cloneNode(true);
+        payBtn.parentNode.replaceChild(newPay, payBtn);
+        newPay.addEventListener('click', () => paySalary(teacher.teacherId));
+        
+        document.getElementById('salaryModal').classList.add('active');
+    }
+
+    async function generateSalary(teacherId) {
+        const selected = document.getElementById('salaryMonth').value;
+        if (!selected) { showAlert('Select month', 'error'); return; }
+        const [month, year] = selected.split('|');
+        const customSalary = document.getElementById('customSalaryAmount').value;
+        
+        const response = await apiCall(`/teachers/${teacherId}/salary/generate`, {
+            method: 'POST',
+            body: JSON.stringify({ month, year: parseInt(year), customSalary: customSalary ? parseInt(customSalary) : null })
+        });
+        if (response.success) {
+            document.getElementById('salaryResult').innerHTML = `<strong>Generated:</strong> Base:₹${response.data.baseSalary} | Working:${response.data.workingDays} | Present:${response.data.presentDays} | <strong>Amount:₹${response.data.calculatedAmount}</strong>`;
+            document.getElementById('salaryResult').style.display = 'block';
+            showAlert('Salary generated!', 'success');
+        } else {
+            showAlert(response.message || 'Failed', 'error');
+        }
+    }
+
+    async function paySalary(teacherId) {
+        const selected = document.getElementById('salaryMonth').value;
+        if (!selected) { showAlert('Select month', 'error'); return; }
+        const [month, year] = selected.split('|');
+        const paidAmount = parseInt(document.getElementById('payAmount').value);
+        if (!paidAmount || paidAmount <= 0) { showAlert('Enter valid amount', 'error'); return; }
+        
+        const response = await apiCall(`/teachers/${teacherId}/salary/pay`, {
+            method: 'POST',
+            body: JSON.stringify({ month, year: parseInt(year), paidAmount, paymentMode: document.getElementById('paymentMode').value, remarks: document.getElementById('paymentRemarks').value })
+        });
+        if (response.success) {
+            showAlert('Salary paid!', 'success');
+            closeModal('salaryModal');
+            await loadTeachers();
+            await showTeacherDashboard(teacherId);
+        } else {
+            showAlert(response.message || 'Failed', 'error');
+        }
+    }
+
+    // ========== ATTENDANCE ==========
+    async function openAttendanceModal(teacherId) {
+        document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('attendanceStatus').value = 'present';
+        document.getElementById('checkInTime').value = '';
+        document.getElementById('checkOutTime').value = '';
+        document.getElementById('attendancePhoto').value = '';
+        document.getElementById('attendancePhotoPreview').style.display = 'none';
+        
+        const saveBtn = document.getElementById('saveAttendanceBtn');
+        const newBtn = saveBtn.cloneNode(true);
+        saveBtn.parentNode.replaceChild(newBtn, saveBtn);
+        newBtn.addEventListener('click', () => saveAttendance(teacherId));
+        
+        document.getElementById('attendanceModal').classList.add('active');
+    }
+
+    async function saveAttendance(teacherId) {
+        const date = document.getElementById('attendanceDate').value;
+        if (!date) { showAlert('Select date', 'error'); return; }
+        
+        const response = await apiCall(`/teachers/${teacherId}/attendance`, {
+            method: 'POST',
+            body: JSON.stringify({
+                date: date,
+                status: document.getElementById('attendanceStatus').value,
+                checkIn: document.getElementById('checkInTime').value,
+                checkOut: document.getElementById('checkOutTime').value,
+                photo: document.getElementById('attendancePhoto').value,
+                remarks: document.getElementById('attendanceRemarks').value
+            })
+        });
+        if (response.success) {
+            showAlert('Attendance marked!', 'success');
+            closeModal('attendanceModal');
+            await loadTeachers();
+            await showTeacherDashboard(teacherId);
+        } else {
+            showAlert(response.message || 'Failed', 'error');
+        }
+    }
+
+    // ========== NOTICE ==========
+    async function openNoticeModal() {
+        const select = document.getElementById('noticeTo');
+        if (select) {
+            select.innerHTML = '<option value="all">All Teachers</option>' + (teachersData || []).map(t => `<option value="${t.teacherId}">${t.personal?.name}</option>`).join('');
+        }
+        document.getElementById('noticeTitle').value = '';
+        document.getElementById('noticeMessage').value = '';
+        document.getElementById('noticeModal').classList.add('active');
+    }
+
+    async function sendNotice() {
+        const response = await apiCall('/teachers/notice', {
+            method: 'POST',
+            body: JSON.stringify({
+                teacherId: document.getElementById('noticeTo').value === 'all' ? null : document.getElementById('noticeTo').value,
+                title: document.getElementById('noticeTitle').value,
+                message: document.getElementById('noticeMessage').value,
+                from: 'admin'
+            })
+        });
+        if (response.success) {
+            showAlert('Notice sent!', 'success');
+            closeModal('noticeModal');
+            await loadNotices();
+        } else {
+            showAlert(response.message || 'Failed to send notice', 'error');
+        }
+    }
+
+    // ========== FORM RESET & HELPERS ==========
+    function resetForm() {
+        const form = document.getElementById('teacherForm');
+        if (form) form.reset();
+        const joinDate = document.getElementById('joiningDate');
+        if (joinDate) joinDate.value = new Date().toISOString().split('T')[0];
+        document.getElementById('aadharNumber').disabled = false;
+        clearImage('photo', 'photoPreview');
+        clearImage('aadharCopy', 'aadharPreview');
+        clearImage('qualificationDoc', 'qualificationPreview');
+        document.querySelectorAll('#subjectsGroup input').forEach(cb => cb.checked = false);
+        document.querySelectorAll('#classesGroup input').forEach(cb => cb.checked = false);
+        document.querySelectorAll('#boardsGroup input').forEach(cb => cb.checked = false);
+    }
+
+    function cancelEdit() {
+        currentEditTeacherId = null;
+        document.getElementById('formTitle').innerText = 'Register New Teacher';
+        document.getElementById('registerTeacherBtn').style.display = 'inline-flex';
+        document.getElementById('updateTeacherBtn').style.display = 'none';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+        resetForm();
+    }
+
+    function clearImage(fieldId, previewId) {
+        document.getElementById(fieldId).value = '';
+        const preview = document.getElementById(previewId);
+        if (preview) { preview.style.display = 'none'; preview.src = ''; }
+    }
+
+    async function captureImage(fieldId, previewId) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.onchange = async (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const compressed = await compressImage(e.target.files[0]);
+                document.getElementById(fieldId).value = compressed;
+                const preview = document.getElementById(previewId);
+                if (preview) { preview.src = compressed; preview.style.display = 'block'; }
+                showAlert('Image captured!', 'success');
+            }
+        };
+        input.click();
+    }
+
+    async function uploadImage(fieldId, previewId) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+            if (e.target.files && e.target.files[0]) {
+                const compressed = await compressImage(e.target.files[0]);
+                document.getElementById(fieldId).value = compressed;
+                const preview = document.getElementById(previewId);
+                if (preview) { preview.src = compressed; preview.style.display = 'block'; }
+                showAlert('Image uploaded!', 'success');
+            }
+        };
+        input.click();
+    }
+
+    async function compressImage(file, maxSizeKB = 15) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    let width = img.width, height = img.height, quality = 0.7;
+                    const maxDim = 200;
+                    if (width > maxDim) { height = (height * maxDim) / width; width = maxDim; }
+                    if (height > maxDim) { width = (width * maxDim) / height; height = maxDim; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    let result = canvas.toDataURL('image/jpeg', quality);
+                    while (result.length > maxSizeKB * 1024 && quality > 0.1) { quality -= 0.1; result = canvas.toDataURL('image/jpeg', quality); }
+                    resolve(result);
+                };
+            };
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/login.html';
+    }
+
+    // ========== INITIALIZATION ==========
+    async function init() {
+        await loadTeachers();
+        await loadLeftTeachers();
+        await loadNotices();
+        
+        // Set joining date
+        const joiningDateInput = document.getElementById('joiningDate');
+        if (joiningDateInput) joiningDateInput.value = new Date().toISOString().split('T')[0];
+        
+        // Setup event listeners
+        setupEventListeners();
+    }
+
+    function setupEventListeners() {
+        document.querySelectorAll('.main-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.toggle('active', pane.dataset.pane === tab);
+                });
+                if (tab === 'new-teacher') cancelEdit();
+                if (tab === 'notices') loadNotices();
+            });
+        });
+        
+        document.getElementById('filterSubject')?.addEventListener('change', () => renderTeachersGrid());
+        document.getElementById('filterClass')?.addEventListener('change', () => renderTeachersGrid());
+        document.getElementById('filterBoard')?.addEventListener('change', () => renderTeachersGrid());
+        document.getElementById('searchTeacher')?.addEventListener('input', () => renderTeachersGrid());
+        document.getElementById('searchLeft')?.addEventListener('input', () => renderLeftTeachersGrid());
+        document.getElementById('refreshBtn')?.addEventListener('click', () => loadTeachers());
+        document.getElementById('backToMainBtn')?.addEventListener('click', () => window.location.href = '/management.html');
+        document.getElementById('logoutBtn')?.addEventListener('click', () => logout());
+        
+        document.getElementById('registerTeacherBtn')?.addEventListener('click', () => registerTeacher());
+        document.getElementById('updateTeacherBtn')?.addEventListener('click', () => registerTeacher());
+        document.getElementById('cancelEditBtn')?.addEventListener('click', () => cancelEdit());
+        document.getElementById('resetFormBtn')?.addEventListener('click', () => resetForm());
+        document.getElementById('sendNoticeBtn')?.addEventListener('click', () => openNoticeModal());
+        document.getElementById('sendNoticeConfirmBtn')?.addEventListener('click', () => sendNotice());
+        
+        // Modal close buttons
+        document.getElementById('closeDashboardModal')?.addEventListener('click', () => closeModal('dashboardModal'));
+        document.getElementById('closeAttendanceModal')?.addEventListener('click', () => closeModal('attendanceModal'));
+        document.getElementById('closeSalaryModal')?.addEventListener('click', () => closeModal('salaryModal'));
+        document.getElementById('closeNoticeModal')?.addEventListener('click', () => closeModal('noticeModal'));
+        document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editTeacherModal'));
+        document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editTeacherModal'));
+        document.getElementById('cancelAttendanceBtn')?.addEventListener('click', () => closeModal('attendanceModal'));
+        document.getElementById('cancelSalaryBtn')?.addEventListener('click', () => closeModal('salaryModal'));
+        document.getElementById('cancelNoticeBtn')?.addEventListener('click', () => closeModal('noticeModal'));
+        document.getElementById('closeDocViewer')?.addEventListener('click', () => closeModal('documentViewerModal'));
+        document.getElementById('closeDocViewerBtn')?.addEventListener('click', () => closeModal('documentViewerModal'));
+        
+        // Image capture/upload
+        document.getElementById('capturePhotoBtn')?.addEventListener('click', () => captureImage('photo', 'photoPreview'));
+        document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => uploadImage('photo', 'photoPreview'));
+        document.getElementById('clearPhotoBtn')?.addEventListener('click', () => clearImage('photo', 'photoPreview'));
+        document.getElementById('captureAadharBtn')?.addEventListener('click', () => captureImage('aadharCopy', 'aadharPreview'));
+        document.getElementById('uploadAadharBtn')?.addEventListener('click', () => uploadImage('aadharCopy', 'aadharPreview'));
+        document.getElementById('clearAadharBtn')?.addEventListener('click', () => clearImage('aadharCopy', 'aadharPreview'));
+        document.getElementById('captureQualificationBtn')?.addEventListener('click', () => captureImage('qualificationDoc', 'qualificationPreview'));
+        document.getElementById('uploadQualificationBtn')?.addEventListener('click', () => uploadImage('qualificationDoc', 'qualificationPreview'));
+        document.getElementById('clearQualificationBtn')?.addEventListener('click', () => clearImage('qualificationDoc', 'qualificationPreview'));
+    }
+
+    // ========== STYLES INJECTION ==========
     const styles = `
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -296,6 +1067,15 @@
             .filter-bar { flex-direction: column; }
         }
     `;
+
+    function injectStyles() {
+        if (!document.querySelector('#tms-styles')) {
+            const style = document.createElement('style');
+            style.id = 'tms-styles';
+            style.textContent = styles;
+            document.head.appendChild(style);
+        }
+    }
 
     function getHTMLTemplate() {
         return `
@@ -540,828 +1320,28 @@
         `;
     }
 
-     class TeacherManagementSystem {
-        constructor(containerId = 'app') {
-            this.containerId = containerId;
-            this.token = localStorage.getItem('adminToken');
-            if (!this.token) {
-                window.location.href = '/login.html';
-                return;
-            }
-            this.init();
-        }
-
-        async init() {
-            this.injectStyles();
-            this.injectHTML();
-            this.attachEventListeners();
-            await this.loadTeachers();
-            await this.loadLeftTeachers();
-            await this.loadNotices();
-            const joiningDateInput = document.getElementById('joiningDate');
-            if (joiningDateInput) joiningDateInput.value = new Date().toISOString().split('T')[0];
-        }
-
-        injectStyles() {
-            if (!document.querySelector('#tms-styles')) {
-                const style = document.createElement('style');
-                style.id = 'tms-styles';
-                style.textContent = styles;
-                document.head.appendChild(style);
-            }
-        }
-
-        injectHTML() {
-            const app = document.getElementById(this.containerId);
-            if (app && !document.querySelector('.tms-wrapper')) {
-                app.insertAdjacentHTML('beforeend', getHTMLTemplate());
-            }
-        }
-
-        attachEventListeners() {
-            document.querySelectorAll('.main-tab-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const tab = btn.dataset.tab;
-                    document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.querySelectorAll('.tab-pane').forEach(pane => {
-                        pane.classList.toggle('active', pane.dataset.pane === tab);
-                    });
-                    if (tab === 'new-teacher') this.cancelEdit();
-                    if (tab === 'notices') this.loadNotices();
-                });
-            });
-            
-            document.getElementById('closeDashboardModal')?.addEventListener('click', () => closeModal('dashboardModal'));
-            document.getElementById('closeAttendanceModal')?.addEventListener('click', () => closeModal('attendanceModal'));
-            document.getElementById('closeSalaryModal')?.addEventListener('click', () => closeModal('salaryModal'));
-            document.getElementById('closeNoticeModal')?.addEventListener('click', () => closeModal('noticeModal'));
-            document.getElementById('closeEditModal')?.addEventListener('click', () => closeModal('editTeacherModal'));
-            document.getElementById('cancelEditModalBtn')?.addEventListener('click', () => closeModal('editTeacherModal'));
-            document.getElementById('cancelAttendanceBtn')?.addEventListener('click', () => closeModal('attendanceModal'));
-            document.getElementById('cancelSalaryBtn')?.addEventListener('click', () => closeModal('salaryModal'));
-            document.getElementById('cancelNoticeBtn')?.addEventListener('click', () => closeModal('noticeModal'));
-            document.getElementById('closeDocViewer')?.addEventListener('click', () => closeModal('documentViewerModal'));
-            document.getElementById('closeDocViewerBtn')?.addEventListener('click', () => closeModal('documentViewerModal'));
-            
-            document.getElementById('filterSubject')?.addEventListener('change', () => this.renderTeachersGrid());
-            document.getElementById('filterClass')?.addEventListener('change', () => this.renderTeachersGrid());
-            document.getElementById('filterBoard')?.addEventListener('change', () => this.renderTeachersGrid());
-            document.getElementById('searchTeacher')?.addEventListener('input', () => this.renderTeachersGrid());
-            document.getElementById('searchLeft')?.addEventListener('input', () => this.renderLeftTeachersGrid());
-            document.getElementById('refreshBtn')?.addEventListener('click', () => this.loadTeachers());
-            document.getElementById('backToMainBtn')?.addEventListener('click', () => window.location.href = '/management.html');
-            document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
-            
-            document.getElementById('registerTeacherBtn')?.addEventListener('click', () => this.registerTeacher());
-            document.getElementById('updateTeacherBtn')?.addEventListener('click', () => this.updateTeacher());
-            document.getElementById('cancelEditBtn')?.addEventListener('click', () => this.cancelEdit());
-            document.getElementById('resetFormBtn')?.addEventListener('click', () => this.resetForm());
-            document.getElementById('sendNoticeBtn')?.addEventListener('click', () => this.openNoticeModal());
-            document.getElementById('sendNoticeConfirmBtn')?.addEventListener('click', () => this.sendNotice());
-            document.getElementById('saveEditModalBtn')?.addEventListener('click', () => this.saveEditFromModal());
-            
-            document.getElementById('capturePhotoBtn')?.addEventListener('click', () => this.captureImage('photo', 'photoPreview'));
-            document.getElementById('uploadPhotoBtn')?.addEventListener('click', () => this.uploadImage('photo', 'photoPreview'));
-            document.getElementById('clearPhotoBtn')?.addEventListener('click', () => this.clearImage('photo', 'photoPreview'));
-            document.getElementById('captureAadharBtn')?.addEventListener('click', () => this.captureImage('aadharCopy', 'aadharPreview'));
-            document.getElementById('uploadAadharBtn')?.addEventListener('click', () => this.uploadImage('aadharCopy', 'aadharPreview'));
-            document.getElementById('clearAadharBtn')?.addEventListener('click', () => this.clearImage('aadharCopy', 'aadharPreview'));
-            document.getElementById('captureQualificationBtn')?.addEventListener('click', () => this.captureImage('qualificationDoc', 'qualificationPreview'));
-            document.getElementById('uploadQualificationBtn')?.addEventListener('click', () => this.uploadImage('qualificationDoc', 'qualificationPreview'));
-            document.getElementById('clearQualificationBtn')?.addEventListener('click', () => this.clearImage('qualificationDoc', 'qualificationPreview'));
-        }
-
-        async apiCall(endpoint, options = {}) {
-            try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                    ...options,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.token}`,
-                        ...options.headers
-                    }
-                });
-                const data = await response.json();
-                if (!data.success && response.status === 401) {
-                    localStorage.removeItem('adminToken');
-                    window.location.href = '/login.html';
-                }
-                return data;
-            } catch (err) {
-                return { success: false, message: err.message };
-            }
-        }
-
-        async loadTeachers() {
-            const response = await this.apiCall('/teachers');
-            if (response.success && response.data && response.data.length > 0) {
-                this.teachersData = response.data;
-                localStorage.setItem('activeTeachers', JSON.stringify(response.data));
-            } else {
-                const stored = localStorage.getItem('activeTeachers');
-                this.teachersData = stored ? JSON.parse(stored) : [];
-            }
-            this.renderTeachersGrid();
-        }
-
-        async loadLeftTeachers() {
-            const response = await this.apiCall('/teachers/left');
-            if (response.success && response.data && response.data.length > 0) {
-                this.leftTeachersData = response.data;
-                localStorage.setItem('leftTeachers', JSON.stringify(response.data));
-            } else {
-                const stored = localStorage.getItem('leftTeachers');
-                this.leftTeachersData = stored ? JSON.parse(stored) : [];
-            }
-            this.renderLeftTeachersGrid();
-        }
-
-        async loadNotices() {
-            const response = await this.apiCall('/notices');
-            if (response.success) this.renderNotices(response.data || []);
-        }
-
-        renderTeachersGrid() {
-            const subject = document.getElementById('filterSubject')?.value || 'all';
-            const classVal = document.getElementById('filterClass')?.value || 'all';
-            const board = document.getElementById('filterBoard')?.value || 'all';
-            const search = document.getElementById('searchTeacher')?.value.toLowerCase() || '';
-            
-            let filtered = this.teachersData || [];
-            if (subject !== 'all') filtered = filtered.filter(t => t.professional?.subjects?.includes(subject));
-            if (classVal !== 'all') filtered = filtered.filter(t => t.professional?.classes?.includes(classVal));
-            if (board !== 'all') filtered = filtered.filter(t => t.professional?.boards?.includes(board));
-            if (search) filtered = filtered.filter(t => (t.teacherId || '').includes(search) || (t.personal?.name || '').toLowerCase().includes(search));
-            
-            const grid = document.getElementById('teachersGrid');
-            if (!grid) return;
-            if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state">📭 No teachers found</div>'; return; }
-            
-            grid.innerHTML = filtered.map(t => `
-                <div class="teacher-card" data-id="${t.teacherId}">
-                    <div class="teacher-card-header">
-                        <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-card-img" onerror="this.src='${DEFAULT_PHOTO}'">
-                        <div class="teacher-card-name">${t.personal?.name || 'N/A'}</div>
-                        <div class="teacher-card-id">${t.teacherId || '-'}</div>
-                    </div>
-                    <div class="teacher-card-body">
-                        <div class="teacher-card-info"><span>📞 Mobile:</span><span>${t.personal?.mobile || '-'}</span></div>
-                        <div class="teacher-card-info"><span>📚 Subjects:</span><span>${(t.professional?.subjects || []).slice(0,2).join(', ')}${(t.professional?.subjects || []).length > 2 ? '...' : ''}</span></div>
-                        <div class="teacher-card-info"><span>🏫 Classes:</span><span>${(t.professional?.classes || []).slice(0,2).join(', ')}${(t.professional?.classes || []).length > 2 ? '...' : ''}</span></div>
-                        <div class="teacher-card-info"><span>🎓 Boards:</span><span>${(t.professional?.boards || []).slice(0,2).join(', ')}${(t.professional?.boards || []).length > 2 ? '...' : ''}</span></div>
-                        <div class="teacher-card-info"><span>💰 Salary:</span><span>₹${t.salary?.defaultSalary || 0}</span></div>
-                        <div class="teacher-card-info"><span>Status:</span><span>${t.status?.isBlocked ? '<span class="badge-blocked">Blocked</span>' : '<span class="badge-active">Active</span>'}</span></div>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.querySelectorAll('#teachersGrid .teacher-card').forEach(card => {
-                card.addEventListener('click', () => this.showTeacherDashboard(card.dataset.id));
-            });
-        }
-
-        renderLeftTeachersGrid() {
-            const search = document.getElementById('searchLeft')?.value.toLowerCase() || '';
-            let filtered = this.leftTeachersData || [];
-            if (search) filtered = filtered.filter(t => (t.teacherId || '').includes(search) || (t.personal?.name || '').toLowerCase().includes(search));
-            
-            const grid = document.getElementById('leftTeachersGrid');
-            if (!grid) return;
-            if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state">📦 No left teachers</div>'; return; }
-            
-            grid.innerHTML = filtered.map(t => `
-                <div class="teacher-card" data-id="${t.teacherId}">
-                    <div class="teacher-card-header">
-                        <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-card-img" onerror="this.src='${DEFAULT_PHOTO}'">
-                        <div class="teacher-card-name">${t.personal?.name || 'N/A'}</div>
-                        <div class="teacher-card-id">${t.teacherId || '-'}</div>
-                    </div>
-                    <div class="teacher-card-body">
-                        <div class="teacher-card-info"><span>📞 Mobile:</span><span>${t.personal?.mobile || '-'}</span></div>
-                        <div class="teacher-card-info"><span>📚 Subjects:</span><span>${(t.professional?.subjects || []).slice(0,2).join(', ')}</span></div>
-                        <div class="teacher-card-info"><span>📅 Left:</span><span>${formatDate(t.status?.leavingDate)}</span></div>
-                        <div class="teacher-card-info"><span>📝 Reason:</span><span>${t.status?.leavingReason || '-'}</span></div>
-                        <div class="teacher-card-info"><span> </span><span><button class="btn btn-success btn-sm rejoin-teacher-btn" data-id="${t.teacherId}">🔄 Rejoin Teacher</button></span></div>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.querySelectorAll('.rejoin-teacher-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.rejoinTeacher(btn.dataset.id);
-                });
-            });
-            
-            document.querySelectorAll('#leftTeachersGrid .teacher-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('rejoin-teacher-btn')) {
-                        this.showTeacherDashboard(card.dataset.id, true);
-                    }
-                });
-            });
-        }
-
-        renderNotices(notices) {
-            const container = document.getElementById('noticesList');
-            if (!container) return;
-            if (!notices.length) { container.innerHTML = '<div class="empty-state">📭 No notices</div>'; return; }
-            
-            container.innerHTML = notices.map(n => `
-                <div style="background:#e8f5e9; padding:15px; border-radius:10px; margin-bottom:10px; border-left:4px solid #28a745">
-                    <strong>${n.title}</strong> <small>${formatDate(n.sentAt)}</small>
-                    <div style="margin-top:8px;">${n.message}</div>
-                    <div style="margin-top:8px; font-size:0.8rem;">From: ${n.from === 'admin' ? 'Admin' : n.teacherName}</div>
-                </div>
-            `).join('');
-        }
-
-        async showTeacherDashboard(teacherId) {
-            const response = await this.apiCall(`/teachers/${teacherId}`);
-            if (!response.success) { showAlert('Teacher not found', 'error'); return; }
-            currentViewTeacher = response.data;
-            this.renderDashboard(currentViewTeacher);
-            document.getElementById('dashboardModal').classList.add('active');
-        }
-
-        renderDashboard(t) {
-            const body = document.getElementById('dashboardBody');
-            const footer = document.getElementById('dashboardFooter');
-            if (!body) return;
-            
-            const salaryPayments = t.salaryPayments || [];
-            const totalPaid = salaryPayments.reduce((s, p) => s + (p.paidAmount || 0), 0);
-            const totalDue = salaryPayments.reduce((s, p) => s + (p.dueAmount || 0), 0);
-            const attendance = t.attendance || [];
-            const attPercent = attendance.length ? Math.round((attendance.filter(a => a.status === 'present').length / attendance.length) * 100) : 0;
-            
-            body.innerHTML = `
-                <div class="dashboard-container">
-                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                       <img src="${t.personal?.photo || DEFAULT_PHOTO}" class="teacher-photo-large" onclick="window.viewDocumentImage('${t.personal?.photo || DEFAULT_PHOTO}', 'Photo')">
-                        <div style="flex:1;">
-                            <div class="info-row"><strong>${t.personal?.name}</strong> (${t.teacherId})</div>
-                            <div class="info-row">📞 ${t.personal?.mobile} | ✉️ ${t.personal?.email}</div>
-                            <div class="info-row">🎓 ${t.personal?.gender} | 📅 DOB: ${formatDate(t.personal?.dob)}</div>
-                            <div class="info-row">📚 ${t.documents?.qualificationName} | 🎓 ${t.professional?.experience} years</div>
-                            <div class="info-row">🏠 ${t.personal?.currentAddress}</div>
-                            <div class="info-row">🏦 Bank: ${t.bankDetails?.bankName || '-'} | A/c: ${t.bankDetails?.accountNumber || '-'}</div>
-                        </div>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card" style="background:#28a745;color:white;"><h3>₹${totalPaid.toLocaleString()}</h3><p>Paid</p></div>
-                        <div class="stat-card" style="background:#dc3545;color:white;"><h3>₹${totalDue.toLocaleString()}</h3><p>Due</p></div>
-                        <div class="stat-card" style="background:#17a2b8;color:white;"><h3>${attPercent}%</h3><p>Attendance</p></div>
-                    </div>
-                    <div class="chart-container"><div class="chart-title">📚 Subjects</div><div>${(t.professional?.subjects || []).map(s => `<span style="background:#28a74520;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${s}</span>`).join('')}</div></div>
-                    <div class="chart-container"><div class="chart-title">🏫 Classes</div><div>${(t.professional?.classes || []).map(c => `<span style="background:#17a2b820;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${c}</span>`).join('')}</div></div>
-                    <div class="chart-container"><div class="chart-title">🎓 Boards</div><div>${(t.professional?.boards || []).map(b => `<span style="background:#ffc10720;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${b}</span>`).join('')}</div></div>
-                    <div class="chart-container"><div class="chart-title">💰 Salary History</div><table class="data-table"><thead><tr><th>Month</th><th>Base</th><th>Calculated</th><th>Paid</th><th>Status</th></tr></thead><tbody>${salaryPayments.map(s => `<tr><td>${s.month} ${s.year}</td><td>₹${s.baseSalary}</td><td>₹${s.calculatedAmount}</td><td>₹${s.paidAmount}</td><td>${s.status === 'paid' ? '✅' : s.status === 'partial' ? '⚠️' : '❌'}</td></tr>`).join('') || '<tr><td colspan="5">No records</td></tr>'}</tbody></table></div>
-                </div>
-            `;
-            
-            footer.innerHTML = `
-                <button class="btn btn-info" id="markAttendanceBtn">📅 Attendance</button>
-                <button class="btn btn-success" id="manageSalaryBtn">💰 Salary</button>
-                <button class="btn btn-primary" id="editTeacherDashboardBtn">✏️ Edit</button>
-                ${!t.status?.isBlocked ? '<button class="btn btn-warning" id="blockTeacherBtn">🔴 Block</button>' : '<button class="btn btn-success" id="unblockTeacherBtn">🟢 Unblock</button>'}
-                <button class="btn btn-danger" id="moveToLeftBtn">📦 Move to Left</button>
-                <button class="btn btn-secondary" id="closeDashboardFooterBtn">Close</button>
-            `;
-            
-            document.getElementById('markAttendanceBtn')?.addEventListener('click', () => this.openAttendanceModal(t.teacherId));
-            document.getElementById('manageSalaryBtn')?.addEventListener('click', () => this.openSalaryModal(t));
-            document.getElementById('editTeacherDashboardBtn')?.addEventListener('click', () => this.openEditTeacherPopup(t));
-            document.getElementById('blockTeacherBtn')?.addEventListener('click', () => this.blockTeacher(t.teacherId));
-            document.getElementById('unblockTeacherBtn')?.addEventListener('click', () => this.unblockTeacher(t.teacherId));
-            document.getElementById('moveToLeftBtn')?.addEventListener('click', () => this.moveToLeft(t.teacherId));
-            document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
-        }
-
-        openEditTeacherPopup(teacher) {
-            currentEditTeacherId = teacher.teacherId;
-            document.getElementById('editTeacherId').innerText = teacher.teacherId;
-            
-            const editForm = `
-                <form id="editTeacherForm">
-                    <div class="section-title">👤 Personal Info</div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Full Name</label><input type="text" id="editFullName" value="${teacher.personal?.name || ''}"></div>
-                        <div class="form-group"><label>Aadhar</label><input type="text" value="${teacher.teacherId || ''}" disabled></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>DOB</label><input type="date" id="editDob" value="${teacher.personal?.dob ? teacher.personal.dob.split('T')[0] : ''}"></div>
-                        <div class="form-group"><label>Gender</label><select id="editGender">${genders.map(g => `<option ${teacher.personal?.gender === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Mobile</label><input type="text" id="editMobile" value="${teacher.personal?.mobile || ''}"></div>
-                        <div class="form-group"><label>Email</label><input type="email" id="editEmail" value="${teacher.personal?.email || ''}"></div>
-                    </div>
-                    <div class="form-group"><label>Address</label><textarea id="editAddress" rows="2">${teacher.personal?.currentAddress || ''}</textarea></div>
-                    <div class="form-group"><label>Permanent Address</label><textarea id="editPermanentAddress" rows="2">${teacher.personal?.permanentAddress || ''}</textarea></div>
-                    
-                    <div class="section-title">📚 Professional</div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Qualification</label><input type="text" id="editQualification" value="${teacher.documents?.qualificationName || ''}"></div>
-                        <div class="form-group"><label>Experience</label><input type="number" id="editExperience" value="${teacher.professional?.experience || 0}"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Joining Date</label><input type="date" id="editJoiningDate" value="${teacher.professional?.joiningDate ? teacher.professional.joiningDate.split('T')[0] : ''}"></div>
-                        <div class="form-group"><label>Salary</label><input type="number" id="editSalary" value="${teacher.salary?.defaultSalary || 0}"></div>
-                    </div>
-                    
-                    <div class="section-title">📖 Subjects</div>
-                    <div class="checkbox-group" id="editSubjectsGroup">${subjectsList.map(s => `<label><input type="checkbox" value="${s}" ${(teacher.professional?.subjects || []).includes(s) ? 'checked' : ''}> ${s}</label>`).join('')}</div>
-                    
-                    <div class="section-title">🏫 Classes</div>
-                    <div class="checkbox-group" id="editClassesGroup">${classesList.map(c => `<label><input type="checkbox" value="${c}" ${(teacher.professional?.classes || []).includes(c) ? 'checked' : ''}> ${c}</label>`).join('')}</div>
-                    
-                    <div class="section-title">🎓 Boards</div>
-                    <div class="checkbox-group" id="editBoardsGroup">${boardsList.map(b => `<label><input type="checkbox" value="${b}" ${(teacher.professional?.boards || []).includes(b) ? 'checked' : ''}> ${b}</label>`).join('')}</div>
-                    
-                    <div class="section-title">🏦 Bank (Optional)</div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Bank Name</label><input type="text" id="editBankName" value="${teacher.bankDetails?.bankName || ''}"></div>
-                        <div class="form-group"><label>Account No</label><input type="text" id="editAccountNo" value="${teacher.bankDetails?.accountNumber || ''}"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>IFSC</label><input type="text" id="editIfsc" value="${teacher.bankDetails?.ifsc || ''}"></div>
-                        <div class="form-group"><label>UPI ID</label><input type="text" id="editUpiId" value="${teacher.bankDetails?.upiId || ''}"></div>
-                    </div>
-                </form>
-            `;
-            
-            document.getElementById('editModalBody').innerHTML = editForm;
-            document.getElementById('editTeacherModal').classList.add('active');
-        }
-
-        async saveEditFromModal() {
-            const selectedSubjects = Array.from(document.querySelectorAll('#editSubjectsGroup input:checked')).map(cb => cb.value);
-            const selectedClasses = Array.from(document.querySelectorAll('#editClassesGroup input:checked')).map(cb => cb.value);
-            const selectedBoards = Array.from(document.querySelectorAll('#editBoardsGroup input:checked')).map(cb => cb.value);
-            
-            const teacherData = {
-                personal: {
-                    name: document.getElementById('editFullName').value,
-                    dob: document.getElementById('editDob').value,
-                    gender: document.getElementById('editGender').value,
-                    mobile: document.getElementById('editMobile').value,
-                    email: document.getElementById('editEmail').value,
-                    currentAddress: document.getElementById('editAddress').value,
-                    permanentAddress: document.getElementById('editPermanentAddress').value
-                },
-                documents: { qualificationName: document.getElementById('editQualification').value },
-                professional: {
-                    joiningDate: document.getElementById('editJoiningDate').value,
-                    experience: parseInt(document.getElementById('editExperience').value),
-                    subjects: selectedSubjects,
-                    classes: selectedClasses,
-                    boards: selectedBoards
-                },
-                salary: { defaultSalary: parseInt(document.getElementById('editSalary').value) },
-                bankDetails: {
-                    bankName: document.getElementById('editBankName').value,
-                    accountNumber: document.getElementById('editAccountNo').value,
-                    ifsc: document.getElementById('editIfsc').value,
-                    upiId: document.getElementById('editUpiId').value
-                }
-            };
-            
-            const response = await this.apiCall(`/teachers/${currentEditTeacherId}`, { method: 'PUT', body: JSON.stringify(teacherData) });
-            if (response.success) {
-                showAlert('✅ Teacher updated!', 'success');
-                closeModal('editTeacherModal');
-                await this.loadTeachers();
-            } else {
-                showAlert(response.message || 'Update failed', 'error');
-            }
-        }
-
-        openAttendanceModal(teacherId) {
-            document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('attendanceStatus').value = 'present';
-            document.getElementById('checkInTime').value = '';
-            document.getElementById('checkOutTime').value = '';
-            document.getElementById('attendancePhoto').value = '';
-            document.getElementById('attendancePhotoPreview').style.display = 'none';
-            
-            const saveBtn = document.getElementById('saveAttendanceBtn');
-            const newBtn = saveBtn.cloneNode(true);
-            saveBtn.parentNode.replaceChild(newBtn, saveBtn);
-            newBtn.addEventListener('click', () => this.saveAttendance(teacherId));
-            
-            document.getElementById('captureAttendancePhotoBtn')?.addEventListener('click', () => this.captureImage('attendancePhoto', 'attendancePhotoPreview'));
-            document.getElementById('clearAttendancePhotoBtn')?.addEventListener('click', () => this.clearImage('attendancePhoto', 'attendancePhotoPreview'));
-            document.getElementById('attendanceModal').classList.add('active');
-        }
-
-        async saveAttendance(teacherId) {
-            const date = document.getElementById('attendanceDate').value;
-            if (!date) { showAlert('Select date', 'error'); return; }
-            
-            const response = await this.apiCall(`/teachers/${teacherId}/attendance`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    date, status: document.getElementById('attendanceStatus').value,
-                    checkIn: document.getElementById('checkInTime').value,
-                    checkOut: document.getElementById('checkOutTime').value,
-                    photo: document.getElementById('attendancePhoto').value,
-                    remarks: document.getElementById('attendanceRemarks').value
-                })
-            });
-            if (response.success) {
-                showAlert('Attendance marked!', 'success');
-                closeModal('attendanceModal');
-                await this.loadTeachers();
-                await this.showTeacherDashboard(teacherId);
-            } else {
-                showAlert(response.message || 'Failed', 'error');
-            }
-        }
-
-        openSalaryModal(teacher) {
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const year = new Date().getFullYear();
-            const select = document.getElementById('salaryMonth');
-            select.innerHTML = months.map(m => `<option value="${m}|${year}">${m} ${year}</option>`).join('');
-            
-            document.getElementById('customSalaryAmount').value = '';
-            document.getElementById('payAmount').value = '';
-            document.getElementById('salaryResult').style.display = 'none';
-            
-            const genBtn = document.getElementById('generateSalaryBtn');
-            const newGen = genBtn.cloneNode(true);
-            genBtn.parentNode.replaceChild(newGen, genBtn);
-            newGen.addEventListener('click', () => this.generateSalary(teacher.teacherId));
-            
-            const payBtn = document.getElementById('paySalaryBtn');
-            const newPay = payBtn.cloneNode(true);
-            payBtn.parentNode.replaceChild(newPay, payBtn);
-            newPay.addEventListener('click', () => this.paySalary(teacher.teacherId));
-            
-            document.getElementById('salaryModal').classList.add('active');
-        }
-
-        async generateSalary(teacherId) {
-            const selected = document.getElementById('salaryMonth').value;
-            if (!selected) { showAlert('Select month', 'error'); return; }
-            const [month, year] = selected.split('|');
-            const customSalary = document.getElementById('customSalaryAmount').value;
-            
-            const response = await this.apiCall(`/teachers/${teacherId}/salary/generate`, {
-                method: 'POST',
-                body: JSON.stringify({ month, year: parseInt(year), customSalary: customSalary ? parseInt(customSalary) : null })
-            });
-            if (response.success) {
-                document.getElementById('salaryResult').innerHTML = `<strong>Generated:</strong> Base:₹${response.data.baseSalary} | Working:${response.data.workingDays} | Present:${response.data.presentDays} | <strong>Amount:₹${response.data.calculatedAmount}</strong>`;
-                document.getElementById('salaryResult').style.display = 'block';
-                showAlert('Salary generated!', 'success');
-            } else {
-                showAlert(response.message || 'Failed', 'error');
-            }
-        }
-
-        async paySalary(teacherId) {
-            const selected = document.getElementById('salaryMonth').value;
-            if (!selected) { showAlert('Select month', 'error'); return; }
-            const [month, year] = selected.split('|');
-            const paidAmount = parseInt(document.getElementById('payAmount').value);
-            if (!paidAmount || paidAmount <= 0) { showAlert('Enter valid amount', 'error'); return; }
-            
-            const response = await this.apiCall(`/teachers/${teacherId}/salary/pay`, {
-                method: 'POST',
-                body: JSON.stringify({ month, year: parseInt(year), paidAmount, paymentMode: document.getElementById('paymentMode').value, remarks: document.getElementById('paymentRemarks').value })
-            });
-            if (response.success) {
-                showAlert('Salary paid!', 'success');
-                closeModal('salaryModal');
-                await this.loadTeachers();
-                await this.showTeacherDashboard(teacherId);
-            } else {
-                showAlert(response.message || 'Failed', 'error');
-            }
-        }
-
-        async registerTeacher() {
-            const aadhar = document.getElementById('aadharNumber').value;
-            if (!aadhar || aadhar.length !== 12) { showAlert('Valid 12-digit Aadhar required', 'error'); return; }
-            
-            const subjects = Array.from(document.querySelectorAll('#subjectsGroup input:checked')).map(cb => cb.value);
-            const classes = Array.from(document.querySelectorAll('#classesGroup input:checked')).map(cb => cb.value);
-            const boards = Array.from(document.querySelectorAll('#boardsGroup input:checked')).map(cb => cb.value);
-            if (!subjects.length || !classes.length || !boards.length) { showAlert('Select subjects, classes and boards', 'error'); return; }
-            
-            const data = {
-                aadharNumber: aadhar,
-                personal: {
-                    name: document.getElementById('fullName').value,
-                    dob: document.getElementById('dob').value,
-                    gender: document.getElementById('gender').value,
-                    mobile: document.getElementById('mobile').value,
-                    email: document.getElementById('email').value,
-                    currentAddress: document.getElementById('currentAddress').value,
-                    permanentAddress: document.getElementById('permanentAddress').value,
-                    photo: document.getElementById('photo').value
-                },
-                documents: {
-                    aadharCopy: document.getElementById('aadharCopy').value,
-                    qualificationDoc: document.getElementById('qualificationDoc').value,
-                    qualificationName: document.getElementById('qualificationName').value
-                },
-                professional: { joiningDate: document.getElementById('joiningDate').value, experience: parseInt(document.getElementById('experience').value), subjects, classes, boards, branches: ['Main'] },
-                salary: { defaultSalary: parseInt(document.getElementById('defaultSalary').value) },
-                bankDetails: {
-                    bankName: document.getElementById('bankName').value,
-                    accountNumber: document.getElementById('accountNumber').value,
-                    ifsc: document.getElementById('ifsc').value,
-                    upiId: document.getElementById('upiId').value
-                }
-            };
-            
-            const response = await this.apiCall('/teachers/register', { method: 'POST', body: JSON.stringify(data) });
-            if (response.success) {
-                showAlert(`✅ Teacher registered! ID: ${aadhar}, Password: ${response.password}`, 'success', 8000);
-                this.resetForm();
-                await this.loadTeachers();
-                document.querySelector('[data-tab="teachers"]').click();
-            } else {
-                showAlert(response.message || 'Registration failed', 'error');
-            }
-        }
-
-        async updateTeacher() {
-            if (!currentEditTeacherId) return;
-            const subjects = Array.from(document.querySelectorAll('#subjectsGroup input:checked')).map(cb => cb.value);
-            const classes = Array.from(document.querySelectorAll('#classesGroup input:checked')).map(cb => cb.value);
-            const boards = Array.from(document.querySelectorAll('#boardsGroup input:checked')).map(cb => cb.value);
-            
-            const data = {
-                personal: {
-                    name: document.getElementById('fullName').value, dob: document.getElementById('dob').value,
-                    gender: document.getElementById('gender').value, mobile: document.getElementById('mobile').value,
-                    email: document.getElementById('email').value, currentAddress: document.getElementById('currentAddress').value,
-                    permanentAddress: document.getElementById('permanentAddress').value, photo: document.getElementById('photo').value
-                },
-                documents: { aadharCopy: document.getElementById('aadharCopy').value, qualificationDoc: document.getElementById('qualificationDoc').value, qualificationName: document.getElementById('qualificationName').value },
-                professional: { joiningDate: document.getElementById('joiningDate').value, experience: parseInt(document.getElementById('experience').value), subjects, classes, boards },
-                salary: { defaultSalary: parseInt(document.getElementById('defaultSalary').value) },
-                bankDetails: {
-                    bankName: document.getElementById('bankName').value, accountNumber: document.getElementById('accountNumber').value,
-                    ifsc: document.getElementById('ifsc').value, upiId: document.getElementById('upiId').value
-                }
-            };
-            
-            const response = await this.apiCall(`/teachers/${currentEditTeacherId}`, { method: 'PUT', body: JSON.stringify(data) });
-            if (response.success) {
-                showAlert('✅ Teacher updated!', 'success');
-                this.cancelEdit();
-                await this.loadTeachers();
-            } else {
-                showAlert(response.message || 'Update failed', 'error');
-            }
-        }
-
-        async blockTeacher(teacherId) {
-            const reason = prompt('Block reason:');
-            if (!reason) return;
-            const response = await this.apiCall(`/teachers/${teacherId}/block`, { method: 'POST', body: JSON.stringify({ reason }) });
-            if (response.success) { showAlert('Teacher blocked', 'success'); await this.loadTeachers(); closeModal('dashboardModal'); }
-            else { showAlert(response.message || 'Block failed', 'error'); }
-        }
-
-        async unblockTeacher(teacherId) {
-            if (!confirm('Unblock this teacher?')) return;
-            const response = await this.apiCall(`/teachers/${teacherId}/unblock`, { method: 'POST' });
-            if (response.success) { showAlert('Teacher unblocked', 'success'); await this.loadTeachers(); closeModal('dashboardModal'); }
-            else { showAlert(response.message || 'Unblock failed', 'error'); }
-        }
-
-        async moveToLeft(teacherId) {
-            const reason = prompt('Reason for leaving:');
-            if (!reason) return;
-            
-            showAlert('Moving teacher to left...', 'info');
-            
-            try {
-                const response = await this.apiCall(`/teachers/${teacherId}/move-to-left`, {
-                    method: 'POST',
-                    body: JSON.stringify({ leavingReason: reason, lastWorkingDay: new Date().toISOString().split('T')[0] })
-                });
-                
-                if (response.success) {
-                    await this.loadTeachers();
-                    await this.loadLeftTeachers();
-                    showAlert(`✅ Teacher moved to left! Reason: ${reason}`, 'success');
-                    closeModal('dashboardModal');
-                } else {
-                    const teacher = this.teachersData.find(t => t.teacherId === teacherId);
-                    if (!teacher) { showAlert('Teacher not found', 'error'); return; }
-                    
-                    const leftTeacher = { ...teacher, status: { ...teacher.status, isLeft: true, leavingReason: reason, leavingDate: new Date().toISOString().split('T')[0], isBlocked: false } };
-                    let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
-                    if (!leftTeachers.find(t => t.teacherId === teacherId)) leftTeachers.push(leftTeacher);
-                    localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
-                    let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
-                    activeTeachers = activeTeachers.filter(t => t.teacherId !== teacherId);
-                    localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
-                    this.teachersData = activeTeachers;
-                    this.leftTeachersData = leftTeachers;
-                    this.renderTeachersGrid();
-                    this.renderLeftTeachersGrid();
-                    showAlert(`✅ Teacher moved to left (offline mode)!`, 'success');
-                    closeModal('dashboardModal');
-                }
-            } catch (err) {
-                showAlert('Error moving teacher: ' + err.message, 'error');
-            }
-        }
-
-        openNoticeModal() {
-            const select = document.getElementById('noticeTo');
-            select.innerHTML = '<option value="all">All Teachers</option>' + this.teachersData.map(t => `<option value="${t.teacherId}">${t.personal?.name}</option>`).join('');
-            document.getElementById('noticeTitle').value = '';
-            document.getElementById('noticeMessage').value = '';
-            document.getElementById('noticeModal').classList.add('active');
-        }
-
-        async sendNotice() {
-            const response = await this.apiCall('/teachers/notice', {
-                method: 'POST',
-                body: JSON.stringify({
-                    teacherId: document.getElementById('noticeTo').value === 'all' ? null : document.getElementById('noticeTo').value,
-                    title: document.getElementById('noticeTitle').value,
-                    message: document.getElementById('noticeMessage').value,
-                    from: 'admin'
-                })
-            });
-            if (response.success) { showAlert('Notice sent!', 'success'); closeModal('noticeModal'); await this.loadNotices(); }
-        }
-
-        cancelEdit() {
-            currentEditTeacherId = null;
-            document.getElementById('formTitle').innerText = 'Register New Teacher';
-            document.getElementById('registerTeacherBtn').style.display = 'inline-flex';
-            document.getElementById('updateTeacherBtn').style.display = 'none';
-            document.getElementById('cancelEditBtn').style.display = 'none';
-            this.resetForm();
-        }
-
-        resetForm() {
-            const form = document.getElementById('teacherForm');
-            if (form) form.reset();
-            const joinDate = document.getElementById('joiningDate');
-            if (joinDate) joinDate.value = new Date().toISOString().split('T')[0];
-            document.getElementById('aadharNumber').disabled = false;
-            this.clearImage('photo', 'photoPreview');
-            this.clearImage('aadharCopy', 'aadharPreview');
-            this.clearImage('qualificationDoc', 'qualificationPreview');
-            document.querySelectorAll('#subjectsGroup input').forEach(cb => cb.checked = false);
-            document.querySelectorAll('#classesGroup input').forEach(cb => cb.checked = false);
-            document.querySelectorAll('#boardsGroup input').forEach(cb => cb.checked = false);
-        }
-
-        clearImage(fieldId, previewId) {
-            document.getElementById(fieldId).value = '';
-            const preview = document.getElementById(previewId);
-            if (preview) { preview.style.display = 'none'; preview.src = ''; }
-        }
-
-        async captureImage(fieldId, previewId) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.capture = 'environment';
-            input.onchange = async (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const compressed = await this.compressImage(e.target.files[0]);
-                    document.getElementById(fieldId).value = compressed;
-                    const preview = document.getElementById(previewId);
-                    if (preview) { preview.src = compressed; preview.style.display = 'block'; }
-                    showAlert('Image captured!', 'success');
-                }
-            };
-            input.click();
-        }
-
-        async uploadImage(fieldId, previewId) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    const compressed = await this.compressImage(e.target.files[0]);
-                    document.getElementById(fieldId).value = compressed;
-                    const preview = document.getElementById(previewId);
-                    if (preview) { preview.src = compressed; preview.style.display = 'block'; }
-                    showAlert('Image uploaded!', 'success');
-                }
-            };
-            input.click();
-        }
-
-        async compressImage(file, maxSizeKB = 15) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        let width = img.width, height = img.height, quality = 0.7;
-                        const maxDim = 200;
-                        if (width > maxDim) { height = (height * maxDim) / width; width = maxDim; }
-                        if (height > maxDim) { width = (width * maxDim) / height; height = maxDim; }
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width; canvas.height = height;
-                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                        let result = canvas.toDataURL('image/jpeg', quality);
-                        while (result.length > maxSizeKB * 1024 && quality > 0.1) { quality -= 0.1; result = canvas.toDataURL('image/jpeg', quality); }
-                        resolve(result);
-                    };
-                };
-            });
-        }
-
-       viewDocument(url, title) {
-    const modal = document.getElementById('documentViewerModal');
-    const img = document.getElementById('docViewerImage');
-    const titleSpan = document.getElementById('docViewerTitle');
-    if (modal && img && titleSpan) {
-        img.src = url;
-        titleSpan.innerText = title;
-        modal.classList.add('active');
-    }
-}
-
-        async rejoinTeacher(teacherId) {
-            if (!confirm('Do you want to rejoin this teacher?')) return;
-            
-            showAlert('Rejoining teacher...', 'info');
-            
-            try {
-                const response = await this.apiCall(`/teachers/${teacherId}/rejoin`, { method: 'POST', body: JSON.stringify({ rejoinedAt: new Date().toISOString().split('T')[0] }) });
-                
-                if (response.success) {
-                    await this.loadTeachers();
-                    await this.loadLeftTeachers();
-                    showAlert(`✅ Teacher rejoined successfully!`, 'success');
-                } else {
-                    const teacher = this.leftTeachersData.find(t => t.teacherId === teacherId);
-                    if (!teacher) { showAlert('Teacher not found', 'error'); return; }
-                    
-                    const rejoinedTeacher = { ...teacher, status: { ...teacher.status, isLeft: false, leavingReason: null, leavingDate: null, rejoinedAt: new Date().toISOString().split('T')[0] } };
-                    let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
-                    leftTeachers = leftTeachers.filter(t => t.teacherId !== teacherId);
-                    localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
-                    let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
-                    if (!activeTeachers.find(t => t.teacherId === teacherId)) activeTeachers.push(rejoinedTeacher);
-                    localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
-                    this.teachersData = activeTeachers;
-                    this.leftTeachersData = leftTeachers;
-                    this.renderTeachersGrid();
-                    this.renderLeftTeachersGrid();
-                    showAlert(`✅ Teacher rejoined successfully (offline mode)!`, 'success');
-                }
-            } catch (err) {
-                showAlert('Error rejoining teacher: ' + err.message, 'error');
-            }
-        }
-
-        logout() {
-            localStorage.removeItem('adminToken');
-            window.location.href = '/login.html';
+    function injectHTML() {
+        const app = document.getElementById('teacher-app');
+        if (app && !document.querySelector('.tms-wrapper')) {
+            app.innerHTML = getHTMLTemplate();
         }
     }
 
-      window.TeacherManagementSystem = TeacherManagementSystem;
+    // ========== EXPOSE GLOBALLY ==========
+    window.viewDocumentImage = viewDocument;
+    window.TeacherManagementSystem = class { constructor() { init(); } };
+    window.initTeacherModule = function() { init(); };
     
-    // ✅ GLOBAL FUNCTION FOR DOCUMENT VIEWER
-    window.viewDocumentImage = function(url, title) {
-        const modal = document.getElementById('documentViewerModal');
-        const img = document.getElementById('docViewerImage');
-        const titleSpan = document.getElementById('docViewerTitle');
-        if (modal && img && titleSpan) {
-            img.src = url;
-            titleSpan.innerText = title;
-            modal.classList.add('active');
-        }
-    };
-    
-    window.initTeacherModule = function(containerId = 'app') {
-        if (window.teacherInstance) {
-            window.tmsInstance = window.teacherInstance;
-            return window.teacherInstance;
-        }
-        window.teacherInstance = new TeacherManagementSystem(containerId);
-        window.tmsInstance = window.teacherInstance;
-        return window.teacherInstance;
-    };
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        const activeModule = sessionStorage.getItem('activeModule');
-        if (activeModule !== 'student') {
-            window.initTeacherModule();
-        }
-    });
+    // Auto-init when DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            injectStyles();
+            injectHTML();
+            init();
+        });
+    } else {
+        injectStyles();
+        injectHTML();
+        init();
+    }
 })();
