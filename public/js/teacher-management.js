@@ -1,6 +1,6 @@
 // ============================================
 // TEACHER-MANAGEMENT.JS - COMPLETE FINAL VERSION
-// WITH API SYNC FOR MOVE TO LEFT & REJOIN
+// WITH ALL FIELDS IN CARD, DASHBOARD & EDIT
 // FOR BAL BHARTI COACHING CENTER
 // ============================================
 
@@ -13,14 +13,27 @@
     let currentViewTeacher = null;
     let currentEditTeacherId = null;
 
+    // ENHANCED LISTS
     const subjectsList = [
         'Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 
         'Hindi', 'Sanskrit', 'Computer Science', 'Social Science', 
         'Reasoning', 'Aptitude', 'General Knowledge'
     ];
 
-    const classesList = ['6th', '7th', '8th', '9th', '10th', '11th', '12th'];
-    const boardsList = ['CBSE', 'ICSE', 'UP Board', 'Bihar Board', 'Other'];
+    const classesList = [
+        'Nursery', 'LKG', 'UKG', '1st', '2nd', '3rd', '4th', '5th', 
+        '6th', '7th', '8th', '9th', '10th', '11th', '12th', 
+        'Graduation', 'Post Graduation', 'Other'
+    ];
+
+    const boardsList = [
+        'CBSE', 'ICSE', 'UP Board', 'Bihar Board', 'MP Board', 'Rajasthan Board',
+        'Gujarat Board', 'Maharashtra Board', 'Tamil Nadu Board', 'Karnataka Board',
+        'Telangana Board', 'Andhra Board', 'West Bengal Board', 'Punjab Board',
+        'Haryana Board', 'Jharkhand Board', 'Chhattisgarh Board', 'Uttarakhand Board',
+        'Assam Board', 'Odisha Board', 'Kerala Board', 'Delhi Board', 'Other'
+    ];
+
     const genders = ['Male', 'Female', 'Other'];
     const paymentModes = ['cash', 'bank', 'upi'];
 
@@ -115,7 +128,7 @@
         }
         
         .teachers-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
         .teacher-card {
@@ -558,7 +571,7 @@
             }
         }
 
-                      injectHTML() {
+        injectHTML() {
             const app = document.getElementById(this.containerId);
             if (app && !document.querySelector('.tms-wrapper')) {
                 app.insertAdjacentHTML('beforeend', getHTMLTemplate());
@@ -640,29 +653,24 @@
             }
         }
 
-                async loadTeachers() {
-            // Try API first
+        async loadTeachers() {
             const response = await this.apiCall('/teachers');
             if (response.success && response.data && response.data.length > 0) {
                 this.teachersData = response.data;
-                // Save to localStorage as backup
                 localStorage.setItem('activeTeachers', JSON.stringify(response.data));
             } else {
-                // Fallback to localStorage
                 const stored = localStorage.getItem('activeTeachers');
                 this.teachersData = stored ? JSON.parse(stored) : [];
             }
             this.renderTeachersGrid();
         }
 
-               async loadLeftTeachers() {
-            // Try API first
+        async loadLeftTeachers() {
             const response = await this.apiCall('/teachers/left');
             if (response.success && response.data && response.data.length > 0) {
                 this.leftTeachersData = response.data;
                 localStorage.setItem('leftTeachers', JSON.stringify(response.data));
             } else {
-                // Fallback to localStorage
                 const stored = localStorage.getItem('leftTeachers');
                 this.leftTeachersData = stored ? JSON.parse(stored) : [];
             }
@@ -699,7 +707,9 @@
                     </div>
                     <div class="teacher-card-body">
                         <div class="teacher-card-info"><span>📞 Mobile:</span><span>${t.personal?.mobile || '-'}</span></div>
-                        <div class="teacher-card-info"><span>📚 Subjects:</span><span>${(t.professional?.subjects || []).slice(0,2).join(', ')}</span></div>
+                        <div class="teacher-card-info"><span>📚 Subjects:</span><span>${(t.professional?.subjects || []).slice(0,2).join(', ')}${(t.professional?.subjects || []).length > 2 ? '...' : ''}</span></div>
+                        <div class="teacher-card-info"><span>🏫 Classes:</span><span>${(t.professional?.classes || []).slice(0,2).join(', ')}${(t.professional?.classes || []).length > 2 ? '...' : ''}</span></div>
+                        <div class="teacher-card-info"><span>🎓 Boards:</span><span>${(t.professional?.boards || []).slice(0,2).join(', ')}${(t.professional?.boards || []).length > 2 ? '...' : ''}</span></div>
                         <div class="teacher-card-info"><span>💰 Salary:</span><span>₹${t.salary?.defaultSalary || 0}</span></div>
                         <div class="teacher-card-info"><span>Status:</span><span>${t.status?.isBlocked ? '<span class="badge-blocked">Blocked</span>' : '<span class="badge-active">Active</span>'}</span></div>
                     </div>
@@ -711,7 +721,7 @@
             });
         }
 
-                renderLeftTeachersGrid() {
+        renderLeftTeachersGrid() {
             const search = document.getElementById('searchLeft')?.value.toLowerCase() || '';
             let filtered = this.leftTeachersData || [];
             if (search) filtered = filtered.filter(t => (t.teacherId || '').includes(search) || (t.personal?.name || '').toLowerCase().includes(search));
@@ -729,6 +739,7 @@
                     </div>
                     <div class="teacher-card-body">
                         <div class="teacher-card-info"><span>📞 Mobile:</span><span>${t.personal?.mobile || '-'}</span></div>
+                        <div class="teacher-card-info"><span>📚 Subjects:</span><span>${(t.professional?.subjects || []).slice(0,2).join(', ')}</span></div>
                         <div class="teacher-card-info"><span>📅 Left:</span><span>${formatDate(t.status?.leavingDate)}</span></div>
                         <div class="teacher-card-info"><span>📝 Reason:</span><span>${t.status?.leavingReason || '-'}</span></div>
                         <div class="teacher-card-info"><span> </span><span><button class="btn btn-success btn-sm rejoin-teacher-btn" data-id="${t.teacherId}">🔄 Rejoin Teacher</button></span></div>
@@ -736,7 +747,6 @@
                 </div>
             `).join('');
             
-            // Add rejoin button event listeners
             document.querySelectorAll('.rejoin-teacher-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -744,7 +754,6 @@
                 });
             });
             
-            // Keep card click for dashboard
             document.querySelectorAll('#leftTeachersGrid .teacher-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('rejoin-teacher-btn')) {
@@ -794,8 +803,10 @@
                         <div style="flex:1;">
                             <div class="info-row"><strong>${t.personal?.name}</strong> (${t.teacherId})</div>
                             <div class="info-row">📞 ${t.personal?.mobile} | ✉️ ${t.personal?.email}</div>
+                            <div class="info-row">🎓 ${t.personal?.gender} | 📅 DOB: ${formatDate(t.personal?.dob)}</div>
                             <div class="info-row">📚 ${t.documents?.qualificationName} | 🎓 ${t.professional?.experience} years</div>
                             <div class="info-row">🏠 ${t.personal?.currentAddress}</div>
+                            <div class="info-row">🏦 Bank: ${t.bankDetails?.bankName || '-'} | A/c: ${t.bankDetails?.accountNumber || '-'}</div>
                         </div>
                     </div>
                     <div class="stats-grid">
@@ -804,6 +815,8 @@
                         <div class="stat-card" style="background:#17a2b8;color:white;"><h3>${attPercent}%</h3><p>Attendance</p></div>
                     </div>
                     <div class="chart-container"><div class="chart-title">📚 Subjects</div><div>${(t.professional?.subjects || []).map(s => `<span style="background:#28a74520;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${s}</span>`).join('')}</div></div>
+                    <div class="chart-container"><div class="chart-title">🏫 Classes</div><div>${(t.professional?.classes || []).map(c => `<span style="background:#17a2b820;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${c}</span>`).join('')}</div></div>
+                    <div class="chart-container"><div class="chart-title">🎓 Boards</div><div>${(t.professional?.boards || []).map(b => `<span style="background:#ffc10720;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${b}</span>`).join('')}</div></div>
                     <div class="chart-container"><div class="chart-title">💰 Salary History</div><table class="data-table"><thead><tr><th>Month</th><th>Base</th><th>Calculated</th><th>Paid</th><th>Status</th></tr></thead><tbody>${salaryPayments.map(s => `<tr><td>${s.month} ${s.year}</td><td>₹${s.baseSalary}</td><td>₹${s.calculatedAmount}</td><td>₹${s.paidAmount}</td><td>${s.status === 'paid' ? '✅' : s.status === 'partial' ? '⚠️' : '❌'}</td></tr>`).join('') || '<tr><td colspan="5">No records</td></tr>'}</tbody></table></div>
                 </div>
             `;
@@ -846,6 +859,7 @@
                         <div class="form-group"><label>Email</label><input type="email" id="editEmail" value="${teacher.personal?.email || ''}"></div>
                     </div>
                     <div class="form-group"><label>Address</label><textarea id="editAddress" rows="2">${teacher.personal?.currentAddress || ''}</textarea></div>
+                    <div class="form-group"><label>Permanent Address</label><textarea id="editPermanentAddress" rows="2">${teacher.personal?.permanentAddress || ''}</textarea></div>
                     
                     <div class="section-title">📚 Professional</div>
                     <div class="form-row">
@@ -894,7 +908,8 @@
                     gender: document.getElementById('editGender').value,
                     mobile: document.getElementById('editMobile').value,
                     email: document.getElementById('editEmail').value,
-                    currentAddress: document.getElementById('editAddress').value
+                    currentAddress: document.getElementById('editAddress').value,
+                    permanentAddress: document.getElementById('editPermanentAddress').value
                 },
                 documents: { qualificationName: document.getElementById('editQualification').value },
                 professional: {
@@ -1122,7 +1137,6 @@
             else { showAlert(response.message || 'Unblock failed', 'error'); }
         }
 
-        // ========== MOVE TO LEFT WITH API SYNC ==========
         async moveToLeft(teacherId) {
             const reason = prompt('Reason for leaving:');
             if (!reason) return;
@@ -1130,60 +1144,32 @@
             showAlert('Moving teacher to left...', 'info');
             
             try {
-                // Call backend API first
                 const response = await this.apiCall(`/teachers/${teacherId}/move-to-left`, {
                     method: 'POST',
-                    body: JSON.stringify({ 
-                        leavingReason: reason, 
-                        lastWorkingDay: new Date().toISOString().split('T')[0] 
-                    })
+                    body: JSON.stringify({ leavingReason: reason, lastWorkingDay: new Date().toISOString().split('T')[0] })
                 });
                 
                 if (response.success) {
-                    // Refresh data from server
                     await this.loadTeachers();
                     await this.loadLeftTeachers();
                     showAlert(`✅ Teacher moved to left! Reason: ${reason}`, 'success');
                     closeModal('dashboardModal');
                 } else {
-                    // Fallback to localStorage if API fails
-                    console.warn('API failed, using localStorage fallback');
-                    
                     const teacher = this.teachersData.find(t => t.teacherId === teacherId);
-                    if (!teacher) {
-                        showAlert('Teacher not found', 'error');
-                        return;
-                    }
+                    if (!teacher) { showAlert('Teacher not found', 'error'); return; }
                     
-                    const leftTeacher = {
-                        ...teacher,
-                        status: {
-                            ...teacher.status,
-                            isLeft: true,
-                            leavingReason: reason,
-                            leavingDate: new Date().toISOString().split('T')[0],
-                            isBlocked: false
-                        }
-                    };
-                    
+                    const leftTeacher = { ...teacher, status: { ...teacher.status, isLeft: true, leavingReason: reason, leavingDate: new Date().toISOString().split('T')[0], isBlocked: false } };
                     let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
-                    const exists = leftTeachers.find(t => t.teacherId === teacherId);
-                    if (!exists) {
-                        leftTeachers.push(leftTeacher);
-                        localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
-                    }
-                    
+                    if (!leftTeachers.find(t => t.teacherId === teacherId)) leftTeachers.push(leftTeacher);
+                    localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
                     let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
                     activeTeachers = activeTeachers.filter(t => t.teacherId !== teacherId);
                     localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
-                    
                     this.teachersData = activeTeachers;
                     this.leftTeachersData = leftTeachers;
-                    
                     this.renderTeachersGrid();
                     this.renderLeftTeachersGrid();
-                    
-                    showAlert(`✅ Teacher moved to left (offline mode)! Reason: ${reason}`, 'success');
+                    showAlert(`✅ Teacher moved to left (offline mode)!`, 'success');
                     closeModal('dashboardModal');
                 }
             } catch (err) {
@@ -1303,64 +1289,33 @@
             document.getElementById('documentViewerModal').classList.add('active');
         }
 
-        // ========== REJOIN TEACHER WITH API SYNC ==========
         async rejoinTeacher(teacherId) {
             if (!confirm('Do you want to rejoin this teacher?')) return;
             
             showAlert('Rejoining teacher...', 'info');
             
             try {
-                // Call backend API for rejoin
-                const response = await this.apiCall(`/teachers/${teacherId}/rejoin`, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        rejoinedAt: new Date().toISOString().split('T')[0]
-                    })
-                });
+                const response = await this.apiCall(`/teachers/${teacherId}/rejoin`, { method: 'POST', body: JSON.stringify({ rejoinedAt: new Date().toISOString().split('T')[0] }) });
                 
                 if (response.success) {
-                    // Refresh data from server
                     await this.loadTeachers();
                     await this.loadLeftTeachers();
                     showAlert(`✅ Teacher rejoined successfully!`, 'success');
                 } else {
-                    // Fallback to localStorage if API fails
-                    console.warn('API failed, using localStorage fallback');
-                    
                     const teacher = this.leftTeachersData.find(t => t.teacherId === teacherId);
-                    if (!teacher) {
-                        showAlert('Teacher not found', 'error');
-                        return;
-                    }
+                    if (!teacher) { showAlert('Teacher not found', 'error'); return; }
                     
-                    const rejoinedTeacher = {
-                        ...teacher,
-                        status: {
-                            ...teacher.status,
-                            isLeft: false,
-                            leavingReason: null,
-                            leavingDate: null,
-                            rejoinedAt: new Date().toISOString().split('T')[0]
-                        }
-                    };
-                    
+                    const rejoinedTeacher = { ...teacher, status: { ...teacher.status, isLeft: false, leavingReason: null, leavingDate: null, rejoinedAt: new Date().toISOString().split('T')[0] } };
                     let leftTeachers = JSON.parse(localStorage.getItem('leftTeachers') || '[]');
                     leftTeachers = leftTeachers.filter(t => t.teacherId !== teacherId);
                     localStorage.setItem('leftTeachers', JSON.stringify(leftTeachers));
-                    
                     let activeTeachers = JSON.parse(localStorage.getItem('activeTeachers') || '[]');
-                    const exists = activeTeachers.find(t => t.teacherId === teacherId);
-                    if (!exists) {
-                        activeTeachers.push(rejoinedTeacher);
-                        localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
-                    }
-                    
+                    if (!activeTeachers.find(t => t.teacherId === teacherId)) activeTeachers.push(rejoinedTeacher);
+                    localStorage.setItem('activeTeachers', JSON.stringify(activeTeachers));
                     this.teachersData = activeTeachers;
                     this.leftTeachersData = leftTeachers;
-                    
                     this.renderTeachersGrid();
                     this.renderLeftTeachersGrid();
-                    
                     showAlert(`✅ Teacher rejoined successfully (offline mode)!`, 'success');
                 }
             } catch (err) {
