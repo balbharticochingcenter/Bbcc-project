@@ -76,10 +76,15 @@
         return localStorage.getItem('adminToken');
     }
 
-    // ========== API CALL ==========
+       // ========== API CALL ==========
     async function apiCall(endpoint, options = {}) {
         try {
             const token = getToken();
+            if (!token) {
+                window.location.href = '/login.html';
+                return { success: false, message: "No token" };
+            }
+            
             const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 ...options,
                 headers: {
@@ -88,11 +93,16 @@
                     ...options.headers
                 }
             });
-            const data = await response.json();
-            if (!data.success && response.status === 401) {
+            
+            // ✅ Handle 401 specifically
+            if (response.status === 401) {
                 localStorage.removeItem('adminToken');
+                alert('Session expired! Please login again.');
                 window.location.href = '/login.html';
+                return { success: false, message: "Unauthorized" };
             }
+            
+            const data = await response.json();
             return data;
         } catch (err) {
             console.error('API Error:', err);
