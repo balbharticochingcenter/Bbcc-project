@@ -12,7 +12,6 @@
     let leftTeachersData = [];
     let currentViewTeacher = null;
     let currentEditTeacherId = null;
-    let selectedHistoryTeacherId = null;
     let attendanceChart = null;
     let salaryChart = null;
 
@@ -124,7 +123,6 @@
             teachersData = [];
         }
         renderTeachersGrid();
-        updateHistoryTeacherDropdown();
     }
 
     async function loadLeftTeachers() {
@@ -275,7 +273,19 @@
         const totalPaid = salaryPayments.reduce((s, p) => s + (p.paidAmount || 0), 0);
         const totalDue = salaryPayments.reduce((s, p) => s + (p.dueAmount || 0), 0);
         const attendance = t.attendance || [];
-        const attPercent = attendance.length ? Math.round((attendance.filter(a => a.status === 'present').length / attendance.length) * 100) : 0;
+        const attPercent = attendance.length ? Math.round((attendance.filter(a => a.status === 'present' || a.status === 'holiday').length / attendance.length) * 100) : 0;
+        
+        // Prepare daily attendance data for chart (last 30 days)
+        const last30Days = [];
+        const dailyAttendanceData = [];
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            last30Days.push(dateStr);
+            const attRecord = attendance.find(a => new Date(a.date).toISOString().split('T')[0] === dateStr);
+            dailyAttendanceData.push(attRecord ? (attRecord.status === 'present' || attRecord.status === 'holiday' ? 100 : 0) : 0);
+        }
         
         body.innerHTML = `
             <div class="dashboard-container">
@@ -297,27 +307,115 @@
                         <div class="info-row">📄 Qualification: <button class="btn btn-sm btn-info" id="viewQualificationBtn">View</button></div>
                     </div>
                 </div>
+                
                 <div class="stats-grid">
                     <div class="stat-card" style="background:#28a745;color:white;"><h3>₹${totalPaid.toLocaleString()}</h3><p>Paid</p></div>
                     <div class="stat-card" style="background:#dc3545;color:white;"><h3>₹${totalDue.toLocaleString()}</h3><p>Due</p></div>
                     <div class="stat-card" style="background:#17a2b8;color:white;"><h3>${attPercent}%</h3><p>Attendance</p></div>
                 </div>
-                <div class="chart-container"><div class="chart-title">📚 Subjects</div><div>${(t.professional?.subjects || []).map(s => `<span style="background:#28a74520;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${s}</span>`).join('') || '-'}</div></div>
-                <div class="chart-container"><div class="chart-title">🏫 Classes</div><div>${(t.professional?.classes || []).map(c => `<span style="background:#17a2b820;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${c}</span>`).join('') || '-'}</div></div>
-                <div class="chart-container"><div class="chart-title">🎓 Boards</div><div>${(t.professional?.boards || []).map(b => `<span style="background:#ffc10720;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${b}</span>`).join('') || '-'}</div></div>
-                <div class="chart-container"><div class="chart-title">📅 Recent Attendance</div>
-                    <div style="overflow-x:auto; max-height:200px;">
+                
+                <div class="chart-container">
+                    <div class="chart-title">📚 Subjects</div>
+                    <div>${(t.professional?.subjects || []).map(s => `<span style="background:#28a74520;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${s}</span>`).join('') || '-'}</div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">🏫 Classes</div>
+                    <div>${(t.professional?.classes || []).map(c => `<span style="background:#17a2b820;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${c}</span>`).join('') || '-'}</div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">🎓 Boards</div>
+                    <div>${(t.professional?.boards || []).map(b => `<span style="background:#ffc10720;padding:5px 12px;border-radius:20px;margin:5px;display:inline-block;">${b}</span>`).join('') || '-'}</div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">📊 Daily Attendance (Last 30 Days)</div>
+                    <canvas id="dailyAttendanceChart" style="height:250px; width:100%;"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>📋 Attendance History</span>
+                        <button class="btn btn-sm btn-warning" id="editAttendanceModeBtn">✏️ Edit Mode</button>
+                    </div>
+                    <div style="overflow-x:auto; max-height:300px;">
                         <table class="data-table">
-                            <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Photo</th></tr></thead>
-                            <tbody>${(attendance || []).slice(-10).reverse().map(a => `<tr><td>${formatDate(a.date)}</td><td>${a.status}</td><td>${a.checkIn || '-'}</td><td>${a.checkOut || '-'}</td><td>${a.photo ? '<button class="btn btn-sm btn-info view-att-photo" data-url="'+a.photo+'">📷 View</button>' : '-'}</td></tr>`).join('')}</tbody>
+                            <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Photo</th><th>Remarks</th><th>Action</th></tr></thead>
+                            <tbody id="attendanceHistoryBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>💰 Salary History</span>
+                        <button class="btn btn-sm btn-warning" id="editSalaryModeBtn">✏️ Edit Mode</button>
+                    </div>
+                    <div style="overflow-x:auto; max-height:300px;">
+                        <table class="data-table">
+                            <thead><tr><th>Month/Year</th><th>Base Salary</th><th>Working Days</th><th>Present Days</th><th>Calculated</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="salaryHistoryBody"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
         `;
         
+        // Daily attendance chart
+        const dailyCtx = document.getElementById('dailyAttendanceChart')?.getContext('2d');
+        if (dailyCtx) {
+            if (attendanceChart) attendanceChart.destroy();
+            attendanceChart = new Chart(dailyCtx, {
+                type: 'line',
+                data: { labels: last30Days, datasets: [{ label: 'Attendance %', data: dailyAttendanceData, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', fill: true, tension: 0.3 }] },
+                options: { responsive: true, scales: { y: { min: 0, max: 100, title: { display: true, text: 'Percentage (%)' } }, x: { title: { display: true, text: 'Date' } } } }
+            });
+        }
+        
+        // Populate attendance history table
+        const attBody = document.getElementById('attendanceHistoryBody');
+        const sortedAtt = [...(attendance || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
+        attBody.innerHTML = sortedAtt.map(a => `
+            <tr>
+                <td>${formatDate(a.date)}</td>
+                <td>${a.status === 'present' ? '✅ Present' : a.status === 'absent' ? '❌ Absent' : a.status === 'holiday' ? '🎉 Holiday' : '🏖️ Leave'}</td>
+                <td>${a.checkIn || '-'}</td>
+                <td>${a.checkOut || '-'}</td>
+                <td>${a.photo ? `<button class="btn btn-sm btn-info view-att-photo" data-url="${a.photo}">📷 View</button>` : '-'}</td>
+                <td>${a.remarks || '-'}</td>
+                <td><button class="btn btn-sm btn-warning edit-attendance-btn" data-date="${a.date}">✏️ Edit</button></td>
+            </table>
+        `).join('');
+        
+        // Populate salary history table
+        const salaryBody = document.getElementById('salaryHistoryBody');
+        const sortedSalary = [...(salaryPayments || [])].sort((a,b) => b.year - a.year);
+        salaryBody.innerHTML = sortedSalary.map(s => `
+            <tr>
+                <td>${s.month} ${s.year}</td>
+                <td>₹${s.baseSalary || 0}</td>
+                <td>${s.workingDays || 0}</td>
+                <td>${s.presentDays || 0}</td>
+                <td>₹${s.calculatedAmount || 0}</td>
+                <td>₹${s.paidAmount || 0}</td>
+                <td>₹${s.dueAmount || 0}</td>
+                <td>${s.status === 'paid' ? '✅ Paid' : s.status === 'partial' ? '⚠️ Partial' : '❌ Unpaid'}</td>
+                <td><button class="btn btn-sm btn-warning edit-salary-btn" data-month="${s.month}" data-year="${s.year}">✏️ Edit</button></td>
+            </tr>
+        `).join('');
+        
+        // Event listeners for edit buttons
         document.querySelectorAll('.view-att-photo').forEach(btn => {
             btn.addEventListener('click', () => viewDocument(btn.dataset.url, 'Attendance Photo'));
+        });
+        
+        document.querySelectorAll('.edit-attendance-btn').forEach(btn => {
+            btn.addEventListener('click', () => openEditAttendanceModal(t.teacherId, btn.dataset.date, attendance.find(a => new Date(a.date).toISOString().split('T')[0] === new Date(btn.dataset.date).toISOString().split('T')[0])));
+        });
+        
+        document.querySelectorAll('.edit-salary-btn').forEach(btn => {
+            btn.addEventListener('click', () => openEditSalaryModal(t.teacherId, btn.dataset.month, parseInt(btn.dataset.year), salaryPayments.find(s => s.month === btn.dataset.month && s.year === parseInt(btn.dataset.year))));
         });
         
         footer.innerHTML = `
@@ -339,6 +437,121 @@
         document.getElementById('markAttendanceBtn')?.addEventListener('click', () => openAttendanceModal(t.teacherId));
         document.getElementById('manageSalaryBtn')?.addEventListener('click', () => openSalaryModal(t));
         document.getElementById('closeDashboardFooterBtn')?.addEventListener('click', () => closeModal('dashboardModal'));
+    }
+    
+    // Edit Attendance Modal
+    function openEditAttendanceModal(teacherId, dateStr, record) {
+        const modalHtml = `
+            <div id="editAttendanceModal" class="modal active">
+                <div class="modal-content" style="max-width:500px;">
+                    <div class="modal-header"><h3>✏️ Edit Attendance</h3><button class="close-modal" onclick="closeModal('editAttendanceModal')">×</button></div>
+                    <div class="modal-body">
+                        <div class="form-group"><label>Date</label><input type="date" id="editAttDate" value="${new Date(dateStr).toISOString().split('T')[0]}" disabled></div>
+                        <div class="form-group"><label>Status</label>
+                            <select id="editAttStatus">
+                                <option value="present" ${record?.status === 'present' ? 'selected' : ''}>✅ Present</option>
+                                <option value="absent" ${record?.status === 'absent' ? 'selected' : ''}>❌ Absent</option>
+                                <option value="holiday" ${record?.status === 'holiday' ? 'selected' : ''}>🎉 Holiday</option>
+                                <option value="leave" ${record?.status === 'leave' ? 'selected' : ''}>🏖️ Leave</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Check In Time</label><input type="time" id="editAttCheckIn" value="${record?.checkIn || ''}"></div>
+                        <div class="form-group"><label>Check Out Time</label><input type="time" id="editAttCheckOut" value="${record?.checkOut || ''}"></div>
+                        <div class="form-group"><label>Photo URL</label><input type="text" id="editAttPhoto" value="${record?.photo || ''}" placeholder="Image URL"></div>
+                        <div class="form-group"><label>Remarks</label><textarea id="editAttRemarks" rows="2">${record?.remarks || ''}</textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeModal('editAttendanceModal')">Cancel</button>
+                        <button class="btn btn-primary" id="saveAttEditBtn">💾 Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        const existing = document.getElementById('editAttendanceModal');
+        if (existing) existing.remove();
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.getElementById('saveAttEditBtn').onclick = async () => {
+            const response = await apiCall(`/teachers/${teacherId}/attendance/${new Date(dateStr).toISOString().split('T')[0]}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    status: document.getElementById('editAttStatus').value,
+                    checkIn: document.getElementById('editAttCheckIn').value,
+                    checkOut: document.getElementById('editAttCheckOut').value,
+                    photo: document.getElementById('editAttPhoto').value,
+                    remarks: document.getElementById('editAttRemarks').value
+                })
+            });
+            if (response.success) {
+                showAlert('Attendance updated!', 'success');
+                closeModal('editAttendanceModal');
+                await loadTeachers();
+                await showTeacherDashboard(teacherId);
+            } else {
+                showAlert(response.message || 'Update failed', 'error');
+            }
+        };
+    }
+    
+    // Edit Salary Modal
+    function openEditSalaryModal(teacherId, month, year, record) {
+        const modalHtml = `
+            <div id="editSalaryModal" class="modal active">
+                <div class="modal-content" style="max-width:500px;">
+                    <div class="modal-header"><h3>✏️ Edit Salary</h3><button class="close-modal" onclick="closeModal('editSalaryModal')">×</button></div>
+                    <div class="modal-body">
+                        <div class="form-group"><label>Month/Year</label><input type="text" value="${month} ${year}" disabled></div>
+                        <div class="form-group"><label>Base Salary (₹)</label><input type="number" id="editSalaryBase" value="${record?.baseSalary || 0}"></div>
+                        <div class="form-group"><label>Working Days</label><input type="number" id="editSalaryWorking" value="${record?.workingDays || 0}"></div>
+                        <div class="form-group"><label>Present Days</label><input type="number" id="editSalaryPresent" value="${record?.presentDays || 0}"></div>
+                        <div class="form-group"><label>Calculated Amount (₹)</label><input type="number" id="editSalaryCalculated" value="${record?.calculatedAmount || 0}"></div>
+                        <div class="form-group"><label>Paid Amount (₹)</label><input type="number" id="editSalaryPaid" value="${record?.paidAmount || 0}"></div>
+                        <div class="form-group"><label>Payment Mode</label>
+                            <select id="editSalaryMode">
+                                <option value="cash" ${record?.paymentMode === 'cash' ? 'selected' : ''}>Cash</option>
+                                <option value="bank" ${record?.paymentMode === 'bank' ? 'selected' : ''}>Bank</option>
+                                <option value="upi" ${record?.paymentMode === 'upi' ? 'selected' : ''}>UPI</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Remarks</label><textarea id="editSalaryRemarks" rows="2">${record?.remarks || ''}</textarea></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeModal('editSalaryModal')">Cancel</button>
+                        <button class="btn btn-primary" id="saveSalaryEditBtn">💾 Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        const existing = document.getElementById('editSalaryModal');
+        if (existing) existing.remove();
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        document.getElementById('saveSalaryEditBtn').onclick = async () => {
+            const dueAmount = parseInt(document.getElementById('editSalaryCalculated').value) - parseInt(document.getElementById('editSalaryPaid').value);
+            const status = parseInt(document.getElementById('editSalaryPaid').value) >= parseInt(document.getElementById('editSalaryCalculated').value) ? 'paid' : 
+                           parseInt(document.getElementById('editSalaryPaid').value) > 0 ? 'partial' : 'unpaid';
+            const response = await apiCall(`/teachers/${teacherId}/salary/update`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    month: month, year: year,
+                    baseSalary: parseInt(document.getElementById('editSalaryBase').value),
+                    workingDays: parseInt(document.getElementById('editSalaryWorking').value),
+                    presentDays: parseInt(document.getElementById('editSalaryPresent').value),
+                    calculatedAmount: parseInt(document.getElementById('editSalaryCalculated').value),
+                    paidAmount: parseInt(document.getElementById('editSalaryPaid').value),
+                    dueAmount: dueAmount,
+                    status: status,
+                    paymentMode: document.getElementById('editSalaryMode').value,
+                    remarks: document.getElementById('editSalaryRemarks').value
+                })
+            });
+            if (response.success) {
+                showAlert('Salary updated!', 'success');
+                closeModal('editSalaryModal');
+                await loadTeachers();
+                await showTeacherDashboard(teacherId);
+            } else {
+                showAlert(response.message || 'Update failed', 'error');
+            }
+        };
     }
 
     function viewDocument(url, title) {
@@ -868,256 +1081,10 @@
         window.location.href = '/login.html';
     }
 
-    function updateHistoryTeacherDropdown() {
-        const historyFilter = document.getElementById('historyTeacherFilter');
-        if (historyFilter) {
-            historyFilter.innerHTML = '<option value="">-- Select Teacher --</option>' + 
-                teachersData.map(t => `<option value="${t.teacherId}">${(t.personal?.name || '').replace(/</g, '&lt;')} (${t.teacherId})</option>`).join('');
-        }
-    }
-
-    async function loadHistoryData(teacherId) {
-        if (!teacherId) return;
-        selectedHistoryTeacherId = teacherId;
-        
-        const response = await apiCall(`/teachers/${teacherId}`);
-        if (!response.success || !response.data) {
-            showAlert('Teacher not found!', 'error');
-            return;
-        }
-        
-        const teacher = response.data;
-        const yearFilter = document.getElementById('historyYearFilter')?.value || 'all';
-        
-        const infoDiv = document.getElementById('historyTeacherInfo');
-        const nameSpan = document.getElementById('historyTeacherName');
-        const idSpan = document.getElementById('historyTeacherId');
-        const mobileSpan = document.getElementById('historyTeacherMobile');
-        const emailSpan = document.getElementById('historyTeacherEmail');
-        
-        if (infoDiv) infoDiv.style.display = 'block';
-        if (nameSpan) nameSpan.innerText = teacher.personal?.name || 'N/A';
-        if (idSpan) idSpan.innerText = teacher.teacherId;
-        if (mobileSpan) mobileSpan.innerText = teacher.personal?.mobile || '-';
-        if (emailSpan) emailSpan.innerText = teacher.personal?.email || '-';
-        
-        let attendance = teacher.attendance || [];
-        if (yearFilter !== 'all') {
-            attendance = attendance.filter(a => new Date(a.date).getFullYear() === parseInt(yearFilter));
-        }
-        
-        const totalPresent = attendance.filter(a => a.status === 'present').length;
-        const totalAbsent = attendance.filter(a => a.status === 'absent').length;
-        const totalLeave = attendance.filter(a => a.status === 'leave').length;
-        const totalDays = attendance.length;
-        const attPercent = totalDays > 0 ? Math.round((totalPresent / totalDays) * 100) : 0;
-        
-        const presentSpan = document.getElementById('totalPresentCount');
-        const absentSpan = document.getElementById('totalAbsentCount');
-        const leaveSpan = document.getElementById('totalLeaveCount');
-        const percentSpan = document.getElementById('attendancePercent');
-        const statsDiv = document.getElementById('historyStats');
-        
-        if (presentSpan) presentSpan.innerText = totalPresent;
-        if (absentSpan) absentSpan.innerText = totalAbsent;
-        if (leaveSpan) leaveSpan.innerText = totalLeave;
-        if (percentSpan) percentSpan.innerText = attPercent + '%';
-        if (statsDiv) statsDiv.style.display = 'grid';
-        
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyData = {};
-        months.forEach(m => monthlyData[m] = { present: 0, total: 0 });
-        
-        attendance.forEach(a => {
-            const date = new Date(a.date);
-            const monthName = months[date.getMonth()];
-            if (monthlyData[monthName]) {
-                monthlyData[monthName].total++;
-                if (a.status === 'present') monthlyData[monthName].present++;
-            }
-        });
-        
-        const chartLabels = months;
-        const chartData = chartLabels.map(m => monthlyData[m].total > 0 ? Math.round((monthlyData[m].present / monthlyData[m].total) * 100) : 0);
-        
-        const attCtx = document.getElementById('attendanceTrendChart')?.getContext('2d');
-        if (attCtx) {
-            if (attendanceChart) attendanceChart.destroy();
-            attendanceChart = new Chart(attCtx, {
-                type: 'line',
-                data: { labels: chartLabels, datasets: [{ label: 'Attendance %', data: chartData, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, scales: { y: { min: 0, max: 100 } } }
-            });
-        }
-        
-        let salaryPayments = teacher.salaryPayments || [];
-        if (yearFilter !== 'all') {
-            salaryPayments = salaryPayments.filter(s => s.year === parseInt(yearFilter));
-        }
-        
-        const salarySorted = [...salaryPayments].sort((a,b) => {
-            const dateA = new Date(`${a.month} 1, ${a.year}`);
-            const dateB = new Date(`${b.month} 1, ${b.year}`);
-            return dateA - dateB;
-        });
-        
-        const salaryLabels = salarySorted.map(s => `${s.month} ${s.year}`);
-        const salaryPaidData = salarySorted.map(s => s.paidAmount || 0);
-        const salaryDueData = salarySorted.map(s => s.dueAmount || 0);
-        
-        const salaryCtx = document.getElementById('salaryTrendChart')?.getContext('2d');
-        if (salaryCtx) {
-            if (salaryChart) salaryChart.destroy();
-            salaryChart = new Chart(salaryCtx, {
-                type: 'bar',
-                data: { labels: salaryLabels, datasets: [{ label: 'Paid Amount (₹)', data: salaryPaidData, backgroundColor: '#28a745' }, { label: 'Due Amount (₹)', data: salaryDueData, backgroundColor: '#dc3545' }] },
-                options: { responsive: true }
-            });
-        }
-        
-        const attBody = document.getElementById('attendanceHistoryBody');
-        const sortedAtt = [...attendance].sort((a,b) => new Date(b.date) - new Date(a.date));
-        if (attBody) {
-            attBody.innerHTML = sortedAtt.map(a => `
-                <tr>
-                    <td>${formatDate(a.date)}</td>
-                    <td>${a.status === 'present' ? '✅ Present' : a.status === 'absent' ? '❌ Absent' : a.status === 'holiday' ? '🎉 Holiday' : '🏖️ Leave'}</td>
-                    <td>${a.checkIn || '-'}</td>
-                    <td>${a.checkOut || '-'}</td>
-                    <td>${a.remarks || '-'}</td>
-                </tr>
-            `).join('');
-        }
-        
-        const salaryBody = document.getElementById('salaryHistoryBody');
-        const sortedSalary = [...salaryPayments].sort((a,b) => b.year - a.year);
-        if (salaryBody) {
-            salaryBody.innerHTML = sortedSalary.map(s => `
-                <tr>
-                    <td>${s.month} ${s.year}</td>
-                    <td>₹${s.baseSalary || 0}</td>
-                    <td>${s.workingDays || 0}</td>
-                    <td>${s.presentDays || 0}</td>
-                    <td>₹${s.calculatedAmount || 0}</td>
-                    <td>₹${s.paidAmount || 0}</td>
-                    <td>₹${s.dueAmount || 0}</td>
-                    <td>${s.status === 'paid' ? '✅ Paid' : s.status === 'partial' ? '⚠️ Partial' : '❌ Unpaid'}</td>
-                </tr>
-            `).join('');
-        }
-    }
-
-    function addHistoryTab() {
-        const mainTabs = document.querySelector('.main-tabs');
-        if (mainTabs && !document.querySelector('.main-tab-btn[data-tab="history"]')) {
-            const historyBtn = document.createElement('button');
-            historyBtn.className = 'main-tab-btn';
-            historyBtn.setAttribute('data-tab', 'history');
-            historyBtn.innerHTML = '📊 Attendance & Salary History';
-            mainTabs.appendChild(historyBtn);
-            
-            const tmsContent = document.querySelector('.tms-content');
-            if (tmsContent) {
-                const historyPane = document.createElement('div');
-                historyPane.className = 'tab-pane';
-                historyPane.setAttribute('data-pane', 'history');
-                historyPane.innerHTML = `
-                    <div class="history-container">
-                        <div class="filter-bar" style="margin-bottom:20px;">
-                            <select id="historyTeacherFilter" style="min-width:250px;">
-                                <option value="">-- Select Teacher --</option>
-                            </select>
-                            <select id="historyYearFilter">
-                                <option value="all">All Years</option>
-                                ${Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map(y => `<option value="${y}">${y}</option>`).join('')}
-                            </select>
-                            <button class="btn btn-primary" id="refreshHistoryBtn">🔄 Refresh</button>
-                        </div>
-                        
-                        <div id="historyTeacherInfo" style="background:#f0f0f0; padding:15px; border-radius:10px; margin-bottom:20px; display:none;">
-                            <div><strong id="historyTeacherName"></strong> (<span id="historyTeacherId"></span>)</div>
-                            <div>📞 <span id="historyTeacherMobile"></span> | ✉️ <span id="historyTeacherEmail"></span></div>
-                        </div>
-                        
-                        <div class="stats-grid" id="historyStats" style="display:none;">
-                            <div class="stat-card" style="background:#28a745;color:white;"><h3 id="totalPresentCount">0</h3><p>Total Present</p></div>
-                            <div class="stat-card" style="background:#dc3545;color:white;"><h3 id="totalAbsentCount">0</h3><p>Total Absent</p></div>
-                            <div class="stat-card" style="background:#ffc107;color:#333;"><h3 id="totalLeaveCount">0</h3><p>Total Leave</p></div>
-                            <div class="stat-card" style="background:#17a2b8;color:white;"><h3 id="attendancePercent">0%</h3><p>Attendance %</p></div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <div class="chart-title">📊 Monthly Attendance Trend</div>
-                            <canvas id="attendanceTrendChart" style="height:300px; width:100%;"></canvas>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <div class="chart-title">💰 Salary Payment History</div>
-                            <canvas id="salaryTrendChart" style="height:300px; width:100%;"></canvas>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <div class="chart-title">📋 Detailed Attendance History</div>
-                            <div style="overflow-x:auto; max-height:400px;">
-                                <table class="data-table">
-                                    <thead><tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th></tr></thead>
-                                    <tbody id="attendanceHistoryBody"><tr><td colspan="5" class="empty-state">Select a teacher</td></tr></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <div class="chart-container">
-                            <div class="chart-title">💰 Detailed Salary History</div>
-                            <div style="overflow-x:auto; max-height:400px;">
-                                <table class="data-table">
-                                    <thead><tr><th>Month/Year</th><th>Base</th><th>Working</th><th>Present</th><th>Calculated</th><th>Paid</th><th>Due</th><th>Status</th></tr></thead>
-                                    <tbody id="salaryHistoryBody"><tr><td colspan="8" class="empty-state">Select a teacher</td></tr></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                tmsContent.appendChild(historyPane);
-            }
-        }
-    }
-
-    function setupHistoryTabEvents() {
-        const historyFilter = document.getElementById('historyTeacherFilter');
-        if (historyFilter) {
-            historyFilter.addEventListener('change', async (e) => {
-                if (e.target.value) {
-                    await loadHistoryData(e.target.value);
-                }
-            });
-        }
-        
-        const refreshBtn = document.getElementById('refreshHistoryBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', async () => {
-                if (selectedHistoryTeacherId) {
-                    await loadHistoryData(selectedHistoryTeacherId);
-                }
-            });
-        }
-        
-        const yearFilter = document.getElementById('historyYearFilter');
-        if (yearFilter) {
-            yearFilter.addEventListener('change', async () => {
-                if (selectedHistoryTeacherId) {
-                    await loadHistoryData(selectedHistoryTeacherId);
-                }
-            });
-        }
-    }
-
     async function init() {
         await loadTeachers();
         await loadLeftTeachers();
         await loadNotices();
-        addHistoryTab();
-        setupHistoryTabEvents();
-        updateHistoryTeacherDropdown();
         
         const joiningDateInput = document.getElementById('joiningDate');
         if (joiningDateInput) joiningDateInput.value = new Date().toISOString().split('T')[0];
@@ -1135,7 +1102,6 @@
                 });
                 if (tab === 'new-teacher') cancelEdit();
                 if (tab === 'notices') loadNotices();
-                if (tab === 'history') updateHistoryTeacherDropdown();
             });
         });
         
