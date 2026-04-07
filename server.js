@@ -1628,21 +1628,7 @@ app.get('/api/teachers/left', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-// ========== GET LEFT TEACHERS (Teachers who left) ==========
-app.get('/api/teachers/left', verifyToken, async (req, res) => {
-    try {
-        const leftTeachers = await Teacher.find({ 'status.isActive': false }).sort({ updatedAt: -1 });
-        const safeTeachers = leftTeachers.map(t => {
-            const obj = t.toObject();
-            delete obj.password;
-            return obj;
-        });
-        res.json({ success: true, data: safeTeachers });
-    } catch (err) {
-        console.error('Error fetching left teachers:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
+
 // ========== 17. MOVE TEACHER TO LEFT ==========
 app.post('/api/teachers/:id/move-to-left', verifyToken, async (req, res) => {
     try {
@@ -1756,7 +1742,29 @@ app.get('/api/reports/teacher/:id/:type', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-
+// ========== REJOIN TEACHER (Move back to active) ==========
+app.post('/api/teachers/:id/rejoin', verifyToken, async (req, res) => {
+    try {
+        const teacherId = req.params.id;
+        const { rejoinedAt } = req.body;
+        
+        const teacher = await Teacher.findOne({ teacherId: teacherId });
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        teacher.status.isActive = true;
+        teacher.status.leavingDate = null;
+        teacher.status.leavingReason = null;
+        teacher.status.rejoinedAt = rejoinedAt ? new Date(rejoinedAt) : new Date();
+        
+        await teacher.save();
+        res.json({ success: true, message: "Teacher rejoined successfully" });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 console.log('✅ Teacher APIs loaded successfully');
 // ============================================
 // SERVE HTML FILES
