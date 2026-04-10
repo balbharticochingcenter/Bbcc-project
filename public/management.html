@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bal Bharti - Complete Management System</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,8 +15,60 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background: #f0f2f5;
+        }
+        
+        /* Header Section */
+        .site-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .header-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: white;
+            padding: 5px;
+        }
+        
+        .header-text h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .header-text p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .admin-info {
+            text-align: right;
+        }
+        
+        .admin-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #e94560;
+        }
+        
+        .admin-role {
+            font-size: 0.8rem;
+            opacity: 0.8;
         }
         
         /* Main Layout */
@@ -23,88 +76,78 @@
             max-width: 1400px;
             margin: 20px auto;
             background: white;
-            border-radius: 25px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        
-        /* Navigation Bar */
-        .nav-bar {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            padding: 0 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            border-bottom: 3px solid #e94560;
+            min-height: 600px;
         }
         
-        .logo {
-            padding: 15px 0;
-        }
-        
-        .logo h1 {
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
             color: white;
-            font-size: 1.3rem;
+            padding: 20px 0;
         }
         
-        .logo p {
-            color: #e94560;
-            font-size: 0.7rem;
+        .sidebar-photo {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .sidebar-photo img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e94560;
         }
         
-        .nav-btn {
-            padding: 12px 25px;
-            border: none;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            cursor: pointer;
+        .zoom-link {
+            text-align: center;
+            padding: 15px;
+            background: rgba(233, 69, 96, 0.2);
+            margin: 15px;
             border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
+        }
+        
+        .zoom-link a {
+            color: #e94560;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .nav-menu li {
+            padding: 12px 25px;
+            cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            border-left: 3px solid transparent;
         }
         
-        .nav-btn:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
+        .nav-menu li:hover {
+            background: rgba(255,255,255,0.1);
         }
         
-        .nav-btn.active {
-            background: #e94560;
-            color: white;
-        }
-        
-        .nav-btn.student.active {
-            background: #007bff;
-        }
-        
-        .nav-btn.teacher.active {
-            background: #28a745;
-        }
-        
-        .logout-btn {
-            background: #dc3545;
-        }
-        
-        .logout-btn:hover {
-            background: #c82333;
+        .nav-menu li.active {
+            background: rgba(233, 69, 96, 0.2);
+            border-left-color: #e94560;
         }
         
         /* Content Area */
         .content-area {
-            min-height: 600px;
-            position: relative;
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
         }
         
         .module-container {
@@ -121,7 +164,147 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Loading Indicator */
+        /* Gallery Section */
+        .gallery-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .gallery-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .gallery-item img, .gallery-item video {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .gallery-item .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+        }
+        
+        /* Footer */
+        .site-footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px 30px;
+            margin-top: 20px;
+        }
+        
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 10px;
+            color: #e94560;
+        }
+        
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        
+        .footer-section a:hover {
+            color: #e94560;
+        }
+        
+        /* Settings Panel */
+        .settings-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .settings-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .settings-group h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .form-row {
+            margin-bottom: 15px;
+        }
+        
+        .form-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-row input, .form-row textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
         .loading-indicator {
             position: fixed;
             top: 50%;
@@ -139,163 +322,618 @@
             display: block;
         }
         
-        /* Responsive */
+        /* Password Change Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
         @media (max-width: 768px) {
-            .nav-bar {
+            .management-app {
                 flex-direction: column;
-                padding: 15px;
             }
-            .nav-buttons {
+            .sidebar {
                 width: 100%;
-                justify-content: center;
             }
-            .nav-btn {
-                flex: 1;
-                justify-content: center;
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Header (Dynamic from API) -->
+    <div class="site-header" id="siteHeader">
+        <div class="header-left">
+            <img class="header-logo" id="headerLogo" src="" alt="Logo">
+            <div class="header-text">
+                <h1 id="headerTitle">BBCC Portal</h1>
+                <p id="headerSubTitle">Best Coaching Center</p>
+            </div>
+        </div>
+        <div class="admin-info">
+            <div class="admin-name" id="adminName">Admin</div>
+            <div class="admin-role" id="adminRole">Administrator</div>
+        </div>
+    </div>
+    
     <div class="management-app">
-        <div class="nav-bar">
-            <div class="logo">
-                <h1>🏫 Bal Bharti Coaching Center</h1>
-                <p>Complete Management System</p>
+        <!-- Sidebar (Dynamic from API) -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-photo">
+                <img id="sidebarPhotoImg" src="" alt="Profile">
             </div>
-            <div class="nav-buttons">
-                <button class="nav-btn student active" onclick="switchModule('student')">
-                    👨‍🎓 Student Management
-                </button>
-                <button class="nav-btn teacher" onclick="switchModule('teacher')">
+            <div class="zoom-link" id="zoomLink">
+                <a href="#" target="_blank">🔗 Join Zoom Meeting</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="active" onclick="switchModule('student')">
+                    📚 Student Management
+                </li>
+                <li onclick="switchModule('teacher')">
                     👨‍🏫 Teacher Management
-                </button>
-                <button class="nav-btn logout-btn" onclick="handleLogout()">
+                </li>
+                <li onclick="switchModule('settings')">
+                    ⚙️ Screen Settings
+                </li>
+                <li onclick="openPasswordModal()">
+                    🔒 Change Password
+                </li>
+                <li onclick="handleLogout()">
                     🚪 Logout
-                </button>
-            </div>
+                </li>
+            </ul>
         </div>
         
         <div class="content-area">
+            <!-- Student Module -->
             <div id="student-module" class="module-container active">
                 <div id="student-app"></div>
             </div>
+            
+            <!-- Teacher Module -->
             <div id="teacher-module" class="module-container">
                 <div id="teacher-app"></div>
+            </div>
+            
+            <!-- Settings Module -->
+            <div id="settings-module" class="module-container">
+                <div class="settings-panel">
+                    <h2>Screen Settings</h2>
+                    
+                    <div class="settings-group">
+                        <h3>Header Settings</h3>
+                        <div class="form-row">
+                            <label>Logo Image</label>
+                            <input type="file" id="headerLogoInput" accept="image/*">
+                            <small>Upload logo (will be auto-compressed)</small>
+                        </div>
+                        <div class="form-row">
+                            <label>Title</label>
+                            <input type="text" id="headerTitleInput" placeholder="Site Title">
+                        </div>
+                        <div class="form-row">
+                            <label>Sub Title</label>
+                            <input type="text" id="headerSubTitleInput" placeholder="Site Subtitle">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <h3>Sidebar Settings</h3>
+                        <div class="form-row">
+                            <label>Sidebar Photo</label>
+                            <input type="file" id="sidebarPhotoInput" accept="image/*">
+                            <small>Upload photo (will be auto-compressed)</small>
+                        </div>
+                        <div class="form-row">
+                            <label>Zoom Meeting Link</label>
+                            <input type="url" id="zoomLinkInput" placeholder="https://zoom.us/meeting/...">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <h3>Gallery (Photos & Videos)</h3>
+                        <div class="form-row">
+                            <label>Add Photos/Videos</label>
+                            <input type="file" id="galleryFilesInput" multiple accept="image/*,video/*">
+                            <small>Select multiple files (auto-compressed)</small>
+                        </div>
+                        <div class="form-row">
+                            <label>Add Video Link (YouTube, Vimeo)</label>
+                            <input type="url" id="videoLinkInput" placeholder="https://youtube.com/watch?v=...">
+                            <button class="btn btn-primary" onclick="addVideoLink()">Add Video Link</button>
+                        </div>
+                        <div id="galleryGrid" class="gallery-grid"></div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <h3>Footer Social Links</h3>
+                        <div class="form-row">
+                            <label>WhatsApp Number</label>
+                            <input type="text" id="whatsappNumberInput" placeholder="919876543210">
+                        </div>
+                        <div class="form-row">
+                            <label>WhatsApp Channel Link</label>
+                            <input type="url" id="whatsappChannelInput" placeholder="https://whatsapp.com/channel/...">
+                        </div>
+                        <div class="form-row">
+                            <label>YouTube Channel Link</label>
+                            <input type="url" id="youtubeChannelInput" placeholder="https://youtube.com/@...">
+                        </div>
+                        <div class="form-row">
+                            <label>Facebook Link</label>
+                            <input type="url" id="facebookLinkInput" placeholder="https://facebook.com/...">
+                        </div>
+                        <div class="form-row">
+                            <label>Instagram Link</label>
+                            <input type="url" id="instagramLinkInput" placeholder="https://instagram.com/...">
+                        </div>
+                        <div class="form-row">
+                            <label>Telegram Link</label>
+                            <input type="url" id="telegramLinkInput" placeholder="https://t.me/...">
+                        </div>
+                        <div class="form-row">
+                            <label>Twitter Link</label>
+                            <input type="url" id="twitterLinkInput" placeholder="https://twitter.com/...">
+                        </div>
+                        <div class="form-row">
+                            <label>LinkedIn Link</label>
+                            <input type="url" id="linkedinLinkInput" placeholder="https://linkedin.com/...">
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveScreenSettings()">Save All Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer (Dynamic from API) -->
+    <div class="site-footer" id="siteFooter">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <a id="footerWhatsapp" href="#">WhatsApp</a>
+                <a id="footerWhatsappChannel" href="#">WhatsApp Channel</a>
+            </div>
+            <div class="footer-section">
+                <h4>Social Media</h4>
+                <a id="footerYoutube" href="#">YouTube</a>
+                <a id="footerFacebook" href="#">Facebook</a>
+                <a id="footerInstagram" href="#">Instagram</a>
+                <a id="footerTelegram" href="#">Telegram</a>
+            </div>
+            <div class="footer-section">
+                <h4>More</h4>
+                <a id="footerTwitter" href="#">Twitter</a>
+                <a id="footerLinkedin" href="#">LinkedIn</a>
+            </div>
+            <div class="footer-section">
+                <p id="copyrightText">© 2024 BBCC. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h3>Change Password</h3>
+            <div class="form-row">
+                <label>Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter current password">
+            </div>
+            <div class="form-row">
+                <label>New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password">
+            </div>
+            <div class="form-row">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm new password">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="changePassword()">Change Password</button>
+                <button class="btn btn-danger" onclick="closePasswordModal()">Cancel</button>
             </div>
         </div>
     </div>
     
     <div class="loading-indicator" id="loadingIndicator">
-        Loading... <span class="spinner"></span>
+        Loading... 
     </div>
 
     <script>
-        // Global state management
+        // Global variables
         let currentModule = 'student';
         let studentModuleLoaded = false;
         let teacherModuleLoaded = false;
+        let screenData = null;
+        let adminData = null;
         
-        // Switch between modules
+        // Image compression function
+        async function compressImage(file, maxSizeMB = 0.5) {
+            const options = {
+                maxSizeMB: maxSizeMB,
+                maxWidthOrHeight: 800,
+                useWebWorker: true,
+                fileType: 'image/jpeg'
+            };
+            try {
+                const compressedFile = await imageCompression(file, options);
+                return compressedFile;
+            } catch (error) {
+                console.error('Compression error:', error);
+                return file;
+            }
+        }
+        
+        // Convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        // Load screen data from API
+        async function loadScreenData() {
+            try {
+                const response = await fetch('/api/screen');
+                const result = await response.json();
+                if (result.success) {
+                    screenData = result.data;
+                    updateUIWithScreenData();
+                    return screenData;
+                }
+            } catch (error) {
+                console.error('Error loading screen data:', error);
+            }
+            return null;
+        }
+        
+        // Update UI with screen data
+        function updateUIWithScreenData() {
+            if (!screenData) return;
+            
+            // Update Header
+            if (screenData.logo) {
+                document.getElementById('headerLogo').src = screenData.logo;
+            }
+            document.getElementById('headerTitle').textContent = screenData.title || 'BBCC Portal';
+            document.getElementById('headerSubTitle').textContent = screenData.subTitle || 'Best Coaching Center';
+            
+            // Update Sidebar
+            if (screenData.sidebarPhoto) {
+                document.getElementById('sidebarPhotoImg').src = screenData.sidebarPhoto;
+            }
+            if (screenData.zoomMeetingLink) {
+                const zoomLink = document.getElementById('zoomLink').querySelector('a');
+                zoomLink.href = screenData.zoomMeetingLink;
+                zoomLink.textContent = '🔗 Join Zoom Meeting';
+            }
+            
+            // Update Gallery
+            displayGallery();
+            
+            // Update Settings Form
+            document.getElementById('headerTitleInput').value = screenData.title || '';
+            document.getElementById('headerSubTitleInput').value = screenData.subTitle || '';
+            document.getElementById('zoomLinkInput').value = screenData.zoomMeetingLink || '';
+            document.getElementById('whatsappNumberInput').value = screenData.whatsappNumber || '';
+            document.getElementById('whatsappChannelInput').value = screenData.whatsappChannelLink || '';
+            document.getElementById('youtubeChannelInput').value = screenData.youtubeChannelLink || '';
+            document.getElementById('facebookLinkInput').value = screenData.facebookLink || '';
+            document.getElementById('instagramLinkInput').value = screenData.instagramLink || '';
+            document.getElementById('telegramLinkInput').value = screenData.telegramLink || '';
+            document.getElementById('twitterLinkInput').value = screenData.twitterLink || '';
+            document.getElementById('linkedinLinkInput').value = screenData.linkedinLink || '';
+            
+            // Update Footer
+            if (screenData.whatsappNumber) {
+                const whatsappLink = document.getElementById('footerWhatsapp');
+                whatsappLink.href = `https://wa.me/${screenData.whatsappNumber}`;
+                whatsappLink.textContent = `WhatsApp: ${screenData.whatsappNumber}`;
+            }
+            if (screenData.whatsappChannelLink) {
+                document.getElementById('footerWhatsappChannel').href = screenData.whatsappChannelLink;
+            }
+            if (screenData.youtubeChannelLink) {
+                document.getElementById('footerYoutube').href = screenData.youtubeChannelLink;
+            }
+            if (screenData.facebookLink) {
+                document.getElementById('footerFacebook').href = screenData.facebookLink;
+            }
+            if (screenData.instagramLink) {
+                document.getElementById('footerInstagram').href = screenData.instagramLink;
+            }
+            if (screenData.telegramLink) {
+                document.getElementById('footerTelegram').href = screenData.telegramLink;
+            }
+            if (screenData.twitterLink) {
+                document.getElementById('footerTwitter').href = screenData.twitterLink;
+            }
+            if (screenData.linkedinLink) {
+                document.getElementById('footerLinkedin').href = screenData.linkedinLink;
+            }
+        }
+        
+        // Display gallery
+        function displayGallery() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            if (!galleryGrid || !screenData || !screenData.gallery) return;
+            
+            galleryGrid.innerHTML = '';
+            for (const item of screenData.gallery) {
+                const div = document.createElement('div');
+                div.className = 'gallery-item';
+                if (item.type === 'photo') {
+                    div.innerHTML = `
+                        <img src="${item.url}" alt="Gallery">
+                        <button class="delete-btn" onclick="deleteGalleryItem('${item._id}')">×</button>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <video controls src="${item.url}"></video>
+                        <button class="delete-btn" onclick="deleteGalleryItem('${item._id}')">×</button>
+                    `;
+                }
+                galleryGrid.appendChild(div);
+            }
+        }
+        
+        // Delete gallery item
+        async function deleteGalleryItem(id) {
+            if (!confirm('Delete this item?')) return;
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/screen/gallery/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    await loadScreenData();
+                    showNotification('Item deleted successfully');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+            }
+        }
+        
+        // Add video link
+        async function addVideoLink() {
+            const videoUrl = document.getElementById('videoLinkInput').value;
+            if (!videoUrl) {
+                alert('Please enter video URL');
+                return;
+            }
+            
+            const videoLinks = [{ url: videoUrl }];
+            const formData = new FormData();
+            formData.append('videoLinks', JSON.stringify(videoLinks));
+            
+            // Get current data and add
+            if (screenData) {
+                const deleteIds = [];
+                formData.append('deleteGalleryIds', JSON.stringify(deleteIds));
+                
+                // Preserve other fields
+                formData.append('title', screenData.title);
+                formData.append('subTitle', screenData.subTitle);
+                formData.append('zoomMeetingLink', screenData.zoomMeetingLink);
+                formData.append('whatsappNumber', screenData.whatsappNumber);
+                formData.append('whatsappChannelLink', screenData.whatsappChannelLink);
+                formData.append('youtubeChannelLink', screenData.youtubeChannelLink);
+                formData.append('facebookLink', screenData.facebookLink);
+                formData.append('instagramLink', screenData.instagramLink);
+                formData.append('telegramLink', screenData.telegramLink);
+                formData.append('twitterLink', screenData.twitterLink);
+                formData.append('linkedinLink', screenData.linkedinLink);
+            }
+            
+            await saveScreenSettingsWithData(formData);
+            document.getElementById('videoLinkInput').value = '';
+        }
+        
+        // Save screen settings
+        async function saveScreenSettings() {
+            showLoading(true);
+            const formData = new FormData();
+            
+            // Get values from form
+            formData.append('title', document.getElementById('headerTitleInput').value);
+            formData.append('subTitle', document.getElementById('headerSubTitleInput').value);
+            formData.append('zoomMeetingLink', document.getElementById('zoomLinkInput').value);
+            formData.append('whatsappNumber', document.getElementById('whatsappNumberInput').value);
+            formData.append('whatsappChannelLink', document.getElementById('whatsappChannelInput').value);
+            formData.append('youtubeChannelLink', document.getElementById('youtubeChannelInput').value);
+            formData.append('facebookLink', document.getElementById('facebookLinkInput').value);
+            formData.append('instagramLink', document.getElementById('instagramLinkInput').value);
+            formData.append('telegramLink', document.getElementById('telegramLinkInput').value);
+            formData.append('twitterLink', document.getElementById('twitterLinkInput').value);
+            formData.append('linkedinLink', document.getElementById('linkedinLinkInput').value);
+            
+            // Handle file uploads
+            const headerLogo = document.getElementById('headerLogoInput').files[0];
+            if (headerLogo) {
+                const compressed = await compressImage(headerLogo);
+                formData.append('logo', compressed);
+            }
+            
+            const sidebarPhoto = document.getElementById('sidebarPhotoInput').files[0];
+            if (sidebarPhoto) {
+                const compressed = await compressImage(sidebarPhoto);
+                formData.append('sidebarPhoto', compressed);
+            }
+            
+            const galleryFiles = document.getElementById('galleryFilesInput').files;
+            if (galleryFiles.length > 0) {
+                for (const file of galleryFiles) {
+                    if (file.type.startsWith('image/')) {
+                        const compressed = await compressImage(file);
+                        formData.append('galleryFiles', compressed);
+                    } else {
+                        formData.append('galleryFiles', file);
+                    }
+                }
+            }
+            
+            // Keep existing gallery items (don't delete)
+            if (screenData && screenData.gallery) {
+                const existingIds = screenData.gallery.map(item => item._id);
+                formData.append('deleteGalleryIds', JSON.stringify([]));
+            }
+            
+            await saveScreenSettingsWithData(formData);
+        }
+        
+        async function saveScreenSettingsWithData(formData) {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch('/api/screen', {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    await loadScreenData();
+                    showNotification('Settings saved successfully!');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('Error saving settings');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Change password
+        async function changePassword() {
+            const currentPwd = document.getElementById('currentPassword').value;
+            const newPwd = document.getElementById('newPassword').value;
+            const confirmPwd = document.getElementById('confirmPassword').value;
+            
+            if (!currentPwd || !newPwd) {
+                alert('Please fill all fields');
+                return;
+            }
+            if (newPwd !== confirmPwd) {
+                alert('New passwords do not match');
+                return;
+            }
+            if (newPwd.length < 4) {
+                alert('Password must be at least 4 characters');
+                return;
+            }
+            
+            // Here you would call your change password API
+            // For now, just show message
+            alert('Password change feature - Implement your API endpoint');
+            closePasswordModal();
+        }
+        
+        // Switch modules
         window.switchModule = function(module) {
             currentModule = module;
             sessionStorage.setItem('activeModule', module);
             
-            // Update active button styles
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
+            document.querySelectorAll('.nav-menu li').forEach(li => {
+                li.classList.remove('active');
             });
-            document.querySelector(`.nav-btn.${module}`).classList.add('active');
+            event.currentTarget.classList.add('active');
             
-            // Show/hide modules
-            document.getElementById('student-module').classList.remove('active');
-            document.getElementById('teacher-module').classList.remove('active');
+            document.querySelectorAll('.module-container').forEach(container => {
+                container.classList.remove('active');
+            });
             document.getElementById(`${module}-module`).classList.add('active');
             
-            // Load module if not loaded yet
             if (module === 'student' && !studentModuleLoaded) {
                 loadStudentModule();
             } else if (module === 'teacher' && !teacherModuleLoaded) {
                 loadTeacherModule();
             }
-            
-            // Trigger resize for charts if any
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-            }, 100);
         };
         
-        // Load Student Module
+        // Load student module
         function loadStudentModule() {
             if (studentModuleLoaded) return;
-            
             showLoading(true);
-            
-            // Clear and prepare container
             const container = document.getElementById('student-app');
             container.innerHTML = '';
-            
-            // Create and load student script
             const script = document.createElement('script');
             script.src = 'js/student-management.js';
             script.onload = function() {
                 studentModuleLoaded = true;
                 showLoading(false);
-                
-                // Initialize student module if it has init function
                 if (window.initStudentModule) {
                     window.initStudentModule('student-app');
-                } else if (window.StudentManagementSystem) {
-                    new window.StudentManagementSystem('student-app');
                 }
             };
             script.onerror = function() {
                 showLoading(false);
-                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Student Management module. Please check if student-management.js exists.</div>';
+                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Student Management</div>';
             };
             document.body.appendChild(script);
         }
         
-        // Load Teacher Module
+        // Load teacher module
         function loadTeacherModule() {
             if (teacherModuleLoaded) return;
-            
             showLoading(true);
-            
-            // Clear and prepare container
             const container = document.getElementById('teacher-app');
             container.innerHTML = '';
-            
-            // Create and load teacher script
             const script = document.createElement('script');
             script.src = 'js/teacher-management.js';
             script.onload = function() {
                 teacherModuleLoaded = true;
                 showLoading(false);
-                
-                // Initialize teacher module if it has init function
                 if (window.initTeacherModule) {
                     window.initTeacherModule('teacher-app');
-                } else if (window.TeacherManagementSystem) {
-                    new window.TeacherManagementSystem('teacher-app');
                 }
             };
             script.onerror = function() {
                 showLoading(false);
-                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Teacher Management module. Please check if teacher-management.js exists.</div>';
+                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Teacher Management</div>';
             };
             document.body.appendChild(script);
         }
         
-        // Show/hide loading indicator
-        function showLoading(show) {
-            const loader = document.getElementById('loadingIndicator');
-            if (show) {
-                loader.classList.add('active');
-            } else {
-                loader.classList.remove('active');
-            }
-        }
+        // Password modal
+        window.openPasswordModal = function() {
+            document.getElementById('passwordModal').classList.add('active');
+        };
+        
+        window.closePasswordModal = function() {
+            document.getElementById('passwordModal').classList.remove('active');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        };
         
         // Handle logout
         window.handleLogout = function() {
@@ -307,7 +945,33 @@
             }
         };
         
-        // Check authentication
+        function showNotification(message) {
+            alert(message);
+        }
+        
+        function showLoading(show) {
+            const loader = document.getElementById('loadingIndicator');
+            if (show) {
+                loader.classList.add('active');
+            } else {
+                loader.classList.remove('active');
+            }
+        }
+        
+        // Get admin info
+        function getAdminInfo() {
+            const token = localStorage.getItem('adminToken');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    document.getElementById('adminName').textContent = payload.adminID || 'Admin';
+                } catch(e) {
+                    document.getElementById('adminName').textContent = 'Admin';
+                }
+            }
+        }
+        
+        // Check auth
         function checkAuth() {
             const token = localStorage.getItem('adminToken');
             if (!token) {
@@ -317,25 +981,29 @@
             return true;
         }
         
-        // Initialize default module based on URL hash or session storage
-        function initialize() {
+        // Initialize
+        async function initialize() {
             if (!checkAuth()) return;
+            getAdminInfo();
+            await loadScreenData();
             
             const savedModule = sessionStorage.getItem('activeModule');
-            const hashModule = window.location.hash.substring(1);
-            
-            let defaultModule = 'student';
-            if (hashModule === 'teacher' || hashModule === 'teachers') {
-                defaultModule = 'teacher';
-            } else if (savedModule === 'teacher') {
-                defaultModule = 'teacher';
+            if (savedModule === 'teacher') {
+                setTimeout(() => switchModule('teacher'), 100);
             }
-            
-            switchModule(defaultModule);
         }
         
-        // Start the application
         initialize();
+        
+        // Add click handlers to menu items
+        document.querySelectorAll('.nav-menu li').forEach((li, index) => {
+            li.onclick = function() {
+                const modules = ['student', 'teacher', 'settings', '', ''];
+                if (modules[index]) switchModule(modules[index]);
+                else if (index === 3) openPasswordModal();
+                else if (index === 4) handleLogout();
+            };
+        });
     </script>
 </body>
 </html>
