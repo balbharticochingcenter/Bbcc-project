@@ -18,7 +18,6 @@
             background: #f0f2f5;
         }
         
-        /* Header Section */
         .site-header {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
@@ -99,7 +98,6 @@
             margin-top: 5px;
         }
         
-        /* Filter Bar */
         .filter-bar {
             background: white;
             padding: 15px 20px;
@@ -151,7 +149,6 @@
             border-radius: 8px;
         }
         
-        /* Main Layout */
         .management-app {
             max-width: 1400px;
             margin: 20px auto;
@@ -163,7 +160,6 @@
             min-height: 600px;
         }
         
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
@@ -267,7 +263,6 @@
             border-left-color: #e94560;
         }
         
-        /* Content Area */
         .content-area {
             flex: 1;
             padding: 20px;
@@ -288,7 +283,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Dashboard Stats Cards */
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -332,7 +326,6 @@
             background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
         }
         
-        /* Chart Containers */
         .chart-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -354,7 +347,6 @@
             padding-left: 10px;
         }
         
-        /* Recent Activity */
         .activity-list {
             background: white;
             border-radius: 15px;
@@ -369,7 +361,6 @@
             justify-content: space-between;
         }
         
-        /* Preview Container */
         .preview-container {
             display: flex;
             flex-wrap: wrap;
@@ -388,27 +379,6 @@
             height: 100%;
             object-fit: cover;
             border-radius: 8px;
-        }
-        
-        .preview-item .remove-preview {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: red;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-        
-        /* Gallery Section */
-        .gallery-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
         }
         
         .gallery-grid {
@@ -445,7 +415,6 @@
             cursor: pointer;
         }
         
-        /* Footer */
         .site-footer {
             background: #1a1a2e;
             color: white;
@@ -479,7 +448,6 @@
             color: #e94560;
         }
         
-        /* Settings Panel */
         .settings-panel {
             background: white;
             border-radius: 10px;
@@ -539,11 +507,6 @@
             color: white;
         }
         
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
         .loading-indicator {
             position: fixed;
             top: 50%;
@@ -561,7 +524,6 @@
             display: block;
         }
         
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -591,7 +553,6 @@
             margin-bottom: 20px;
         }
         
-        /* Toast Notification */
         .toast-notification {
             position: fixed;
             bottom: 20px;
@@ -610,33 +571,17 @@
         }
         
         @media (max-width: 768px) {
-            .management-app {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-            }
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
-            .multi-photo-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            .chart-row {
-                grid-template-columns: 1fr;
-            }
-            .filter-bar {
-                flex-direction: column;
-            }
-            .admin-info {
-                flex-direction: column-reverse;
-            }
+            .management-app { flex-direction: column; }
+            .sidebar { width: 100%; }
+            .footer-content { flex-direction: column; text-align: center; }
+            .multi-photo-grid { grid-template-columns: repeat(4, 1fr); }
+            .chart-row { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; }
+            .admin-info { flex-direction: column-reverse; }
         }
     </style>
 </head>
 <body>
-    <!-- Header (Dynamic from API) -->
     <div class="site-header" id="siteHeader">
         <div class="header-left">
             <img class="header-logo" id="headerLogo" src="" alt="Logo">
@@ -656,7 +601,6 @@
     </div>
     
     <div class="management-app">
-        <!-- Sidebar (Dynamic from API - Multi Photo) -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-photo-area">
                 <h4>📸 Sidebar Photos</h4>
@@ -670,489 +614,127 @@
                 <a href="#" target="_blank">🔗 Join Zoom Meeting</a>
             </div>
             <ul class="nav-menu">
-                <li class="active" onclick="switchModule('dashboard')">
-                    📊 Dashboard
-                </li>
-                <li onclick="switchModule('student')">
-                    📚 Student Management
-                </li>
-                <li onclick="switchModule('teacher')">
-                    👨‍🏫 Teacher Management
-                </li>
-                <li onclick="switchModule('settings')">
-                    ⚙️ Screen Settings
-                </li>
-                <li onclick="openPasswordModal()">
-                    🔒 Change Password
-                </li>
-                <li onclick="handleLogout()">
-                    🚪 Logout
-                </li>
+                <li class="active" onclick="switchModule('dashboard')">📊 Dashboard</li>
+                <li onclick="switchModule('student')">📚 Student Management</li>
+                <li onclick="switchModule('teacher')">👨‍🏫 Teacher Management</li>
+                <li onclick="switchModule('settings')">⚙️ Screen Settings</li>
+                <li onclick="openPasswordModal()">🔒 Change Password</li>
+                <li onclick="handleLogout()">🚪 Logout</li>
             </ul>
         </div>
         
         <div class="content-area">
-            <!-- Dashboard Module -->
             <div id="dashboard-module" class="module-container active">
-                <!-- Filter Bar -->
                 <div class="filter-bar">
                     <div class="filter-buttons">
-                        <button class="filter-btn" data-filter="daily" onclick="setFilter('daily')">📅 Daily</button>
-                        <button class="filter-btn" data-filter="weekly" onclick="setFilter('weekly')">📆 Weekly</button>
-                        <button class="filter-btn active" data-filter="monthly" onclick="setFilter('monthly')">📊 Monthly</button>
-                        <button class="filter-btn" data-filter="yearly" onclick="setFilter('yearly')">📈 Yearly</button>
-                        <button class="filter-btn" data-filter="lifetime" onclick="setFilter('lifetime')">🌟 Lifetime</button>
+                        <button class="filter-btn" onclick="setFilter('daily')">📅 Daily</button>
+                        <button class="filter-btn" onclick="setFilter('weekly')">📆 Weekly</button>
+                        <button class="filter-btn active" onclick="setFilter('monthly')">📊 Monthly</button>
+                        <button class="filter-btn" onclick="setFilter('yearly')">📈 Yearly</button>
+                        <button class="filter-btn" onclick="setFilter('lifetime')">🌟 Lifetime</button>
                     </div>
                     <div class="date-range" id="dateRangePicker" style="display: none;">
-                        <input type="date" id="startDate">
-                        <span>to</span>
-                        <input type="date" id="endDate">
+                        <input type="date" id="startDate"><span>to</span><input type="date" id="endDate">
                         <button class="btn btn-primary" onclick="applyCustomRange()">Apply</button>
                     </div>
                 </div>
                 
-                <!-- Main Stats Cards -->
                 <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <h3 id="totalStudents">0</h3>
-                        <p>Total Students</p>
-                        <small id="activeStudents">Active: 0</small>
-                    </div>
-                    <div class="stat-card warning">
-                        <h3 id="totalTeachers">0</h3>
-                        <p>Total Teachers</p>
-                        <small id="activeTeachers">Active: 0</small>
-                    </div>
-                    <div class="stat-card success">
-                        <h3 id="totalIncome">₹0</h3>
-                        <p>Total Income (Fees)</p>
-                        <small id="periodIncome">This Period: ₹0</small>
-                    </div>
-                    <div class="stat-card danger">
-                        <h3 id="totalExpense">₹0</h3>
-                        <p>Total Expense (Salary)</p>
-                        <small id="periodExpense">This Period: ₹0</small>
-                    </div>
+                    <div class="stat-card"><h3 id="totalStudents">0</h3><p>Total Students</p><small id="activeStudents">Active: 0</small></div>
+                    <div class="stat-card warning"><h3 id="totalTeachers">0</h3><p>Total Teachers</p><small id="activeTeachers">Active: 0</small></div>
+                    <div class="stat-card success"><h3 id="totalIncome">₹0</h3><p>Total Income</p><small id="periodIncome">This Period: ₹0</small></div>
+                    <div class="stat-card danger"><h3 id="totalExpense">₹0</h3><p>Total Expense</p><small id="periodExpense">This Period: ₹0</small></div>
                 </div>
                 
-                <!-- Profit Card -->
                 <div class="dashboard-stats">
-                    <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                        <h3 id="totalProfit">₹0</h3>
-                        <p>Net Profit</p>
-                        <small id="profitMargin">Margin: 0%</small>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);">
-                        <h3 id="totalFeesDue">₹0</h3>
-                        <p>Student Fees Due</p>
-                        <small id="dueStudentsCount">0 Students have due</small>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);">
-                        <h3 id="totalSalaryDue">₹0</h3>
-                        <p>Teacher Salary Due</p>
-                        <small id="salaryDueTeachers">0 Teachers due</small>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);">
-                        <h3 id="attendanceRate">0%</h3>
-                        <p>Overall Attendance</p>
-                        <small id="attendanceDetails">Students: 0% | Teachers: 0%</small>
-                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);"><h3 id="totalProfit">₹0</h3><p>Net Profit</p><small id="profitMargin">Margin: 0%</small></div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);"><h3 id="totalFeesDue">₹0</h3><p>Fees Due</p><small id="dueStudentsCount">0 Students</small></div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);"><h3 id="totalSalaryDue">₹0</h3><p>Salary Due</p><small id="salaryDueTeachers">0 Teachers</small></div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%);"><h3 id="attendanceRate">0%</h3><p>Attendance</p><small id="attendanceDetails">Students: 0% | Teachers: 0%</small></div>
                 </div>
                 
-                <!-- Charts Row 1 -->
                 <div class="chart-row">
-                    <div class="chart-container">
-                        <h3>📈 Income vs Expense</h3>
-                        <canvas id="incomeExpenseChart" style="max-height: 300px;"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>👥 Student Attendance Trend</h3>
-                        <canvas id="studentAttendanceChart" style="max-height: 300px;"></canvas>
-                    </div>
+                    <div class="chart-container"><h3>📈 Income vs Expense</h3><canvas id="incomeExpenseChart"></canvas></div>
+                    <div class="chart-container"><h3>👥 Student Attendance</h3><canvas id="studentAttendanceChart"></canvas></div>
                 </div>
-                
-                <!-- Charts Row 2 -->
                 <div class="chart-row">
-                    <div class="chart-container">
-                        <h3>👨‍🏫 Teacher Attendance Trend</h3>
-                        <canvas id="teacherAttendanceChart" style="max-height: 300px;"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>📊 Revenue Distribution</h3>
-                        <canvas id="revenueChart" style="max-height: 300px;"></canvas>
-                    </div>
+                    <div class="chart-container"><h3>👨‍🏫 Teacher Attendance</h3><canvas id="teacherAttendanceChart"></canvas></div>
+                    <div class="chart-container"><h3>📊 Revenue Distribution</h3><canvas id="revenueChart"></canvas></div>
                 </div>
-                
-                <!-- Recent Activity -->
-                <div class="activity-list">
-                    <h3>🔄 Recent Activity</h3>
-                    <div id="recentActivity"></div>
-                </div>
+                <div class="activity-list"><h3>🔄 Recent Activity</h3><div id="recentActivity"></div></div>
             </div>
             
-            <!-- Student Module -->
-            <div id="student-module" class="module-container">
-                <div id="student-app"></div>
-            </div>
+            <div id="student-module" class="module-container"><div id="student-app"></div></div>
+            <div id="teacher-module" class="module-container"><div id="teacher-app"></div></div>
             
-            <!-- Teacher Module -->
-            <div id="teacher-module" class="module-container">
-                <div id="teacher-app"></div>
-            </div>
-            
-            <!-- Settings Module -->
             <div id="settings-module" class="module-container">
                 <div class="settings-panel">
                     <h2>Screen Settings</h2>
-                    
                     <div class="settings-group">
                         <h3>Header Settings</h3>
-                        <div class="form-row">
-                            <label>Logo Image</label>
-                            <input type="file" id="headerLogoInput" accept="image/*" onchange="previewImage(this, 'logoPreview')">
-                            <div id="logoPreview" class="preview-container"></div>
-                            <small>Upload logo (auto-compressed to 5-10KB)</small>
-                        </div>
-                        <div class="form-row">
-                            <label>Title</label>
-                            <input type="text" id="headerTitleInput" placeholder="Site Title">
-                        </div>
-                        <div class="form-row">
-                            <label>Sub Title</label>
-                            <input type="text" id="headerSubTitleInput" placeholder="Site Subtitle">
-                        </div>
+                        <div class="form-row"><label>Logo Image</label><input type="file" id="headerLogoInput" accept="image/*" onchange="previewImage(this, 'logoPreview')"><div id="logoPreview" class="preview-container"></div><small>Upload logo (auto-compressed)</small></div>
+                        <div class="form-row"><label>Title</label><input type="text" id="headerTitleInput" placeholder="Site Title"></div>
+                        <div class="form-row"><label>Sub Title</label><input type="text" id="headerSubTitleInput" placeholder="Site Subtitle"></div>
                     </div>
-                    
                     <div class="settings-group">
                         <h3>Sidebar Settings</h3>
-                        <div class="form-row">
-                            <label>Zoom Meeting Link</label>
-                            <input type="url" id="zoomLinkInput" placeholder="https://zoom.us/meeting/...">
-                        </div>
+                        <div class="form-row"><label>Zoom Meeting Link</label><input type="url" id="zoomLinkInput" placeholder="https://zoom.us/meeting/..."></div>
                     </div>
-                    
                     <div class="settings-group">
-                        <h3>Gallery (Photos & Videos) - Multi Upload</h3>
-                        <div class="form-row">
-                            <label>Add Multiple Photos/Videos</label>
-                            <input type="file" id="galleryFilesInput" multiple accept="image/*,video/*" onchange="previewGalleryFiles(this.files)">
-                            <div id="galleryPreview" class="preview-container"></div>
-                            <button class="btn btn-primary" style="margin-top: 10px;" onclick="uploadGalleryFiles()">Upload Selected</button>
-                        </div>
-                        <div class="form-row">
-                            <label>Add Video Link (YouTube, Vimeo)</label>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="url" id="videoLinkInput" placeholder="https://youtube.com/watch?v=..." style="flex:1">
-                                <button class="btn btn-primary" onclick="addVideoLink()">Add Link</button>
-                            </div>
-                        </div>
+                        <h3>Gallery - Multi Upload</h3>
+                        <div class="form-row"><label>Add Multiple Photos</label><input type="file" id="galleryFilesInput" multiple accept="image/*" onchange="previewGalleryFiles(this.files)"><div id="galleryPreview" class="preview-container"></div><button class="btn btn-primary" style="margin-top:10px" onclick="uploadGalleryFiles()">Upload Selected</button></div>
+                        <div class="form-row"><label>Add Video Link</label><div style="display:flex;gap:10px"><input type="url" id="videoLinkInput" placeholder="https://youtube.com/watch?v=..." style="flex:1"><button class="btn btn-primary" onclick="addVideoLink()">Add Link</button></div></div>
                         <div id="galleryGrid" class="gallery-grid"></div>
                     </div>
-                    
                     <div class="settings-group">
                         <h3>Footer Social Links</h3>
-                        <div class="form-row">
-                            <label>WhatsApp Number</label>
-                            <input type="text" id="whatsappNumberInput" placeholder="919876543210">
-                        </div>
-                        <div class="form-row">
-                            <label>WhatsApp Channel Link</label>
-                            <input type="url" id="whatsappChannelInput" placeholder="https://whatsapp.com/channel/...">
-                        </div>
-                        <div class="form-row">
-                            <label>YouTube Channel Link</label>
-                            <input type="url" id="youtubeChannelInput" placeholder="https://youtube.com/@...">
-                        </div>
-                        <div class="form-row">
-                            <label>Facebook Link</label>
-                            <input type="url" id="facebookLinkInput" placeholder="https://facebook.com/...">
-                        </div>
-                        <div class="form-row">
-                            <label>Instagram Link</label>
-                            <input type="url" id="instagramLinkInput" placeholder="https://instagram.com/...">
-                        </div>
-                        <div class="form-row">
-                            <label>Telegram Link</label>
-                            <input type="url" id="telegramLinkInput" placeholder="https://t.me/...">
-                        </div>
-                        <div class="form-row">
-                            <label>Twitter Link</label>
-                            <input type="url" id="twitterLinkInput" placeholder="https://twitter.com/...">
-                        </div>
-                        <div class="form-row">
-                            <label>LinkedIn Link</label>
-                            <input type="url" id="linkedinLinkInput" placeholder="https://linkedin.com/...">
-                        </div>
+                        <div class="form-row"><label>WhatsApp Number</label><input type="text" id="whatsappNumberInput" placeholder="919876543210"></div>
+                        <div class="form-row"><label>WhatsApp Channel Link</label><input type="url" id="whatsappChannelInput" placeholder="https://whatsapp.com/channel/..."></div>
+                        <div class="form-row"><label>YouTube Channel Link</label><input type="url" id="youtubeChannelInput" placeholder="https://youtube.com/@..."></div>
+                        <div class="form-row"><label>Facebook Link</label><input type="url" id="facebookLinkInput" placeholder="https://facebook.com/..."></div>
+                        <div class="form-row"><label>Instagram Link</label><input type="url" id="instagramLinkInput" placeholder="https://instagram.com/..."></div>
+                        <div class="form-row"><label>Telegram Link</label><input type="url" id="telegramLinkInput" placeholder="https://t.me/..."></div>
+                        <div class="form-row"><label>Twitter Link</label><input type="url" id="twitterLinkInput" placeholder="https://twitter.com/..."></div>
+                        <div class="form-row"><label>LinkedIn Link</label><input type="url" id="linkedinLinkInput" placeholder="https://linkedin.com/..."></div>
                     </div>
-                    
                     <button class="btn btn-primary" onclick="saveBasicSettings()">Save Settings</button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Footer (Dynamic from API) -->
     <div class="site-footer" id="siteFooter">
         <div class="footer-content">
-            <div class="footer-section">
-                <h4>Contact Us</h4>
-                <a id="footerWhatsapp" href="#">WhatsApp</a>
-                <a id="footerWhatsappChannel" href="#">WhatsApp Channel</a>
-            </div>
-            <div class="footer-section">
-                <h4>Social Media</h4>
-                <a id="footerYoutube" href="#">YouTube</a>
-                <a id="footerFacebook" href="#">Facebook</a>
-                <a id="footerInstagram" href="#">Instagram</a>
-                <a id="footerTelegram" href="#">Telegram</a>
-            </div>
-            <div class="footer-section">
-                <h4>More</h4>
-                <a id="footerTwitter" href="#">Twitter</a>
-                <a id="footerLinkedin" href="#">LinkedIn</a>
-            </div>
-            <div class="footer-section">
-                <p id="copyrightText">© 2024 BBCC. All rights reserved.</p>
-            </div>
+            <div class="footer-section"><h4>Contact Us</h4><a id="footerWhatsapp" href="#">WhatsApp</a><a id="footerWhatsappChannel" href="#">WhatsApp Channel</a></div>
+            <div class="footer-section"><h4>Social Media</h4><a id="footerYoutube" href="#">YouTube</a><a id="footerFacebook" href="#">Facebook</a><a id="footerInstagram" href="#">Instagram</a><a id="footerTelegram" href="#">Telegram</a></div>
+            <div class="footer-section"><h4>More</h4><a id="footerTwitter" href="#">Twitter</a><a id="footerLinkedin" href="#">LinkedIn</a></div>
+            <div class="footer-section"><p id="copyrightText">© 2024 BBCC. All rights reserved.</p></div>
         </div>
     </div>
     
-    <!-- Password Change Modal -->
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <h3>Change Password</h3>
-            <div class="form-row">
-                <label>Current Password</label>
-                <input type="password" id="currentPassword" placeholder="Enter current password">
-            </div>
-            <div class="form-row">
-                <label>New Password</label>
-                <input type="password" id="newPassword" placeholder="Enter new password">
-            </div>
-            <div class="form-row">
-                <label>Confirm New Password</label>
-                <input type="password" id="confirmPassword" placeholder="Confirm new password">
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-primary" onclick="changePassword()">Change Password</button>
-                <button class="btn btn-danger" onclick="closePasswordModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
+    <div id="passwordModal" class="modal"><div class="modal-content"><h3>Change Password</h3><div class="form-row"><label>Current Password</label><input type="password" id="currentPassword" placeholder="Enter current password"></div><div class="form-row"><label>New Password</label><input type="password" id="newPassword" placeholder="Enter new password"></div><div class="form-row"><label>Confirm New Password</label><input type="password" id="confirmPassword" placeholder="Confirm new password"></div><div style="display:flex;gap:10px;margin-top:20px"><button class="btn btn-primary" onclick="changePassword()">Change Password</button><button class="btn btn-danger" onclick="closePasswordModal()">Cancel</button></div></div></div>
     
-    <!-- Admin ID Change Modal -->
-    <div id="adminIdModal" class="modal">
-        <div class="modal-content">
-            <h3>Change Admin ID</h3>
-            <div class="form-row">
-                <label>Current Admin ID</label>
-                <input type="text" id="currentAdminId" readonly style="background:#f0f0f0">
-            </div>
-            <div class="form-row">
-                <label>New Admin ID</label>
-                <input type="text" id="newAdminId" placeholder="Enter new admin ID">
-            </div>
-            <div class="form-row">
-                <label>Password (for verification)</label>
-                <input type="password" id="verifyPassword" placeholder="Enter your password">
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-primary" onclick="changeAdminId()">Change Admin ID</button>
-                <button class="btn btn-danger" onclick="closeAdminIdModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
+    <div id="adminIdModal" class="modal"><div class="modal-content"><h3>Change Admin ID</h3><div class="form-row"><label>Current Admin ID</label><input type="text" id="currentAdminId" readonly style="background:#f0f0f0"></div><div class="form-row"><label>New Admin ID</label><input type="text" id="newAdminId" placeholder="Enter new admin ID"></div><div class="form-row"><label>Password</label><input type="password" id="verifyPassword" placeholder="Enter your password"></div><div style="display:flex;gap:10px;margin-top:20px"><button class="btn btn-primary" onclick="changeAdminId()">Change ID</button><button class="btn btn-danger" onclick="closeAdminIdModal()">Cancel</button></div></div></div>
     
-    <!-- Admin Photo Modal -->
-    <div id="adminPhotoModal" class="modal">
-        <div class="modal-content">
-            <h3>Update Admin Photo</h3>
-            <div class="form-row">
-                <label>Current Photo</label>
-                <div style="text-align: center; margin: 10px 0;">
-                    <img id="currentAdminPhotoPreview" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
-                </div>
-            </div>
-            <div class="form-row">
-                <label>Upload New Photo</label>
-                <input type="file" id="adminPhotoInput" accept="image/*" onchange="previewAdminPhoto(this)">
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-primary" onclick="updateAdminPhoto()">Update Photo</button>
-                <button class="btn btn-danger" onclick="closeAdminPhotoModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
+    <div id="adminPhotoModal" class="modal"><div class="modal-content"><h3>Update Admin Photo</h3><div class="form-row"><label>Current Photo</label><div style="text-align:center;margin:10px 0"><img id="currentAdminPhotoPreview" src="" style="width:100px;height:100px;border-radius:50%;object-fit:cover"></div></div><div class="form-row"><label>Upload New Photo</label><input type="file" id="adminPhotoInput" accept="image/*" onchange="previewAdminPhoto(this)"></div><div style="display:flex;gap:10px;margin-top:20px"><button class="btn btn-primary" onclick="updateAdminPhoto()">Update Photo</button><button class="btn btn-danger" onclick="closeAdminPhotoModal()">Cancel</button></div></div></div>
     
-    <div class="loading-indicator" id="loadingIndicator">
-        Loading... 
-    </div>
+    <div class="loading-indicator" id="loadingIndicator">Loading...</div>
 
     <script>
-        // Global variables
         let currentModule = 'dashboard';
         let studentModuleLoaded = false;
         let teacherModuleLoaded = false;
         let screenData = null;
-        let dashboardData = null;
         let currentFilter = 'monthly';
         let customStartDate = null;
         let customEndDate = null;
         
-        // Chart instances
         let incomeExpenseChart = null;
         let studentAttendanceChart = null;
         let teacherAttendanceChart = null;
         let revenueChart = null;
         
-        // ============ FILTER FUNCTIONS ============
-        
-        function setFilter(filter) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`.filter-btn[data-filter="${filter}"]`).classList.add('active');
-            
-            const dateRangePicker = document.getElementById('dateRangePicker');
-            if (filter === 'custom') {
-                dateRangePicker.style.display = 'flex';
-            } else {
-                dateRangePicker.style.display = 'none';
-                customStartDate = null;
-                customEndDate = null;
-            }
-            
-            loadDashboardData();
-        }
-        
-        function applyCustomRange() {
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
-            if (start && end) {
-                customStartDate = new Date(start);
-                customEndDate = new Date(end);
-                loadDashboardData();
-            } else {
-                showToast('Please select both dates', 'error');
-            }
-        }
-        
-        function filterDataByDate(data, dateField, amountField) {
-            if (!data || data.length === 0) return [];
-            
-            const now = new Date();
-            let filtered = [...data];
-            
-            if (currentFilter === 'daily') {
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                filtered = data.filter(item => {
-                    const itemDate = new Date(item[dateField]);
-                    return itemDate >= today;
-                });
-            } else if (currentFilter === 'weekly') {
-                const weekAgo = new Date(now);
-                weekAgo.setDate(now.getDate() - 7);
-                filtered = data.filter(item => new Date(item[dateField]) >= weekAgo);
-            } else if (currentFilter === 'monthly') {
-                const monthAgo = new Date(now);
-                monthAgo.setMonth(now.getMonth() - 1);
-                filtered = data.filter(item => new Date(item[dateField]) >= monthAgo);
-            } else if (currentFilter === 'yearly') {
-                const yearAgo = new Date(now);
-                yearAgo.setFullYear(now.getFullYear() - 1);
-                filtered = data.filter(item => new Date(item[dateField]) >= yearAgo);
-            } else if (currentFilter === 'custom' && customStartDate && customEndDate) {
-                filtered = data.filter(item => {
-                    const itemDate = new Date(item[dateField]);
-                    return itemDate >= customStartDate && itemDate <= customEndDate;
-                });
-            }
-            
-            if (amountField) {
-                const total = filtered.reduce((sum, item) => sum + (item[amountField] || 0), 0);
-                return { filtered, total };
-            }
-            return filtered;
-        }
-        
-        // ============ ADMIN PHOTO FUNCTIONS ============
-        
-        async function loadAdminPhoto() {
-            try {
-                const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/admin/photo', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const result = await response.json();
-                if (result.success && result.photo) {
-                    document.getElementById('adminPhoto').src = result.photo;
-                }
-            } catch (error) {
-                console.error('Error loading admin photo:', error);
-            }
-        }
-        
-        function openAdminPhotoModal() {
-            const currentPhoto = document.getElementById('adminPhoto').src;
-            document.getElementById('currentAdminPhotoPreview').src = currentPhoto || '';
-            document.getElementById('adminPhotoModal').classList.add('active');
-        }
-        
-        function closeAdminPhotoModal() {
-            document.getElementById('adminPhotoModal').classList.remove('active');
-            document.getElementById('adminPhotoInput').value = '';
-        }
-        
-        function previewAdminPhoto(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('currentAdminPhotoPreview').src = e.target.result;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-        
-        async function updateAdminPhoto() {
-            const file = document.getElementById('adminPhotoInput').files[0];
-            if (!file) {
-                showToast('Please select a photo', 'error');
-                return;
-            }
-            
-            showLoading(true);
-            
-            try {
-                // Compress image
-                const compressed = await compressImage(file, 10);
-                const base64 = await fileToBase64(compressed);
-                
-                const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/admin/photo', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ photoBase64: base64 })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    document.getElementById('adminPhoto').src = base64;
-                    showToast('Admin photo updated successfully!');
-                    closeAdminPhotoModal();
-                } else {
-                    showToast(result.message || 'Failed to update photo', 'error');
-                }
-            } catch (error) {
-                console.error('Error updating photo:', error);
-                showToast('Error updating photo', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
+        // ============ HELPER FUNCTIONS ============
         
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -1163,12 +745,9 @@
             });
         }
         
-        // ============ IMAGE COMPRESSION ============
-        
         async function compressImage(file, targetSizeKB = 10) {
             let quality = 0.7;
             let compressedFile = file;
-            
             for (let attempt = 0; attempt < 5; attempt++) {
                 const options = {
                     maxSizeMB: targetSizeKB / 1024,
@@ -1176,51 +755,13 @@
                     useWebWorker: true,
                     initialQuality: quality
                 };
-                
                 try {
                     compressedFile = await imageCompression(file, options);
-                    const sizeKB = compressedFile.size / 1024;
-                    if (sizeKB <= targetSizeKB + 5) break;
+                    if (compressedFile.size / 1024 <= targetSizeKB + 5) break;
                     quality -= 0.1;
-                } catch (e) {
-                    console.log('Compression attempt failed:', e);
-                }
+                } catch (e) { console.log('Compression failed:', e); }
             }
             return compressedFile;
-        }
-        
-        function previewImage(input, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'preview-item';
-                    div.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-                    container.appendChild(div);
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-        
-        function previewGalleryFiles(files) {
-            const container = document.getElementById('galleryPreview');
-            container.innerHTML = '';
-            Array.from(files).forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.className = 'preview-item';
-                    if (file.type.startsWith('image/')) {
-                        div.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-                    } else if (file.type.startsWith('video/')) {
-                        div.innerHTML = `<video src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"></video>`;
-                    }
-                    container.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
         }
         
         function showToast(message, type = 'success') {
@@ -1232,282 +773,254 @@
             setTimeout(() => toast.remove(), 3000);
         }
         
-        // ============ DASHBOARD DATA LOADING ============
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').classList.toggle('active', show);
+        }
+        
+        // ============ FILTER FUNCTIONS ============
+        
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.filter-btn:contains('${filter}')`)?.classList.add('active');
+            document.getElementById('dateRangePicker').style.display = filter === 'custom' ? 'flex' : 'none';
+            if (filter !== 'custom') { customStartDate = null; customEndDate = null; }
+            loadDashboardData();
+        }
+        
+        function applyCustomRange() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (start && end) {
+                customStartDate = new Date(start);
+                customEndDate = new Date(end);
+                loadDashboardData();
+            } else showToast('Please select both dates', 'error');
+        }
+        
+        // ============ ADMIN PHOTO FUNCTIONS ============
+        
+        async function loadAdminPhoto() {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const res = await fetch('/api/admin/photo', { headers: { 'Authorization': `Bearer ${token}` } });
+                const result = await res.json();
+                if (result.success && result.photo) document.getElementById('adminPhoto').src = result.photo;
+            } catch(e) { console.error(e); }
+        }
+        
+        function openAdminPhotoModal() {
+            document.getElementById('currentAdminPhotoPreview').src = document.getElementById('adminPhoto').src || '';
+            document.getElementById('adminPhotoModal').classList.add('active');
+        }
+        
+        function closeAdminPhotoModal() {
+            document.getElementById('adminPhotoModal').classList.remove('active');
+            document.getElementById('adminPhotoInput').value = '';
+        }
+        
+        function previewAdminPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => document.getElementById('currentAdminPhotoPreview').src = e.target.result;
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        async function updateAdminPhoto() {
+            const file = document.getElementById('adminPhotoInput').files[0];
+            if (!file) return showToast('Please select a photo', 'error');
+            showLoading(true);
+            try {
+                const compressed = await compressImage(file);
+                const base64 = await fileToBase64(compressed);
+                const token = localStorage.getItem('adminToken');
+                const res = await fetch('/api/admin/photo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ photoBase64: base64 })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    document.getElementById('adminPhoto').src = base64;
+                    showToast('Admin photo updated!');
+                    closeAdminPhotoModal();
+                } else showToast(result.message || 'Failed', 'error');
+            } catch(e) { showToast('Error updating photo', 'error'); }
+            finally { showLoading(false); }
+        }
+        
+        function previewImage(input, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { container.innerHTML = `<div class="preview-item"><img src="${e.target.result}" alt="Preview"></div>`; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function previewGalleryFiles(files) {
+            const container = document.getElementById('galleryPreview');
+            container.innerHTML = '';
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // ============ DASHBOARD ============
         
         async function loadDashboardData() {
             try {
                 const token = localStorage.getItem('adminToken');
+                const studentsRes = await fetch('/api/students', { headers: { 'Authorization': `Bearer ${token}` } });
+                const teachersRes = await fetch('/api/teachers', { headers: { 'Authorization': `Bearer ${token}` } });
+                const students = (await studentsRes.json()).data || [];
+                const teachers = (await teachersRes.json()).data || [];
                 
-                const studentsRes = await fetch('/api/students', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const studentsData = await studentsRes.json();
-                const students = studentsData.data || [];
-                
-                const teachersRes = await fetch('/api/teachers', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const teachersData = await teachersRes.json();
-                const teachers = teachersData.data || [];
-                
-                // Calculate statistics with date filtering
-                let totalFeesCollected = 0;
-                let totalFeesDue = 0;
-                let studentsWithDue = 0;
-                let totalPresent = 0;
-                let totalAttendanceDays = 0;
-                
-                // For period-based filtering
-                let periodFeesCollected = 0;
-                let periodSalaryPaid = 0;
+                let totalFeesCollected = 0, totalFeesDue = 0, studentsWithDue = 0, totalPresent = 0, totalDays = 0;
+                let periodFees = 0, periodSalary = 0;
                 
                 students.forEach(s => {
-                    const feesHistory = s.feesHistory || [];
-                    const collected = feesHistory.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
-                    const due = feesHistory.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
-                    totalFeesCollected += collected;
+                    const fh = s.feesHistory || [];
+                    totalFeesCollected += fh.reduce((s,f) => s + (f.paidAmount||0), 0);
+                    const due = fh.reduce((s,f) => s + (f.dueAmount||0), 0);
                     totalFeesDue += due;
                     if (due > 0) studentsWithDue++;
-                    
-                    // Period-based fees
-                    const periodFees = filterDataByDate(feesHistory, 'paymentDate', 'paidAmount');
-                    periodFeesCollected += periodFees.total || 0;
-                    
-                    const attendance = s.attendance || [];
-                    totalPresent += attendance.filter(a => a.status === 'present').length;
-                    totalAttendanceDays += attendance.length;
+                    periodFees += fh.filter(f => f.paymentDate && new Date(f.paymentDate) >= getStartDate()).reduce((s,f) => s + (f.paidAmount||0), 0);
+                    const att = s.attendance || [];
+                    totalPresent += att.filter(a => a.status === 'present').length;
+                    totalDays += att.length;
                 });
                 
-                let totalSalaryPaid = 0;
-                let totalSalaryDue = 0;
-                let teachersWithDue = 0;
-                let teacherPresent = 0;
-                let teacherAttendanceDays = 0;
-                
+                let totalSalaryPaid = 0, totalSalaryDue = 0, teachersWithDue = 0, teacherPresent = 0, teacherDays = 0;
                 teachers.forEach(t => {
-                    const salaryPayments = t.salaryPayments || [];
-                    const paid = salaryPayments.reduce((sum, s) => sum + (s.paidAmount || 0), 0);
-                    const due = salaryPayments.reduce((sum, s) => sum + (s.dueAmount || 0), 0);
-                    totalSalaryPaid += paid;
+                    const sp = t.salaryPayments || [];
+                    totalSalaryPaid += sp.reduce((s,p) => s + (p.paidAmount||0), 0);
+                    const due = sp.reduce((s,p) => s + (p.dueAmount||0), 0);
                     totalSalaryDue += due;
                     if (due > 0) teachersWithDue++;
-                    
-                    // Period-based salary
-                    const periodSalary = filterDataByDate(salaryPayments, 'paymentDate', 'paidAmount');
-                    periodSalaryPaid += periodSalary.total || 0;
-                    
-                    const attendance = t.attendance || [];
-                    teacherPresent += attendance.filter(a => a.status === 'present').length;
-                    teacherAttendanceDays += attendance.length;
+                    periodSalary += sp.filter(p => p.paymentDate && new Date(p.paymentDate) >= getStartDate()).reduce((s,p) => s + (p.paidAmount||0), 0);
+                    const att = t.attendance || [];
+                    teacherPresent += att.filter(a => a.status === 'present').length;
+                    teacherDays += att.length;
                 });
                 
-                const totalIncome = totalFeesCollected;
-                const totalExpense = totalSalaryPaid;
-                const totalProfit = totalIncome - totalExpense;
-                const profitMargin = totalIncome > 0 ? ((totalProfit / totalIncome) * 100).toFixed(1) : 0;
+                const profit = totalFeesCollected - totalSalaryPaid;
+                const margin = totalFeesCollected > 0 ? ((profit / totalFeesCollected) * 100).toFixed(1) : 0;
+                const studentAtt = totalDays > 0 ? ((totalPresent / totalDays) * 100).toFixed(1) : 0;
+                const teacherAtt = teacherDays > 0 ? ((teacherPresent / teacherDays) * 100).toFixed(1) : 0;
+                const overallAtt = ((parseFloat(studentAtt) + parseFloat(teacherAtt)) / 2).toFixed(1);
                 
-                const studentAttendanceRate = totalAttendanceDays > 0 ? ((totalPresent / totalAttendanceDays) * 100).toFixed(1) : 0;
-                const teacherAttendanceRate = teacherAttendanceDays > 0 ? ((teacherPresent / teacherAttendanceDays) * 100).toFixed(1) : 0;
-                const overallAttendance = ((parseFloat(studentAttendanceRate) + parseFloat(teacherAttendanceRate)) / 2).toFixed(1);
-                
-                // Update UI with period data
                 document.getElementById('totalStudents').textContent = students.length;
                 document.getElementById('activeStudents').textContent = `Active: ${students.filter(s => s.isActive !== false).length}`;
                 document.getElementById('totalTeachers').textContent = teachers.length;
                 document.getElementById('activeTeachers').textContent = `Active: ${teachers.filter(t => t.status?.isActive !== false).length}`;
-                document.getElementById('totalIncome').textContent = `₹${totalIncome.toLocaleString()}`;
-                document.getElementById('totalExpense').textContent = `₹${totalExpense.toLocaleString()}`;
-                document.getElementById('periodIncome').textContent = `This Period: ₹${periodFeesCollected.toLocaleString()}`;
-                document.getElementById('periodExpense').textContent = `This Period: ₹${periodSalaryPaid.toLocaleString()}`;
-                document.getElementById('totalProfit').textContent = `₹${totalProfit.toLocaleString()}`;
-                document.getElementById('profitMargin').textContent = `Margin: ${profitMargin}%`;
+                document.getElementById('totalIncome').textContent = `₹${totalFeesCollected.toLocaleString()}`;
+                document.getElementById('totalExpense').textContent = `₹${totalSalaryPaid.toLocaleString()}`;
+                document.getElementById('periodIncome').textContent = `This Period: ₹${periodFees.toLocaleString()}`;
+                document.getElementById('periodExpense').textContent = `This Period: ₹${periodSalary.toLocaleString()}`;
+                document.getElementById('totalProfit').textContent = `₹${profit.toLocaleString()}`;
+                document.getElementById('profitMargin').textContent = `Margin: ${margin}%`;
                 document.getElementById('totalFeesDue').textContent = `₹${totalFeesDue.toLocaleString()}`;
-                document.getElementById('dueStudentsCount').textContent = `${studentsWithDue} Students have due`;
+                document.getElementById('dueStudentsCount').textContent = `${studentsWithDue} Students`;
                 document.getElementById('totalSalaryDue').textContent = `₹${totalSalaryDue.toLocaleString()}`;
-                document.getElementById('salaryDueTeachers').textContent = `${teachersWithDue} Teachers due`;
-                document.getElementById('attendanceRate').textContent = `${overallAttendance}%`;
-                document.getElementById('attendanceDetails').textContent = `Students: ${studentAttendanceRate}% | Teachers: ${teacherAttendanceRate}%`;
+                document.getElementById('salaryDueTeachers').textContent = `${teachersWithDue} Teachers`;
+                document.getElementById('attendanceRate').textContent = `${overallAtt}%`;
+                document.getElementById('attendanceDetails').textContent = `Students: ${studentAtt}% | Teachers: ${teacherAtt}%`;
                 
                 const monthlyData = await calculateMonthlyData(students, teachers);
                 updateCharts(monthlyData);
                 updateRecentActivity(students, teachers);
-                
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-            }
+            } catch(e) { console.error(e); }
+        }
+        
+        function getStartDate() {
+            const now = new Date();
+            if (currentFilter === 'daily') return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            if (currentFilter === 'weekly') { let d = new Date(now); d.setDate(now.getDate() - 7); return d; }
+            if (currentFilter === 'monthly') { let d = new Date(now); d.setMonth(now.getMonth() - 1); return d; }
+            if (currentFilter === 'yearly') { let d = new Date(now); d.setFullYear(now.getFullYear() - 1); return d; }
+            if (currentFilter === 'custom' && customStartDate) return customStartDate;
+            return new Date(0);
         }
         
         async function calculateMonthlyData(students, teachers) {
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const incomeData = new Array(12).fill(0);
-            const expenseData = new Array(12).fill(0);
-            const studentAttendanceData = new Array(12).fill(0);
-            const teacherAttendanceData = new Array(12).fill(0);
+            const income = new Array(12).fill(0), expense = new Array(12).fill(0);
+            const studentAtt = new Array(12).fill(0), teacherAtt = new Array(12).fill(0);
             
             students.forEach(s => {
-                const feesHistory = s.feesHistory || [];
-                feesHistory.forEach(f => {
-                    if (f.paymentDate) {
-                        const month = new Date(f.paymentDate).getMonth();
-                        incomeData[month] += f.paidAmount || 0;
-                    }
-                });
-                
-                const attendance = s.attendance || [];
-                attendance.forEach(a => {
-                    const month = new Date(a.date).getMonth();
-                    if (a.status === 'present') studentAttendanceData[month]++;
-                });
+                (s.feesHistory || []).forEach(f => { if(f.paymentDate) income[new Date(f.paymentDate).getMonth()] += f.paidAmount || 0; });
+                (s.attendance || []).forEach(a => { if(a.status === 'present') studentAtt[new Date(a.date).getMonth()]++; });
             });
-            
             teachers.forEach(t => {
-                const salaryPayments = t.salaryPayments || [];
-                salaryPayments.forEach(s => {
-                    if (s.paymentDate) {
-                        const month = new Date(s.paymentDate).getMonth();
-                        expenseData[month] += s.paidAmount || 0;
-                    }
-                });
-                
-                const attendance = t.attendance || [];
-                attendance.forEach(a => {
-                    const month = new Date(a.date).getMonth();
-                    if (a.status === 'present') teacherAttendanceData[month]++;
-                });
+                (t.salaryPayments || []).forEach(p => { if(p.paymentDate) expense[new Date(p.paymentDate).getMonth()] += p.paidAmount || 0; });
+                (t.attendance || []).forEach(a => { if(a.status === 'present') teacherAtt[new Date(a.date).getMonth()]++; });
             });
-            
-            return { months, incomeData, expenseData, studentAttendanceData, teacherAttendanceData };
+            return { months, income, expense, studentAtt, teacherAtt };
         }
         
-        function updateCharts(monthlyData) {
-            const { months, incomeData, expenseData, studentAttendanceData, teacherAttendanceData } = monthlyData;
-            
+        function updateCharts(data) {
+            const { months, income, expense, studentAtt, teacherAtt } = data;
             if (incomeExpenseChart) incomeExpenseChart.destroy();
             incomeExpenseChart = new Chart(document.getElementById('incomeExpenseChart'), {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [
-                        { label: 'Income (Fees)', data: incomeData, borderColor: '#28a745', backgroundColor: 'rgba(40,167,69,0.1)', fill: true, tension: 0.4 },
-                        { label: 'Expense (Salary)', data: expenseData, borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.1)', fill: true, tension: 0.4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: true }
+                type: 'line', data: { labels: months, datasets: [
+                    { label: 'Income', data: income, borderColor: '#28a745', fill: true, tension: 0.4 },
+                    { label: 'Expense', data: expense, borderColor: '#dc3545', fill: true, tension: 0.4 }
+                ] }, options: { responsive: true }
             });
-            
             if (studentAttendanceChart) studentAttendanceChart.destroy();
             studentAttendanceChart = new Chart(document.getElementById('studentAttendanceChart'), {
-                type: 'bar',
-                data: {
-                    labels: months,
-                    datasets: [{ label: 'Student Present Days', data: studentAttendanceData, backgroundColor: '#667eea', borderRadius: 5 }]
-                },
-                options: { responsive: true, maintainAspectRatio: true }
+                type: 'bar', data: { labels: months, datasets: [{ label: 'Student Present', data: studentAtt, backgroundColor: '#667eea' }] }, options: { responsive: true }
             });
-            
             if (teacherAttendanceChart) teacherAttendanceChart.destroy();
             teacherAttendanceChart = new Chart(document.getElementById('teacherAttendanceChart'), {
-                type: 'bar',
-                data: {
-                    labels: months,
-                    datasets: [{ label: 'Teacher Present Days', data: teacherAttendanceData, backgroundColor: '#f093fb', borderRadius: 5 }]
-                },
-                options: { responsive: true, maintainAspectRatio: true }
+                type: 'bar', data: { labels: months, datasets: [{ label: 'Teacher Present', data: teacherAtt, backgroundColor: '#f093fb' }] }, options: { responsive: true }
             });
-            
-            const totalIncome = incomeData.reduce((a, b) => a + b, 0);
-            const totalExpense = expenseData.reduce((a, b) => a + b, 0);
-            const profit = totalIncome - totalExpense;
-            
+            const totalInc = income.reduce((a,b)=>a+b,0), totalExp = expense.reduce((a,b)=>a+b,0), profit = totalInc - totalExp;
             if (revenueChart) revenueChart.destroy();
             revenueChart = new Chart(document.getElementById('revenueChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Income (Fees)', 'Expense (Salary)', 'Profit'],
-                    datasets: [{ data: [totalIncome, totalExpense, profit > 0 ? profit : 0], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: true }
+                type: 'doughnut', data: { labels: ['Income', 'Expense', 'Profit'], datasets: [{ data: [totalInc, totalExp, profit>0?profit:0], backgroundColor: ['#28a745','#dc3545','#ffc107'] }] }, options: { responsive: true }
             });
         }
         
         function updateRecentActivity(students, teachers) {
             const container = document.getElementById('recentActivity');
             const activities = [];
-            
-            students.forEach(s => {
-                const feesHistory = s.feesHistory || [];
-                feesHistory.forEach(f => {
-                    if (f.paymentDate) {
-                        activities.push({
-                            type: 'fee_payment',
-                            message: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount} fees`,
-                            date: new Date(f.paymentDate)
-                        });
-                    }
-                });
-            });
-            
-            teachers.forEach(t => {
-                const salaryPayments = t.salaryPayments || [];
-                salaryPayments.forEach(s => {
-                    if (s.paymentDate) {
-                        activities.push({
-                            type: 'salary_payment',
-                            message: `Salary paid to ${t.personal?.name} ₹${s.paidAmount}`,
-                            date: new Date(s.paymentDate)
-                        });
-                    }
-                });
-            });
-            
-            activities.sort((a, b) => b.date - a.date);
-            const recent = activities.slice(0, 10);
-            
-            container.innerHTML = recent.map(a => `
-                <div class="activity-item">
-                    <span>${a.type === 'fee_payment' ? '💰' : '💵'} ${a.message}</span>
-                    <small>${a.date.toLocaleDateString()}</small>
-                </div>
-            `).join('');
-            
-            if (recent.length === 0) {
-                container.innerHTML = '<div class="activity-item">No recent activity</div>';
-            }
+            students.forEach(s => { (s.feesHistory || []).forEach(f => { if(f.paymentDate) activities.push({ type: '💰', msg: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount}`, date: new Date(f.paymentDate) }); }); });
+            teachers.forEach(t => { (t.salaryPayments || []).forEach(p => { if(p.paymentDate) activities.push({ type: '💵', msg: `Salary paid to ${t.personal?.name} ₹${p.paidAmount}`, date: new Date(p.paymentDate) }); }); });
+            activities.sort((a,b) => b.date - a.date);
+            container.innerHTML = activities.slice(0,10).map(a => `<div class="activity-item"><span>${a.type} ${a.msg}</span><small>${a.date.toLocaleDateString()}</small></div>`).join('');
+            if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>';
         }
         
-        // ============ SCREEN MANAGEMENT ============
+        // ============ SCREEN MANAGEMENT (BASE64) ============
         
         async function loadScreenData() {
             try {
-                const response = await fetch('/api/screen');
-                const result = await response.json();
-                if (result.success) {
-                    screenData = result.data;
-                    updateUIWithScreenData();
-                    return screenData;
-                }
-            } catch (error) {
-                console.error('Error loading screen data:', error);
-            }
+                const res = await fetch('/api/screen');
+                const result = await res.json();
+                if (result.success) { screenData = result.data; updateUI(); return screenData; }
+            } catch(e) { console.error(e); }
             return null;
         }
         
-        function updateUIWithScreenData() {
+        function updateUI() {
             if (!screenData) return;
-            
             if (screenData.logo) document.getElementById('headerLogo').src = screenData.logo;
             document.getElementById('headerTitle').textContent = screenData.title || 'BBCC Portal';
             document.getElementById('headerSubTitle').textContent = screenData.subTitle || 'Best Coaching Center';
-            
             updateSidebarPhotos();
-            
-            if (screenData.zoomMeetingLink) {
-                const zoomLink = document.getElementById('zoomLink').querySelector('a');
-                zoomLink.href = screenData.zoomMeetingLink;
-            }
-            
+            if (screenData.zoomMeetingLink) document.getElementById('zoomLink').querySelector('a').href = screenData.zoomMeetingLink;
             displayGallery();
-            
             document.getElementById('headerTitleInput').value = screenData.title || '';
             document.getElementById('headerSubTitleInput').value = screenData.subTitle || '';
             document.getElementById('zoomLinkInput').value = screenData.zoomMeetingLink || '';
@@ -1519,7 +1032,6 @@
             document.getElementById('telegramLinkInput').value = screenData.telegramLink || '';
             document.getElementById('twitterLinkInput').value = screenData.twitterLink || '';
             document.getElementById('linkedinLinkInput').value = screenData.linkedinLink || '';
-            
             if (screenData.whatsappNumber) {
                 document.getElementById('footerWhatsapp').href = `https://wa.me/${screenData.whatsappNumber}`;
                 document.getElementById('footerWhatsapp').textContent = `WhatsApp: ${screenData.whatsappNumber}`;
@@ -1536,396 +1048,229 @@
         function updateSidebarPhotos() {
             const container = document.getElementById('sidebarPhotosGrid');
             if (!container) return;
-            
             const photos = screenData?.sidebarPhotos || [];
             container.innerHTML = '';
-            
-            if (photos.length === 0) {
-                container.innerHTML = '<p style="font-size:12px; opacity:0.7; text-align:center;">No photos yet</p>';
-                return;
-            }
-            
+            if (!photos.length) { container.innerHTML = '<p style="font-size:12px;opacity:0.7;text-align:center;">No photos</p>'; return; }
             photos.forEach((photo, i) => {
                 const div = document.createElement('div');
                 div.className = 'sidebar-photo-item';
-                div.innerHTML = `
-                    <img src="${typeof photo === 'string' ? photo : photo.url}" alt="Sidebar Photo">
-                    <button class="delete-photo" onclick="deleteSidebarPhoto(${i})">×</button>
-                `;
+                div.innerHTML = `<img src="${photo}" alt="Photo"><button class="delete-photo" onclick="deleteSidebarPhoto(${i})">×</button>`;
                 container.appendChild(div);
             });
         }
         
         async function handleSidebarPhotoUpload(files) {
-            if (!files || files.length === 0) return;
+            if (!files.length) return;
             showLoading(true);
-            
-            const formData = new FormData();
-            formData.append('title', screenData.title || '');
-            formData.append('subTitle', screenData.subTitle || '');
-            formData.append('zoomMeetingLink', screenData.zoomMeetingLink || '');
-            formData.append('whatsappNumber', screenData.whatsappNumber || '');
-            formData.append('whatsappChannelLink', screenData.whatsappChannelLink || '');
-            formData.append('youtubeChannelLink', screenData.youtubeChannelLink || '');
-            formData.append('facebookLink', screenData.facebookLink || '');
-            formData.append('instagramLink', screenData.instagramLink || '');
-            formData.append('telegramLink', screenData.telegramLink || '');
-            formData.append('twitterLink', screenData.twitterLink || '');
-            formData.append('linkedinLink', screenData.linkedinLink || '');
-            
+            const base64Images = [];
             for (const file of files) {
                 const compressed = await compressImage(file);
-                formData.append('sidebarPhotos', compressed);
+                base64Images.push(await fileToBase64(compressed));
             }
-            
-            if (screenData.gallery) formData.append('deleteGalleryIds', JSON.stringify([]));
-            
+            const body = {
+                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
+                sidebarPhotos: JSON.stringify(base64Images), whatsappNumber: screenData.whatsappNumber,
+                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
+                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
+                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
+            };
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/screen', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
+                const res = await fetch('/api/screen', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
                 });
-                const result = await response.json();
-                if (result.success) {
-                    await loadScreenData();
-                    showToast('Photos uploaded successfully!');
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                showToast('Error uploading photos', 'error');
-            } finally {
-                showLoading(false);
-            }
+                const result = await res.json();
+                if (result.success) { await loadScreenData(); showToast('Photos uploaded!'); }
+            } catch(e) { showToast('Upload failed', 'error'); }
+            finally { showLoading(false); }
         }
         
         async function deleteSidebarPhoto(index) {
             if (!confirm('Delete this photo?')) return;
-            
-            const photos = screenData.sidebarPhotos || [];
+            const photos = [...(screenData.sidebarPhotos || [])];
             photos.splice(index, 1);
-            
-            const formData = new FormData();
-            formData.append('title', screenData.title || '');
-            formData.append('subTitle', screenData.subTitle || '');
-            formData.append('zoomMeetingLink', screenData.zoomMeetingLink || '');
-            formData.append('sidebarPhotosData', JSON.stringify(photos));
-            formData.append('whatsappNumber', screenData.whatsappNumber || '');
-            formData.append('whatsappChannelLink', screenData.whatsappChannelLink || '');
-            formData.append('youtubeChannelLink', screenData.youtubeChannelLink || '');
-            formData.append('facebookLink', screenData.facebookLink || '');
-            formData.append('instagramLink', screenData.instagramLink || '');
-            formData.append('telegramLink', screenData.telegramLink || '');
-            formData.append('twitterLink', screenData.twitterLink || '');
-            formData.append('linkedinLink', screenData.linkedinLink || '');
-            
-            if (screenData.gallery) formData.append('deleteGalleryIds', JSON.stringify([]));
-            
+            const body = {
+                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
+                sidebarPhotosData: JSON.stringify(photos), whatsappNumber: screenData.whatsappNumber,
+                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
+                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
+                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
+            };
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/screen', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
+                const res = await fetch('/api/screen', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
                 });
-                const result = await response.json();
-                if (result.success) {
-                    await loadScreenData();
-                    showToast('Photo deleted');
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-                showToast('Error deleting photo', 'error');
-            }
+                const result = await res.json();
+                if (result.success) { await loadScreenData(); showToast('Photo deleted'); }
+            } catch(e) { showToast('Delete failed', 'error'); }
         }
         
         async function uploadGalleryFiles() {
             const files = document.getElementById('galleryFilesInput').files;
-            if (!files || files.length === 0) {
-                showToast('Please select files to upload', 'error');
-                return;
-            }
-            
+            if (!files.length) return showToast('Select files', 'error');
             showLoading(true);
-            const formData = new FormData();
-            
-            formData.append('title', screenData.title || '');
-            formData.append('subTitle', screenData.subTitle || '');
-            formData.append('zoomMeetingLink', screenData.zoomMeetingLink || '');
-            formData.append('whatsappNumber', screenData.whatsappNumber || '');
-            formData.append('whatsappChannelLink', screenData.whatsappChannelLink || '');
-            formData.append('youtubeChannelLink', screenData.youtubeChannelLink || '');
-            formData.append('facebookLink', screenData.facebookLink || '');
-            formData.append('instagramLink', screenData.instagramLink || '');
-            formData.append('telegramLink', screenData.telegramLink || '');
-            formData.append('twitterLink', screenData.twitterLink || '');
-            formData.append('linkedinLink', screenData.linkedinLink || '');
-            
+            const base64Images = [];
             for (const file of files) {
-                if (file.type.startsWith('image/')) {
-                    const compressed = await compressImage(file);
-                    formData.append('galleryFiles', compressed);
-                } else {
-                    formData.append('galleryFiles', file);
-                }
+                if (!file.type.startsWith('image/')) continue;
+                const compressed = await compressImage(file);
+                base64Images.push(await fileToBase64(compressed));
             }
-            
-            if (screenData.gallery) formData.append('deleteGalleryIds', JSON.stringify([]));
-            
+            const body = {
+                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
+                galleryPhotos: JSON.stringify(base64Images), whatsappNumber: screenData.whatsappNumber,
+                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
+                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
+                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
+            };
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/screen', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
+                const res = await fetch('/api/screen', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
                 });
-                const result = await response.json();
+                const result = await res.json();
                 if (result.success) {
                     await loadScreenData();
                     document.getElementById('galleryFilesInput').value = '';
                     document.getElementById('galleryPreview').innerHTML = '';
-                    showToast('Files uploaded successfully!');
+                    showToast('Photos uploaded!');
                 }
-            } catch (error) {
-                console.error('Upload error:', error);
-                showToast('Error uploading files', 'error');
-            } finally {
-                showLoading(false);
-            }
+            } catch(e) { showToast('Upload failed', 'error'); }
+            finally { showLoading(false); }
         }
         
         function displayGallery() {
-            const galleryGrid = document.getElementById('galleryGrid');
-            if (!galleryGrid || !screenData || !screenData.gallery) return;
-            
-            galleryGrid.innerHTML = '';
+            const grid = document.getElementById('galleryGrid');
+            if (!grid || !screenData?.gallery) return;
+            grid.innerHTML = '';
             for (const item of screenData.gallery) {
                 const div = document.createElement('div');
                 div.className = 'gallery-item';
                 if (item.type === 'photo') {
-                    div.innerHTML = `
-                        <img src="${item.url}" alt="Gallery">
-                        <button class="delete-btn" onclick="deleteGalleryItem('${item._id}')">×</button>
-                    `;
+                    div.innerHTML = `<img src="${item.data}" alt="Gallery"><button class="delete-btn" onclick="deleteGalleryItem('${item._id}')">×</button>`;
                 } else {
-                    div.innerHTML = `
-                        <video controls src="${item.url}"></video>
-                        <button class="delete-btn" onclick="deleteGalleryItem('${item._id}')">×</button>
-                    `;
+                    div.innerHTML = `<video controls src="${item.url}"></video><button class="delete-btn" onclick="deleteGalleryItem('${item._id}')">×</button>`;
                 }
-                galleryGrid.appendChild(div);
+                grid.appendChild(div);
             }
         }
         
         async function deleteGalleryItem(id) {
-            if (!confirm('Delete this item?')) return;
+            if (!confirm('Delete?')) return;
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch(`/api/screen/gallery/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    await loadScreenData();
-                    showToast('Item deleted successfully');
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-                showToast('Error deleting item', 'error');
-            }
+                const res = await fetch(`/api/screen/gallery/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                const result = await res.json();
+                if (result.success) { await loadScreenData(); showToast('Deleted'); }
+            } catch(e) { showToast('Delete failed', 'error'); }
         }
         
         async function addVideoLink() {
-            const videoUrl = document.getElementById('videoLinkInput').value;
-            if (!videoUrl) {
-                showToast('Please enter video URL', 'error');
-                return;
-            }
-            
+            const url = document.getElementById('videoLinkInput').value;
+            if (!url) return showToast('Enter video URL', 'error');
             showLoading(true);
-            const formData = new FormData();
-            
-            formData.append('title', screenData.title || '');
-            formData.append('subTitle', screenData.subTitle || '');
-            formData.append('zoomMeetingLink', screenData.zoomMeetingLink || '');
-            formData.append('whatsappNumber', screenData.whatsappNumber || '');
-            formData.append('whatsappChannelLink', screenData.whatsappChannelLink || '');
-            formData.append('youtubeChannelLink', screenData.youtubeChannelLink || '');
-            formData.append('facebookLink', screenData.facebookLink || '');
-            formData.append('instagramLink', screenData.instagramLink || '');
-            formData.append('telegramLink', screenData.telegramLink || '');
-            formData.append('twitterLink', screenData.twitterLink || '');
-            formData.append('linkedinLink', screenData.linkedinLink || '');
-            
-            const videoLinks = [{ url: videoUrl }];
-            formData.append('videoLinks', JSON.stringify(videoLinks));
-            formData.append('deleteGalleryIds', JSON.stringify([]));
-            
+            const body = {
+                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
+                videoLinks: JSON.stringify([{ url }]), whatsappNumber: screenData.whatsappNumber,
+                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
+                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
+                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
+            };
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/screen', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
+                const res = await fetch('/api/screen', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
                 });
-                const result = await response.json();
-                if (result.success) {
-                    await loadScreenData();
-                    document.getElementById('videoLinkInput').value = '';
-                    showToast('Video link added!');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('Error adding video link', 'error');
-            } finally {
-                showLoading(false);
-            }
+                const result = await res.json();
+                if (result.success) { await loadScreenData(); document.getElementById('videoLinkInput').value = ''; showToast('Video link added!'); }
+            } catch(e) { showToast('Failed', 'error'); }
+            finally { showLoading(false); }
         }
         
         async function saveBasicSettings() {
             showLoading(true);
-            const formData = new FormData();
-            
-            formData.append('title', document.getElementById('headerTitleInput').value);
-            formData.append('subTitle', document.getElementById('headerSubTitleInput').value);
-            formData.append('zoomMeetingLink', document.getElementById('zoomLinkInput').value);
-            formData.append('whatsappNumber', document.getElementById('whatsappNumberInput').value);
-            formData.append('whatsappChannelLink', document.getElementById('whatsappChannelInput').value);
-            formData.append('youtubeChannelLink', document.getElementById('youtubeChannelInput').value);
-            formData.append('facebookLink', document.getElementById('facebookLinkInput').value);
-            formData.append('instagramLink', document.getElementById('instagramLinkInput').value);
-            formData.append('telegramLink', document.getElementById('telegramLinkInput').value);
-            formData.append('twitterLink', document.getElementById('twitterLinkInput').value);
-            formData.append('linkedinLink', document.getElementById('linkedinLinkInput').value);
-            
-            const headerLogo = document.getElementById('headerLogoInput').files[0];
-            if (headerLogo) {
-                const compressed = await compressImage(headerLogo);
-                formData.append('logo', compressed);
+            let logoBase64 = null;
+            const logoFile = document.getElementById('headerLogoInput').files[0];
+            if (logoFile) {
+                const compressed = await compressImage(logoFile);
+                logoBase64 = await fileToBase64(compressed);
             }
-            
-            if (screenData) {
-                if (screenData.gallery) formData.append('deleteGalleryIds', JSON.stringify([]));
-                if (screenData.sidebarPhotos) formData.append('sidebarPhotosData', JSON.stringify(screenData.sidebarPhotos));
-            }
-            
+            const body = {
+                title: document.getElementById('headerTitleInput').value,
+                subTitle: document.getElementById('headerSubTitleInput').value,
+                zoomMeetingLink: document.getElementById('zoomLinkInput').value,
+                logo: logoBase64,
+                whatsappNumber: document.getElementById('whatsappNumberInput').value,
+                whatsappChannelLink: document.getElementById('whatsappChannelInput').value,
+                youtubeChannelLink: document.getElementById('youtubeChannelInput').value,
+                facebookLink: document.getElementById('facebookLinkInput').value,
+                instagramLink: document.getElementById('instagramLinkInput').value,
+                telegramLink: document.getElementById('telegramLinkInput').value,
+                twitterLink: document.getElementById('twitterLinkInput').value,
+                linkedinLink: document.getElementById('linkedinLinkInput').value
+            };
+            if (screenData?.gallery) body.deleteGalleryIds = JSON.stringify([]);
+            if (screenData?.sidebarPhotos) body.sidebarPhotosData = JSON.stringify(screenData.sidebarPhotos);
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/screen', {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
+                const res = await fetch('/api/screen', {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
                 });
-                const result = await response.json();
-                if (result.success) {
-                    await loadScreenData();
-                    document.getElementById('headerLogoInput').value = '';
-                    showToast('Settings saved successfully!');
-                } else {
-                    showToast('Error: ' + result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Save error:', error);
-                showToast('Error saving settings', 'error');
-            } finally {
-                showLoading(false);
-            }
+                const result = await res.json();
+                if (result.success) { await loadScreenData(); showToast('Settings saved!'); }
+                else showToast('Error: ' + result.message, 'error');
+            } catch(e) { showToast('Save failed', 'error'); }
+            finally { showLoading(false); }
         }
         
-        // ============ ADMIN PASSWORD & ID CHANGE ============
+        // ============ ADMIN PASSWORD & ID ============
         
         async function changePassword() {
-            const currentPwd = document.getElementById('currentPassword').value;
+            const current = document.getElementById('currentPassword').value;
             const newPwd = document.getElementById('newPassword').value;
-            const confirmPwd = document.getElementById('confirmPassword').value;
-            
-            if (!currentPwd || !newPwd) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
-            if (newPwd !== confirmPwd) {
-                showToast('New passwords do not match', 'error');
-                return;
-            }
-            if (newPwd.length < 4) {
-                showToast('Password must be at least 4 characters', 'error');
-                return;
-            }
-            
+            const confirm = document.getElementById('confirmPassword').value;
+            if (!current || !newPwd) return showToast('Fill all fields', 'error');
+            if (newPwd !== confirm) return showToast('Passwords do not match', 'error');
+            if (newPwd.length < 4) return showToast('Password min 4 chars', 'error');
             showLoading(true);
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/admin/change-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        currentPassword: currentPwd,
-                        newPassword: newPwd
-                    })
+                const res = await fetch('/api/admin/change-password', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ currentPassword: current, newPassword: newPwd })
                 });
-                const result = await response.json();
-                if (result.success) {
-                    showToast('Password changed successfully!');
-                    closePasswordModal();
-                } else {
-                    showToast(result.message || 'Failed to change password', 'error');
-                }
-            } catch (error) {
-                console.error('Password change error:', error);
-                showToast('Error changing password', 'error');
-            } finally {
-                showLoading(false);
-            }
+                const result = await res.json();
+                if (result.success) { showToast('Password changed!'); closePasswordModal(); }
+                else showToast(result.message || 'Failed', 'error');
+            } catch(e) { showToast('Error', 'error'); }
+            finally { showLoading(false); }
         }
         
         async function changeAdminId() {
-            const newAdminId = document.getElementById('newAdminId').value;
-            const verifyPassword = document.getElementById('verifyPassword').value;
-            
-            if (!newAdminId) {
-                showToast('Please enter new admin ID', 'error');
-                return;
-            }
-            if (!verifyPassword) {
-                showToast('Please enter your password for verification', 'error');
-                return;
-            }
-            
+            const newId = document.getElementById('newAdminId').value;
+            const password = document.getElementById('verifyPassword').value;
+            if (!newId) return showToast('Enter new admin ID', 'error');
+            if (!password) return showToast('Enter password', 'error');
             showLoading(true);
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch('/api/admin/change-id', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        newAdminId: newAdminId,
-                        password: verifyPassword
-                    })
+                const res = await fetch('/api/admin/change-id', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ newAdminId: newId, password: password })
                 });
-                const result = await response.json();
+                const result = await res.json();
                 if (result.success) {
-                    showToast('Admin ID changed successfully! Please login again.');
+                    showToast('Admin ID changed! Login again.');
                     localStorage.removeItem('adminToken');
-                    setTimeout(() => {
-                        window.location.href = '/login.html';
-                    }, 1500);
-                } else {
-                    showToast(result.message || 'Failed to change admin ID', 'error');
-                }
-            } catch (error) {
-                console.error('Admin ID change error:', error);
-                showToast('Error changing admin ID', 'error');
-            } finally {
-                showLoading(false);
-            }
+                    setTimeout(() => window.location.href = '/login.html', 1500);
+                } else showToast(result.message || 'Failed', 'error');
+            } catch(e) { showToast('Error', 'error'); }
+            finally { showLoading(false); }
         }
         
         // ============ MODULE SWITCHING ============
@@ -1933,24 +1278,13 @@
         window.switchModule = function(module) {
             currentModule = module;
             sessionStorage.setItem('activeModule', module);
-            
-            document.querySelectorAll('.nav-menu li').forEach(li => {
-                li.classList.remove('active');
-            });
+            document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            
-            document.querySelectorAll('.module-container').forEach(container => {
-                container.classList.remove('active');
-            });
+            document.querySelectorAll('.module-container').forEach(c => c.classList.remove('active'));
             document.getElementById(`${module}-module`).classList.add('active');
-            
-            if (module === 'dashboard') {
-                loadDashboardData();
-            } else if (module === 'student' && !studentModuleLoaded) {
-                loadStudentModule();
-            } else if (module === 'teacher' && !teacherModuleLoaded) {
-                loadTeacherModule();
-            }
+            if (module === 'dashboard') loadDashboardData();
+            else if (module === 'student' && !studentModuleLoaded) loadStudentModule();
+            else if (module === 'teacher' && !teacherModuleLoaded) loadTeacherModule();
         };
         
         function loadStudentModule() {
@@ -1960,17 +1294,8 @@
             container.innerHTML = '';
             const script = document.createElement('script');
             script.src = 'js/student-management.js';
-            script.onload = function() {
-                studentModuleLoaded = true;
-                showLoading(false);
-                if (window.initStudentModule) {
-                    window.initStudentModule('student-app');
-                }
-            };
-            script.onerror = function() {
-                showLoading(false);
-                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Student Management</div>';
-            };
+            script.onload = () => { studentModuleLoaded = true; showLoading(false); if (window.initStudentModule) window.initStudentModule('student-app'); };
+            script.onerror = () => { showLoading(false); container.innerHTML = '<div style="padding:50px;text-align:center;color:red;">❌ Failed to load Student Management</div>'; };
             document.body.appendChild(script);
         }
         
@@ -1981,47 +1306,28 @@
             container.innerHTML = '';
             const script = document.createElement('script');
             script.src = 'js/teacher-management.js';
-            script.onload = function() {
-                teacherModuleLoaded = true;
-                showLoading(false);
-                if (window.initTeacherModule) {
-                    window.initTeacherModule('teacher-app');
-                }
-            };
-            script.onerror = function() {
-                showLoading(false);
-                container.innerHTML = '<div style="padding: 50px; text-align: center; color: red;">❌ Failed to load Teacher Management</div>';
-            };
+            script.onload = () => { teacherModuleLoaded = true; showLoading(false); if (window.initTeacherModule) window.initTeacherModule('teacher-app'); };
+            script.onerror = () => { showLoading(false); container.innerHTML = '<div style="padding:50px;text-align:center;color:red;">❌ Failed to load Teacher Management</div>'; };
             document.body.appendChild(script);
         }
         
         // ============ MODALS ============
         
-        window.openPasswordModal = function() {
-            document.getElementById('passwordModal').classList.add('active');
-        };
-        
-        window.closePasswordModal = function() {
+        window.openPasswordModal = () => document.getElementById('passwordModal').classList.add('active');
+        window.closePasswordModal = () => {
             document.getElementById('passwordModal').classList.remove('active');
             document.getElementById('currentPassword').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
         };
-        
-        window.openAdminIdModal = function() {
-            const adminName = document.getElementById('adminName').textContent.replace(' ▼', '');
-            document.getElementById('currentAdminId').value = adminName;
-            document.getElementById('newAdminId').value = '';
-            document.getElementById('verifyPassword').value = '';
+        window.openAdminIdModal = () => {
+            const name = document.getElementById('adminName').textContent.replace(' ▼', '');
+            document.getElementById('currentAdminId').value = name;
             document.getElementById('adminIdModal').classList.add('active');
         };
-        
-        window.closeAdminIdModal = function() {
-            document.getElementById('adminIdModal').classList.remove('active');
-        };
-        
-        window.handleLogout = function() {
-            if (confirm('Are you sure you want to logout?')) {
+        window.closeAdminIdModal = () => document.getElementById('adminIdModal').classList.remove('active');
+        window.handleLogout = () => {
+            if (confirm('Logout?')) {
                 localStorage.removeItem('adminToken');
                 localStorage.removeItem('teacherToken');
                 sessionStorage.clear();
@@ -2029,32 +1335,19 @@
             }
         };
         
-        function showLoading(show) {
-            const loader = document.getElementById('loadingIndicator');
-            if (show) {
-                loader.classList.add('active');
-            } else {
-                loader.classList.remove('active');
-            }
-        }
-        
         function getAdminInfo() {
             const token = localStorage.getItem('adminToken');
             if (token) {
                 try {
                     const payload = JSON.parse(atob(token.split('.')[1]));
-                    const adminId = payload.adminID || 'Admin';
-                    document.getElementById('adminName').innerHTML = `${adminId} ▼`;
-                    document.getElementById('adminIdDisplay').textContent = `ID: ${adminId}`;
-                } catch(e) {
-                    document.getElementById('adminName').innerHTML = 'Admin ▼';
-                }
+                    document.getElementById('adminName').innerHTML = `${payload.adminID || 'Admin'} ▼`;
+                    document.getElementById('adminIdDisplay').textContent = `ID: ${payload.adminID || 'Admin'}`;
+                } catch(e) { document.getElementById('adminName').innerHTML = 'Admin ▼'; }
             }
         }
         
         function checkAuth() {
-            const token = localStorage.getItem('adminToken');
-            if (!token) {
+            if (!localStorage.getItem('adminToken')) {
                 window.location.href = '/login.html';
                 return false;
             }
@@ -2067,19 +1360,9 @@
             await loadScreenData();
             await loadAdminPhoto();
             await loadDashboardData();
-            
-            const savedModule = sessionStorage.getItem('activeModule');
-            if (savedModule === 'student') {
-                setTimeout(() => {
-                    const studentBtn = document.querySelector('.nav-menu li:nth-child(2)');
-                    if (studentBtn) studentBtn.click();
-                }, 100);
-            } else if (savedModule === 'teacher') {
-                setTimeout(() => {
-                    const teacherBtn = document.querySelector('.nav-menu li:nth-child(3)');
-                    if (teacherBtn) teacherBtn.click();
-                }, 100);
-            }
+            const saved = sessionStorage.getItem('activeModule');
+            if (saved === 'student') setTimeout(() => document.querySelector('.nav-menu li:nth-child(2)')?.click(), 100);
+            else if (saved === 'teacher') setTimeout(() => document.querySelector('.nav-menu li:nth-child(3)')?.click(), 100);
         }
         
         initialize();
