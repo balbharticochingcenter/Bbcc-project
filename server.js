@@ -198,6 +198,7 @@ const ScreenSchema = new mongoose.Schema({
     
     // Sidebar Section
     sidebarPhoto: { type: String, default: '' },
+     sidebarPhotos: [{ type: String, default: '' }],
     zoomMeetingLink: { type: String, default: '' },
     
     // Gallery Section (Photos and Videos)
@@ -426,6 +427,7 @@ mongoose.connect(MONGO_URI)
                     title: 'BBCC Portal',
                     subTitle: 'Best Coaching Center',
                     sidebarPhoto: '',
+                    sidebarPhotos: [],
                     zoomMeetingLink: '',
                     gallery: [],
                     whatsappNumber: '',
@@ -593,6 +595,7 @@ app.get('/api/screen', async (req, res) => {
 app.put('/api/screen', verifyToken, upload.fields([
     { name: 'logo', maxCount: 1 },
     { name: 'sidebarPhoto', maxCount: 1 },
+    { name: 'sidebarPhotos', maxCount: 50 },
     { name: 'galleryFiles', maxCount: 50 }
 ]), async (req, res) => {
     try {
@@ -611,12 +614,26 @@ app.put('/api/screen', verifyToken, upload.fields([
         }
         
         // 2. Update Sidebar Fields
-        if (req.body.zoomMeetingLink !== undefined) screen.zoomMeetingLink = req.body.zoomMeetingLink;
-        
-        // Upload Sidebar Photo
-        if (req.files['sidebarPhoto'] && req.files['sidebarPhoto'][0]) {
-            screen.sidebarPhoto = '/uploads/' + req.files['sidebarPhoto'][0].filename;
-        }
+       // 2. Update Sidebar Fields
+if (req.body.zoomMeetingLink !== undefined) screen.zoomMeetingLink = req.body.zoomMeetingLink;
+
+// Upload Sidebar Photo
+if (req.files['sidebarPhoto'] && req.files['sidebarPhoto'][0]) {
+    screen.sidebarPhoto = '/uploads/' + req.files['sidebarPhoto'][0].filename;
+}
+
+// ✅ ADD THIS CODE
+// Upload Multiple Sidebar Photos
+if (req.files['sidebarPhotos']) {
+    for (const file of req.files['sidebarPhotos']) {
+        screen.sidebarPhotos.push('/uploads/' + file.filename);
+    }
+}
+
+// Update sidebar photos from JSON (for delete/update)
+if (req.body.sidebarPhotosData) {
+    screen.sidebarPhotos = JSON.parse(req.body.sidebarPhotosData);
+}
         
         // 3. Update Gallery - Add new photos/videos
         if (req.files['galleryFiles'] && req.files['galleryFiles'].length > 0) {
@@ -1920,7 +1937,71 @@ app.post('/api/teachers/:id/rejoin', verifyToken, async (req, res) => {
 });
 
 console.log('✅ Teacher APIs loaded successfully');
+// ============================================
+// ADMIN CHANGE PASSWORD API
+// ============================================
+app.post('/api/admin/change-password', verifyToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        const admin = await Admin.findOne({ adminID: req.user.adminID });
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        const isValid = await bcrypt.compare(currentPassword, admin.pws);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: "Current password is incorrect" });
+        }
+        
+        if (newPassword.length < 4) {
+            return res.status(400).json({ success: false, message: "Password must be at least 4 characters" });
+        }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        admin.pws = hashedPassword;
+        await admin.save();
+        
+        res.json({ success: true, message: "Password changed successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 
+// ============================================
+// ADMIN CHANGE ID API
+// ============================================
+app.post('/api/admin/change-id', verifyToken, async (req, res) => {
+    try {
+        const { newAdminId, password } = req.body;
+        
+        if (!newAdminId || newAdminId.length < 3) {
+            return res.status(400).json({ success: false, message: "Admin ID must be at least 3 characters" });
+        }
+        
+        const admin = await Admin.findOne({ adminID: req.user.adminID });
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        const isValid = await bcrypt.compare(password, admin.pws);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: "Password is incorrect" });
+        }
+        
+        const existing = await Admin.findOne({ adminID: newAdminId });
+        if (existing) {
+            return res.status(400).json({ success: false, message: "Admin ID already exists" });
+        }
+        
+        admin.adminID = newAdminId;
+        await admin.save();
+        
+        res.json({ success: true, message: "Admin ID changed successfully. Please login again." });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
 // ============================================
 // SERVE HTML FILES
 // ============================================
