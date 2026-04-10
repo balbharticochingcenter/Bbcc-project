@@ -1,5 +1,5 @@
 // ============================================
-// COMPLETE FIXED SERVER CODE - WITH SCREEN MANAGEMENT
+// COMPLETE SERVER CODE - WITH DATABASE PHOTO STORAGE
 // ============================================
 
 require('dotenv').config();
@@ -9,47 +9,26 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const multer = require('multer');  // ✅ ADDED: For file uploads
-const fs = require('fs');           // ✅ ADDED: For file system operations
 
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));  // Increased for base64 images
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static('public'));
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc_portal';
 
 // ============================================
-// FILE UPLOAD SETUP (For Screen Management)
-// ============================================
-const uploadFolder = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadFolder)) {
-    fs.mkdirSync(uploadFolder, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadFolder),
-    filename: (req, file, cb) => {
-        const unique = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, unique + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({ 
-    storage: storage, 
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
-});
-
-// ============================================
 // SCHEMA DEFINITIONS
 // ============================================
 
+// Admin Schema with Photo
 const AdminSchema = new mongoose.Schema({
     adminID: { type: String, required: true, unique: true },
     pws: { type: String, required: true },
     name: { type: String, default: 'Admin' },
+    photo: { type: String, default: '' },  // Base64 photo
     role: { type: String, default: 'admin' },
     permissions: [String],
     loginAttempts: { type: Number, default: 0 },
@@ -58,7 +37,7 @@ const AdminSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
-// IMPORTANT: Schema with proper index definitions
+// Student Schema
 const StudentSchema = new mongoose.Schema({
     studentId: { type: String, required: true, unique: true, index: true },
     aadharNumber: { type: String, required: true, unique: true, index: true },
@@ -151,9 +130,7 @@ const StudentSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
-}, { 
-    autoIndex: false 
-});
+}, { autoIndex: false });
 
 const OldStudentSchema = new mongoose.Schema({
     originalId: { type: mongoose.Schema.Types.ObjectId },
@@ -188,23 +165,23 @@ const OldStudentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // ============================================
-// SCREEN MANAGEMENT SCHEMA (ADDED)
+// SCREEN MANAGEMENT SCHEMA (Base64 Storage - No file upload needed)
 // ============================================
 const ScreenSchema = new mongoose.Schema({
     // Header Section
-    logo: { type: String, default: '' },
+    logo: { type: String, default: '' },           // Base64 string
     title: { type: String, default: 'BBCC Portal' },
     subTitle: { type: String, default: 'Best Coaching Center' },
     
     // Sidebar Section
-    sidebarPhoto: { type: String, default: '' },
-     sidebarPhotos: [{ type: String, default: '' }],
+    sidebarPhotos: [{ type: String, default: '' }], // Array of Base64 strings
     zoomMeetingLink: { type: String, default: '' },
     
     // Gallery Section (Photos and Videos)
     gallery: [{
         type: { type: String, enum: ['photo', 'video'] },
-        url: { type: String },
+        data: { type: String, default: '' },       // Base64 for photos
+        url: { type: String, default: '' },        // For video links
         createdAt: { type: Date, default: Date.now }
     }],
     
@@ -396,7 +373,7 @@ mongoose.connect(MONGO_URI)
             }
         }
         
-        // Create default admin
+        // Create default admin with photo
         try {
             const existing = await Admin.findOne({ adminID: 'admin' });
             if (!existing) {
@@ -405,12 +382,14 @@ mongoose.connect(MONGO_URI)
                     adminID: 'admin', 
                     pws: hash, 
                     name: 'Super Admin',
+                    photo: '',  // No default photo
                     role: 'super_admin',
                     permissions: ['all']
                 });
                 console.log('\n✅ DEFAULT ADMIN CREATED!');
                 console.log('   👤 Admin ID: admin');
-                console.log('   🔑 Password: admin123\n');
+                console.log('   🔑 Password: admin123');
+                console.log('   📸 Admin Photo: Upload from settings\n');
             } else {
                 console.log('✅ Admin already exists');
             }
@@ -426,7 +405,6 @@ mongoose.connect(MONGO_URI)
                     logo: '',
                     title: 'BBCC Portal',
                     subTitle: 'Best Coaching Center',
-                    sidebarPhoto: '',
                     sidebarPhotos: [],
                     zoomMeetingLink: '',
                     gallery: [],
@@ -560,10 +538,10 @@ async function moveToOldStudents(student, reason = 'Session completed') {
 }
 
 // ============================================
-// SCREEN MANAGEMENT APIs (ADDED)
+// SCREEN MANAGEMENT APIs (Base64 Storage)
 // ============================================
 
-// GET Screen Data (Public - No login required)
+// GET Screen Data
 app.get('/api/screen', async (req, res) => {
     try {
         let screen = await Screen.findOne();
@@ -572,7 +550,7 @@ app.get('/api/screen', async (req, res) => {
                 logo: '',
                 title: 'BBCC Portal',
                 subTitle: 'Best Coaching Center',
-                sidebarPhoto: '',
+                sidebarPhotos: [],
                 zoomMeetingLink: '',
                 gallery: [],
                 whatsappNumber: '',
@@ -591,13 +569,8 @@ app.get('/api/screen', async (req, res) => {
     }
 });
 
-// UPDATE Screen Data (Admin only - with token)
-app.put('/api/screen', verifyToken, upload.fields([
-    { name: 'logo', maxCount: 1 },
-    { name: 'sidebarPhoto', maxCount: 1 },
-    { name: 'sidebarPhotos', maxCount: 50 },
-    { name: 'galleryFiles', maxCount: 50 }
-]), async (req, res) => {
+// UPDATE Screen Data (Base64 - No file upload needed)
+app.put('/api/screen', verifyToken, async (req, res) => {
     try {
         let screen = await Screen.findOne();
         if (!screen) {
@@ -608,70 +581,62 @@ app.put('/api/screen', verifyToken, upload.fields([
         if (req.body.title !== undefined) screen.title = req.body.title;
         if (req.body.subTitle !== undefined) screen.subTitle = req.body.subTitle;
         
-        // Upload Logo
-        if (req.files['logo'] && req.files['logo'][0]) {
-            screen.logo = '/uploads/' + req.files['logo'][0].filename;
+        // 2. Update Logo (Base64)
+        if (req.body.logo !== undefined && req.body.logo !== '') {
+            screen.logo = req.body.logo;
         }
         
-        // 2. Update Sidebar Fields
-       // 2. Update Sidebar Fields
-if (req.body.zoomMeetingLink !== undefined) screen.zoomMeetingLink = req.body.zoomMeetingLink;
-
-// Upload Sidebar Photo
-if (req.files['sidebarPhoto'] && req.files['sidebarPhoto'][0]) {
-    screen.sidebarPhoto = '/uploads/' + req.files['sidebarPhoto'][0].filename;
-}
-
-// ✅ ADD THIS CODE
-// Upload Multiple Sidebar Photos
-if (req.files['sidebarPhotos']) {
-    for (const file of req.files['sidebarPhotos']) {
-        screen.sidebarPhotos.push('/uploads/' + file.filename);
-    }
-}
-
-// Update sidebar photos from JSON (for delete/update)
-if (req.body.sidebarPhotosData) {
-    screen.sidebarPhotos = JSON.parse(req.body.sidebarPhotosData);
-}
+        // 3. Update Sidebar Fields
+        if (req.body.zoomMeetingLink !== undefined) screen.zoomMeetingLink = req.body.zoomMeetingLink;
         
-        // 3. Update Gallery - Add new photos/videos
-        if (req.files['galleryFiles'] && req.files['galleryFiles'].length > 0) {
-            for (const file of req.files['galleryFiles']) {
-                const isVideo = file.mimetype.startsWith('video/');
+        // 4. Update Sidebar Photos (Array of Base64)
+        if (req.body.sidebarPhotos !== undefined) {
+            const newPhotos = JSON.parse(req.body.sidebarPhotos);
+            screen.sidebarPhotos = [...screen.sidebarPhotos, ...newPhotos];
+        }
+        
+        // 5. Delete sidebar photos by index
+        if (req.body.deleteSidebarPhotoIndex !== undefined) {
+            const index = parseInt(req.body.deleteSidebarPhotoIndex);
+            screen.sidebarPhotos.splice(index, 1);
+        }
+        
+        // 6. Update Gallery - Add new photos (Base64)
+        if (req.body.galleryPhotos !== undefined) {
+            const newPhotos = JSON.parse(req.body.galleryPhotos);
+            for (const photoData of newPhotos) {
                 screen.gallery.push({
-                    type: isVideo ? 'video' : 'photo',
-                    url: '/uploads/' + file.filename
+                    type: 'photo',
+                    data: photoData,
+                    createdAt: new Date()
                 });
             }
         }
         
-        // Add video links from input
-        if (req.body.videoLinks) {
+        // 7. Add video links
+        if (req.body.videoLinks !== undefined) {
             const videoLinks = JSON.parse(req.body.videoLinks);
             for (const link of videoLinks) {
                 screen.gallery.push({
                     type: 'video',
-                    url: link.url
+                    url: link.url,
+                    createdAt: new Date()
                 });
             }
         }
         
-        // Delete gallery items
-        if (req.body.deleteGalleryIds) {
+        // 8. Delete gallery items
+        if (req.body.deleteGalleryIds !== undefined) {
             const deleteIds = JSON.parse(req.body.deleteGalleryIds);
             screen.gallery = screen.gallery.filter(item => !deleteIds.includes(item._id.toString()));
         }
         
-        // 4. Update Footer Fields
-        if (req.body.whatsappNumber !== undefined) screen.whatsappNumber = req.body.whatsappNumber;
-        if (req.body.whatsappChannelLink !== undefined) screen.whatsappChannelLink = req.body.whatsappChannelLink;
-        if (req.body.youtubeChannelLink !== undefined) screen.youtubeChannelLink = req.body.youtubeChannelLink;
-        if (req.body.facebookLink !== undefined) screen.facebookLink = req.body.facebookLink;
-        if (req.body.instagramLink !== undefined) screen.instagramLink = req.body.instagramLink;
-        if (req.body.telegramLink !== undefined) screen.telegramLink = req.body.telegramLink;
-        if (req.body.twitterLink !== undefined) screen.twitterLink = req.body.twitterLink;
-        if (req.body.linkedinLink !== undefined) screen.linkedinLink = req.body.linkedinLink;
+        // 9. Update Footer Fields
+        const footerFields = ['whatsappNumber', 'whatsappChannelLink', 'youtubeChannelLink', 
+                              'facebookLink', 'instagramLink', 'telegramLink', 'twitterLink', 'linkedinLink'];
+        for (const field of footerFields) {
+            if (req.body[field] !== undefined) screen[field] = req.body[field];
+        }
         
         screen.updatedAt = new Date();
         await screen.save();
@@ -696,6 +661,49 @@ app.delete('/api/screen/gallery/:id', verifyToken, async (req, res) => {
         await screen.save();
         
         res.json({ success: true, message: "Gallery item deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// ADMIN PHOTO APIs
+// ============================================
+
+// Update Admin Photo
+app.post('/api/admin/photo', verifyToken, async (req, res) => {
+    try {
+        const { photoBase64 } = req.body;
+        const admin = await Admin.findOne({ adminID: req.user.adminID });
+        
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        admin.photo = photoBase64 || '';
+        await admin.save();
+        
+        res.json({ success: true, message: "Admin photo updated successfully", photo: admin.photo });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get Admin Photo
+app.get('/api/admin/photo', verifyToken, async (req, res) => {
+    try {
+        const admin = await Admin.findOne({ adminID: req.user.adminID });
+        res.json({ success: true, photo: admin?.photo || '' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Get Admin Profile (Complete)
+app.get('/api/admin/profile', verifyToken, async (req, res) => {
+    try {
+        const admin = await Admin.findOne({ adminID: req.user.adminID }).select('-pws');
+        res.json({ success: true, data: admin });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -737,10 +745,81 @@ app.post('/api/admin-login', async (req, res) => {
             success: true, 
             message: "Login Successful", 
             token, 
-            admin: { name: admin.name, adminID: admin.adminID, role: admin.role } 
+            admin: { 
+                name: admin.name, 
+                adminID: admin.adminID, 
+                role: admin.role,
+                photo: admin.photo 
+            } 
         });
     } catch (err) {
         console.error('Login error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// ADMIN CHANGE PASSWORD API
+// ============================================
+app.post('/api/admin/change-password', verifyToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        const admin = await Admin.findOne({ adminID: req.user.adminID });
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        const isValid = await bcrypt.compare(currentPassword, admin.pws);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: "Current password is incorrect" });
+        }
+        
+        if (newPassword.length < 4) {
+            return res.status(400).json({ success: false, message: "Password must be at least 4 characters" });
+        }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        admin.pws = hashedPassword;
+        await admin.save();
+        
+        res.json({ success: true, message: "Password changed successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// ADMIN CHANGE ID API
+// ============================================
+app.post('/api/admin/change-id', verifyToken, async (req, res) => {
+    try {
+        const { newAdminId, password } = req.body;
+        
+        if (!newAdminId || newAdminId.length < 3) {
+            return res.status(400).json({ success: false, message: "Admin ID must be at least 3 characters" });
+        }
+        
+        const admin = await Admin.findOne({ adminID: req.user.adminID });
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        
+        const isValid = await bcrypt.compare(password, admin.pws);
+        if (!isValid) {
+            return res.status(401).json({ success: false, message: "Password is incorrect" });
+        }
+        
+        const existing = await Admin.findOne({ adminID: newAdminId });
+        if (existing) {
+            return res.status(400).json({ success: false, message: "Admin ID already exists" });
+        }
+        
+        admin.adminID = newAdminId;
+        await admin.save();
+        
+        res.json({ success: true, message: "Admin ID changed successfully. Please login again." });
+    } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
@@ -1209,7 +1288,7 @@ app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// TEACHER APIs
+// TEACHER APIs (Keeping existing ones)
 // ============================================
 
 function formatDOBToPassword(dob) {
@@ -1937,71 +2016,7 @@ app.post('/api/teachers/:id/rejoin', verifyToken, async (req, res) => {
 });
 
 console.log('✅ Teacher APIs loaded successfully');
-// ============================================
-// ADMIN CHANGE PASSWORD API
-// ============================================
-app.post('/api/admin/change-password', verifyToken, async (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-        
-        const admin = await Admin.findOne({ adminID: req.user.adminID });
-        if (!admin) {
-            return res.status(404).json({ success: false, message: "Admin not found" });
-        }
-        
-        const isValid = await bcrypt.compare(currentPassword, admin.pws);
-        if (!isValid) {
-            return res.status(401).json({ success: false, message: "Current password is incorrect" });
-        }
-        
-        if (newPassword.length < 4) {
-            return res.status(400).json({ success: false, message: "Password must be at least 4 characters" });
-        }
-        
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        admin.pws = hashedPassword;
-        await admin.save();
-        
-        res.json({ success: true, message: "Password changed successfully" });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
 
-// ============================================
-// ADMIN CHANGE ID API
-// ============================================
-app.post('/api/admin/change-id', verifyToken, async (req, res) => {
-    try {
-        const { newAdminId, password } = req.body;
-        
-        if (!newAdminId || newAdminId.length < 3) {
-            return res.status(400).json({ success: false, message: "Admin ID must be at least 3 characters" });
-        }
-        
-        const admin = await Admin.findOne({ adminID: req.user.adminID });
-        if (!admin) {
-            return res.status(404).json({ success: false, message: "Admin not found" });
-        }
-        
-        const isValid = await bcrypt.compare(password, admin.pws);
-        if (!isValid) {
-            return res.status(401).json({ success: false, message: "Password is incorrect" });
-        }
-        
-        const existing = await Admin.findOne({ adminID: newAdminId });
-        if (existing) {
-            return res.status(400).json({ success: false, message: "Admin ID already exists" });
-        }
-        
-        admin.adminID = newAdminId;
-        await admin.save();
-        
-        res.json({ success: true, message: "Admin ID changed successfully. Please login again." });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
 // ============================================
 // SERVE HTML FILES
 // ============================================
@@ -2018,8 +2033,12 @@ app.listen(PORT, () => {
     console.log(`\n✅ Server running on http://localhost:${PORT}`);
     console.log(`🔗 Login: http://localhost:${PORT}/login.html`);
     console.log(`🔑 Credentials: admin / admin123`);
-    console.log(`\n📱 Screen Management APIs:`);
-    console.log(`   GET  /api/screen              - Get all screen data (public)`);
-    console.log(`   PUT  /api/screen              - Update screen data (admin)`);
-    console.log(`   DELETE /api/screen/gallery/:id - Delete gallery item (admin)`);
+    console.log(`\n📱 Screen Management APIs (Base64 Storage):`);
+    console.log(`   GET  /api/screen              - Get all screen data`);
+    console.log(`   PUT  /api/screen              - Update screen data (Base64)`);
+    console.log(`   DELETE /api/screen/gallery/:id - Delete gallery item`);
+    console.log(`\n👤 Admin Photo APIs:`);
+    console.log(`   GET  /api/admin/profile       - Get admin profile`);
+    console.log(`   POST /api/admin/photo         - Update admin photo`);
+    console.log(`   GET  /api/admin/photo         - Get admin photo`);
 });
