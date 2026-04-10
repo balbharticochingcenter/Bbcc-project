@@ -77,6 +77,8 @@
             align-items: center;
             gap: 20px;
         }
+        
+        /* Logo Drag/Slide Effect */
         .header-logo {
             width: 60px;
             height: 60px;
@@ -85,21 +87,46 @@
             background: white;
             padding: 5px;
             animation: pulseRotate 2s infinite;
+            transition: all 0.3s ease;
+            cursor: grab;
         }
+        .header-logo:active {
+            cursor: grabbing;
+        }
+        .header-logo.slide-out {
+            transform: translateX(-200px) rotate(-360deg);
+            opacity: 0;
+        }
+        
         @keyframes pulseRotate {
             0% { transform: scale(1) rotate(0deg); }
             50% { transform: scale(1.05) rotate(5deg); }
             100% { transform: scale(1) rotate(0deg); }
         }
+        
+        /* Title Rain Effect */
         .header-text h1 {
             font-size: 1.5rem;
+            margin-bottom: 5px;
             background: linear-gradient(45deg, #fff, #ffd700, #fff);
             background-size: 200% auto;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             animation: shineText 3s linear infinite;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-block;
         }
+        .header-text h1.raining span {
+            display: inline-block;
+            animation: rainDrop 0.5s ease forwards;
+        }
+        @keyframes rainDrop {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100px) rotate(360deg); opacity: 0; }
+        }
+        
         @keyframes shineText {
             0% { background-position: 0% center; }
             100% { background-position: 200% center; }
@@ -112,9 +139,11 @@
             0%,100% { color: #ffd700; }
             50% { color: #ff6b6b; }
         }
+        
         .controls {
             display: flex;
             gap: 15px;
+            align-items: center;
         }
         .theme-switch, .voice-toggle {
             display: flex;
@@ -134,6 +163,29 @@
         .theme-option.dark { background: #1a1a2e; border: 2px solid #bb86fc; }
         .theme-option.blue { background: #2196f3; border: 2px solid white; }
         .theme-option.green { background: #4caf50; border: 2px solid white; }
+        
+        /* Visitor Counter */
+        .visitor-counter {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .visitor-counter i {
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .visitor-count {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #ffd700;
+        }
 
         /* Main Container */
         .container {
@@ -142,7 +194,7 @@
             padding: 0 20px;
         }
 
-        /* Sidebar Slider (Auto-Slide Photos) */
+        /* Sidebar Slider - Auto size photos */
         .sidebar-slider {
             background: var(--card-bg);
             border-radius: 20px;
@@ -156,9 +208,10 @@
         }
         .slider-container {
             position: relative;
-            height: 300px;
+            min-height: 300px;
             overflow: hidden;
             border-radius: 15px;
+            background: #000;
         }
         .slider-slide {
             position: absolute;
@@ -173,10 +226,12 @@
         }
         .slider-slide.active {
             opacity: 1;
+            position: relative;
         }
         .slider-slide img {
             width: 100%;
-            height: 100%;
+            height: auto;
+            max-height: 400px;
             object-fit: contain;
         }
         .slider-btn {
@@ -213,13 +268,50 @@
             border-radius: 10px;
         }
 
-        /* Enquiry Form */
+        /* Enquiry Form - Collapsible Button */
+        .enquiry-wrapper {
+            margin-bottom: 30px;
+        }
+        .enquiry-toggle-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 50px;
+            width: 100%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .enquiry-toggle-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
         .enquiry-form {
             background: var(--card-bg);
             border-radius: 20px;
             padding: 25px;
-            margin-bottom: 30px;
+            margin-top: 15px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: none;
+            animation: slideDown 0.4s ease;
+        }
+        .enquiry-form.show {
+            display: block;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .enquiry-form h3 {
             margin-bottom: 20px;
@@ -263,23 +355,30 @@
             gap: 10px;
         }
 
-        /* Mobile Style Gallery Grid */
+        /* Gallery Grid - Auto Slide like Train */
         .gallery-grid {
             background: var(--card-bg);
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         .gallery-grid h3 {
             margin-bottom: 15px;
             color: var(--primary-color);
         }
-        .masonry-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        .gallery-train-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .gallery-train {
+            display: flex;
+            transition: transform 0.5s ease;
             gap: 15px;
         }
-        .grid-item {
+        .gallery-train-item {
+            flex: 0 0 calc(25% - 15px);
+            min-width: 200px;
             aspect-ratio: 1 / 1;
             border-radius: 15px;
             overflow: hidden;
@@ -287,22 +386,51 @@
             transition: transform 0.3s;
             background: #000;
         }
-        .grid-item:hover {
+        .gallery-train-item:hover {
             transform: scale(1.03);
         }
-        .grid-item img, .grid-item video {
+        .gallery-train-item img, .gallery-train-item video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        .play-icon {
-            position: relative;
-            top: -50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .train-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .train-nav-btn {
+            background: var(--primary-color);
             color: white;
-            font-size: 3rem;
-            text-align: center;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .train-nav-btn:hover {
+            transform: scale(1.1);
+        }
+        .train-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .train-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .train-dot.active {
+            background: var(--primary-color);
+            width: 20px;
+            border-radius: 10px;
         }
 
         /* Footer */
@@ -347,7 +475,7 @@
             100% { color: #ff6b6b; }
         }
 
-        /* Floating Zoom Button - Moving */
+        /* Floating Zoom Button */
         .zoom-float {
             position: fixed;
             width: 60px;
@@ -464,10 +592,11 @@
 
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; gap: 0; }
-            .masonry-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-            .slider-container { height: 200px; }
+            .gallery-train-item { flex: 0 0 calc(50% - 10px); min-width: 150px; }
+            .slider-container { min-height: 200px; }
             .header-text h1 { font-size: 1rem; }
             .zoom-float { width: 50px; height: 50px; font-size: 1.5rem; }
+            .visitor-counter { padding: 5px 10px; font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -484,13 +613,18 @@
     <!-- Header -->
     <div class="site-header">
         <div class="header-left">
-            <img class="header-logo" id="headerLogo" src="" alt="Logo">
+            <img class="header-logo" id="headerLogo" src="" alt="Logo" draggable="true">
             <div class="header-text">
-                <h1 id="headerTitle">BBCC Portal</h1>
+                <h1 id="headerTitle" class="rain-text">BBCC Portal</h1>
                 <p id="headerSubTitle">Best Coaching Center</p>
             </div>
         </div>
         <div class="controls">
+            <div class="visitor-counter">
+                <i class="fas fa-eye"></i>
+                <span>Live Visitors:</span>
+                <span class="visitor-count" id="visitorCount">0</span>
+            </div>
             <div class="theme-switch">
                 <div class="theme-option light" onclick="setTheme('light')"></div>
                 <div class="theme-option dark" onclick="setTheme('dark')"></div>
@@ -504,10 +638,10 @@
     </div>
 
     <div class="container">
-        <!-- 1. SIDEBAR SLIDER (Auto-Slide Photos) -->
+        <!-- 1. SIDEBAR SLIDER (Auto-Slide Photos - Auto Size) -->
         <div class="sidebar-slider">
             <h3><i class="fas fa-images"></i> Sidebar Gallery</h3>
-            <div class="slider-container" id="sliderContainer">
+            <div class="slider-container" id="sliderContainer" style="min-height: 300px;">
                 <div style="text-align:center; padding:100px;">Loading...</div>
             </div>
             <button class="slider-btn prev" onclick="prevSlide()">❮</button>
@@ -515,80 +649,92 @@
             <div class="slider-dots" id="sliderDots"></div>
         </div>
 
-        <!-- 2. ENQUIRY FORM -->
-        <div class="enquiry-form">
-            <h3><i class="fas fa-envelope"></i> Quick Enquiry</h3>
-            <form id="enquiryForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" id="enquiryName" required placeholder="Enter full name">
+        <!-- 2. ENQUIRY FORM - Collapsible Button -->
+        <div class="enquiry-wrapper">
+            <button class="enquiry-toggle-btn" id="enquiryToggleBtn">
+                <i class="fas fa-envelope"></i> Quick Enquiry <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="enquiry-form" id="enquiryForm">
+                <h3><i class="fas fa-pencil-alt"></i> Fill Your Details</h3>
+                <form id="enquiryFormSubmit">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="enquiryName" required placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Mobile Number *</label>
+                            <input type="tel" id="enquiryMobile" required placeholder="10-digit mobile" pattern="[0-9]{10}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Section *</label>
+                            <select id="enquirySection" required>
+                                <option value="">Select Section</option>
+                                <option value="School">School (Class 1-8)</option>
+                                <option value="High School">High School (Class 9-10)</option>
+                                <option value="Senior Secondary">Senior Secondary (Class 11-12)</option>
+                                <option value="Competitive">Competitive Exams</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Board *</label>
+                            <select id="enquiryBoard" required>
+                                <option value="">Select Board</option>
+                                <option value="CBSE">CBSE</option>
+                                <option value="ICSE">ICSE</option>
+                                <option value="UP Board">UP Board</option>
+                                <option value="State Board">State Board</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Class *</label>
+                            <select id="enquiryClass" required>
+                                <option value="">Select Class</option>
+                                <option value="1st">1st</option><option value="2nd">2nd</option>
+                                <option value="3rd">3rd</option><option value="4th">4th</option>
+                                <option value="5th">5th</option><option value="6th">6th</option>
+                                <option value="7th">7th</option><option value="8th">8th</option>
+                                <option value="9th">9th</option><option value="10th">10th</option>
+                                <option value="11th">11th</option><option value="12th">12th</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred Subject</label>
+                            <input type="text" id="enquirySubject" placeholder="e.g., Mathematics">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Mobile Number *</label>
-                        <input type="tel" id="enquiryMobile" required placeholder="10-digit mobile" pattern="[0-9]{10}">
+                        <label>Message</label>
+                        <textarea id="enquiryMessage" rows="2" placeholder="Any specific requirements..."></textarea>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Section *</label>
-                        <select id="enquirySection" required>
-                            <option value="">Select Section</option>
-                            <option value="School">School (Class 1-8)</option>
-                            <option value="High School">High School (Class 9-10)</option>
-                            <option value="Senior Secondary">Senior Secondary (Class 11-12)</option>
-                            <option value="Competitive">Competitive Exams</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Board *</label>
-                        <select id="enquiryBoard" required>
-                            <option value="">Select Board</option>
-                            <option value="CBSE">CBSE</option>
-                            <option value="ICSE">ICSE</option>
-                            <option value="UP Board">UP Board</option>
-                            <option value="State Board">State Board</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Class *</label>
-                        <select id="enquiryClass" required>
-                            <option value="">Select Class</option>
-                            <option value="1st">1st</option><option value="2nd">2nd</option>
-                            <option value="3rd">3rd</option><option value="4th">4th</option>
-                            <option value="5th">5th</option><option value="6th">6th</option>
-                            <option value="7th">7th</option><option value="8th">8th</option>
-                            <option value="9th">9th</option><option value="10th">10th</option>
-                            <option value="11th">11th</option><option value="12th">12th</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Preferred Subject</label>
-                        <input type="text" id="enquirySubject" placeholder="e.g., Mathematics">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Message</label>
-                    <textarea id="enquiryMessage" rows="2" placeholder="Any specific requirements..."></textarea>
-                </div>
-                <button type="submit" class="submit-btn">
-                    <i class="fab fa-whatsapp"></i> Submit on WhatsApp
-                </button>
-            </form>
+                    <button type="submit" class="submit-btn">
+                        <i class="fab fa-whatsapp"></i> Submit on WhatsApp
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <!-- 3. MOBILE STYLE GALLERY GRID -->
+        <!-- 3. GALLERY TRAIN (Auto Slide like Train) -->
         <div class="gallery-grid">
             <h3><i class="fas fa-photo-video"></i> Our Gallery</h3>
-            <div class="masonry-grid" id="galleryGrid">
-                <div style="text-align:center; padding:50px;">Loading...</div>
+            <div class="gallery-train-container">
+                <div class="gallery-train" id="galleryTrain">
+                    <div style="text-align:center; padding:50px; width:100%;">Loading...</div>
+                </div>
             </div>
+            <div class="train-nav">
+                <button class="train-nav-btn" onclick="prevTrain()"><i class="fas fa-chevron-left"></i></button>
+                <button class="train-nav-btn" onclick="nextTrain()"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="train-dots" id="trainDots"></div>
         </div>
     </div>
 
-    <!-- Floating Zoom Button (Moving) -->
+    <!-- Floating Zoom Button -->
     <a href="#" id="zoomButton" class="zoom-float" target="_blank">
         <i class="fas fa-video"></i>
     </a>
@@ -635,7 +781,80 @@
         let slideInterval = null;
         let voiceEnabled = true;
         let dataVersion = 0;
-        let checkInterval = null;
+        let currentTrainIndex = 0;
+        let trainInterval = null;
+        let visitorCount = Math.floor(Math.random() * 100) + 50;
+
+        // Logo Drag/Slide Effect
+        function initLogoDrag() {
+            const logo = document.getElementById('headerLogo');
+            let isDragging = false;
+            let startX = 0;
+            
+            logo.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                logo.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const diff = e.clientX - startX;
+                if (Math.abs(diff) > 50) {
+                    logo.classList.add('slide-out');
+                    setTimeout(() => {
+                        logo.classList.remove('slide-out');
+                    }, 500);
+                    isDragging = false;
+                    logo.style.cursor = 'grab';
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                logo.style.cursor = 'grab';
+            });
+            
+            logo.addEventListener('dragstart', (e) => {
+                e.preventDefault();
+                logo.classList.add('slide-out');
+                setTimeout(() => logo.classList.remove('slide-out'), 500);
+                return false;
+            });
+        }
+
+        // Title Rain Effect
+        function initTitleRain() {
+            const title = document.querySelector('.header-text h1');
+            title.addEventListener('mouseenter', () => {
+                const text = title.innerText;
+                title.innerHTML = '';
+                for (let i = 0; i < text.length; i++) {
+                    const span = document.createElement('span');
+                    span.textContent = text[i];
+                    span.style.display = 'inline-block';
+                    span.style.animation = `rainDrop 0.5s ease forwards`;
+                    span.style.animationDelay = `${i * 0.03}s`;
+                    title.appendChild(span);
+                }
+                title.classList.add('raining');
+                setTimeout(() => {
+                    title.innerHTML = text;
+                    title.classList.remove('raining');
+                }, 500);
+            });
+        }
+
+        // Visitor Counter Animation
+        function updateVisitorCount() {
+            const countEl = document.getElementById('visitorCount');
+            setInterval(() => {
+                visitorCount += Math.floor(Math.random() * 3);
+                countEl.textContent = visitorCount;
+                countEl.style.transform = 'scale(1.2)';
+                setTimeout(() => countEl.style.transform = 'scale(1)', 300);
+            }, 5000);
+        }
 
         function setTheme(theme) {
             document.body.className = `theme-${theme}`;
@@ -694,14 +913,8 @@
             document.body.appendChild(toast);
         }
 
-        function refreshPage() {
-            location.reload();
-        }
-
-        function closeToast() {
-            const toast = document.getElementById('updateToast');
-            if (toast) toast.remove();
-        }
+        function refreshPage() { location.reload(); }
+        function closeToast() { document.getElementById('updateToast')?.remove(); }
 
         function updateUI() {
             if (!screenData) return;
@@ -712,7 +925,6 @@
             document.getElementById('welcomeTitle').textContent = `Welcome to ${screenData.title || 'BBCC'}`;
             document.getElementById('welcomeSubTitle').textContent = screenData.subTitle || 'Best Coaching Center';
 
-            // Update Zoom Button
             const zoomBtn = document.getElementById('zoomButton');
             if (screenData.zoomMeetingLink && screenData.zoomMeetingLink !== '') {
                 zoomBtn.href = screenData.zoomMeetingLink;
@@ -723,16 +935,10 @@
                 zoomBtn.style.background = 'linear-gradient(135deg, #888, #666)';
             }
 
-            // Update Sidebar Slider
             updateSidebarSlider();
-
-            // Update Gallery Grid
-            updateGalleryGrid();
-
-            // Update Footer
+            updateGalleryTrain();
             updateFooter();
 
-            // Speak welcome
             setTimeout(() => speak(`Welcome to ${screenData.title || 'BBCC'}`), 2000);
         }
 
@@ -753,7 +959,7 @@
             photos.forEach((photo, i) => {
                 const slide = document.createElement('div');
                 slide.className = `slider-slide ${i === 0 ? 'active' : ''}`;
-                slide.innerHTML = `<img src="${typeof photo === 'string' ? photo : photo.url}" alt="Slide" onclick="openLightbox('${typeof photo === 'string' ? photo : photo.url}', 'photo')">`;
+                slide.innerHTML = `<img src="${typeof photo === 'string' ? photo : photo.url}" alt="Slide" onclick="openLightbox('${typeof photo === 'string' ? photo : photo.url}', 'photo')" style="width:100%; height:auto; max-height:400px; object-fit:contain;">`;
                 container.appendChild(slide);
 
                 const dot = document.createElement('div');
@@ -790,27 +996,103 @@
             slideInterval = setInterval(() => nextSlide(), 4000);
         }
 
-        function updateGalleryGrid() {
+        // Gallery Train - Auto Slide
+        function updateGalleryTrain() {
             const gallery = screenData.gallery || [];
-            const container = document.getElementById('galleryGrid');
+            const container = document.getElementById('galleryTrain');
+            const dotsContainer = document.getElementById('trainDots');
             
             if (gallery.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:50px;">No gallery items</div>';
+                container.innerHTML = '<div style="text-align:center; padding:50px; width:100%;">No gallery items</div>';
+                dotsContainer.innerHTML = '';
                 return;
             }
 
             container.innerHTML = '';
-            gallery.forEach(item => {
+            dotsContainer.innerHTML = '';
+
+            gallery.forEach((item, idx) => {
                 const div = document.createElement('div');
-                div.className = 'grid-item';
+                div.className = 'gallery-train-item';
                 if (item.type === 'photo') {
-                    div.innerHTML = `<img src="${item.url}" alt="Gallery" loading="lazy">`;
+                    div.innerHTML = `<img src="${item.data || item.url}" alt="Gallery" loading="lazy">`;
                 } else {
                     div.innerHTML = `<video src="${item.url}" style="pointer-events:none;"></video><div class="play-icon"><i class="fas fa-play-circle"></i></div>`;
                 }
-                div.onclick = () => openLightbox(item.url, item.type);
+                div.onclick = () => openLightbox(item.data || item.url, item.type);
                 container.appendChild(div);
+                
+                const dot = document.createElement('div');
+                dot.className = `train-dot ${idx === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToTrainSlide(idx);
+                dotsContainer.appendChild(dot);
             });
+            
+            currentTrainIndex = 0;
+            startTrainAutoSlide();
+            updateTrainPosition();
+        }
+
+        function updateTrainPosition() {
+            const items = document.querySelectorAll('.gallery-train-item');
+            const dots = document.querySelectorAll('.train-dot');
+            const container = document.getElementById('galleryTrain');
+            if (items.length === 0) return;
+            
+            const itemWidth = items[0].offsetWidth + 15;
+            const scrollAmount = currentTrainIndex * itemWidth;
+            container.style.transform = `translateX(-${scrollAmount}px)`;
+            
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentTrainIndex));
+        }
+
+        function nextTrain() {
+            const items = document.querySelectorAll('.gallery-train-item');
+            if (currentTrainIndex < items.length - 1) {
+                currentTrainIndex++;
+                updateTrainPosition();
+                resetTrainAutoSlide();
+            }
+        }
+
+        function prevTrain() {
+            if (currentTrainIndex > 0) {
+                currentTrainIndex--;
+                updateTrainPosition();
+                resetTrainAutoSlide();
+            }
+        }
+
+        function goToTrainSlide(index) {
+            currentTrainIndex = index;
+            updateTrainPosition();
+            resetTrainAutoSlide();
+        }
+
+        function startTrainAutoSlide() {
+            if (trainInterval) clearInterval(trainInterval);
+            trainInterval = setInterval(() => {
+                const items = document.querySelectorAll('.gallery-train-item');
+                if (currentTrainIndex < items.length - 1) {
+                    currentTrainIndex++;
+                } else {
+                    currentTrainIndex = 0;
+                }
+                updateTrainPosition();
+            }, 4000);
+        }
+
+        function resetTrainAutoSlide() {
+            if (trainInterval) clearInterval(trainInterval);
+            trainInterval = setInterval(() => {
+                const items = document.querySelectorAll('.gallery-train-item');
+                if (currentTrainIndex < items.length - 1) {
+                    currentTrainIndex++;
+                } else {
+                    currentTrainIndex = 0;
+                }
+                updateTrainPosition();
+            }, 4000);
         }
 
         function openLightbox(url, type) {
@@ -841,7 +1123,20 @@
             if (screenData.linkedinLink) document.getElementById('footerLinkedin').href = screenData.linkedinLink;
         }
 
-        document.getElementById('enquiryForm').addEventListener('submit', (e) => {
+        // Enquiry Form Toggle
+        document.getElementById('enquiryToggleBtn').addEventListener('click', () => {
+            const form = document.getElementById('enquiryForm');
+            const btn = document.getElementById('enquiryToggleBtn');
+            form.classList.toggle('show');
+            const icon = btn.querySelector('.fa-chevron-down');
+            if (form.classList.contains('show')) {
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        });
+
+        document.getElementById('enquiryFormSubmit').addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('enquiryName').value;
             const mobile = document.getElementById('enquiryMobile').value;
@@ -864,7 +1159,8 @@
             const whatsappMsg = `*New Enquiry*%0A%0A*Name:* ${encodeURIComponent(name)}%0A*Mobile:* ${mobile}%0A*Section:* ${section}%0A*Board:* ${board}%0A*Class:* ${className}%0A*Subject:* ${subject || 'Not specified'}%0A*Message:* ${encodeURIComponent(message || 'No message')}`;
             window.open(`https://wa.me/${whatsappNumber}?text=${whatsappMsg}`, '_blank');
             alert('Thank you! Redirecting to WhatsApp...');
-            document.getElementById('enquiryForm').reset();
+            document.getElementById('enquiryFormSubmit').reset();
+            document.getElementById('enquiryForm').classList.remove('show');
         });
 
         setTimeout(() => {
@@ -872,16 +1168,18 @@
             if (overlay) overlay.remove();
         }, 3000);
 
-        // Auto check for updates every 10 seconds
         async function startAutoCheck() {
             await loadScreenData(false);
-            setInterval(async () => {
-                await loadScreenData(true);
-            }, 10000);
+            setInterval(async () => { await loadScreenData(true); }, 30000);
         }
+
+        window.addEventListener('resize', () => updateTrainPosition());
 
         async function initialize() {
             loadTheme();
+            initLogoDrag();
+            initTitleRain();
+            updateVisitorCount();
             await startAutoCheck();
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft') prevSlide();
