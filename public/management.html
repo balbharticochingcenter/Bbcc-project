@@ -58,6 +58,27 @@
         
         .admin-info {
             text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid #e94560;
+            transition: transform 0.3s;
+        }
+        
+        .admin-photo:hover {
+            transform: scale(1.05);
+        }
+        
+        .admin-details {
+            text-align: right;
         }
         
         .admin-name {
@@ -70,6 +91,64 @@
         .admin-role {
             font-size: 0.8rem;
             opacity: 0.8;
+        }
+        
+        .admin-id-info {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .date-range {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .date-range input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
         
         /* Main Layout */
@@ -512,13 +591,6 @@
             margin-bottom: 20px;
         }
         
-        /* Admin ID Display */
-        .admin-id-info {
-            font-size: 0.7rem;
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-        
         /* Toast Notification */
         .toast-notification {
             position: fixed;
@@ -554,6 +626,12 @@
             .chart-row {
                 grid-template-columns: 1fr;
             }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .admin-info {
+                flex-direction: column-reverse;
+            }
         }
     </style>
 </head>
@@ -568,9 +646,12 @@
             </div>
         </div>
         <div class="admin-info">
-            <div class="admin-name" id="adminName" onclick="openAdminIdModal()">Admin ▼</div>
-            <div class="admin-role" id="adminRole">Administrator</div>
-            <div class="admin-id-info" id="adminIdDisplay"></div>
+            <img class="admin-photo" id="adminPhoto" src="" alt="Admin Photo" onclick="openAdminPhotoModal()">
+            <div class="admin-details">
+                <div class="admin-name" id="adminName" onclick="openAdminIdModal()">Admin ▼</div>
+                <div class="admin-role" id="adminRole">Administrator</div>
+                <div class="admin-id-info" id="adminIdDisplay"></div>
+            </div>
         </div>
     </div>
     
@@ -613,6 +694,23 @@
         <div class="content-area">
             <!-- Dashboard Module -->
             <div id="dashboard-module" class="module-container active">
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-buttons">
+                        <button class="filter-btn" data-filter="daily" onclick="setFilter('daily')">📅 Daily</button>
+                        <button class="filter-btn" data-filter="weekly" onclick="setFilter('weekly')">📆 Weekly</button>
+                        <button class="filter-btn active" data-filter="monthly" onclick="setFilter('monthly')">📊 Monthly</button>
+                        <button class="filter-btn" data-filter="yearly" onclick="setFilter('yearly')">📈 Yearly</button>
+                        <button class="filter-btn" data-filter="lifetime" onclick="setFilter('lifetime')">🌟 Lifetime</button>
+                    </div>
+                    <div class="date-range" id="dateRangePicker" style="display: none;">
+                        <input type="date" id="startDate">
+                        <span>to</span>
+                        <input type="date" id="endDate">
+                        <button class="btn btn-primary" onclick="applyCustomRange()">Apply</button>
+                    </div>
+                </div>
+                
                 <!-- Main Stats Cards -->
                 <div class="dashboard-stats">
                     <div class="stat-card">
@@ -628,12 +726,12 @@
                     <div class="stat-card success">
                         <h3 id="totalIncome">₹0</h3>
                         <p>Total Income (Fees)</p>
-                        <small id="monthlyIncome">This Month: ₹0</small>
+                        <small id="periodIncome">This Period: ₹0</small>
                     </div>
                     <div class="stat-card danger">
                         <h3 id="totalExpense">₹0</h3>
                         <p>Total Expense (Salary)</p>
-                        <small id="monthlyExpense">This Month: ₹0</small>
+                        <small id="periodExpense">This Period: ₹0</small>
                     </div>
                 </div>
                 
@@ -664,7 +762,7 @@
                 <!-- Charts Row 1 -->
                 <div class="chart-row">
                     <div class="chart-container">
-                        <h3>📈 Monthly Income vs Expense</h3>
+                        <h3>📈 Income vs Expense</h3>
                         <canvas id="incomeExpenseChart" style="max-height: 300px;"></canvas>
                     </div>
                     <div class="chart-container">
@@ -865,6 +963,27 @@
         </div>
     </div>
     
+    <!-- Admin Photo Modal -->
+    <div id="adminPhotoModal" class="modal">
+        <div class="modal-content">
+            <h3>Update Admin Photo</h3>
+            <div class="form-row">
+                <label>Current Photo</label>
+                <div style="text-align: center; margin: 10px 0;">
+                    <img id="currentAdminPhotoPreview" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                </div>
+            </div>
+            <div class="form-row">
+                <label>Upload New Photo</label>
+                <input type="file" id="adminPhotoInput" accept="image/*" onchange="previewAdminPhoto(this)">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="updateAdminPhoto()">Update Photo</button>
+                <button class="btn btn-danger" onclick="closeAdminPhotoModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="loading-indicator" id="loadingIndicator">
         Loading... 
     </div>
@@ -876,6 +995,9 @@
         let teacherModuleLoaded = false;
         let screenData = null;
         let dashboardData = null;
+        let currentFilter = 'monthly';
+        let customStartDate = null;
+        let customEndDate = null;
         
         // Chart instances
         let incomeExpenseChart = null;
@@ -883,8 +1005,167 @@
         let teacherAttendanceChart = null;
         let revenueChart = null;
         
-        // Image compression to 5-10KB
-        async function compressImage(file, targetSizeKB = 8) {
+        // ============ FILTER FUNCTIONS ============
+        
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.filter-btn[data-filter="${filter}"]`).classList.add('active');
+            
+            const dateRangePicker = document.getElementById('dateRangePicker');
+            if (filter === 'custom') {
+                dateRangePicker.style.display = 'flex';
+            } else {
+                dateRangePicker.style.display = 'none';
+                customStartDate = null;
+                customEndDate = null;
+            }
+            
+            loadDashboardData();
+        }
+        
+        function applyCustomRange() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (start && end) {
+                customStartDate = new Date(start);
+                customEndDate = new Date(end);
+                loadDashboardData();
+            } else {
+                showToast('Please select both dates', 'error');
+            }
+        }
+        
+        function filterDataByDate(data, dateField, amountField) {
+            if (!data || data.length === 0) return [];
+            
+            const now = new Date();
+            let filtered = [...data];
+            
+            if (currentFilter === 'daily') {
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                filtered = data.filter(item => {
+                    const itemDate = new Date(item[dateField]);
+                    return itemDate >= today;
+                });
+            } else if (currentFilter === 'weekly') {
+                const weekAgo = new Date(now);
+                weekAgo.setDate(now.getDate() - 7);
+                filtered = data.filter(item => new Date(item[dateField]) >= weekAgo);
+            } else if (currentFilter === 'monthly') {
+                const monthAgo = new Date(now);
+                monthAgo.setMonth(now.getMonth() - 1);
+                filtered = data.filter(item => new Date(item[dateField]) >= monthAgo);
+            } else if (currentFilter === 'yearly') {
+                const yearAgo = new Date(now);
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                filtered = data.filter(item => new Date(item[dateField]) >= yearAgo);
+            } else if (currentFilter === 'custom' && customStartDate && customEndDate) {
+                filtered = data.filter(item => {
+                    const itemDate = new Date(item[dateField]);
+                    return itemDate >= customStartDate && itemDate <= customEndDate;
+                });
+            }
+            
+            if (amountField) {
+                const total = filtered.reduce((sum, item) => sum + (item[amountField] || 0), 0);
+                return { filtered, total };
+            }
+            return filtered;
+        }
+        
+        // ============ ADMIN PHOTO FUNCTIONS ============
+        
+        async function loadAdminPhoto() {
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch('/api/admin/photo', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success && result.photo) {
+                    document.getElementById('adminPhoto').src = result.photo;
+                }
+            } catch (error) {
+                console.error('Error loading admin photo:', error);
+            }
+        }
+        
+        function openAdminPhotoModal() {
+            const currentPhoto = document.getElementById('adminPhoto').src;
+            document.getElementById('currentAdminPhotoPreview').src = currentPhoto || '';
+            document.getElementById('adminPhotoModal').classList.add('active');
+        }
+        
+        function closeAdminPhotoModal() {
+            document.getElementById('adminPhotoModal').classList.remove('active');
+            document.getElementById('adminPhotoInput').value = '';
+        }
+        
+        function previewAdminPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('currentAdminPhotoPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        async function updateAdminPhoto() {
+            const file = document.getElementById('adminPhotoInput').files[0];
+            if (!file) {
+                showToast('Please select a photo', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // Compress image
+                const compressed = await compressImage(file, 10);
+                const base64 = await fileToBase64(compressed);
+                
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch('/api/admin/photo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ photoBase64: base64 })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('adminPhoto').src = base64;
+                    showToast('Admin photo updated successfully!');
+                    closeAdminPhotoModal();
+                } else {
+                    showToast(result.message || 'Failed to update photo', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating photo:', error);
+                showToast('Error updating photo', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        // ============ IMAGE COMPRESSION ============
+        
+        async function compressImage(file, targetSizeKB = 10) {
             let quality = 0.7;
             let compressedFile = file;
             
@@ -908,7 +1189,6 @@
             return compressedFile;
         }
         
-        // Preview image before upload
         function previewImage(input, containerId) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -924,7 +1204,6 @@
             }
         }
         
-        // Preview gallery files
         function previewGalleryFiles(files) {
             const container = document.getElementById('galleryPreview');
             container.innerHTML = '';
@@ -934,15 +1213,9 @@
                     const div = document.createElement('div');
                     div.className = 'preview-item';
                     if (file.type.startsWith('image/')) {
-                        div.innerHTML = `
-                            <img src="${e.target.result}" alt="Preview">
-                            <button class="remove-preview" onclick="removePreviewFile(${index})">×</button>
-                        `;
+                        div.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
                     } else if (file.type.startsWith('video/')) {
-                        div.innerHTML = `
-                            <video src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"></video>
-                            <button class="remove-preview" onclick="removePreviewFile(${index})">×</button>
-                        `;
+                        div.innerHTML = `<video src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"></video>`;
                     }
                     container.appendChild(div);
                 };
@@ -950,7 +1223,6 @@
             });
         }
         
-        // Show toast notification
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = 'toast-notification';
@@ -960,31 +1232,34 @@
             setTimeout(() => toast.remove(), 3000);
         }
         
-        // Load complete dashboard data
+        // ============ DASHBOARD DATA LOADING ============
+        
         async function loadDashboardData() {
             try {
                 const token = localStorage.getItem('adminToken');
                 
-                // Load students data
                 const studentsRes = await fetch('/api/students', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const studentsData = await studentsRes.json();
                 const students = studentsData.data || [];
                 
-                // Load teachers data
                 const teachersRes = await fetch('/api/teachers', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const teachersData = await teachersRes.json();
                 const teachers = teachersData.data || [];
                 
-                // Calculate statistics
+                // Calculate statistics with date filtering
                 let totalFeesCollected = 0;
                 let totalFeesDue = 0;
                 let studentsWithDue = 0;
                 let totalPresent = 0;
                 let totalAttendanceDays = 0;
+                
+                // For period-based filtering
+                let periodFeesCollected = 0;
+                let periodSalaryPaid = 0;
                 
                 students.forEach(s => {
                     const feesHistory = s.feesHistory || [];
@@ -994,12 +1269,15 @@
                     totalFeesDue += due;
                     if (due > 0) studentsWithDue++;
                     
+                    // Period-based fees
+                    const periodFees = filterDataByDate(feesHistory, 'paymentDate', 'paidAmount');
+                    periodFeesCollected += periodFees.total || 0;
+                    
                     const attendance = s.attendance || [];
                     totalPresent += attendance.filter(a => a.status === 'present').length;
                     totalAttendanceDays += attendance.length;
                 });
                 
-                // Calculate teacher salary
                 let totalSalaryPaid = 0;
                 let totalSalaryDue = 0;
                 let teachersWithDue = 0;
@@ -1013,6 +1291,10 @@
                     totalSalaryPaid += paid;
                     totalSalaryDue += due;
                     if (due > 0) teachersWithDue++;
+                    
+                    // Period-based salary
+                    const periodSalary = filterDataByDate(salaryPayments, 'paymentDate', 'paidAmount');
+                    periodSalaryPaid += periodSalary.total || 0;
                     
                     const attendance = t.attendance || [];
                     teacherPresent += attendance.filter(a => a.status === 'present').length;
@@ -1028,13 +1310,15 @@
                 const teacherAttendanceRate = teacherAttendanceDays > 0 ? ((teacherPresent / teacherAttendanceDays) * 100).toFixed(1) : 0;
                 const overallAttendance = ((parseFloat(studentAttendanceRate) + parseFloat(teacherAttendanceRate)) / 2).toFixed(1);
                 
-                // Update UI
+                // Update UI with period data
                 document.getElementById('totalStudents').textContent = students.length;
                 document.getElementById('activeStudents').textContent = `Active: ${students.filter(s => s.isActive !== false).length}`;
                 document.getElementById('totalTeachers').textContent = teachers.length;
                 document.getElementById('activeTeachers').textContent = `Active: ${teachers.filter(t => t.status?.isActive !== false).length}`;
                 document.getElementById('totalIncome').textContent = `₹${totalIncome.toLocaleString()}`;
                 document.getElementById('totalExpense').textContent = `₹${totalExpense.toLocaleString()}`;
+                document.getElementById('periodIncome').textContent = `This Period: ₹${periodFeesCollected.toLocaleString()}`;
+                document.getElementById('periodExpense').textContent = `This Period: ₹${periodSalaryPaid.toLocaleString()}`;
                 document.getElementById('totalProfit').textContent = `₹${totalProfit.toLocaleString()}`;
                 document.getElementById('profitMargin').textContent = `Margin: ${profitMargin}%`;
                 document.getElementById('totalFeesDue').textContent = `₹${totalFeesDue.toLocaleString()}`;
@@ -1044,22 +1328,15 @@
                 document.getElementById('attendanceRate').textContent = `${overallAttendance}%`;
                 document.getElementById('attendanceDetails').textContent = `Students: ${studentAttendanceRate}% | Teachers: ${teacherAttendanceRate}%`;
                 
-                // Monthly data for charts
                 const monthlyData = await calculateMonthlyData(students, teachers);
                 updateCharts(monthlyData);
                 updateRecentActivity(students, teachers);
-                
-                dashboardData = {
-                    students, teachers, totalIncome, totalExpense, totalProfit,
-                    totalFeesDue, totalSalaryDue, studentAttendanceRate, teacherAttendanceRate
-                };
                 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
             }
         }
         
-        // Calculate monthly data for charts
         async function calculateMonthlyData(students, teachers) {
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const incomeData = new Array(12).fill(0);
@@ -1102,11 +1379,9 @@
             return { months, incomeData, expenseData, studentAttendanceData, teacherAttendanceData };
         }
         
-        // Update all charts
         function updateCharts(monthlyData) {
             const { months, incomeData, expenseData, studentAttendanceData, teacherAttendanceData } = monthlyData;
             
-            // Income vs Expense Chart
             if (incomeExpenseChart) incomeExpenseChart.destroy();
             incomeExpenseChart = new Chart(document.getElementById('incomeExpenseChart'), {
                 type: 'line',
@@ -1120,7 +1395,6 @@
                 options: { responsive: true, maintainAspectRatio: true }
             });
             
-            // Student Attendance Chart
             if (studentAttendanceChart) studentAttendanceChart.destroy();
             studentAttendanceChart = new Chart(document.getElementById('studentAttendanceChart'), {
                 type: 'bar',
@@ -1131,7 +1405,6 @@
                 options: { responsive: true, maintainAspectRatio: true }
             });
             
-            // Teacher Attendance Chart
             if (teacherAttendanceChart) teacherAttendanceChart.destroy();
             teacherAttendanceChart = new Chart(document.getElementById('teacherAttendanceChart'), {
                 type: 'bar',
@@ -1142,7 +1415,6 @@
                 options: { responsive: true, maintainAspectRatio: true }
             });
             
-            // Revenue Distribution Chart
             const totalIncome = incomeData.reduce((a, b) => a + b, 0);
             const totalExpense = expenseData.reduce((a, b) => a + b, 0);
             const profit = totalIncome - totalExpense;
@@ -1158,12 +1430,10 @@
             });
         }
         
-        // Update recent activity
         function updateRecentActivity(students, teachers) {
             const container = document.getElementById('recentActivity');
             const activities = [];
             
-            // Get recent fee payments
             students.forEach(s => {
                 const feesHistory = s.feesHistory || [];
                 feesHistory.forEach(f => {
@@ -1177,7 +1447,6 @@
                 });
             });
             
-            // Get recent salary payments
             teachers.forEach(t => {
                 const salaryPayments = t.salaryPayments || [];
                 salaryPayments.forEach(s => {
@@ -1206,7 +1475,8 @@
             }
         }
         
-        // Load screen data from API
+        // ============ SCREEN MANAGEMENT ============
+        
         async function loadScreenData() {
             try {
                 const response = await fetch('/api/screen');
@@ -1222,7 +1492,6 @@
             return null;
         }
         
-        // Update UI with screen data
         function updateUIWithScreenData() {
             if (!screenData) return;
             
@@ -1251,7 +1520,6 @@
             document.getElementById('twitterLinkInput').value = screenData.twitterLink || '';
             document.getElementById('linkedinLinkInput').value = screenData.linkedinLink || '';
             
-            // Update Footer
             if (screenData.whatsappNumber) {
                 document.getElementById('footerWhatsapp').href = `https://wa.me/${screenData.whatsappNumber}`;
                 document.getElementById('footerWhatsapp').textContent = `WhatsApp: ${screenData.whatsappNumber}`;
@@ -1265,12 +1533,11 @@
             if (screenData.linkedinLink) document.getElementById('footerLinkedin').href = screenData.linkedinLink;
         }
         
-        // Update sidebar photos
         function updateSidebarPhotos() {
             const container = document.getElementById('sidebarPhotosGrid');
             if (!container) return;
             
-            const photos = screenData.sidebarPhotos || [];
+            const photos = screenData?.sidebarPhotos || [];
             container.innerHTML = '';
             
             if (photos.length === 0) {
@@ -1289,7 +1556,6 @@
             });
         }
         
-        // Handle sidebar photo upload
         async function handleSidebarPhotoUpload(files) {
             if (!files || files.length === 0) return;
             showLoading(true);
@@ -1334,7 +1600,6 @@
             }
         }
         
-        // Delete sidebar photo
         async function deleteSidebarPhoto(index) {
             if (!confirm('Delete this photo?')) return;
             
@@ -1375,7 +1640,6 @@
             }
         }
         
-        // Upload gallery files
         async function uploadGalleryFiles() {
             const files = document.getElementById('galleryFilesInput').files;
             if (!files || files.length === 0) {
@@ -1431,7 +1695,6 @@
             }
         }
         
-        // Display gallery
         function displayGallery() {
             const galleryGrid = document.getElementById('galleryGrid');
             if (!galleryGrid || !screenData || !screenData.gallery) return;
@@ -1455,7 +1718,6 @@
             }
         }
         
-        // Delete gallery item
         async function deleteGalleryItem(id) {
             if (!confirm('Delete this item?')) return;
             try {
@@ -1475,7 +1737,6 @@
             }
         }
         
-        // Add video link
         async function addVideoLink() {
             const videoUrl = document.getElementById('videoLinkInput').value;
             if (!videoUrl) {
@@ -1523,7 +1784,6 @@
             }
         }
         
-        // Save basic settings
         async function saveBasicSettings() {
             showLoading(true);
             const formData = new FormData();
@@ -1574,7 +1834,8 @@
             }
         }
         
-        // Change password
+        // ============ ADMIN PASSWORD & ID CHANGE ============
+        
         async function changePassword() {
             const currentPwd = document.getElementById('currentPassword').value;
             const newPwd = document.getElementById('newPassword').value;
@@ -1622,7 +1883,6 @@
             }
         }
         
-        // Change Admin ID
         async function changeAdminId() {
             const newAdminId = document.getElementById('newAdminId').value;
             const verifyPassword = document.getElementById('verifyPassword').value;
@@ -1668,7 +1928,8 @@
             }
         }
         
-        // Switch modules
+        // ============ MODULE SWITCHING ============
+        
         window.switchModule = function(module) {
             currentModule = module;
             sessionStorage.setItem('activeModule', module);
@@ -1692,7 +1953,6 @@
             }
         };
         
-        // Load student module
         function loadStudentModule() {
             if (studentModuleLoaded) return;
             showLoading(true);
@@ -1714,7 +1974,6 @@
             document.body.appendChild(script);
         }
         
-        // Load teacher module
         function loadTeacherModule() {
             if (teacherModuleLoaded) return;
             showLoading(true);
@@ -1736,7 +1995,8 @@
             document.body.appendChild(script);
         }
         
-        // Modals
+        // ============ MODALS ============
+        
         window.openPasswordModal = function() {
             document.getElementById('passwordModal').classList.add('active');
         };
@@ -1760,7 +2020,6 @@
             document.getElementById('adminIdModal').classList.remove('active');
         };
         
-        // Handle logout
         window.handleLogout = function() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminToken');
@@ -1779,7 +2038,6 @@
             }
         }
         
-        // Get admin info
         function getAdminInfo() {
             const token = localStorage.getItem('adminToken');
             if (token) {
@@ -1794,7 +2052,6 @@
             }
         }
         
-        // Check auth
         function checkAuth() {
             const token = localStorage.getItem('adminToken');
             if (!token) {
@@ -1804,11 +2061,11 @@
             return true;
         }
         
-        // Initialize
         async function initialize() {
             if (!checkAuth()) return;
             getAdminInfo();
             await loadScreenData();
+            await loadAdminPhoto();
             await loadDashboardData();
             
             const savedModule = sessionStorage.getItem('activeModule');
