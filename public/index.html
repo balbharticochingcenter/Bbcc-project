@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>BBCC - Best Coaching Center</title>
+    <!-- HEAD मे यह LINE -->
+<link rel="icon" type="image/png" id="dynamicFavicon">
+
+<!-- SCRIPT मे यह CODE -->
+<script>
+    // फेविकॉन अपडेट करने का फंक्शन
+    async function setFavicon() {
+        try {
+            const response = await fetch('/api/screen');
+            const result = await response.json();
+            if (result.success && result.data.logo) {
+                const faviconLink = document.getElementById('dynamicFavicon');
+                if (faviconLink) {
+                    faviconLink.href = result.data.logo;
+                }
+            }
+        } catch(e) {
+            console.log('Favicon set failed');
+        }
+    }
+    setFavicon();
+</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
