@@ -1,5 +1,5 @@
 // ============================================
-// COMPLETE FIXED SERVER CODE - WITH INDEX FIX
+// COMPLETE FIXED SERVER CODE - WITH SCREEN MANAGEMENT
 // ============================================
 
 require('dotenv').config();
@@ -9,6 +9,8 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const multer = require('multer');  // ✅ ADDED: For file uploads
+const fs = require('fs');           // ✅ ADDED: For file system operations
 
 const app = express();
 
@@ -18,6 +20,27 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc_portal';
+
+// ============================================
+// FILE UPLOAD SETUP (For Screen Management)
+// ============================================
+const uploadFolder = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadFolder)) {
+    fs.mkdirSync(uploadFolder, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadFolder),
+    filename: (req, file, cb) => {
+        const unique = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, unique + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ 
+    storage: storage, 
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // ============================================
 // SCHEMA DEFINITIONS
@@ -129,7 +152,6 @@ const StudentSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 }, { 
-    // Disable auto-index creation to avoid conflicts
     autoIndex: false 
 });
 
@@ -165,18 +187,47 @@ const OldStudentSchema = new mongoose.Schema({
     leavingReason: String
 }, { timestamps: true });
 
-const Admin = mongoose.model('Admin', AdminSchema);
-const Student = mongoose.model('Student', StudentSchema);
-const OldStudent = mongoose.model('OldStudent', OldStudentSchema);
 // ============================================
-// TEACHER SCHEMA (Add after StudentSchema)
+// SCREEN MANAGEMENT SCHEMA (ADDED)
+// ============================================
+const ScreenSchema = new mongoose.Schema({
+    // Header Section
+    logo: { type: String, default: '' },
+    title: { type: String, default: 'BBCC Portal' },
+    subTitle: { type: String, default: 'Best Coaching Center' },
+    
+    // Sidebar Section
+    sidebarPhoto: { type: String, default: '' },
+    zoomMeetingLink: { type: String, default: '' },
+    
+    // Gallery Section (Photos and Videos)
+    gallery: [{
+        type: { type: String, enum: ['photo', 'video'] },
+        url: { type: String },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    
+    // Footer Section
+    whatsappNumber: { type: String, default: '' },
+    whatsappChannelLink: { type: String, default: '' },
+    youtubeChannelLink: { type: String, default: '' },
+    facebookLink: { type: String, default: '' },
+    instagramLink: { type: String, default: '' },
+    telegramLink: { type: String, default: '' },
+    twitterLink: { type: String, default: '' },
+    linkedinLink: { type: String, default: '' },
+    
+    updatedAt: { type: Date, default: Date.now }
+});
+
+// ============================================
+// TEACHER SCHEMA
 // ============================================
 const TeacherSchema = new mongoose.Schema({
-    teacherId: { type: String, required: true, unique: true, index: true }, // Aadhar number
+    teacherId: { type: String, required: true, unique: true, index: true },
     aadharNumber: { type: String, required: true, unique: true, index: true },
-    password: { type: String, required: true }, // DOB as password (DDMMYYYY)
+    password: { type: String, required: true },
     
-    // Personal Information
     personal: {
         photo: { type: String, default: '' },
         name: { type: String, required: true },
@@ -188,23 +239,19 @@ const TeacherSchema = new mongoose.Schema({
         permanentAddress: { type: String, default: '' }
     },
     
-    // Documents
     documents: {
         aadharCopy: { type: String, default: '' },
         qualificationDoc: { type: String, default: '' },
         qualificationName: { type: String, required: true }
     },
     
-    // Professional Information
     professional: {
         joiningDate: { type: Date, required: true },
         experience: { type: Number, default: 0 },
-        subjects: [{ type: String }], // Multi-select
-        classes: [{ type: String }],   // Multi-select
-        boards: [{ type: String }],    // Multi-select
-        branches: [{ type: String }],  // Multi-select (if multiple branches)
-        
-        // Change history tracking
+        subjects: [{ type: String }],
+        classes: [{ type: String }],
+        boards: [{ type: String }],
+        branches: [{ type: String }],
         assignmentHistory: [{
             date: { type: Date, default: Date.now },
             changes: { type: Object },
@@ -212,7 +259,6 @@ const TeacherSchema = new mongoose.Schema({
         }]
     },
     
-    // Salary
     salary: {
         defaultSalary: { type: Number, default: 0 },
         monthlySalaryHistory: [{
@@ -222,7 +268,6 @@ const TeacherSchema = new mongoose.Schema({
         }]
     },
     
-    // Bank Details (Optional)
     bankDetails: {
         bankName: { type: String, default: '' },
         accountNumber: { type: String, default: '' },
@@ -230,26 +275,23 @@ const TeacherSchema = new mongoose.Schema({
         upiId: { type: String, default: '' }
     },
     
-    // Working Days (Admin defined)
     workingDays: {
         startDay: { type: String, default: 'Monday' },
         endDay: { type: String, default: 'Saturday' },
-        isHoliday: [{ type: Date }]  // Holiday list
+        isHoliday: [{ type: Date }]
     },
     
-    // Attendance
     attendance: [{
         date: { type: Date, required: true },
         status: { type: String, enum: ['present', 'absent', 'holiday', 'leave'], default: 'absent' },
         checkIn: { type: String },
         checkOut: { type: String },
-        photo: { type: String, default: '' },  // Live photo optional
+        photo: { type: String, default: '' },
         remarks: { type: String },
         markedAt: { type: Date, default: Date.now },
         markedBy: { type: String }
     }],
     
-    // Salary Payments
     salaryPayments: [{
         month: String,
         year: Number,
@@ -265,7 +307,6 @@ const TeacherSchema = new mongoose.Schema({
         remarks: String
     }],
     
-    // Notices (Both ways)
     notices: [{
         id: { type: String, required: true },
         from: { type: String, enum: ['admin', 'teacher'], required: true },
@@ -279,7 +320,6 @@ const TeacherSchema = new mongoose.Schema({
         replyAt: Date
     }],
     
-    // Status
     status: {
         isActive: { type: Boolean, default: true },
         isBlocked: { type: Boolean, default: false },
@@ -290,7 +330,6 @@ const TeacherSchema = new mongoose.Schema({
         leavingReason: String
     },
     
-    // Login tracking
     login: {
         lastLogin: Date,
         loginAttempts: { type: Number, default: 0 }
@@ -298,7 +337,13 @@ const TeacherSchema = new mongoose.Schema({
     
 }, { timestamps: true });
 
+// Create Models
+const Admin = mongoose.model('Admin', AdminSchema);
+const Student = mongoose.model('Student', StudentSchema);
+const OldStudent = mongoose.model('OldStudent', OldStudentSchema);
+const Screen = mongoose.model('Screen', ScreenSchema);
 const Teacher = mongoose.model('Teacher', TeacherSchema);
+
 // ============================================
 // DATABASE CONNECTION WITH INDEX FIX
 // ============================================
@@ -306,19 +351,15 @@ mongoose.connect(MONGO_URI)
     .then(async () => {
         console.log('✅ MongoDB Connected');
         
-        // 🔥 CRITICAL FIX: Drop and recreate indexes properly
         console.log('🔄 Fixing database indexes...');
         
         try {
-            // Drop existing collection if empty or problematic
             const collections = await mongoose.connection.db.listCollections({ name: 'students' }).toArray();
             
             if (collections.length > 0) {
-                // Get all indexes
                 const indexes = await Student.collection.getIndexes();
                 console.log('Existing indexes:', Object.keys(indexes));
                 
-                // Drop all indexes except _id
                 for (const indexName of Object.keys(indexes)) {
                     if (indexName !== '_id_') {
                         try {
@@ -331,7 +372,6 @@ mongoose.connect(MONGO_URI)
                 }
             }
             
-            // Ensure indexes are created correctly
             await Student.collection.createIndex({ studentId: 1 }, { unique: true });
             console.log('✅ Created index: studentId');
             
@@ -339,15 +379,14 @@ mongoose.connect(MONGO_URI)
             console.log('✅ Created index: aadharNumber');
             
             console.log('✅ Database indexes fixed successfully!');
-            // Teacher indexes
-await Teacher.collection.createIndex({ teacherId: 1 }, { unique: true });
-console.log('✅ Created index: teacherId');
-
-await Teacher.collection.createIndex({ aadharNumber: 1 }, { unique: true });
-console.log('✅ Created index: aadharNumber');
+            
+            await Teacher.collection.createIndex({ teacherId: 1 }, { unique: true });
+            console.log('✅ Created index: teacherId');
+            
+            await Teacher.collection.createIndex({ aadharNumber: 1 }, { unique: true });
+            console.log('✅ Created index: aadharNumber');
         } catch (indexErr) {
             console.log('⚠️ Index fix warning:', indexErr.message);
-            // Try alternative approach
             try {
                 await Student.syncIndexes();
                 console.log('✅ Synced indexes via syncIndexes');
@@ -376,6 +415,32 @@ console.log('✅ Created index: aadharNumber');
             }
         } catch (adminErr) {
             console.log('Admin creation error:', adminErr.message);
+        }
+        
+        // Create default screen settings
+        try {
+            const existingScreen = await Screen.findOne();
+            if (!existingScreen) {
+                await Screen.create({
+                    logo: '',
+                    title: 'BBCC Portal',
+                    subTitle: 'Best Coaching Center',
+                    sidebarPhoto: '',
+                    zoomMeetingLink: '',
+                    gallery: [],
+                    whatsappNumber: '',
+                    whatsappChannelLink: '',
+                    youtubeChannelLink: '',
+                    facebookLink: '',
+                    instagramLink: '',
+                    telegramLink: '',
+                    twitterLink: '',
+                    linkedinLink: ''
+                });
+                console.log('✅ Default screen settings created!');
+            }
+        } catch (screenErr) {
+            console.log('Screen creation error:', screenErr.message);
         }
     })
     .catch(err => console.log('❌ DB Error:', err.message));
@@ -493,6 +558,133 @@ async function moveToOldStudents(student, reason = 'Session completed') {
 }
 
 // ============================================
+// SCREEN MANAGEMENT APIs (ADDED)
+// ============================================
+
+// GET Screen Data (Public - No login required)
+app.get('/api/screen', async (req, res) => {
+    try {
+        let screen = await Screen.findOne();
+        if (!screen) {
+            screen = await Screen.create({
+                logo: '',
+                title: 'BBCC Portal',
+                subTitle: 'Best Coaching Center',
+                sidebarPhoto: '',
+                zoomMeetingLink: '',
+                gallery: [],
+                whatsappNumber: '',
+                whatsappChannelLink: '',
+                youtubeChannelLink: '',
+                facebookLink: '',
+                instagramLink: '',
+                telegramLink: '',
+                twitterLink: '',
+                linkedinLink: ''
+            });
+        }
+        res.json({ success: true, data: screen });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// UPDATE Screen Data (Admin only - with token)
+app.put('/api/screen', verifyToken, upload.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'sidebarPhoto', maxCount: 1 },
+    { name: 'galleryFiles', maxCount: 50 }
+]), async (req, res) => {
+    try {
+        let screen = await Screen.findOne();
+        if (!screen) {
+            screen = new Screen();
+        }
+        
+        // 1. Update Header Fields
+        if (req.body.title !== undefined) screen.title = req.body.title;
+        if (req.body.subTitle !== undefined) screen.subTitle = req.body.subTitle;
+        
+        // Upload Logo
+        if (req.files['logo'] && req.files['logo'][0]) {
+            screen.logo = '/uploads/' + req.files['logo'][0].filename;
+        }
+        
+        // 2. Update Sidebar Fields
+        if (req.body.zoomMeetingLink !== undefined) screen.zoomMeetingLink = req.body.zoomMeetingLink;
+        
+        // Upload Sidebar Photo
+        if (req.files['sidebarPhoto'] && req.files['sidebarPhoto'][0]) {
+            screen.sidebarPhoto = '/uploads/' + req.files['sidebarPhoto'][0].filename;
+        }
+        
+        // 3. Update Gallery - Add new photos/videos
+        if (req.files['galleryFiles'] && req.files['galleryFiles'].length > 0) {
+            for (const file of req.files['galleryFiles']) {
+                const isVideo = file.mimetype.startsWith('video/');
+                screen.gallery.push({
+                    type: isVideo ? 'video' : 'photo',
+                    url: '/uploads/' + file.filename
+                });
+            }
+        }
+        
+        // Add video links from input
+        if (req.body.videoLinks) {
+            const videoLinks = JSON.parse(req.body.videoLinks);
+            for (const link of videoLinks) {
+                screen.gallery.push({
+                    type: 'video',
+                    url: link.url
+                });
+            }
+        }
+        
+        // Delete gallery items
+        if (req.body.deleteGalleryIds) {
+            const deleteIds = JSON.parse(req.body.deleteGalleryIds);
+            screen.gallery = screen.gallery.filter(item => !deleteIds.includes(item._id.toString()));
+        }
+        
+        // 4. Update Footer Fields
+        if (req.body.whatsappNumber !== undefined) screen.whatsappNumber = req.body.whatsappNumber;
+        if (req.body.whatsappChannelLink !== undefined) screen.whatsappChannelLink = req.body.whatsappChannelLink;
+        if (req.body.youtubeChannelLink !== undefined) screen.youtubeChannelLink = req.body.youtubeChannelLink;
+        if (req.body.facebookLink !== undefined) screen.facebookLink = req.body.facebookLink;
+        if (req.body.instagramLink !== undefined) screen.instagramLink = req.body.instagramLink;
+        if (req.body.telegramLink !== undefined) screen.telegramLink = req.body.telegramLink;
+        if (req.body.twitterLink !== undefined) screen.twitterLink = req.body.twitterLink;
+        if (req.body.linkedinLink !== undefined) screen.linkedinLink = req.body.linkedinLink;
+        
+        screen.updatedAt = new Date();
+        await screen.save();
+        
+        res.json({ success: true, message: "Screen updated successfully!", data: screen });
+        
+    } catch (err) {
+        console.error('Update error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// DELETE single gallery item
+app.delete('/api/screen/gallery/:id', verifyToken, async (req, res) => {
+    try {
+        const screen = await Screen.findOne();
+        if (!screen) {
+            return res.status(404).json({ success: false, message: "Screen not found" });
+        }
+        
+        screen.gallery = screen.gallery.filter(item => item._id.toString() !== req.params.id);
+        await screen.save();
+        
+        res.json({ success: true, message: "Gallery item deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
 // ADMIN LOGIN
 // ============================================
 app.post('/api/admin-login', async (req, res) => {
@@ -537,7 +729,7 @@ app.post('/api/admin-login', async (req, res) => {
 });
 
 // ============================================
-// STUDENT REGISTRATION - FIXED
+// STUDENT REGISTRATION
 // ============================================
 app.post('/api/students/register', async (req, res) => {
     try {
@@ -549,7 +741,6 @@ app.post('/api/students/register', async (req, res) => {
         
         console.log('📝 Registration:', { original: originalStudentId, modified: modifiedStudentId, aadhar: aadharNumber });
         
-        // Validations
         if (!originalStudentId || !isValidAadhar(originalStudentId)) {
             return res.status(400).json({ success: false, message: "Valid 12-digit Student ID is required" });
         }
@@ -562,7 +753,6 @@ app.post('/api/students/register', async (req, res) => {
             return res.status(400).json({ success: false, message: "First name and last name are required" });
         }
         
-        // Duplicate checks
         const existingByStudentId = await Student.findOne({ studentId: modifiedStudentId });
         if (existingByStudentId) {
             return res.status(400).json({ success: false, message: `Student ID ${originalStudentId} is already registered!` });
@@ -1000,11 +1190,11 @@ app.get('/api/dashboard/stats', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
 // ============================================
 // TEACHER APIs
 // ============================================
 
-// Helper: Format DOB to password (DDMMYYYY)
 function formatDOBToPassword(dob) {
     const d = new Date(dob);
     const day = String(d.getDate()).padStart(2, '0');
@@ -1013,26 +1203,22 @@ function formatDOBToPassword(dob) {
     return `${day}${month}${year}`;
 }
 
-// Helper: Check if attendance can be marked (before 10 PM)
 function canMarkAttendance() {
     const now = new Date();
     const hour = now.getHours();
-    return hour < 22; // Before 10 PM
+    return hour < 22;
 }
 
-// Helper: Calculate salary based on attendance
 function calculateSalary(baseSalary, workingDays, presentDays) {
     if (workingDays === 0) return 0;
     return Math.round((baseSalary / workingDays) * presentDays);
 }
 
-// ========== 1. REGISTER TEACHER ==========
 app.post('/api/teachers/register', verifyToken, async (req, res) => {
     try {
         const data = req.body;
         const aadharNumber = data.aadharNumber;
         
-        // Validation
         if (!aadharNumber || !/^\d{12}$/.test(aadharNumber)) {
             return res.status(400).json({ success: false, message: "Valid 12-digit Aadhar number required" });
         }
@@ -1041,13 +1227,11 @@ app.post('/api/teachers/register', verifyToken, async (req, res) => {
             return res.status(400).json({ success: false, message: "Valid 10-digit mobile number required" });
         }
         
-        // Check duplicate
         const existing = await Teacher.findOne({ $or: [{ teacherId: aadharNumber }, { aadharNumber: aadharNumber }] });
         if (existing) {
             return res.status(400).json({ success: false, message: "Teacher already registered with this Aadhar" });
         }
         
-        // Create password from DOB
         const password = formatDOBToPassword(data.personal.dob);
         
         const teacher = new Teacher({
@@ -1121,7 +1305,6 @@ app.post('/api/teachers/register', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 2. GET ALL TEACHERS ==========
 app.get('/api/teachers', verifyToken, async (req, res) => {
     try {
         const teachers = await Teacher.find({ 'status.isActive': true }).sort({ createdAt: -1 });
@@ -1136,7 +1319,6 @@ app.get('/api/teachers', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 3. GET SINGLE TEACHER ==========
 app.get('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1154,7 +1336,6 @@ app.get('/api/teachers/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 4. UPDATE TEACHER (All fields except Aadhar) ==========
 app.put('/api/teachers/:id', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1166,7 +1347,6 @@ app.put('/api/teachers/:id', verifyToken, async (req, res) => {
         
         const updates = req.body;
         
-        // Update allowed fields
         if (updates.personal) {
             Object.assign(teacher.personal, updates.personal);
         }
@@ -1174,7 +1354,6 @@ app.put('/api/teachers/:id', verifyToken, async (req, res) => {
             Object.assign(teacher.documents, updates.documents);
         }
         if (updates.professional) {
-            // Track changes for history
             const changes = {};
             if (updates.professional.subjects) changes.subjects = updates.professional.subjects;
             if (updates.professional.classes) changes.classes = updates.professional.classes;
@@ -1206,7 +1385,6 @@ app.put('/api/teachers/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 5. MARK TEACHER ATTENDANCE ==========
 app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     try {
         if (!canMarkAttendance()) {
@@ -1224,7 +1402,6 @@ app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
         const attendanceDate = new Date(date);
         attendanceDate.setHours(0, 0, 0, 0);
         
-        // Check if already marked
         const existingIndex = teacher.attendance.findIndex(a => {
             const aDate = new Date(a.date);
             aDate.setHours(0, 0, 0, 0);
@@ -1256,7 +1433,6 @@ app.post('/api/teachers/:id/attendance', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 6. UPDATE ATTENDANCE (Edit History) ==========
 app.put('/api/teachers/:id/attendance/:date', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1294,7 +1470,6 @@ app.put('/api/teachers/:id/attendance/:date', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 7. GENERATE SALARY (Auto + Manual) ==========
 app.post('/api/teachers/:id/salary/generate', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1305,23 +1480,19 @@ app.post('/api/teachers/:id/salary/generate', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Teacher not found" });
         }
         
-        // Get working days for the month
         const startDate = new Date(year, new Date(Date.parse(month + " 1, " + year)).getMonth(), 1);
         const endDate = new Date(year, startDate.getMonth() + 1, 0);
         
-        // Filter attendance for the month
         const monthAttendance = teacher.attendance.filter(a => {
             const aDate = new Date(a.date);
             return aDate.getMonth() === startDate.getMonth() && aDate.getFullYear() === year;
         });
         
-        // Calculate working days (Mon-Sat, excluding holidays)
         let workingDays = 0;
         let presentDays = 0;
         
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
             const dayOfWeek = d.getDay();
-            // Monday=1 to Saturday=6 are working days (Sunday=0 is off)
             if (dayOfWeek >= 1 && dayOfWeek <= 6) {
                 workingDays++;
                 const attendanceRecord = monthAttendance.find(a => {
@@ -1334,16 +1505,13 @@ app.post('/api/teachers/:id/salary/generate', verifyToken, async (req, res) => {
             }
         }
         
-        // Get base salary (custom or default)
         const monthlySalaryRecord = teacher.salary.monthlySalaryHistory.find(
             s => s.month === month && s.year === year
         );
         const baseSalary = customSalary || monthlySalaryRecord?.amount || teacher.salary.defaultSalary;
         
-        // Calculate salary
         const calculatedAmount = calculateSalary(baseSalary, workingDays, presentDays);
         
-        // Check if already exists
         const existingIndex = teacher.salaryPayments.findIndex(
             s => s.month === month && s.year === year
         );
@@ -1374,7 +1542,6 @@ app.post('/api/teachers/:id/salary/generate', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 8. PAY SALARY ==========
 app.post('/api/teachers/:id/salary/pay', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1411,7 +1578,6 @@ app.post('/api/teachers/:id/salary/pay', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 9. UPDATE MONTHLY SALARY AMOUNT ==========
 app.post('/api/teachers/:id/salary/monthly-update', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1440,7 +1606,6 @@ app.post('/api/teachers/:id/salary/monthly-update', verifyToken, async (req, res
     }
 });
 
-// ========== 10. BLOCK TEACHER ==========
 app.post('/api/teachers/:id/block', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1463,7 +1628,6 @@ app.post('/api/teachers/:id/block', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 11. UNBLOCK TEACHER ==========
 app.post('/api/teachers/:id/unblock', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1484,7 +1648,6 @@ app.post('/api/teachers/:id/unblock', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 12. SEND NOTICE ==========
 app.post('/api/teachers/notice', verifyToken, async (req, res) => {
     try {
         const { teacherId, title, message, from } = req.body;
@@ -1501,14 +1664,12 @@ app.post('/api/teachers/notice', verifyToken, async (req, res) => {
         };
         
         if (teacherId) {
-            // Send to specific teacher
             const teacher = await Teacher.findOne({ teacherId: teacherId });
             if (teacher) {
                 teacher.notices.push(notice);
                 await teacher.save();
             }
         } else {
-            // Broadcast to all teachers
             const teachers = await Teacher.find({ 'status.isActive': true });
             for (const teacher of teachers) {
                 teacher.notices.push(notice);
@@ -1523,7 +1684,6 @@ app.post('/api/teachers/notice', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 13. GET ALL NOTICES (Admin View) ==========
 app.get('/api/notices', verifyToken, async (req, res) => {
     try {
         const teachers = await Teacher.find({ 'status.isActive': true });
@@ -1547,7 +1707,6 @@ app.get('/api/notices', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 14. TEACHER LOGIN ==========
 app.post('/api/teacher-login', async (req, res) => {
     try {
         const { teacherId, password } = req.body;
@@ -1593,7 +1752,6 @@ app.post('/api/teacher-login', async (req, res) => {
     }
 });
 
-// ========== 15. TEACHER DASHBOARD DATA ==========
 app.get('/api/teacher/my-data', verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'teacher') {
@@ -1614,7 +1772,6 @@ app.get('/api/teacher/my-data', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 16. GET LEFT TEACHERS ==========
 app.get('/api/teachers/left', verifyToken, async (req, res) => {
     try {
         const teachers = await Teacher.find({ 'status.isActive': false }).sort({ updatedAt: -1 });
@@ -1629,7 +1786,6 @@ app.get('/api/teachers/left', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 17. MOVE TEACHER TO LEFT ==========
 app.post('/api/teachers/:id/move-to-left', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1652,12 +1808,10 @@ app.post('/api/teachers/:id/move-to-left', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 18. WORKING DAYS SETTINGS ==========
 app.post('/api/settings/working-days', verifyToken, async (req, res) => {
     try {
         const { startDay, endDay, holidays } = req.body;
         
-        // Update all teachers
         await Teacher.updateMany({}, {
             $set: {
                 'workingDays.startDay': startDay,
@@ -1673,11 +1827,10 @@ app.post('/api/settings/working-days', verifyToken, async (req, res) => {
     }
 });
 
-// ========== 19. REPORTS ==========
 app.get('/api/reports/teacher/:id/:type', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
-        const type = req.params.type; // salary, attendance, performance
+        const type = req.params.type;
         const { month, year } = req.query;
         
         const teacher = await Teacher.findOne({ teacherId: teacherId });
@@ -1730,7 +1883,7 @@ app.get('/api/reports/teacher/:id/:type', verifyToken, async (req, res) => {
                     classes: teacher.professional.classes,
                     totalSalaryPaid: totalSalaryPaid,
                     attendancePercentage: totalAttendance > 0 ? Math.round((totalPresent / totalAttendance) * 100) : 0,
-                    totalStudentsAssigned: 0, // Can be calculated if student-teacher mapping exists
+                    totalStudentsAssigned: 0,
                     performanceRemarks: "Good"
                 };
                 break;
@@ -1742,7 +1895,7 @@ app.get('/api/reports/teacher/:id/:type', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
-// ========== REJOIN TEACHER (Move back to active) ==========
+
 app.post('/api/teachers/:id/rejoin', verifyToken, async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -1765,7 +1918,9 @@ app.post('/api/teachers/:id/rejoin', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 });
+
 console.log('✅ Teacher APIs loaded successfully');
+
 // ============================================
 // SERVE HTML FILES
 // ============================================
@@ -1782,4 +1937,8 @@ app.listen(PORT, () => {
     console.log(`\n✅ Server running on http://localhost:${PORT}`);
     console.log(`🔗 Login: http://localhost:${PORT}/login.html`);
     console.log(`🔑 Credentials: admin / admin123`);
+    console.log(`\n📱 Screen Management APIs:`);
+    console.log(`   GET  /api/screen              - Get all screen data (public)`);
+    console.log(`   PUT  /api/screen              - Update screen data (admin)`);
+    console.log(`   DELETE /api/screen/gallery/:id - Delete gallery item (admin)`);
 });
