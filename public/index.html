@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>BBCC - Best Coaching Center | Premium Gallery Experience</title>
+    <title>BBCC - Best Coaching Center</title>
     <link rel="icon" type="image/png" id="dynamicFavicon">
     <script>
         async function setFavicon() {
@@ -33,7 +33,6 @@
             --card-bg: white;
             --header-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             --footer-bg: #1a1a2e;
-            --gallery-gap: 20px;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -46,7 +45,6 @@
         body.theme-blue { --primary-color: #2196f3; --secondary-color: #00bcd4; --text-color: #333; --bg-color: #e3f2fd; --card-bg: white; }
         body.theme-green { --primary-color: #4caf50; --secondary-color: #8bc34a; --text-color: #333; --bg-color: #e8f5e9; --card-bg: white; }
 
-        /* Header */
         .site-header {
             background: var(--header-bg);
             color: white;
@@ -96,25 +94,26 @@
         .visitor-count { font-weight: bold; font-size: 1.1rem; color: #ffd700; }
         .voice-toggle { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 50px; cursor: pointer; }
 
-        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
 
-        /* Sidebar Slider - High Quality & Auto Size */
+        /* Sidebar Slider - Proper Size, No Crop, HD Quality */
         .sidebar-slider {
             background: var(--card-bg);
             border-radius: 24px;
             padding: 20px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            position: relative;
         }
-        .sidebar-slider h3 { margin-bottom: 15px; color: var(--primary-color); font-size: 1.5rem; }
+        .sidebar-slider h3 { margin-bottom: 15px; color: var(--primary-color); font-size: 1.4rem; }
+        .sidebar-slider h3 i { margin-right: 10px; }
+        
         .slider-container {
             position: relative;
             width: 100%;
             background: #0a0a0a;
             border-radius: 20px;
             overflow: hidden;
-            aspect-ratio: 16 / 9; /* Consistent aspect ratio */
+            min-height: 400px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -122,7 +121,7 @@
         .slider-track {
             position: relative;
             width: 100%;
-            height: 100%;
+            min-height: 400px;
         }
         .slider-slide {
             position: absolute;
@@ -131,7 +130,7 @@
             width: 100%;
             height: 100%;
             opacity: 0;
-            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.8s ease-in-out;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -139,14 +138,19 @@
         }
         .slider-slide.active {
             opacity: 1;
+            position: relative;
             z-index: 2;
         }
         .slider-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Preserve original quality & aspect ratio, no distortion */
-            image-rendering: crisp-edges; /* Enhance sharpness */
-            background: #000;
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            max-height: 450px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            image-rendering: high-quality;
+            image-rendering: crisp-edges;
         }
         .slider-btn {
             position: absolute;
@@ -163,7 +167,7 @@
             font-size: 1.4rem;
             transition: 0.2s;
         }
-        .slider-btn:hover { background: var(--primary-color); transform: translateY(-50%) scale(1.05); }
+        .slider-btn:hover { background: var(--primary-color); }
         .slider-btn.prev { left: 15px; }
         .slider-btn.next { right: 15px; }
         .slider-dots {
@@ -213,86 +217,112 @@
             width: 100%; font-size: 1rem; cursor: pointer;
         }
 
-        /* GALLERY TRAIN - PREMIUM QUALITY + SLICK ANIMATIONS */
+        /* Gallery - Random Animation, No Crop, HD Quality */
         .gallery-grid {
             background: var(--card-bg);
             border-radius: 28px;
             padding: 24px;
             box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-            overflow: hidden;
         }
-        .gallery-grid h3 { font-size: 1.6rem; margin-bottom: 20px; color: var(--primary-color); }
-        .gallery-train-container {
+        .gallery-grid h3 { font-size: 1.4rem; margin-bottom: 20px; color: var(--primary-color); }
+        .gallery-grid h3 i { margin-right: 10px; }
+        
+        .gallery-main-container {
             position: relative;
+            min-height: 500px;
+            background: #0a0a0a;
+            border-radius: 24px;
             overflow: hidden;
-            border-radius: 20px;
-        }
-        .gallery-train {
             display: flex;
-            gap: 20px;
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            will-change: transform;
+            align-items: center;
+            justify-content: center;
         }
-        .gallery-train-item {
-            flex: 0 0 calc(25% - 15px); /* 4 items on desktop */
-            min-width: 240px;
-            aspect-ratio: 4 / 3; /* Uniform box for sharp display */
-            border-radius: 20px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #111;
+        .gallery-display {
             position: relative;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            width: 100%;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .gallery-train-item:hover {
-            transform: scale(1.02) translateY(-6px);
-            box-shadow: 0 20px 30px rgba(0,0,0,0.3);
-        }
-        .gallery-train-item img, .gallery-train-item video {
+        .gallery-item {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Cover keeps ratio but ensures no blur, sharp edges */
-            transition: transform 0.4s ease;
-            image-rendering: auto;
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .gallery-train-item:hover img, .gallery-train-item:hover video {
-            transform: scale(1.05);
+        .gallery-item.active {
+            opacity: 1;
+            position: relative;
+            z-index: 2;
         }
-        .train-nav {
+        .gallery-item img, .gallery-item video {
+            max-width: 95%;
+            max-height: 550px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            image-rendering: high-quality;
+            image-rendering: crisp-edges;
+        }
+        .gallery-nav {
             display: flex;
             justify-content: center;
             gap: 20px;
             margin: 24px 0 16px;
         }
-        .train-nav-btn {
+        .gallery-nav-btn {
             background: var(--primary-color);
             color: white;
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             border: none;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .train-nav-btn:hover { transform: scale(1.1); background: var(--secondary-color); }
-        .train-dots {
+        .gallery-nav-btn:hover { transform: scale(1.1); background: var(--secondary-color); }
+        .gallery-thumbnails {
             display: flex;
-            justify-content: center;
             gap: 12px;
-            margin-top: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
-        .train-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #bbb;
+        .gallery-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
             cursor: pointer;
-            transition: 0.2s;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            opacity: 0.7;
         }
-        .train-dot.active { background: var(--primary-color); width: 28px; border-radius: 12px; }
+        .gallery-thumb.active {
+            border-color: var(--primary-color);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .gallery-thumb:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .animation-indicator {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--primary-color);
+        }
 
         /* Footer */
         .site-footer {
@@ -316,7 +346,6 @@
             0% { color: #ff6b6b; } 25% { color: #ffd700; } 50% { color: #4ecdc4; } 75% { color: #a8e6cf; } 100% { color: #ff6b6b; }
         }
 
-        /* Floating Zoom Button */
         .zoom-float {
             position: fixed;
             width: 60px; height: 60px;
@@ -339,7 +368,7 @@
             position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
             background: #2c3e50; color: white; padding: 14px 24px;
             border-radius: 60px; display: flex; gap: 20px; z-index: 2000;
-            animation: slideUp 0.3s ease; backdrop-filter: blur(8px);
+            animation: slideUp 0.3s ease;
         }
         @keyframes slideUp {
             from { bottom: 0; opacity: 0; }
@@ -351,16 +380,15 @@
         .lightbox {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.96); z-index: 10000; justify-content: center;
-            align-items: center; backdrop-filter: blur(10px);
+            align-items: center;
         }
         .lightbox.active { display: flex; }
         .lightbox-content img, .lightbox-content video {
             max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
         .close-lightbox {
             position: absolute; top: 25px; right: 35px; color: white; font-size: 44px;
-            cursor: pointer; transition: 0.2s;
+            cursor: pointer;
         }
         .welcome-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -376,14 +404,15 @@
             0% { transform: scale(0.3); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        @media (max-width: 1024px) {
-            .gallery-train-item { flex: 0 0 calc(33.33% - 14px); min-width: 200px; }
-        }
+
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
-            .gallery-train-item { flex: 0 0 calc(50% - 10px); min-width: 160px; }
-            .slider-container { aspect-ratio: 4 / 3; }
-            .header-text h1 { font-size: 1.1rem; }
+            .slider-container { min-height: 250px; }
+            .slider-slide img { max-height: 250px; }
+            .gallery-main-container { min-height: 350px; }
+            .gallery-item img, .gallery-item video { max-height: 350px; }
+            .gallery-thumb { width: 60px; height: 60px; }
+            .header-text h1 { font-size: 1rem; }
         }
     </style>
 </head>
@@ -417,9 +446,9 @@
     </div>
 
     <div class="container">
-        <!-- SIDEBAR SLIDER - HIGH QUALITY FIX -->
+        <!-- Sidebar Slider - No extra text, proper size -->
         <div class="sidebar-slider">
-            <h3><i class="fas fa-images"></i> 📸 Sidebar Gallery (HD Quality)</h3>
+            <h3><i class="fas fa-images"></i> Sidebar Gallery</h3>
             <div class="slider-container" id="sliderContainer">
                 <div class="slider-track" id="sliderTrack"></div>
             </div>
@@ -428,7 +457,7 @@
             <div class="slider-dots" id="sliderDots"></div>
         </div>
 
-        <!-- ENQUIRY FORM -->
+        <!-- Enquiry Form -->
         <div class="enquiry-wrapper">
             <button class="enquiry-toggle-btn" id="enquiryToggleBtn"><i class="fas fa-envelope"></i> Quick Enquiry <i class="fas fa-chevron-down"></i></button>
             <div class="enquiry-form" id="enquiryForm">
@@ -452,17 +481,20 @@
             </div>
         </div>
 
-        <!-- GALLERY TRAIN - PREMIUM & SMOOTH ANIMATION -->
+        <!-- Gallery - Random Animation, No Crop -->
         <div class="gallery-grid">
-            <h3><i class="fas fa-photo-video"></i> 🚂 Our Gallery (Crisp & Animated)</h3>
-            <div class="gallery-train-container">
-                <div class="gallery-train" id="galleryTrain"></div>
+            <h3><i class="fas fa-photo-video"></i> Our Gallery</h3>
+            <div class="gallery-main-container">
+                <div class="gallery-display" id="galleryDisplay"></div>
             </div>
-            <div class="train-nav">
-                <button class="train-nav-btn" onclick="prevTrain()"><i class="fas fa-chevron-left"></i></button>
-                <button class="train-nav-btn" onclick="nextTrain()"><i class="fas fa-chevron-right"></i></button>
+            <div class="gallery-nav">
+                <button class="gallery-nav-btn" onclick="prevGalleryItem()"><i class="fas fa-chevron-left"></i></button>
+                <button class="gallery-nav-btn" onclick="nextGalleryItem()"><i class="fas fa-chevron-right"></i></button>
             </div>
-            <div class="train-dots" id="trainDots"></div>
+            <div class="gallery-thumbnails" id="galleryThumbnails"></div>
+            <div class="animation-indicator" id="animationIndicator">
+                <i class="fas fa-magic"></i> BBCC MEMORY
+            </div>
         </div>
     </div>
 
@@ -485,12 +517,20 @@
         let currentSlide = 0;
         let slideInterval = null;
         let voiceEnabled = true;
-        let currentTrainIndex = 0;
-        let trainInterval = null;
-        let visitorCount = Math.floor(Math.random() * 80) + 70;
         let dataVersion = 0;
+        let currentGalleryIndex = 0;
+        let galleryItems = [];
+        let galleryInterval = null;
+        let visitorCount = Math.floor(Math.random() * 80) + 70;
+        
+        // Different animation classes for random effect
+        const animations = [
+            'fadeIn', 'slideInLeft', 'slideInRight', 'slideInUp', 'slideInDown',
+            'zoomIn', 'rotateIn', 'bounceIn', 'flipInX', 'flipInY'
+        ];
+        
+        let currentAnimation = animations[0];
 
-        // Helper functions
         function setTheme(theme) { document.body.className = `theme-${theme}`; localStorage.setItem('theme', theme); }
         function loadTheme() { const saved = localStorage.getItem('theme'); if(saved) document.body.className = `theme-${saved}`; }
         function toggleVoice() { voiceEnabled = !voiceEnabled; document.getElementById('voiceIcon').className = voiceEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute'; }
@@ -508,7 +548,7 @@
                     updateUI();
                     return true;
                 }
-            } catch(e) { console.log('API fetch issue, using fallback?'); }
+            } catch(e) { console.log('API fetch issue'); }
             return false;
         }
 
@@ -516,7 +556,7 @@
             let toast = document.getElementById('updateToast');
             if(toast) toast.remove();
             toast = document.createElement('div'); toast.id = 'updateToast'; toast.className = 'toast-notify';
-            toast.innerHTML = `<span>🔄 New media available! Refresh for crisp quality.</span><button class="btn-refresh" onclick="location.reload()">REFRESH</button><button class="btn-later" onclick="this.parentElement.remove()">LATER</button>`;
+            toast.innerHTML = `<span>🔄 New content available! Refresh for best quality.</span><button class="btn-refresh" onclick="location.reload()">REFRESH</button><button class="btn-later" onclick="this.parentElement.remove()">LATER</button>`;
             document.body.appendChild(toast);
             setTimeout(() => toast?.remove(), 8000);
         }
@@ -528,34 +568,36 @@
             document.getElementById('headerSubTitle').innerText = screenData.subTitle || 'Best Coaching Center';
             document.getElementById('welcomeTitle').innerText = `Welcome to ${screenData.title || 'BBCC'}`;
             document.getElementById('welcomeSubTitle').innerText = screenData.subTitle || '';
+            
             const zoom = document.getElementById('zoomButton');
             if(screenData.zoomMeetingLink && screenData.zoomMeetingLink !== '') zoom.href = screenData.zoomMeetingLink;
-            else { zoom.href = 'javascript:void(0)'; zoom.onclick = (e) => { e.preventDefault(); alert('Zoom link coming soon!'); }; zoom.style.background = 'linear-gradient(135deg, #888, #666)'; }
-            updateSidebarSliderQuality();
-            updateGalleryTrainCrisp();
+            else { zoom.href = 'javascript:void(0)'; zoom.onclick = (e) => { e.preventDefault(); alert('Zoom meeting link coming soon!'); }; }
+            
+            updateSidebarSlider();
+            updateGalleryWithRandomAnimation();
             updateFooterLinks();
             setTimeout(() => speak(`Welcome to ${screenData.title || 'BBCC'}`), 1500);
         }
 
-        // SIDEBAR: HIGH QUALITY NO BLUR
-        function updateSidebarSliderQuality() {
+        // Sidebar Slider - No crop, proper size
+        function updateSidebarSlider() {
             const photos = screenData.sidebarPhotos || [];
             const track = document.getElementById('sliderTrack');
             const dotsDiv = document.getElementById('sliderDots');
-            if(!photos.length) { track.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:100%; color:white;">✨ No images yet</div>'; dotsDiv.innerHTML = ''; return; }
+            if(!photos.length) { track.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:400px; color:white;">✨ No images yet</div>'; dotsDiv.innerHTML = ''; return; }
             track.innerHTML = '';
             dotsDiv.innerHTML = '';
             photos.forEach((photo, i) => {
                 const imgUrl = typeof photo === 'string' ? photo : photo.url;
                 const slide = document.createElement('div');
                 slide.className = `slider-slide ${i === 0 ? 'active' : ''}`;
-                // Using img with loading="eager" and object-fit contain ensures original quality
-                slide.innerHTML = `<img src="${imgUrl}" alt="Gallery HD" loading="eager" style="width:100%; height:100%; object-fit:contain; image-rendering:auto;" onclick="event.stopPropagation(); openLightbox('${imgUrl}', 'photo')">`;
+                slide.innerHTML = `<img src="${imgUrl}" alt="Gallery" loading="eager" onclick="event.stopPropagation(); openLightbox('${imgUrl}', 'photo')">`;
                 track.appendChild(slide);
                 const dot = document.createElement('div'); dot.className = `dot ${i === 0 ? 'active' : ''}`; dot.onclick = () => goToSlide(i);
                 dotsDiv.appendChild(dot);
             });
-            currentSlide = 0; resetAutoSlide();
+            currentSlide = 0;
+            resetAutoSlide();
         }
 
         function goToSlide(index) {
@@ -564,58 +606,137 @@
             if(index >= slides.length) index = 0; if(index < 0) index = slides.length-1;
             slides.forEach((s,i)=> s.classList.toggle('active', i===index));
             dots.forEach((d,i)=> d.classList.toggle('active', i===index));
-            currentSlide = index; resetAutoSlide();
+            currentSlide = index;
+            resetAutoSlide();
         }
         function nextSlide() { goToSlide(currentSlide+1); }
         function prevSlide() { goToSlide(currentSlide-1); }
-        function resetAutoSlide() { if(slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => nextSlide(), 4500); }
+        function resetAutoSlide() { if(slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => nextSlide(), 5000); }
 
-        // GALLERY TRAIN: CRISP + ANIMATION + AUTO SLIDE
-        function updateGalleryTrainCrisp() {
-            const gallery = screenData.gallery || [];
-            const container = document.getElementById('galleryTrain');
-            const dotsContainer = document.getElementById('trainDots');
-            if(!gallery.length) { container.innerHTML = '<div style="padding:40px; text-align:center;">✨ No gallery items</div>'; dotsContainer.innerHTML = ''; return; }
-            container.innerHTML = ''; dotsContainer.innerHTML = '';
-            gallery.forEach((item, idx) => {
-                const div = document.createElement('div'); div.className = 'gallery-train-item';
+        // Gallery with RANDOM animations (up, down, left, right, fade, zoom, rotate, bounce, flip)
+        function updateGalleryWithRandomAnimation() {
+            galleryItems = screenData.gallery || [];
+            const display = document.getElementById('galleryDisplay');
+            const thumbsContainer = document.getElementById('galleryThumbnails');
+            
+            if(!galleryItems.length) {
+                display.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:500px; color:white;">✨ No gallery items</div>';
+                thumbsContainer.innerHTML = '';
+                return;
+            }
+            
+            display.innerHTML = '';
+            thumbsContainer.innerHTML = '';
+            
+            galleryItems.forEach((item, idx) => {
                 const mediaUrl = item.data || item.url;
+                const div = document.createElement('div');
+                div.className = `gallery-item ${idx === 0 ? 'active' : ''}`;
+                div.id = `galleryItem_${idx}`;
                 if(item.type === 'photo') {
-                    div.innerHTML = `<img src="${mediaUrl}" alt="Gallery HD" loading="lazy" style="object-fit:cover; width:100%; height:100%;">`;
+                    div.innerHTML = `<img src="${mediaUrl}" alt="Gallery HD" loading="lazy" onclick="openLightbox('${mediaUrl}', 'photo')">`;
                 } else {
-                    div.innerHTML = `<video src="${mediaUrl}" style="width:100%; height:100%; object-fit:cover;" preload="metadata"></video>`;
+                    div.innerHTML = `<video src="${mediaUrl}" controls onclick="event.stopPropagation()" style="max-width:95%; max-height:550px;"></video>`;
                 }
-                div.onclick = (e) => { e.stopPropagation(); openLightbox(mediaUrl, item.type); };
-                container.appendChild(div);
-                const dot = document.createElement('div'); dot.className = `train-dot ${idx === 0 ? 'active' : ''}`; dot.onclick = () => goToTrainSlide(idx);
-                dotsContainer.appendChild(dot);
+                display.appendChild(div);
+                
+                const thumb = document.createElement('img');
+                thumb.src = mediaUrl;
+                thumb.className = `gallery-thumb ${idx === 0 ? 'active' : ''}`;
+                thumb.onclick = () => goToGalleryItem(idx);
+                thumbsContainer.appendChild(thumb);
             });
-            currentTrainIndex = 0;
-            updateTrainPosition();
-            startTrainAutoSlide();
+            
+            currentGalleryIndex = 0;
+            startRandomGalleryAnimation();
         }
-
-        function updateTrainPosition() {
-            const items = document.querySelectorAll('.gallery-train-item');
-            const dots = document.querySelectorAll('.train-dot');
-            if(!items.length) return;
-            const gap = 20;
-            const itemWidth = items[0].offsetWidth + gap;
-            const scroll = currentTrainIndex * itemWidth;
-            document.getElementById('galleryTrain').style.transform = `translateX(-${scroll}px)`;
-            dots.forEach((d, i) => d.classList.toggle('active', i === currentTrainIndex));
+        
+        function applyRandomAnimation(element, isEnter = true) {
+            if(!element) return;
+            // Randomly select animation style
+            const animIndex = Math.floor(Math.random() * animations.length);
+            const animName = animations[animIndex];
+            currentAnimation = animName;
+            
+            // Update indicator
+            const indicator = document.getElementById('animationIndicator');
+            if(indicator) {
+                let icon = '';
+                if(animName.includes('Left')) icon = '←';
+                else if(animName.includes('Right')) icon = '→';
+                else if(animName.includes('Up')) icon = '↑';
+                else if(animName.includes('Down')) icon = '↓';
+                else if(animName.includes('Fade')) icon = '🌀';
+                else if(animName.includes('Zoom')) icon = '🔍';
+                else if(animName.includes('Rotate')) icon = '🔄';
+                else if(animName.includes('Bounce')) icon = '⚡';
+                else if(animName.includes('Flip')) icon = '🪞';
+                else icon = '✨';
+                indicator.innerHTML = `<i class="fas fa-magic"></i> Effect: ${animName} ${icon}`;
+            }
+            
+            element.style.animation = 'none';
+            element.offsetHeight; // trigger reflow
+            element.style.animation = `${animName} 0.5s ease forwards`;
         }
-        function nextTrain() {
-            const items = document.querySelectorAll('.gallery-train-item');
-            if(currentTrainIndex < items.length - 1) { currentTrainIndex++; updateTrainPosition(); resetTrainAutoSlide(); }
+        
+        function goToGalleryItem(index) {
+            if(index === currentGalleryIndex) return;
+            if(index >= galleryItems.length) index = 0;
+            if(index < 0) index = galleryItems.length - 1;
+            
+            const items = document.querySelectorAll('.gallery-item');
+            const thumbs = document.querySelectorAll('.gallery-thumb');
+            
+            if(items[currentGalleryIndex]) {
+                items[currentGalleryIndex].classList.remove('active');
+            }
+            
+            items[index].classList.add('active');
+            applyRandomAnimation(items[index], true);
+            
+            thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
+            currentGalleryIndex = index;
+            resetGalleryAutoSlide();
         }
-        function prevTrain() { if(currentTrainIndex > 0) { currentTrainIndex--; updateTrainPosition(); resetTrainAutoSlide(); } }
-        function goToTrainSlide(index) { currentTrainIndex = index; updateTrainPosition(); resetTrainAutoSlide(); }
-        function startTrainAutoSlide() { if(trainInterval) clearInterval(trainInterval); trainInterval = setInterval(() => { const items = document.querySelectorAll('.gallery-train-item'); if(items.length) { if(currentTrainIndex < items.length-1) currentTrainIndex++; else currentTrainIndex = 0; updateTrainPosition(); } }, 5000); }
-        function resetTrainAutoSlide() { if(trainInterval) clearInterval(trainInterval); startTrainAutoSlide(); }
+        
+        function nextGalleryItem() {
+            let newIndex = currentGalleryIndex + 1;
+            if(newIndex >= galleryItems.length) newIndex = 0;
+            goToGalleryItem(newIndex);
+        }
+        
+        function prevGalleryItem() {
+            let newIndex = currentGalleryIndex - 1;
+            if(newIndex < 0) newIndex = galleryItems.length - 1;
+            goToGalleryItem(newIndex);
+        }
+        
+        function startRandomGalleryAnimation() {
+            if(galleryInterval) clearInterval(galleryInterval);
+            galleryInterval = setInterval(() => {
+                if(galleryItems.length > 1) {
+                    let newIndex = currentGalleryIndex + 1;
+                    if(newIndex >= galleryItems.length) newIndex = 0;
+                    goToGalleryItem(newIndex);
+                }
+            }, 6000);
+        }
+        
+        function resetGalleryAutoSlide() {
+            if(galleryInterval) clearInterval(galleryInterval);
+            galleryInterval = setInterval(() => {
+                if(galleryItems.length > 1) {
+                    let newIndex = currentGalleryIndex + 1;
+                    if(newIndex >= galleryItems.length) newIndex = 0;
+                    goToGalleryItem(newIndex);
+                }
+            }, 6000);
+        }
 
         function openLightbox(url, type) {
-            const lb = document.getElementById('lightbox'); const content = document.getElementById('lightboxContent');
+            const lb = document.getElementById('lightbox'); 
+            const content = document.getElementById('lightboxContent');
             content.innerHTML = type === 'photo' ? `<img src="${url}" alt="Full HD" style="max-width:90vw; max-height:90vh; object-fit:contain;">` : `<video controls autoplay src="${url}" style="max-width:90vw; max-height:90vh;"></video>`;
             lb.classList.add('active');
         }
@@ -633,18 +754,35 @@
             if(screenData.linkedinLink) document.getElementById('footerLinkedin').href = screenData.linkedinLink;
         }
 
+        // CSS animations
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = `
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes slideInLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes slideInUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            @keyframes slideInDown { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            @keyframes rotateIn { from { transform: rotate(-180deg); opacity: 0; } to { transform: rotate(0); opacity: 1; } }
+            @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); } 70% { transform: scale(0.95); } 100% { transform: scale(1); opacity: 1; } }
+            @keyframes flipInX { from { transform: perspective(400px) rotateX(90deg); opacity: 0; } to { transform: perspective(400px) rotateX(0); opacity: 1; } }
+            @keyframes flipInY { from { transform: perspective(400px) rotateY(90deg); opacity: 0; } to { transform: perspective(400px) rotateY(0); opacity: 1; } }
+        `;
+        document.head.appendChild(styleSheet);
+
         // Logo drag effect
         const logo = document.getElementById('headerLogo');
         logo.addEventListener('dragstart', (e) => { e.preventDefault(); logo.classList.add('slide-out'); setTimeout(() => logo.classList.remove('slide-out'), 500); });
+        
         // Title rain effect
         const titleEl = document.querySelector('.header-text h1');
         titleEl.addEventListener('mouseenter', () => { const text = titleEl.innerText; titleEl.innerHTML = ''; for(let i=0;i<text.length;i++){ const span = document.createElement('span'); span.textContent = text[i]; span.style.display = 'inline-block'; span.style.animation = `rainDrop 0.4s forwards`; span.style.animationDelay = `${i*0.03}s`; titleEl.appendChild(span); } setTimeout(()=> titleEl.innerHTML = text, 500); });
-        const styleRain = document.createElement('style'); styleRain.textContent = `@keyframes rainDrop { 0% { transform: translateY(0); opacity:1; } 100% { transform: translateY(80px) rotate(360deg); opacity:0; } }`; document.head.appendChild(styleRain);
+        const rainStyle = document.createElement('style'); rainStyle.textContent = `@keyframes rainDrop { 0% { transform: translateY(0); opacity:1; } 100% { transform: translateY(80px) rotate(360deg); opacity:0; } }`; document.head.appendChild(rainStyle);
 
-        // visitor counter animation
+        // Visitor counter
         setInterval(() => { visitorCount += Math.floor(Math.random() * 2); document.getElementById('visitorCount').innerText = visitorCount; const c = document.getElementById('visitorCount'); c.style.transform = 'scale(1.2)'; setTimeout(()=> c.style.transform = 'scale(1)', 200); }, 6000);
 
-        // Enquiry toggle
+        // Enquiry form
         document.getElementById('enquiryToggleBtn').addEventListener('click', () => { document.getElementById('enquiryForm').classList.toggle('show'); const icon = document.querySelector('#enquiryToggleBtn .fa-chevron-down'); if(icon) icon.style.transform = document.getElementById('enquiryForm').classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)'; });
         document.getElementById('enquiryFormSubmit').addEventListener('submit', (e) => {
             e.preventDefault(); const name = document.getElementById('enquiryName').value; const mobile = document.getElementById('enquiryMobile').value; const section = document.getElementById('enquirySection').value; const board = document.getElementById('enquiryBoard').value; const className = document.getElementById('enquiryClass').value; const subject = document.getElementById('enquirySubject').value; const msg = document.getElementById('enquiryMessage').value;
@@ -652,13 +790,12 @@
             if(!/^\d{10}$/.test(mobile)) { alert('Valid 10-digit mobile'); return; }
             const waNumber = screenData?.whatsappNumber || '919876543210';
             const whatsappMsg = `*New Enquiry*%0A%0A*Name:* ${encodeURIComponent(name)}%0A*Mobile:* ${mobile}%0A*Section:* ${section}%0A*Board:* ${board}%0A*Class:* ${className}%0A*Subject:* ${subject || 'NA'}%0A*Message:* ${encodeURIComponent(msg)}`;
-            window.open(`https://wa.me/${waNumber}?text=${whatsappMsg}`, '_blank'); alert('Thank you! Redirecting...'); document.getElementById('enquiryFormSubmit').reset(); document.getElementById('enquiryForm').classList.remove('show');
+            window.open(`https://wa.me/${waNumber}?text=${whatsappMsg}`, '_blank'); alert('Thank you! Redirecting to WhatsApp...'); document.getElementById('enquiryFormSubmit').reset(); document.getElementById('enquiryForm').classList.remove('show');
         });
 
-        window.addEventListener('resize', () => updateTrainPosition());
         setTimeout(() => document.getElementById('welcomeOverlay')?.remove(), 2800);
 
-        async function init() { loadTheme(); await loadScreenData(false); setInterval(() => loadScreenData(true), 35000); document.addEventListener('keydown', (e) => { if(e.key === 'ArrowLeft') prevSlide(); if(e.key === 'ArrowRight') nextSlide(); if(e.key === 'Escape') closeLightbox(); }); }
+        async function init() { loadTheme(); await loadScreenData(false); setInterval(() => loadScreenData(true), 35000); document.addEventListener('keydown', (e) => { if(e.key === 'ArrowLeft') prevSlide(); if(e.key === 'ArrowRight') nextSlide(); if(e.key === 'Escape') closeLightbox(); if(e.key === 'ArrowLeft' && document.activeElement !== document.body) prevGalleryItem(); if(e.key === 'ArrowRight') nextGalleryItem(); }); }
         init();
     </script>
 </body>
