@@ -210,6 +210,7 @@
             height: 20px;
             font-size: 12px;
             cursor: pointer;
+            z-index: 10;
         }
         
         .upload-photo-btn {
@@ -413,6 +414,7 @@
             width: 25px;
             height: 25px;
             cursor: pointer;
+            z-index: 10;
         }
         
         .site-footer {
@@ -672,7 +674,7 @@
                     <h2>Screen Settings</h2>
                     <div class="settings-group">
                         <h3>Header Settings</h3>
-                        <div class="form-row"><label>Logo Image</label><input type="file" id="headerLogoInput" accept="image/*" onchange="previewImage(this, 'logoPreview')"><div id="logoPreview" class="preview-container"></div><small>Upload logo (auto-compressed)</small></div>
+                        <div class="form-row"><label>Logo Image</label><input type="file" id="headerLogoInput" accept="image/*" onchange="previewImage(this, 'logoPreview')"><div id="logoPreview" class="preview-container"></div><small>Upload logo (auto-compressed to max 198KB)</small></div>
                         <div class="form-row"><label>Title</label><input type="text" id="headerTitleInput" placeholder="Site Title"></div>
                         <div class="form-row"><label>Sub Title</label><input type="text" id="headerSubTitleInput" placeholder="Site Subtitle"></div>
                     </div>
@@ -734,7 +736,52 @@
         let teacherAttendanceChart = null;
         let revenueChart = null;
         
-        // ============ HELPER FUNCTIONS ============
+        // ============ SMART COMPRESSION FUNCTION ============
+        // यह फंक्शन फोटो को 198KB से ज्यादा होने पर कंप्रेस करेगा, कम होने पर जस का तस रखेगा
+        
+        async function smartCompress(file, targetMaxKB = 198) {
+            // अगर फाइल 198KB से कम है तो बिना कंप्रेस के लौटाएं
+            if (file.size <= targetMaxKB * 1024) {
+                console.log(`File size ${(file.size/1024).toFixed(1)}KB is within limit, no compression needed`);
+                return file;
+            }
+            
+            console.log(`File size ${(file.size/1024).toFixed(1)}KB exceeds ${targetMaxKB}KB, compressing...`);
+            
+            let quality = 0.85;
+            let maxWidthOrHeight = 1200;
+            let compressedFile = file;
+            
+            for (let attempt = 0; attempt < 5; attempt++) {
+                const options = {
+                    maxSizeMB: targetMaxKB / 1024,
+                    maxWidthOrHeight: maxWidthOrHeight,
+                    useWebWorker: true,
+                    initialQuality: quality
+                };
+                
+                try {
+                    compressedFile = await imageCompression(file, options);
+                    const newSizeKB = compressedFile.size / 1024;
+                    console.log(`Attempt ${attempt + 1}: ${newSizeKB.toFixed(1)}KB (quality: ${quality})`);
+                    
+                    if (compressedFile.size <= targetMaxKB * 1024) {
+                        console.log(`Compression successful: ${newSizeKB.toFixed(1)}KB`);
+                        return compressedFile;
+                    }
+                    
+                    // अगर अभी भी ज्यादा है तो क्वालिटी और घटाएं
+                    quality -= 0.1;
+                    maxWidthOrHeight = Math.floor(maxWidthOrHeight * 0.8);
+                    
+                } catch(e) {
+                    console.log(`Compression attempt ${attempt + 1} failed:`, e);
+                }
+            }
+            
+            console.log(`Final compressed size: ${(compressedFile.size/1024).toFixed(1)}KB`);
+            return compressedFile;
+        }
         
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -745,23 +792,23 @@
             });
         }
         
-        async function compressImage(file, targetSizeKB = 10) {
-            let quality = 0.7;
-            let compressedFile = file;
-            for (let attempt = 0; attempt < 5; attempt++) {
-                const options = {
-                    maxSizeMB: targetSizeKB / 1024,
-                    maxWidthOrHeight: 400,
-                    useWebWorker: true,
-                    initialQuality: quality
-                };
-                try {
-                    compressedFile = await imageCompression(file, options);
-                    if (compressedFile.size / 1024 <= targetSizeKB + 5) break;
-                    quality -= 0.1;
-                } catch (e) { console.log('Compression failed:', e); }
+        // सिंगल फोटो को स्मार्ट कंप्रेस करके बेस64 में बदलना
+        async function processImage(file) {
+            const compressed = await smartCompress(file);
+            const base64 = await fileToBase64(compressed);
+            return base64;
+        }
+        
+        // मल्टीपल फोटो को प्रोसेस करना
+        async function processMultipleImages(files) {
+            const results = [];
+            for (const file of files) {
+                if (file.type.startsWith('image/')) {
+                    const base64 = await processImage(file);
+                    results.push(base64);
+                }
             }
-            return compressedFile;
+            return results;
         }
         
         function showToast(message, type = 'success') {
@@ -782,7 +829,13 @@
         function setFilter(filter) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.filter-btn:contains('${filter}')`)?.classList.add('active');
+            const btns = document.querySelectorAll('.filter-btn');
+            for(let btn of btns) {
+                if(btn.textContent.includes(filter.charAt(0).toUpperCase() + filter.slice(1))) {
+                    btn.classList.add('active');
+                    break;
+                }
+            }
             document.getElementById('dateRangePicker').style.display = filter === 'custom' ? 'flex' : 'none';
             if (filter !== 'custom') { customStartDate = null; customEndDate = null; }
             loadDashboardData();
@@ -832,8 +885,7 @@
             if (!file) return showToast('Please select a photo', 'error');
             showLoading(true);
             try {
-                const compressed = await compressImage(file);
-                const base64 = await fileToBase64(compressed);
+                const base64 = await processImage(file);
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/admin/photo', {
                     method: 'POST',
@@ -1002,7 +1054,7 @@
             if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>';
         }
         
-        // ============ SCREEN MANAGEMENT (BASE64) ============
+        // ============ SCREEN MANAGEMENT WITH SMART COMPRESSION ============
         
         async function loadScreenData() {
             try {
@@ -1059,76 +1111,124 @@
             });
         }
         
+        // ✅ SIDEBAR PHOTO UPLOAD WITH SMART COMPRESSION
         async function handleSidebarPhotoUpload(files) {
             if (!files.length) return;
             showLoading(true);
-            const base64Images = [];
-            for (const file of files) {
-                const compressed = await compressImage(file);
-                base64Images.push(await fileToBase64(compressed));
+            
+            try {
+                const base64Images = await processMultipleImages(Array.from(files));
+                const existingPhotos = screenData?.sidebarPhotos || [];
+                const allPhotos = [...existingPhotos, ...base64Images];
+                
+                const body = {
+                    title: screenData?.title || '',
+                    subTitle: screenData?.subTitle || '',
+                    zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                    sidebarPhotos: allPhotos,
+                    whatsappNumber: screenData?.whatsappNumber || '',
+                    whatsappChannelLink: screenData?.whatsappChannelLink || '',
+                    youtubeChannelLink: screenData?.youtubeChannelLink || '',
+                    facebookLink: screenData?.facebookLink || '',
+                    instagramLink: screenData?.instagramLink || '',
+                    telegramLink: screenData?.telegramLink || '',
+                    twitterLink: screenData?.twitterLink || '',
+                    linkedinLink: screenData?.linkedinLink || ''
+                };
+                
+                const token = localStorage.getItem('adminToken');
+                const res = await fetch('/api/screen', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    await loadScreenData();
+                    showToast(`${base64Images.length} photo(s) uploaded with smart compression!`);
+                } else showToast(result.message || 'Upload failed', 'error');
+            } catch(e) {
+                console.error(e);
+                showToast('Upload failed', 'error');
+            } finally {
+                showLoading(false);
+                document.getElementById('sidebarPhotoInput').value = '';
             }
-            const body = {
-                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
-                sidebarPhotos: JSON.stringify(base64Images), whatsappNumber: screenData.whatsappNumber,
-                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
-                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
-                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
-            };
-            try {
-                const token = localStorage.getItem('adminToken');
-                const res = await fetch('/api/screen', {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(body)
-                });
-                const result = await res.json();
-                if (result.success) { await loadScreenData(); showToast('Photos uploaded!'); }
-            } catch(e) { showToast('Upload failed', 'error'); }
-            finally { showLoading(false); }
         }
         
+        // ✅ SIDEBAR PHOTO DELETE - FIXED
         async function deleteSidebarPhoto(index) {
-            if (!confirm('Delete this photo?')) return;
-            const photos = [...(screenData.sidebarPhotos || [])];
+            if (!confirm('Are you sure you want to delete this photo?')) return;
+            showLoading(true);
+            
+            const photos = [...(screenData?.sidebarPhotos || [])];
             photos.splice(index, 1);
+            
             const body = {
-                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
-                sidebarPhotosData: JSON.stringify(photos), whatsappNumber: screenData.whatsappNumber,
-                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
-                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
-                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
+                title: screenData?.title || '',
+                subTitle: screenData?.subTitle || '',
+                zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                sidebarPhotos: photos,
+                whatsappNumber: screenData?.whatsappNumber || '',
+                whatsappChannelLink: screenData?.whatsappChannelLink || '',
+                youtubeChannelLink: screenData?.youtubeChannelLink || '',
+                facebookLink: screenData?.facebookLink || '',
+                instagramLink: screenData?.instagramLink || '',
+                telegramLink: screenData?.telegramLink || '',
+                twitterLink: screenData?.twitterLink || '',
+                linkedinLink: screenData?.linkedinLink || ''
             };
+            
             try {
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(body)
                 });
                 const result = await res.json();
-                if (result.success) { await loadScreenData(); showToast('Photo deleted'); }
-            } catch(e) { showToast('Delete failed', 'error'); }
+                if (result.success) {
+                    await loadScreenData();
+                    showToast('Photo deleted successfully!');
+                } else showToast(result.message || 'Delete failed', 'error');
+            } catch(e) {
+                console.error(e);
+                showToast('Delete failed', 'error');
+            } finally {
+                showLoading(false);
+            }
         }
         
+        // ✅ GALLERY UPLOAD WITH SMART COMPRESSION
         async function uploadGalleryFiles() {
             const files = document.getElementById('galleryFilesInput').files;
             if (!files.length) return showToast('Select files', 'error');
             showLoading(true);
-            const base64Images = [];
-            for (const file of files) {
-                if (!file.type.startsWith('image/')) continue;
-                const compressed = await compressImage(file);
-                base64Images.push(await fileToBase64(compressed));
-            }
-            const body = {
-                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
-                galleryPhotos: JSON.stringify(base64Images), whatsappNumber: screenData.whatsappNumber,
-                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
-                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
-                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
-            };
+            
             try {
+                const base64Images = await processMultipleImages(Array.from(files));
+                const existingGallery = screenData?.gallery?.filter(g => g.type === 'photo')?.map(g => g.data) || [];
+                const allPhotos = [...existingGallery, ...base64Images];
+                
+                const body = {
+                    title: screenData?.title || '',
+                    subTitle: screenData?.subTitle || '',
+                    zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                    galleryPhotos: allPhotos,
+                    whatsappNumber: screenData?.whatsappNumber || '',
+                    whatsappChannelLink: screenData?.whatsappChannelLink || '',
+                    youtubeChannelLink: screenData?.youtubeChannelLink || '',
+                    facebookLink: screenData?.facebookLink || '',
+                    instagramLink: screenData?.instagramLink || '',
+                    telegramLink: screenData?.telegramLink || '',
+                    twitterLink: screenData?.twitterLink || '',
+                    linkedinLink: screenData?.linkedinLink || ''
+                };
+                
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(body)
                 });
                 const result = await res.json();
@@ -1136,10 +1236,14 @@
                     await loadScreenData();
                     document.getElementById('galleryFilesInput').value = '';
                     document.getElementById('galleryPreview').innerHTML = '';
-                    showToast('Photos uploaded!');
-                }
-            } catch(e) { showToast('Upload failed', 'error'); }
-            finally { showLoading(false); }
+                    showToast(`${base64Images.length} gallery photo(s) uploaded!`);
+                } else showToast(result.message || 'Upload failed', 'error');
+            } catch(e) {
+                console.error(e);
+                showToast('Upload failed', 'error');
+            } finally {
+                showLoading(false);
+            }
         }
         
         function displayGallery() {
@@ -1159,46 +1263,78 @@
         }
         
         async function deleteGalleryItem(id) {
-            if (!confirm('Delete?')) return;
+            if (!confirm('Delete this item?')) return;
+            showLoading(true);
             try {
                 const token = localStorage.getItem('adminToken');
-                const res = await fetch(`/api/screen/gallery/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`/api/screen/gallery/${id}`, { 
+                    method: 'DELETE', 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
                 const result = await res.json();
-                if (result.success) { await loadScreenData(); showToast('Deleted'); }
-            } catch(e) { showToast('Delete failed', 'error'); }
+                if (result.success) {
+                    await loadScreenData();
+                    showToast('Deleted successfully!');
+                } else showToast('Delete failed', 'error');
+            } catch(e) {
+                showToast('Delete failed', 'error');
+            } finally {
+                showLoading(false);
+            }
         }
         
         async function addVideoLink() {
             const url = document.getElementById('videoLinkInput').value;
             if (!url) return showToast('Enter video URL', 'error');
             showLoading(true);
+            
+            const existingVideos = screenData?.gallery?.filter(g => g.type === 'video')?.map(g => g.url) || [];
+            const allVideos = [...existingVideos, url];
+            
             const body = {
-                title: screenData.title, subTitle: screenData.subTitle, zoomMeetingLink: screenData.zoomMeetingLink,
-                videoLinks: JSON.stringify([{ url }]), whatsappNumber: screenData.whatsappNumber,
-                whatsappChannelLink: screenData.whatsappChannelLink, youtubeChannelLink: screenData.youtubeChannelLink,
-                facebookLink: screenData.facebookLink, instagramLink: screenData.instagramLink,
-                telegramLink: screenData.telegramLink, twitterLink: screenData.twitterLink, linkedinLink: screenData.linkedinLink
+                title: screenData?.title || '',
+                subTitle: screenData?.subTitle || '',
+                zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                videoLinks: allVideos,
+                whatsappNumber: screenData?.whatsappNumber || '',
+                whatsappChannelLink: screenData?.whatsappChannelLink || '',
+                youtubeChannelLink: screenData?.youtubeChannelLink || '',
+                facebookLink: screenData?.facebookLink || '',
+                instagramLink: screenData?.instagramLink || '',
+                telegramLink: screenData?.telegramLink || '',
+                twitterLink: screenData?.twitterLink || '',
+                linkedinLink: screenData?.linkedinLink || ''
             };
+            
             try {
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(body)
                 });
                 const result = await res.json();
-                if (result.success) { await loadScreenData(); document.getElementById('videoLinkInput').value = ''; showToast('Video link added!'); }
-            } catch(e) { showToast('Failed', 'error'); }
-            finally { showLoading(false); }
+                if (result.success) {
+                    await loadScreenData();
+                    document.getElementById('videoLinkInput').value = '';
+                    showToast('Video link added!');
+                } else showToast('Failed', 'error');
+            } catch(e) {
+                showToast('Failed', 'error');
+            } finally {
+                showLoading(false);
+            }
         }
         
+        // ✅ LOGO UPLOAD WITH SMART COMPRESSION
         async function saveBasicSettings() {
             showLoading(true);
             let logoBase64 = null;
             const logoFile = document.getElementById('headerLogoInput').files[0];
             if (logoFile) {
-                const compressed = await compressImage(logoFile);
-                logoBase64 = await fileToBase64(compressed);
+                logoBase64 = await processImage(logoFile);
             }
+            
             const body = {
                 title: document.getElementById('headerTitleInput').value,
                 subTitle: document.getElementById('headerSubTitleInput').value,
@@ -1213,19 +1349,34 @@
                 twitterLink: document.getElementById('twitterLinkInput').value,
                 linkedinLink: document.getElementById('linkedinLinkInput').value
             };
-            if (screenData?.gallery) body.deleteGalleryIds = JSON.stringify([]);
-            if (screenData?.sidebarPhotos) body.sidebarPhotosData = JSON.stringify(screenData.sidebarPhotos);
+            
+            if (screenData?.sidebarPhotos) body.sidebarPhotos = screenData.sidebarPhotos;
+            if (screenData?.gallery) {
+                const existingPhotos = screenData.gallery.filter(g => g.type === 'photo').map(g => g.data);
+                const existingVideos = screenData.gallery.filter(g => g.type === 'video').map(g => g.url);
+                body.galleryPhotos = existingPhotos;
+                body.videoLinks = existingVideos;
+            }
+            
             try {
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(body)
                 });
                 const result = await res.json();
-                if (result.success) { await loadScreenData(); showToast('Settings saved!'); }
-                else showToast('Error: ' + result.message, 'error');
-            } catch(e) { showToast('Save failed', 'error'); }
-            finally { showLoading(false); }
+                if (result.success) {
+                    await loadScreenData();
+                    document.getElementById('headerLogoInput').value = '';
+                    document.getElementById('logoPreview').innerHTML = '';
+                    showToast('Settings saved with smart compression!');
+                } else showToast('Error: ' + result.message, 'error');
+            } catch(e) {
+                showToast('Save failed', 'error');
+            } finally {
+                showLoading(false);
+            }
         }
         
         // ============ ADMIN PASSWORD & ID ============
