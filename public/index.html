@@ -5,21 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>BBCC - Best Coaching Center</title>
     <link rel="icon" type="image/png" id="dynamicFavicon">
-    <script>
-        async function setFavicon() {
-            try {
-                const response = await fetch('/api/screen');
-                const result = await response.json();
-                if (result.success && result.data.logo) {
-                    const faviconLink = document.getElementById('dynamicFavicon');
-                    if (faviconLink) faviconLink.href = result.data.logo;
-                }
-            } catch(e) { console.log('Favicon set failed'); }
-        }
-        setFavicon();
-    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Loading Screen Styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.5s ease;
+        }
+        .loading-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loader {
+            text-align: center;
+            color: white;
+        }
+        .loader .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top: 4px solid #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .loader p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -39,6 +70,11 @@
             background: var(--bg-color);
             color: var(--text-color);
             transition: all 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        body.loaded {
+            opacity: 1;
         }
         body.theme-light { --primary-color: #667eea; --secondary-color: #764ba2; --text-color: #333; --bg-color: #f0f2f5; --card-bg: white; }
         body.theme-dark { --primary-color: #bb86fc; --secondary-color: #03dac6; --text-color: #e0e0e0; --bg-color: #121212; --card-bg: #1e1e1e; }
@@ -149,8 +185,6 @@
             object-fit: contain;
             display: block;
             margin: 0 auto;
-            image-rendering: high-quality;
-            image-rendering: crisp-edges;
         }
         .slider-btn {
             position: absolute;
@@ -270,8 +304,6 @@
             object-fit: contain;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            image-rendering: high-quality;
-            image-rendering: crisp-edges;
         }
         .gallery-nav {
             display: flex;
@@ -417,6 +449,14 @@
     </style>
 </head>
 <body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader">
+            <div class="spinner"></div>
+            <h2>Loading BBCC Portal...</h2>
+            <p>Please wait while we prepare your experience</p>
+        </div>
+    </div>
+
     <div class="welcome-overlay" id="welcomeOverlay">
         <div class="welcome-content">
             <i class="fas fa-chalkboard-user" style="font-size: 5rem;"></i>
@@ -446,11 +486,13 @@
     </div>
 
     <div class="container">
-        <!-- Sidebar Slider - No extra text, proper size -->
+        <!-- Sidebar Slider -->
         <div class="sidebar-slider">
             <h3><i class="fas fa-images"></i> Sidebar Gallery</h3>
             <div class="slider-container" id="sliderContainer">
-                <div class="slider-track" id="sliderTrack"></div>
+                <div class="slider-track" id="sliderTrack">
+                    <div style="display:flex; align-items:center; justify-content:center; height:400px; color:white;">✨ Loading images...</div>
+                </div>
             </div>
             <button class="slider-btn prev" onclick="prevSlide()">❮</button>
             <button class="slider-btn next" onclick="nextSlide()">❯</button>
@@ -481,11 +523,13 @@
             </div>
         </div>
 
-        <!-- Gallery - Random Animation, No Crop -->
+        <!-- Gallery -->
         <div class="gallery-grid">
             <h3><i class="fas fa-photo-video"></i> Our Gallery</h3>
             <div class="gallery-main-container">
-                <div class="gallery-display" id="galleryDisplay"></div>
+                <div class="gallery-display" id="galleryDisplay">
+                    <div style="display:flex; align-items:center; justify-content:center; height:500px; color:white;">✨ Loading gallery...</div>
+                </div>
             </div>
             <div class="gallery-nav">
                 <button class="gallery-nav-btn" onclick="prevGalleryItem()"><i class="fas fa-chevron-left"></i></button>
@@ -517,13 +561,11 @@
         let currentSlide = 0;
         let slideInterval = null;
         let voiceEnabled = true;
-        let dataVersion = 0;
         let currentGalleryIndex = 0;
         let galleryItems = [];
         let galleryInterval = null;
         let visitorCount = Math.floor(Math.random() * 80) + 70;
         
-        // Different animation classes for random effect
         const animations = [
             'fadeIn', 'slideInLeft', 'slideInRight', 'slideInUp', 'slideInDown',
             'zoomIn', 'rotateIn', 'bounceIn', 'flipInX', 'flipInY'
@@ -536,33 +578,28 @@
         function toggleVoice() { voiceEnabled = !voiceEnabled; document.getElementById('voiceIcon').className = voiceEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute'; }
         function speak(text) { if(voiceEnabled) { const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'hi-IN'; window.speechSynthesis.speak(utterance); } }
 
-        async function loadScreenData(showToast = false) {
+        async function loadScreenData() {
             try {
                 const response = await fetch('/api/screen');
                 const result = await response.json();
                 if(result.success) {
-                    const newVersion = JSON.stringify(result.data);
-                    if(dataVersion !== 0 && dataVersion !== newVersion && showToast) showUpdateNotification();
-                    dataVersion = newVersion;
                     screenData = result.data;
-                    updateUI();
                     return true;
                 }
-            } catch(e) { console.log('API fetch issue'); }
+            } catch(e) { 
+                console.log('API fetch issue:', e);
+            }
             return false;
-        }
-
-        function showUpdateNotification() {
-            let toast = document.getElementById('updateToast');
-            if(toast) toast.remove();
-            toast = document.createElement('div'); toast.id = 'updateToast'; toast.className = 'toast-notify';
-            toast.innerHTML = `<span>🔄 New content available! Refresh for best quality.</span><button class="btn-refresh" onclick="location.reload()">REFRESH</button><button class="btn-later" onclick="this.parentElement.remove()">LATER</button>`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast?.remove(), 8000);
         }
 
         function updateUI() {
             if(!screenData) return;
+            
+            // Update favicon
+            if(screenData.logo) {
+                document.getElementById('dynamicFavicon').href = screenData.logo;
+            }
+            
             document.getElementById('headerLogo').src = screenData.logo || '';
             document.getElementById('headerTitle').innerText = screenData.title || 'BBCC Portal';
             document.getElementById('headerSubTitle').innerText = screenData.subTitle || 'Best Coaching Center';
@@ -576,15 +613,17 @@
             updateSidebarSlider();
             updateGalleryWithRandomAnimation();
             updateFooterLinks();
-            setTimeout(() => speak(`Welcome to ${screenData.title || 'BBCC'}`), 1500);
         }
 
-        // Sidebar Slider - No crop, proper size
         function updateSidebarSlider() {
             const photos = screenData.sidebarPhotos || [];
             const track = document.getElementById('sliderTrack');
             const dotsDiv = document.getElementById('sliderDots');
-            if(!photos.length) { track.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:400px; color:white;">✨ No images yet</div>'; dotsDiv.innerHTML = ''; return; }
+            if(!photos.length) { 
+                track.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:400px; color:white;">✨ No images yet</div>'; 
+                dotsDiv.innerHTML = ''; 
+                return; 
+            }
             track.innerHTML = '';
             dotsDiv.innerHTML = '';
             photos.forEach((photo, i) => {
@@ -593,7 +632,9 @@
                 slide.className = `slider-slide ${i === 0 ? 'active' : ''}`;
                 slide.innerHTML = `<img src="${imgUrl}" alt="Gallery" loading="eager" onclick="event.stopPropagation(); openLightbox('${imgUrl}', 'photo')">`;
                 track.appendChild(slide);
-                const dot = document.createElement('div'); dot.className = `dot ${i === 0 ? 'active' : ''}`; dot.onclick = () => goToSlide(i);
+                const dot = document.createElement('div'); 
+                dot.className = `dot ${i === 0 ? 'active' : ''}`; 
+                dot.onclick = () => goToSlide(i);
                 dotsDiv.appendChild(dot);
             });
             currentSlide = 0;
@@ -601,19 +642,24 @@
         }
 
         function goToSlide(index) {
-            const slides = document.querySelectorAll('.slider-slide'); const dots = document.querySelectorAll('.dot');
+            const slides = document.querySelectorAll('.slider-slide'); 
+            const dots = document.querySelectorAll('.dot');
             if(!slides.length) return;
-            if(index >= slides.length) index = 0; if(index < 0) index = slides.length-1;
+            if(index >= slides.length) index = 0; 
+            if(index < 0) index = slides.length-1;
             slides.forEach((s,i)=> s.classList.toggle('active', i===index));
             dots.forEach((d,i)=> d.classList.toggle('active', i===index));
             currentSlide = index;
             resetAutoSlide();
         }
+        
         function nextSlide() { goToSlide(currentSlide+1); }
         function prevSlide() { goToSlide(currentSlide-1); }
-        function resetAutoSlide() { if(slideInterval) clearInterval(slideInterval); slideInterval = setInterval(() => nextSlide(), 5000); }
+        function resetAutoSlide() { 
+            if(slideInterval) clearInterval(slideInterval); 
+            slideInterval = setInterval(() => nextSlide(), 5000); 
+        }
 
-        // Gallery with RANDOM animations (up, down, left, right, fade, zoom, rotate, bounce, flip)
         function updateGalleryWithRandomAnimation() {
             galleryItems = screenData.gallery || [];
             const display = document.getElementById('galleryDisplay');
@@ -651,14 +697,12 @@
             startRandomGalleryAnimation();
         }
         
-        function applyRandomAnimation(element, isEnter = true) {
+        function applyRandomAnimation(element) {
             if(!element) return;
-            // Randomly select animation style
             const animIndex = Math.floor(Math.random() * animations.length);
             const animName = animations[animIndex];
             currentAnimation = animName;
             
-            // Update indicator
             const indicator = document.getElementById('animationIndicator');
             if(indicator) {
                 let icon = '';
@@ -676,7 +720,7 @@
             }
             
             element.style.animation = 'none';
-            element.offsetHeight; // trigger reflow
+            element.offsetHeight;
             element.style.animation = `${animName} 0.5s ease forwards`;
         }
         
@@ -693,7 +737,7 @@
             }
             
             items[index].classList.add('active');
-            applyRandomAnimation(items[index], true);
+            applyRandomAnimation(items[index]);
             
             thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
             currentGalleryIndex = index;
@@ -725,13 +769,7 @@
         
         function resetGalleryAutoSlide() {
             if(galleryInterval) clearInterval(galleryInterval);
-            galleryInterval = setInterval(() => {
-                if(galleryItems.length > 1) {
-                    let newIndex = currentGalleryIndex + 1;
-                    if(newIndex >= galleryItems.length) newIndex = 0;
-                    goToGalleryItem(newIndex);
-                }
-            }, 6000);
+            startRandomGalleryAnimation();
         }
 
         function openLightbox(url, type) {
@@ -740,11 +778,19 @@
             content.innerHTML = type === 'photo' ? `<img src="${url}" alt="Full HD" style="max-width:90vw; max-height:90vh; object-fit:contain;">` : `<video controls autoplay src="${url}" style="max-width:90vw; max-height:90vh;"></video>`;
             lb.classList.add('active');
         }
-        function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); document.getElementById('lightboxContent').innerHTML = ''; }
+        
+        function closeLightbox() { 
+            document.getElementById('lightbox').classList.remove('active'); 
+            document.getElementById('lightboxContent').innerHTML = ''; 
+        }
 
         function updateFooterLinks() {
             if(!screenData) return;
-            if(screenData.whatsappNumber) { let wa = document.getElementById('footerWhatsapp'); wa.href = `https://wa.me/${screenData.whatsappNumber}`; wa.innerHTML = `<i class="fab fa-whatsapp"></i> WhatsApp: ${screenData.whatsappNumber}`; }
+            if(screenData.whatsappNumber) { 
+                let wa = document.getElementById('footerWhatsapp'); 
+                wa.href = `https://wa.me/${screenData.whatsappNumber}`; 
+                wa.innerHTML = `<i class="fab fa-whatsapp"></i> WhatsApp: ${screenData.whatsappNumber}`; 
+            }
             if(screenData.whatsappChannelLink) document.getElementById('footerWhatsappChannel').href = screenData.whatsappChannelLink;
             if(screenData.youtubeChannelLink) document.getElementById('footerYoutube').href = screenData.youtubeChannelLink;
             if(screenData.facebookLink) document.getElementById('footerFacebook').href = screenData.facebookLink;
@@ -776,26 +822,106 @@
         
         // Title rain effect
         const titleEl = document.querySelector('.header-text h1');
-        titleEl.addEventListener('mouseenter', () => { const text = titleEl.innerText; titleEl.innerHTML = ''; for(let i=0;i<text.length;i++){ const span = document.createElement('span'); span.textContent = text[i]; span.style.display = 'inline-block'; span.style.animation = `rainDrop 0.4s forwards`; span.style.animationDelay = `${i*0.03}s`; titleEl.appendChild(span); } setTimeout(()=> titleEl.innerHTML = text, 500); });
-        const rainStyle = document.createElement('style'); rainStyle.textContent = `@keyframes rainDrop { 0% { transform: translateY(0); opacity:1; } 100% { transform: translateY(80px) rotate(360deg); opacity:0; } }`; document.head.appendChild(rainStyle);
+        titleEl.addEventListener('mouseenter', () => { 
+            const text = titleEl.innerText; 
+            titleEl.innerHTML = ''; 
+            for(let i=0;i<text.length;i++){ 
+                const span = document.createElement('span'); 
+                span.textContent = text[i]; 
+                span.style.display = 'inline-block'; 
+                span.style.animation = `rainDrop 0.4s forwards`; 
+                span.style.animationDelay = `${i*0.03}s`; 
+                titleEl.appendChild(span); 
+            } 
+            setTimeout(()=> titleEl.innerHTML = text, 500); 
+        });
+        const rainStyle = document.createElement('style'); 
+        rainStyle.textContent = `@keyframes rainDrop { 0% { transform: translateY(0); opacity:1; } 100% { transform: translateY(80px) rotate(360deg); opacity:0; } }`; 
+        document.head.appendChild(rainStyle);
 
         // Visitor counter
-        setInterval(() => { visitorCount += Math.floor(Math.random() * 2); document.getElementById('visitorCount').innerText = visitorCount; const c = document.getElementById('visitorCount'); c.style.transform = 'scale(1.2)'; setTimeout(()=> c.style.transform = 'scale(1)', 200); }, 6000);
+        setInterval(() => { 
+            visitorCount += Math.floor(Math.random() * 2); 
+            document.getElementById('visitorCount').innerText = visitorCount; 
+            const c = document.getElementById('visitorCount'); 
+            c.style.transform = 'scale(1.2)'; 
+            setTimeout(()=> c.style.transform = 'scale(1)', 200); 
+        }, 6000);
 
         // Enquiry form
-        document.getElementById('enquiryToggleBtn').addEventListener('click', () => { document.getElementById('enquiryForm').classList.toggle('show'); const icon = document.querySelector('#enquiryToggleBtn .fa-chevron-down'); if(icon) icon.style.transform = document.getElementById('enquiryForm').classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)'; });
+        document.getElementById('enquiryToggleBtn').addEventListener('click', () => { 
+            document.getElementById('enquiryForm').classList.toggle('show'); 
+            const icon = document.querySelector('#enquiryToggleBtn .fa-chevron-down'); 
+            if(icon) icon.style.transform = document.getElementById('enquiryForm').classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)'; 
+        });
+        
         document.getElementById('enquiryFormSubmit').addEventListener('submit', (e) => {
-            e.preventDefault(); const name = document.getElementById('enquiryName').value; const mobile = document.getElementById('enquiryMobile').value; const section = document.getElementById('enquirySection').value; const board = document.getElementById('enquiryBoard').value; const className = document.getElementById('enquiryClass').value; const subject = document.getElementById('enquirySubject').value; const msg = document.getElementById('enquiryMessage').value;
+            e.preventDefault(); 
+            const name = document.getElementById('enquiryName').value; 
+            const mobile = document.getElementById('enquiryMobile').value; 
+            const section = document.getElementById('enquirySection').value; 
+            const board = document.getElementById('enquiryBoard').value; 
+            const className = document.getElementById('enquiryClass').value; 
+            const subject = document.getElementById('enquirySubject').value; 
+            const msg = document.getElementById('enquiryMessage').value;
             if(!name || !mobile || !section || !board || !className) { alert('Please fill required fields'); return; }
             if(!/^\d{10}$/.test(mobile)) { alert('Valid 10-digit mobile'); return; }
             const waNumber = screenData?.whatsappNumber || '919876543210';
             const whatsappMsg = `*New Enquiry*%0A%0A*Name:* ${encodeURIComponent(name)}%0A*Mobile:* ${mobile}%0A*Section:* ${section}%0A*Board:* ${board}%0A*Class:* ${className}%0A*Subject:* ${subject || 'NA'}%0A*Message:* ${encodeURIComponent(msg)}`;
-            window.open(`https://wa.me/${waNumber}?text=${whatsappMsg}`, '_blank'); alert('Thank you! Redirecting to WhatsApp...'); document.getElementById('enquiryFormSubmit').reset(); document.getElementById('enquiryForm').classList.remove('show');
+            window.open(`https://wa.me/${waNumber}?text=${whatsappMsg}`, '_blank'); 
+            alert('Thank you! Redirecting to WhatsApp...'); 
+            document.getElementById('enquiryFormSubmit').reset(); 
+            document.getElementById('enquiryForm').classList.remove('show');
         });
 
-        setTimeout(() => document.getElementById('welcomeOverlay')?.remove(), 2800);
-
-        async function init() { loadTheme(); await loadScreenData(false); setInterval(() => loadScreenData(true), 35000); document.addEventListener('keydown', (e) => { if(e.key === 'ArrowLeft') prevSlide(); if(e.key === 'ArrowRight') nextSlide(); if(e.key === 'Escape') closeLightbox(); if(e.key === 'ArrowLeft' && document.activeElement !== document.body) prevGalleryItem(); if(e.key === 'ArrowRight') nextGalleryItem(); }); }
+        // Main initialization - DATA LOADS FIRST, THEN PAGE SHOWS
+        async function init() {
+            // Show loading screen
+            const loadingScreen = document.getElementById('loadingScreen');
+            const welcomeOverlay = document.getElementById('welcomeOverlay');
+            
+            // Load theme from localStorage
+            loadTheme();
+            
+            // Load data from server FIRST
+            await loadScreenData();
+            
+            // Update UI with loaded data
+            updateUI();
+            
+            // Hide loading screen with fade effect
+            if(loadingScreen) {
+                loadingScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }
+            
+            // Show body with fade in
+            document.body.classList.add('loaded');
+            
+            // Remove welcome overlay after delay
+            setTimeout(() => {
+                if(welcomeOverlay) welcomeOverlay.remove();
+            }, 2800);
+            
+            // Auto-refresh data every 35 seconds
+            setInterval(async () => {
+                await loadScreenData();
+                updateUI();
+            }, 35000);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => { 
+                if(e.key === 'ArrowLeft') prevSlide(); 
+                if(e.key === 'ArrowRight') nextSlide(); 
+                if(e.key === 'Escape') closeLightbox(); 
+            });
+            
+            // Welcome speech
+            setTimeout(() => speak(`Welcome to ${screenData?.title || 'BBCC'}`), 2000);
+        }
+        
         init();
     </script>
 </body>
