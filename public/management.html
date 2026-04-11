@@ -186,7 +186,7 @@
                     <h2>Screen Settings</h2>
                     <div class="settings-group">
                         <h3>Header Settings</h3>
-                        <div class="form-row"><label>Logo Image</label><input type="file" id="headerLogoInput" accept="image/*" onchange="previewImage(this, 'logoPreview')"><div id="logoPreview" class="preview-container"></div><small>Click on logo above or upload here (auto-compressed to max 198KB)</small></div>
+                        <div class="form-row"><label>Logo Image</label><input type="file" id="headerLogoInput" accept="image/*" onchange="previewLogo(this)"><div id="logoPreview" class="preview-container"></div><small>Click on logo above or upload here (auto-compressed to max 198KB)</small></div>
                         <div class="form-row"><label>Title</label><input type="text" id="headerTitleInput" placeholder="Site Title"></div>
                         <div class="form-row"><label>Sub Title</label><input type="text" id="headerSubTitleInput" placeholder="Site Subtitle"></div>
                     </div>
@@ -293,8 +293,33 @@
         function previewAdminPhoto(input) { if (input.files && input.files[0]) { let reader = new FileReader(); reader.onload = e => document.getElementById('currentAdminPhotoPreview').src = e.target.result; reader.readAsDataURL(input.files[0]); } }
         async function updateAdminPhoto() { let file = document.getElementById('adminPhotoInput').files[0]; if (!file) return showToast('Please select a photo', 'error'); showLoading(true); try { let base64 = await processImage(file); let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/photo', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ photoBase64: base64 }) }); let result = await res.json(); if (result.success) { document.getElementById('adminPhoto').src = base64; showToast('Admin photo updated!'); closeAdminPhotoModal(); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error updating photo', 'error'); } finally { showLoading(false); } }
         
-        function previewImage(input, containerId) { let container = document.getElementById(containerId); container.innerHTML = ''; if (input.files && input.files[0]) { let reader = new FileReader(); reader.onload = e => { container.innerHTML = `<div class="preview-item"><img src="${e.target.result}" alt="Preview"></div>`; }; reader.readAsDataURL(input.files[0]); } }
-        function previewGalleryFiles(files) { let container = document.getElementById('galleryPreview'); container.innerHTML = ''; Array.from(files).forEach(file => { let reader = new FileReader(); reader.onload = e => { let div = document.createElement('div'); div.className = 'preview-item'; div.innerHTML = `<img src="${e.target.result}" alt="Preview">`; container.appendChild(div); }; reader.readAsDataURL(file); }); }
+        // ✅ LOGO PREVIEW FIXED
+        function previewLogo(input) { 
+            let container = document.getElementById('logoPreview'); 
+            container.innerHTML = ''; 
+            if (input.files && input.files[0]) { 
+                let reader = new FileReader(); 
+                reader.onload = function(e) { 
+                    container.innerHTML = `<div class="preview-item"><img src="${e.target.result}" alt="Logo Preview" style="width:100px;height:100px;object-fit:cover;border-radius:10px;"></div>`; 
+                }; 
+                reader.readAsDataURL(input.files[0]); 
+            } 
+        }
+        
+        function previewGalleryFiles(files) { 
+            let container = document.getElementById('galleryPreview'); 
+            container.innerHTML = ''; 
+            Array.from(files).forEach(file => { 
+                let reader = new FileReader(); 
+                reader.onload = e => { 
+                    let div = document.createElement('div'); 
+                    div.className = 'preview-item'; 
+                    div.innerHTML = `<img src="${e.target.result}" alt="Preview">`; 
+                    container.appendChild(div); 
+                }; 
+                reader.readAsDataURL(file); 
+            }); 
+        }
         
         // ============ DASHBOARD ============
         async function loadDashboardData() {
@@ -331,7 +356,7 @@
         
         function updateRecentActivity(students, teachers) { let container = document.getElementById('recentActivity'); let activities = []; students.forEach(s => { (s.feesHistory || []).forEach(f => { if(f.paymentDate) activities.push({ type: '💰', msg: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount}`, date: new Date(f.paymentDate) }); }); }); teachers.forEach(t => { (t.salaryPayments || []).forEach(p => { if(p.paymentDate) activities.push({ type: '💵', msg: `Salary paid to ${t.personal?.name} ₹${p.paidAmount}`, date: new Date(p.paymentDate) }); }); }); activities.sort((a,b) => b.date - a.date); container.innerHTML = activities.slice(0,10).map(a => `<div class="activity-item"><span>${a.type} ${a.msg}</span><small>${a.date.toLocaleDateString()}</small></div>`).join(''); if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>'; }
         
-        // ============ SCREEN MANAGEMENT - FULLY FIXED ============
+        // ============ SCREEN MANAGEMENT - COMPLETELY FIXED ============
         async function loadScreenData() {
             try {
                 const res = await fetch('/api/screen');
@@ -420,7 +445,7 @@
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(updateData) });
                 const result = await res.json();
-                if (result.success) { await loadScreenData(); showToast(`${base64Images.length} photo(s) uploaded!`); } 
+                if (result.success) { await loadScreenData(); showToast(`${base64Images.length} sidebar photo(s) uploaded!`); } 
                 else showToast(result.message || 'Upload failed', 'error');
             } catch(e) { showToast('Upload failed', 'error'); } 
             finally { showLoading(false); document.getElementById('sidebarPhotoInput').value = ''; }
@@ -456,6 +481,7 @@
             finally { showLoading(false); }
         }
         
+        // ✅ GALLERY UPLOAD - COMPLETELY SEPARATE FROM SIDEBAR
         async function uploadGalleryFiles() {
             const files = document.getElementById('galleryFilesInput').files;
             if (!files.length) return showToast('Select files', 'error');
@@ -487,7 +513,7 @@
                     await loadScreenData();
                     document.getElementById('galleryFilesInput').value = '';
                     document.getElementById('galleryPreview').innerHTML = '';
-                    showToast(`${base64Images.length} photo(s) uploaded!`);
+                    showToast(`${base64Images.length} gallery photo(s) uploaded!`);
                 } else showToast(result.message || 'Upload failed', 'error');
             } catch(e) { showToast('Upload failed', 'error'); } 
             finally { showLoading(false); }
