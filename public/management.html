@@ -331,7 +331,7 @@
         
         function updateRecentActivity(students, teachers) { let container = document.getElementById('recentActivity'); let activities = []; students.forEach(s => { (s.feesHistory || []).forEach(f => { if(f.paymentDate) activities.push({ type: '💰', msg: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount}`, date: new Date(f.paymentDate) }); }); }); teachers.forEach(t => { (t.salaryPayments || []).forEach(p => { if(p.paymentDate) activities.push({ type: '💵', msg: `Salary paid to ${t.personal?.name} ₹${p.paidAmount}`, date: new Date(p.paymentDate) }); }); }); activities.sort((a,b) => b.date - a.date); container.innerHTML = activities.slice(0,10).map(a => `<div class="activity-item"><span>${a.type} ${a.msg}</span><small>${a.date.toLocaleDateString()}</small></div>`).join(''); if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>'; }
         
-        // ============ SCREEN MANAGEMENT - 100% SERVER COMPATIBLE ============
+        // ============ SCREEN MANAGEMENT - FULLY FIXED ============
         async function loadScreenData() {
             try {
                 const res = await fetch('/api/screen');
@@ -406,8 +406,8 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    sidebarPhotos: allPhotos,
-                    gallery: screenData?.gallery || [],
+                    sidebarPhotos: JSON.stringify(allPhotos),
+                    gallery: JSON.stringify(screenData?.gallery || []),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -435,8 +435,8 @@
                 title: screenData?.title || 'BBCC Portal',
                 subTitle: screenData?.subTitle || 'Best Coaching Center',
                 zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                sidebarPhotos: photos,
-                gallery: screenData?.gallery || [],
+                sidebarPhotos: JSON.stringify(photos),
+                gallery: JSON.stringify(screenData?.gallery || []),
                 whatsappNumber: screenData?.whatsappNumber || '',
                 whatsappChannelLink: screenData?.whatsappChannelLink || '',
                 youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -469,8 +469,8 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    sidebarPhotos: screenData?.sidebarPhotos || [],
-                    gallery: allGallery,
+                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
+                    gallery: JSON.stringify(allGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -557,8 +557,8 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    sidebarPhotos: screenData?.sidebarPhotos || [],
-                    gallery: remainingGallery,
+                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
+                    gallery: JSON.stringify(remainingGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -589,8 +589,8 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    sidebarPhotos: screenData?.sidebarPhotos || [],
-                    gallery: allGallery,
+                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
+                    gallery: JSON.stringify(allGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -628,8 +628,8 @@
                 linkedinLink: document.getElementById('linkedinLinkInput').value || ''
             };
             if (logoBase64) updateData.logo = logoBase64;
-            if (screenData?.sidebarPhotos) updateData.sidebarPhotos = screenData.sidebarPhotos;
-            if (screenData?.gallery) updateData.gallery = screenData.gallery;
+            if (screenData?.sidebarPhotos) updateData.sidebarPhotos = JSON.stringify(screenData.sidebarPhotos);
+            if (screenData?.gallery) updateData.gallery = JSON.stringify(screenData.gallery);
             try {
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(updateData) });
