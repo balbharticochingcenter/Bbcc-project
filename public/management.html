@@ -356,7 +356,7 @@
         
         function updateRecentActivity(students, teachers) { let container = document.getElementById('recentActivity'); let activities = []; students.forEach(s => { (s.feesHistory || []).forEach(f => { if(f.paymentDate) activities.push({ type: '💰', msg: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount}`, date: new Date(f.paymentDate) }); }); }); teachers.forEach(t => { (t.salaryPayments || []).forEach(p => { if(p.paymentDate) activities.push({ type: '💵', msg: `Salary paid to ${t.personal?.name} ₹${p.paidAmount}`, date: new Date(p.paymentDate) }); }); }); activities.sort((a,b) => b.date - a.date); container.innerHTML = activities.slice(0,10).map(a => `<div class="activity-item"><span>${a.type} ${a.msg}</span><small>${a.date.toLocaleDateString()}</small></div>`).join(''); if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>'; }
         
-        // ============ SCREEN MANAGEMENT ============
+        // ============ SCREEN MANAGEMENT - SERVER COMPATIBLE ============
         async function loadScreenData() {
             try {
                 const res = await fetch('/api/screen');
@@ -420,7 +420,7 @@
             });
         }
         
-        // ✅ SIDEBAR PHOTOS UPLOAD - SIRF SIDEBAR ME JAYEGA
+        // ✅ SIDEBAR PHOTOS UPLOAD - सिर्फ sidebarPhotos array भेजें
         async function uploadSidebarPhotos(files) {
             if (!files.length) return;
             showLoading(true);
@@ -434,7 +434,6 @@
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
                     sidebarPhotos: JSON.stringify(allPhotos),
-                    gallery: JSON.stringify(screenData?.gallery || []),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -467,7 +466,6 @@
                 subTitle: screenData?.subTitle || 'Best Coaching Center',
                 zoomMeetingLink: screenData?.zoomMeetingLink || '',
                 sidebarPhotos: JSON.stringify(photos),
-                gallery: JSON.stringify(screenData?.gallery || []),
                 whatsappNumber: screenData?.whatsappNumber || '',
                 whatsappChannelLink: screenData?.whatsappChannelLink || '',
                 youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -488,23 +486,21 @@
             finally { showLoading(false); }
         }
         
-        // ✅ GALLERY PHOTOS UPLOAD - SIRF GALLERY ME JAYEGA
+        // ✅ GALLERY PHOTOS UPLOAD - सिर्फ galleryPhotos array भेजें (सर्वर galleryPhotos को पार्स करेगा)
         async function uploadGalleryPhotos() {
             const files = document.getElementById('galleryFilesInput').files;
             if (!files.length) return showToast('Select files', 'error');
             showLoading(true);
             try {
                 const base64Images = await processMultipleImages(Array.from(files));
-                const existingGallery = screenData?.gallery || [];
-                const newItems = base64Images.map(img => ({ type: 'photo', data: img }));
-                const allGallery = [...existingGallery, ...newItems];
+                const existingGalleryPhotos = screenData?.gallery?.filter(g => g.type === 'photo').map(g => g.data) || [];
+                const allPhotos = [...existingGalleryPhotos, ...base64Images];
                 
                 const updateData = {
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
-                    gallery: JSON.stringify(allGallery),
+                    galleryPhotos: JSON.stringify(allPhotos),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -592,8 +588,7 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
-                    gallery: JSON.stringify(remainingGallery),
+                    gallery: remainingGallery,
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -617,15 +612,14 @@
             if (!url) return showToast('Enter video URL', 'error');
             showLoading(true);
             try {
-                const existingGallery = screenData?.gallery || [];
-                const newItem = { type: 'video', url: url };
-                const allGallery = [...existingGallery, newItem];
+                const existingVideos = screenData?.gallery?.filter(g => g.type === 'video').map(g => ({ url: g.url })) || [];
+                const allVideos = [...existingVideos, { url: url }];
+                
                 const updateData = {
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
-                    gallery: JSON.stringify(allGallery),
+                    videoLinks: JSON.stringify(allVideos),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -635,6 +629,7 @@
                     twitterLink: screenData?.twitterLink || '',
                     linkedinLink: screenData?.linkedinLink || ''
                 };
+                
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(updateData) });
                 const result = await res.json();
@@ -665,8 +660,6 @@
             };
             
             if (logoBase64) updateData.logo = logoBase64;
-            if (screenData?.sidebarPhotos) updateData.sidebarPhotos = JSON.stringify(screenData.sidebarPhotos);
-            if (screenData?.gallery) updateData.gallery = JSON.stringify(screenData.gallery);
             
             try {
                 const token = localStorage.getItem('adminToken');
