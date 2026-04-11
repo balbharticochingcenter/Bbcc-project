@@ -254,22 +254,34 @@
         // ============ FAVICON UPDATE ============
         async function updateFavicon() { try { if (screenData && screenData.logo) document.getElementById('dynamicFavicon').href = screenData.logo; } catch(e) {} }
         
-        // ============ SMART COMPRESSION ============
-        async function smartCompress(file, targetMaxKB = 198) {
+        // ============ FAST COMPRESSION - OPTIMIZED ============
+        async function fastCompress(file, targetMaxKB = 198) {
             if (file.size <= targetMaxKB * 1024) return file;
-            let quality = 0.85, maxWidthOrHeight = 1200, compressedFile = file;
-            for (let attempt = 0; attempt < 5; attempt++) {
-                try {
-                    compressedFile = await imageCompression(file, { maxSizeMB: targetMaxKB / 1024, maxWidthOrHeight: maxWidthOrHeight, useWebWorker: true, initialQuality: quality });
-                    if (compressedFile.size <= targetMaxKB * 1024) return compressedFile;
-                    quality -= 0.1; maxWidthOrHeight = Math.floor(maxWidthOrHeight * 0.8);
-                } catch(e) {}
+            
+            // Single compression attempt with good quality for speed
+            try {
+                const options = {
+                    maxSizeMB: targetMaxKB / 1024,
+                    maxWidthOrHeight: 1024,
+                    useWebWorker: false,
+                    initialQuality: 0.8
+                };
+                const compressed = await imageCompression(file, options);
+                if (compressed.size <= targetMaxKB * 1024) return compressed;
+                
+                // Second attempt with lower quality
+                options.initialQuality = 0.6;
+                options.maxWidthOrHeight = 800;
+                const compressed2 = await imageCompression(file, options);
+                return compressed2;
+            } catch(e) {
+                console.log('Compression failed, using original:', e);
+                return file;
             }
-            return compressedFile;
         }
         
         function fileToBase64(file) { return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); }); }
-        async function processImage(file) { return await fileToBase64(await smartCompress(file)); }
+        async function processImage(file) { return await fileToBase64(await fastCompress(file)); }
         async function processMultipleImages(files) { let results = []; for (let file of files) if (file.type.startsWith('image/')) results.push(await processImage(file)); return results; }
         
         function showToast(message, type = 'success') { let toast = document.createElement('div'); toast.className = 'toast-notification'; toast.style.background = type === 'success' ? '#28a745' : '#dc3545'; toast.textContent = message; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
@@ -293,7 +305,6 @@
         function previewAdminPhoto(input) { if (input.files && input.files[0]) { let reader = new FileReader(); reader.onload = e => document.getElementById('currentAdminPhotoPreview').src = e.target.result; reader.readAsDataURL(input.files[0]); } }
         async function updateAdminPhoto() { let file = document.getElementById('adminPhotoInput').files[0]; if (!file) return showToast('Please select a photo', 'error'); showLoading(true); try { let base64 = await processImage(file); let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/photo', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ photoBase64: base64 }) }); let result = await res.json(); if (result.success) { document.getElementById('adminPhoto').src = base64; showToast('Admin photo updated!'); closeAdminPhotoModal(); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error updating photo', 'error'); } finally { showLoading(false); } }
         
-        // ✅ LOGO PREVIEW
         function previewLogo(input) { 
             let container = document.getElementById('logoPreview'); 
             container.innerHTML = ''; 
@@ -356,7 +367,7 @@
         
         function updateRecentActivity(students, teachers) { let container = document.getElementById('recentActivity'); let activities = []; students.forEach(s => { (s.feesHistory || []).forEach(f => { if(f.paymentDate) activities.push({ type: '💰', msg: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount}`, date: new Date(f.paymentDate) }); }); }); teachers.forEach(t => { (t.salaryPayments || []).forEach(p => { if(p.paymentDate) activities.push({ type: '💵', msg: `Salary paid to ${t.personal?.name} ₹${p.paidAmount}`, date: new Date(p.paymentDate) }); }); }); activities.sort((a,b) => b.date - a.date); container.innerHTML = activities.slice(0,10).map(a => `<div class="activity-item"><span>${a.type} ${a.msg}</span><small>${a.date.toLocaleDateString()}</small></div>`).join(''); if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>'; }
         
-        // ============ SCREEN MANAGEMENT - SERVER COMPATIBLE ============
+        // ============ SCREEN MANAGEMENT - FAST & RELIABLE ============
         async function loadScreenData() {
             try {
                 const res = await fetch('/api/screen');
@@ -369,7 +380,6 @@
                 }
             } catch(e) { 
                 console.error('Load screen error:', e);
-                showToast('Failed to load screen data', 'error');
             }
             return null;
         }
@@ -420,7 +430,7 @@
             });
         }
         
-        // ✅ SIDEBAR PHOTOS UPLOAD - सिर्फ sidebarPhotos array भेजें
+        // ✅ FAST SIDEBAR PHOTOS UPLOAD
         async function uploadSidebarPhotos(files) {
             if (!files.length) return;
             showLoading(true);
@@ -455,6 +465,7 @@
             finally { showLoading(false); document.getElementById('sidebarPhotoInput').value = ''; }
         }
         
+        // ✅ FAST SIDEBAR PHOTO DELETE
         async function deleteSidebarPhoto(index) {
             if (!confirm('Delete this photo?')) return;
             showLoading(true);
@@ -486,21 +497,22 @@
             finally { showLoading(false); }
         }
         
-        // ✅ GALLERY PHOTOS UPLOAD - सिर्फ galleryPhotos array भेजें (सर्वर galleryPhotos को पार्स करेगा)
+        // ✅ FAST GALLERY PHOTOS UPLOAD
         async function uploadGalleryPhotos() {
             const files = document.getElementById('galleryFilesInput').files;
             if (!files.length) return showToast('Select files', 'error');
             showLoading(true);
             try {
                 const base64Images = await processMultipleImages(Array.from(files));
-                const existingGalleryPhotos = screenData?.gallery?.filter(g => g.type === 'photo').map(g => g.data) || [];
-                const allPhotos = [...existingGalleryPhotos, ...base64Images];
+                const existingGallery = screenData?.gallery || [];
+                const newItems = base64Images.map(img => ({ type: 'photo', data: img }));
+                const allGallery = [...existingGallery, ...newItems];
                 
                 const updateData = {
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    galleryPhotos: JSON.stringify(allPhotos),
+                    gallery: JSON.stringify(allGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -577,6 +589,7 @@
         async function deleteSingleGalleryItem(id) { if (!confirm('Delete this item?')) return; await performGalleryDelete([id]); }
         async function bulkDeleteGalleryItems() { if (selectedGalleryItems.size === 0) { showToast('No items selected', 'error'); return; } if (!confirm(`Delete ${selectedGalleryItems.size} selected item(s)?`)) return; await performGalleryDelete(Array.from(selectedGalleryItems)); }
         
+        // ✅ FAST GALLERY DELETE
         async function performGalleryDelete(idsToDelete) {
             showLoading(true);
             try {
@@ -588,7 +601,7 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    gallery: remainingGallery,
+                    gallery: JSON.stringify(remainingGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -607,19 +620,20 @@
             finally { showLoading(false); }
         }
         
+        // ✅ FAST VIDEO LINK ADD
         async function addVideoLink() {
             const url = document.getElementById('videoLinkInput').value;
             if (!url) return showToast('Enter video URL', 'error');
             showLoading(true);
             try {
-                const existingVideos = screenData?.gallery?.filter(g => g.type === 'video').map(g => ({ url: g.url })) || [];
-                const allVideos = [...existingVideos, { url: url }];
-                
+                const existingGallery = screenData?.gallery || [];
+                const newItem = { type: 'video', url: url };
+                const allGallery = [...existingGallery, newItem];
                 const updateData = {
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                    videoLinks: JSON.stringify(allVideos),
+                    gallery: JSON.stringify(allGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -629,7 +643,6 @@
                     twitterLink: screenData?.twitterLink || '',
                     linkedinLink: screenData?.linkedinLink || ''
                 };
-                
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(updateData) });
                 const result = await res.json();
@@ -639,6 +652,7 @@
             finally { showLoading(false); }
         }
         
+        // ✅ FAST SETTINGS SAVE
         async function saveBasicSettings() {
             showLoading(true);
             let logoBase64 = null;
