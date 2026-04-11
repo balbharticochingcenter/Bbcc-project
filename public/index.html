@@ -32,7 +32,6 @@
         body.theme-blue { --primary-color: #2196f3; --secondary-color: #00bcd4; --text-color: #333; --bg-color: #e3f2fd; --card-bg: white; }
         body.theme-green { --primary-color: #4caf50; --secondary-color: #8bc34a; --text-color: #333; --bg-color: #e8f5e9; --card-bg: white; }
 
-        /* FAST LOADING SCREEN WITH ANIMATION */
         .loading-screen {
             position: fixed;
             top: 0;
@@ -108,7 +107,6 @@
             opacity: 1;
         }
 
-        /* Rest of your styling */
         .site-header {
             background: var(--header-bg);
             color: white;
@@ -186,7 +184,6 @@
     </style>
 </head>
 <body>
-    <!-- FAST LOADING SCREEN WITH WELCOME TITLE -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loader">
             <div class="spinner"></div>
@@ -208,10 +205,10 @@
             <div class="controls">
                 <div class="visitor-counter"><i class="fas fa-eye"></i> <span>Live:</span> <span class="visitor-count" id="visitorCount">0</span></div>
                 <div class="theme-switch">
-                    <div class="theme-option light" onclick="setTheme('light')"></div>
-                    <div class="theme-option dark" onclick="setTheme('dark')"></div>
-                    <div class="theme-option blue" onclick="setTheme('blue')"></div>
-                    <div class="theme-option green" onclick="setTheme('green')"></div>
+                    <div class="theme-option light" onclick="setTheme('light')" style="background:#fff; border:1px solid #ccc;"></div>
+                    <div class="theme-option dark" onclick="setTheme('dark')" style="background:#333;"></div>
+                    <div class="theme-option blue" onclick="setTheme('blue')" style="background:#2196f3;"></div>
+                    <div class="theme-option green" onclick="setTheme('green')" style="background:#4caf50;"></div>
                 </div>
                 <div class="voice-toggle" onclick="toggleVoice()"><i class="fas fa-volume-up" id="voiceIcon"></i></div>
             </div>
@@ -288,70 +285,102 @@
         function toggleVoice() { voiceEnabled = !voiceEnabled; document.getElementById('voiceIcon').className = voiceEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute'; }
         function speak(text) { if(voiceEnabled && window.speechSynthesis) { const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'hi-IN'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance); } }
 
-        // SERVER SE DATA FETCH - SIRF EK BAAR
+        // SERVER SE DATA FETCH - SIRF EK BAAR (Aapke server ke hisaab se)
         async function loadScreenData() {
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                console.log('🔄 Fetching data from server...');
                 
-                const response = await fetch('/api/screen', { signal: controller.signal });
-                clearTimeout(timeoutId);
+                // Aapke server ka endpoint - same port 5000 ya 3000 pe chal raha hai
+                const response = await fetch('/api/screen', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
                 
                 const result = await response.json();
+                console.log('📦 Server response:', result);
+                
                 if(result.success && result.data) {
                     screenData = result.data;
+                    console.log('✅ Data loaded successfully from server!');
+                    console.log('📸 Sidebar photos:', screenData.sidebarPhotos?.length || 0);
+                    console.log('🖼️ Gallery items:', screenData.gallery?.length || 0);
                     return true;
+                } else {
+                    throw new Error('Invalid response format');
                 }
             } catch(e) { 
-                console.log('API fetch issue, using fallback data:', e);
+                console.error('❌ API fetch error:', e.message);
+                console.log('⚠️ Using fallback data because server not responding');
+                
+                // FALLBACK DATA - sirf tab jab server bilkul down ho
+                screenData = {
+                    title: "BBCC - Best Coaching Center",
+                    subTitle: "Shaping Futures Since 2010",
+                    logo: "https://placehold.co/200x200?text=BBCC",
+                    sidebarPhotos: [
+                        "https://picsum.photos/id/20/800/500",
+                        "https://picsum.photos/id/26/800/500", 
+                        "https://picsum.photos/id/28/800/500",
+                        "https://picsum.photos/id/42/800/500"
+                    ],
+                    gallery: [
+                        { type: "photo", data: "https://picsum.photos/id/1/800/500" },
+                        { type: "photo", data: "https://picsum.photos/id/15/800/500" },
+                        { type: "photo", data: "https://picsum.photos/id/30/800/500" },
+                        { type: "photo", data: "https://picsum.photos/id/55/800/500" }
+                    ],
+                    whatsappNumber: "919876543210",
+                    whatsappChannelLink: "https://whatsapp.com/channel/0029Vaexample",
+                    youtubeChannelLink: "https://youtube.com/@bbcc",
+                    facebookLink: "https://facebook.com/bbcc",
+                    instagramLink: "https://instagram.com/bbcc",
+                    telegramLink: "https://t.me/bbcc",
+                    twitterLink: "https://twitter.com/bbcc",
+                    linkedinLink: "https://linkedin.com/company/bbcc",
+                    zoomMeetingLink: "https://zoom.us/j/123456789"
+                };
+                return true;
             }
-            // FALLBACK DATA - server se nahi aaya toh yeh use hoga
-            screenData = {
-                title: "BBCC - Best Coaching Center",
-                subTitle: "Shaping Futures Since 2010",
-                logo: "https://placehold.co/200x200?text=BBCC",
-                sidebarPhotos: [
-                    "https://picsum.photos/id/20/800/500",
-                    "https://picsum.photos/id/26/800/500", 
-                    "https://picsum.photos/id/28/800/500",
-                    "https://picsum.photos/id/42/800/500"
-                ],
-                gallery: [
-                    { type: "photo", data: "https://picsum.photos/id/1/800/500" },
-                    { type: "photo", data: "https://picsum.photos/id/15/800/500" },
-                    { type: "photo", data: "https://picsum.photos/id/30/800/500" },
-                    { type: "photo", data: "https://picsum.photos/id/55/800/500" }
-                ],
-                whatsappNumber: "919876543210",
-                whatsappChannelLink: "https://whatsapp.com/channel/0029Vaexample",
-                youtubeChannelLink: "https://youtube.com/@bbcc",
-                facebookLink: "https://facebook.com/bbcc",
-                instagramLink: "https://instagram.com/bbcc",
-                telegramLink: "https://t.me/bbcc",
-                twitterLink: "https://twitter.com/bbcc",
-                linkedinLink: "https://linkedin.com/company/bbcc",
-                zoomMeetingLink: "https://zoom.us/j/123456789"
-            };
-            return true;
         }
 
         function updateUI() {
             if(!screenData) return;
             
-            if(screenData.logo) document.getElementById('dynamicFavicon').href = screenData.logo;
+            // Update favicon
+            if(screenData.logo && screenData.logo !== '') {
+                document.getElementById('dynamicFavicon').href = screenData.logo;
+            }
             
-            document.getElementById('headerLogo').src = screenData.logo || 'https://placehold.co/200x200?text=BBCC';
+            // Update header logo (Base64 or URL)
+            if(screenData.logo && screenData.logo !== '') {
+                document.getElementById('headerLogo').src = screenData.logo;
+            } else {
+                document.getElementById('headerLogo').src = 'https://placehold.co/200x200?text=BBCC';
+            }
+            
             document.getElementById('headerTitle').innerText = screenData.title || 'BBCC Portal';
             document.getElementById('headerSubTitle').innerText = screenData.subTitle || 'Best Coaching Center';
             
+            // Update loading screen text
             const loadingTitle = document.getElementById('loadingTitle');
             if(loadingTitle) loadingTitle.innerText = `Welcome to ${screenData.title || 'BBCC'}`;
             const welcomeTag = document.getElementById('welcomeTagLine');
             if(welcomeTag) welcomeTag.innerHTML = `🎓 ${screenData.subTitle || 'Best Coaching Center'} • Learn & Grow 🚀`;
             
+            // Zoom link
             const zoom = document.getElementById('zoomButton');
-            if(screenData.zoomMeetingLink && screenData.zoomMeetingLink !== '') zoom.href = screenData.zoomMeetingLink;
-            else { zoom.href = 'javascript:void(0)'; zoom.onclick = (e) => { e.preventDefault(); alert('Zoom meeting link coming soon!'); }; }
+            if(screenData.zoomMeetingLink && screenData.zoomMeetingLink !== '') {
+                zoom.href = screenData.zoomMeetingLink;
+            } else {
+                zoom.href = 'javascript:void(0)';
+                zoom.onclick = (e) => { e.preventDefault(); alert('Zoom meeting link coming soon!'); };
+            }
             
             updateSidebarSlider();
             updateGalleryWithRandomAnimation();
@@ -359,18 +388,28 @@
         }
 
         function updateSidebarSlider() {
-            const photos = screenData.sidebarPhotos || [];
+            // Support both array of strings (URLs) or array of objects
+            let photos = screenData.sidebarPhotos || [];
+            
+            // If photos are objects with data property (Base64), convert
+            if(photos.length > 0 && typeof photos[0] === 'object' && photos[0].data) {
+                photos = photos.map(p => p.data);
+            }
+            
             const track = document.getElementById('sliderTrack');
             const dotsDiv = document.getElementById('sliderDots');
+            
             if(!photos.length) { 
                 track.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; height:400px; color:white;">✨ No images yet</div>'; 
                 dotsDiv.innerHTML = ''; 
                 return; 
             }
+            
             track.innerHTML = '';
             dotsDiv.innerHTML = '';
+            
             photos.forEach((photo, i) => {
-                const imgUrl = typeof photo === 'string' ? photo : photo.url;
+                const imgUrl = typeof photo === 'string' ? photo : (photo.data || photo.url || '');
                 const slide = document.createElement('div');
                 slide.className = `slider-slide ${i === 0 ? 'active' : ''}`;
                 slide.innerHTML = `<img src="${imgUrl}" alt="Gallery" loading="eager" onclick="event.stopPropagation(); openLightbox('${imgUrl}', 'photo')">`;
@@ -418,14 +457,24 @@
             thumbsContainer.innerHTML = '';
             
             galleryItems.forEach((item, idx) => {
-                const mediaUrl = item.data || item.url;
+                // Support both formats: {type, data} or {type, url}
+                let mediaUrl = item.data || item.url;
+                
+                // If it's an object with data property that contains Base64
+                if(item.data && typeof item.data === 'object') {
+                    mediaUrl = item.data.data || '';
+                }
+                
                 const div = document.createElement('div');
                 div.className = `gallery-item ${idx === 0 ? 'active' : ''}`;
                 div.id = `galleryItem_${idx}`;
+                
                 if(item.type === 'photo') {
                     div.innerHTML = `<img src="${mediaUrl}" alt="Gallery HD" loading="lazy" onclick="openLightbox('${mediaUrl}', 'photo')">`;
-                } else {
+                } else if(item.type === 'video') {
                     div.innerHTML = `<video src="${mediaUrl}" controls onclick="event.stopPropagation()" style="max-width:95%; max-height:550px;"></video>`;
+                } else {
+                    div.innerHTML = `<img src="${mediaUrl}" alt="Gallery HD" loading="lazy" onclick="openLightbox('${mediaUrl}', 'photo')">`;
                 }
                 display.appendChild(div);
                 
@@ -507,18 +556,30 @@
 
         function updateFooterLinks() {
             if(!screenData) return;
-            if(screenData.whatsappNumber) { 
+            
+            const whatsappNumber = screenData.whatsappNumber;
+            if(whatsappNumber && whatsappNumber !== '') { 
                 let wa = document.getElementById('footerWhatsapp'); 
-                wa.href = `https://wa.me/${screenData.whatsappNumber}`; 
-                wa.innerHTML = `<i class="fab fa-whatsapp"></i> WhatsApp: ${screenData.whatsappNumber}`; 
+                wa.href = `https://wa.me/${whatsappNumber}`; 
+                wa.innerHTML = `<i class="fab fa-whatsapp"></i> WhatsApp: ${whatsappNumber}`; 
             }
-            if(screenData.whatsappChannelLink) document.getElementById('footerWhatsappChannel').href = screenData.whatsappChannelLink;
-            if(screenData.youtubeChannelLink) document.getElementById('footerYoutube').href = screenData.youtubeChannelLink;
-            if(screenData.facebookLink) document.getElementById('footerFacebook').href = screenData.facebookLink;
-            if(screenData.instagramLink) document.getElementById('footerInstagram').href = screenData.instagramLink;
-            if(screenData.telegramLink) document.getElementById('footerTelegram').href = screenData.telegramLink;
-            if(screenData.twitterLink) document.getElementById('footerTwitter').href = screenData.twitterLink;
-            if(screenData.linkedinLink) document.getElementById('footerLinkedin').href = screenData.linkedinLink;
+            
+            const links = {
+                whatsappChannelLink: 'footerWhatsappChannel',
+                youtubeChannelLink: 'footerYoutube',
+                facebookLink: 'footerFacebook',
+                instagramLink: 'footerInstagram',
+                telegramLink: 'footerTelegram',
+                twitterLink: 'footerTwitter',
+                linkedinLink: 'footerLinkedin'
+            };
+            
+            for (const [key, elementId] of Object.entries(links)) {
+                const link = screenData[key];
+                if(link && link !== '') {
+                    document.getElementById(elementId).href = link;
+                }
+            }
         }
 
         // Enquiry form handler
@@ -535,8 +596,16 @@
             const className = document.getElementById('enquiryClass').value; 
             const subject = document.getElementById('enquirySubject').value; 
             const msg = document.getElementById('enquiryMessage').value;
-            if(!name || !mobile || !section || !board || !className) { alert('Please fill required fields'); return; }
-            if(!/^\d{10}$/.test(mobile)) { alert('Valid 10-digit mobile'); return; }
+            
+            if(!name || !mobile || !section || !board || !className) { 
+                alert('Please fill required fields'); 
+                return; 
+            }
+            if(!/^\d{10}$/.test(mobile)) { 
+                alert('Valid 10-digit mobile'); 
+                return; 
+            }
+            
             const waNumber = screenData?.whatsappNumber || '919876543210';
             const whatsappMsg = `*New Enquiry*%0A%0A*Name:* ${encodeURIComponent(name)}%0A*Mobile:* ${mobile}%0A*Section:* ${section}%0A*Board:* ${board}%0A*Class:* ${className}%0A*Subject:* ${subject || 'NA'}%0A*Message:* ${encodeURIComponent(msg)}`;
             window.open(`https://wa.me/${waNumber}?text=${whatsappMsg}`, '_blank'); 
@@ -561,18 +630,23 @@
             if(e.key === 'Escape') closeLightbox(); 
         });
 
-        // MAIN INITIALIZATION - SIRF EK BAAR LOAD HOGA, KOI INTERVAL NAHI
+        // MAIN INITIALIZATION - SIRF EK BAAR LOAD, KOI REFRESH NAHI
         async function init() {
             loadTheme();
             
             const loadingScreen = document.getElementById('loadingScreen');
             const mainContent = document.getElementById('mainContent');
             
+            console.log('🚀 Starting app...');
+            
             // SIRF EK BAAR DATA LOAD
             await loadScreenData();
             
             // UI UPDATE
             updateUI();
+            
+            console.log('✅ App initialized successfully!');
+            console.log('📊 Data will NOT refresh automatically. Page reload required for new data.');
             
             // LOADING SCREEN HATANA
             setTimeout(() => {
@@ -584,10 +658,11 @@
                 }
                 mainContent.classList.add('visible');
                 
+                // Welcome speech
                 setTimeout(() => speak(`Welcome to ${screenData?.title || 'BBCC'}`), 500);
             }, 1000);
             
-            // ❌ YAHAN SETINTERVAL HATAYA - DATA DOBARA REFRESH NAHI HOGA
+            // ❌ KOI setInterval NAHI - Data dobara refresh nahi hoga
         }
         
         init();
