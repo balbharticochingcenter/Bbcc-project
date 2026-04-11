@@ -332,59 +332,440 @@
         function updateRecentActivity(students, teachers) { let container = document.getElementById('recentActivity'); let activities = []; students.forEach(s => { (s.feesHistory || []).forEach(f => { if(f.paymentDate) activities.push({ type: '💰', msg: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount}`, date: new Date(f.paymentDate) }); }); }); teachers.forEach(t => { (t.salaryPayments || []).forEach(p => { if(p.paymentDate) activities.push({ type: '💵', msg: `Salary paid to ${t.personal?.name} ₹${p.paidAmount}`, date: new Date(p.paymentDate) }); }); }); activities.sort((a,b) => b.date - a.date); container.innerHTML = activities.slice(0,10).map(a => `<div class="activity-item"><span>${a.type} ${a.msg}</span><small>${a.date.toLocaleDateString()}</small></div>`).join(''); if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>'; }
         
         // ============ SCREEN MANAGEMENT - FIXED FOR SERVER ============
-        async function loadScreenData() { try { let res = await fetch('/api/screen'); let result = await res.json(); if (result.success) { screenData = result.data; updateUI(); updateFavicon(); return screenData; } } catch(e) { console.error(e); } return null; }
-        
-        function updateUI() {
-            if (!screenData) return;
-            if (screenData.logo) document.getElementById('headerLogo').src = screenData.logo;
-            document.getElementById('headerTitle').textContent = screenData.title || 'BBCC Portal';
-            document.getElementById('headerSubTitle').textContent = screenData.subTitle || 'Best Coaching Center';
-            updateSidebarPhotos();
-            if (screenData.zoomMeetingLink) document.getElementById('zoomLink').querySelector('a').href = screenData.zoomMeetingLink;
-            displayGallery();
-            document.getElementById('headerTitleInput').value = screenData.title || '';
-            document.getElementById('headerSubTitleInput').value = screenData.subTitle || '';
-            document.getElementById('zoomLinkInput').value = screenData.zoomMeetingLink || '';
-            document.getElementById('whatsappNumberInput').value = screenData.whatsappNumber || '';
-            document.getElementById('whatsappChannelInput').value = screenData.whatsappChannelLink || '';
-            document.getElementById('youtubeChannelInput').value = screenData.youtubeChannelLink || '';
-            document.getElementById('facebookLinkInput').value = screenData.facebookLink || '';
-            document.getElementById('instagramLinkInput').value = screenData.instagramLink || '';
-            document.getElementById('telegramLinkInput').value = screenData.telegramLink || '';
-            document.getElementById('twitterLinkInput').value = screenData.twitterLink || '';
-            document.getElementById('linkedinLinkInput').value = screenData.linkedinLink || '';
-            if (screenData.whatsappNumber) { document.getElementById('footerWhatsapp').href = `https://wa.me/${screenData.whatsappNumber}`; document.getElementById('footerWhatsapp').textContent = `WhatsApp: ${screenData.whatsappNumber}`; }
-            if (screenData.whatsappChannelLink) document.getElementById('footerWhatsappChannel').href = screenData.whatsappChannelLink;
-            if (screenData.youtubeChannelLink) document.getElementById('footerYoutube').href = screenData.youtubeChannelLink;
-            if (screenData.facebookLink) document.getElementById('footerFacebook').href = screenData.facebookLink;
-            if (screenData.instagramLink) document.getElementById('footerInstagram').href = screenData.instagramLink;
-            if (screenData.telegramLink) document.getElementById('footerTelegram').href = screenData.telegramLink;
-            if (screenData.twitterLink) document.getElementById('footerTwitter').href = screenData.twitterLink;
-            if (screenData.linkedinLink) document.getElementById('footerLinkedin').href = screenData.linkedinLink;
+      // ============================================
+// FIXED: SCREEN MANAGEMENT FUNCTIONS
+// ये फंक्शंस सर्वर के स्कीमा के अनुसार काम करेंगे
+// ============================================
+
+// 1. स्क्रीन डेटा लोड करना
+async function loadScreenData() {
+    try {
+        const res = await fetch('/api/screen');
+        const result = await res.json();
+        if (result.success) { 
+            screenData = result.data; 
+            updateUI(); 
+            updateFavicon(); 
+            return screenData;
         }
+    } catch(e) { 
+        console.error('Load screen error:', e);
+        showToast('Failed to load screen data', 'error');
+    }
+    return null;
+}
+
+// 2. UI अपडेट करना
+function updateUI() {
+    if (!screenData) return;
+    
+    // Logo
+    if (screenData.logo && screenData.logo !== '') {
+        document.getElementById('headerLogo').src = screenData.logo;
+    }
+    
+    // Title & Subtitle
+    document.getElementById('headerTitle').textContent = screenData.title || 'BBCC Portal';
+    document.getElementById('headerSubTitle').textContent = screenData.subTitle || 'Best Coaching Center';
+    
+    // Sidebar Photos
+    updateSidebarPhotos();
+    
+    // Zoom Link
+    if (screenData.zoomMeetingLink) {
+        document.getElementById('zoomLink').querySelector('a').href = screenData.zoomMeetingLink;
+    }
+    
+    // Gallery
+    displayGallery();
+    
+    // Settings Form Fields
+    document.getElementById('headerTitleInput').value = screenData.title || '';
+    document.getElementById('headerSubTitleInput').value = screenData.subTitle || '';
+    document.getElementById('zoomLinkInput').value = screenData.zoomMeetingLink || '';
+    document.getElementById('whatsappNumberInput').value = screenData.whatsappNumber || '';
+    document.getElementById('whatsappChannelInput').value = screenData.whatsappChannelLink || '';
+    document.getElementById('youtubeChannelInput').value = screenData.youtubeChannelLink || '';
+    document.getElementById('facebookLinkInput').value = screenData.facebookLink || '';
+    document.getElementById('instagramLinkInput').value = screenData.instagramLink || '';
+    document.getElementById('telegramLinkInput').value = screenData.telegramLink || '';
+    document.getElementById('twitterLinkInput').value = screenData.twitterLink || '';
+    document.getElementById('linkedinLinkInput').value = screenData.linkedinLink || '';
+    
+    // Footer Links
+    if (screenData.whatsappNumber) {
+        document.getElementById('footerWhatsapp').href = `https://wa.me/${screenData.whatsappNumber}`;
+        document.getElementById('footerWhatsapp').innerHTML = `<i class="fab fa-whatsapp"></i> WhatsApp: ${screenData.whatsappNumber}`;
+    }
+    if (screenData.whatsappChannelLink) document.getElementById('footerWhatsappChannel').href = screenData.whatsappChannelLink;
+    if (screenData.youtubeChannelLink) document.getElementById('footerYoutube').href = screenData.youtubeChannelLink;
+    if (screenData.facebookLink) document.getElementById('footerFacebook').href = screenData.facebookLink;
+    if (screenData.instagramLink) document.getElementById('footerInstagram').href = screenData.instagramLink;
+    if (screenData.telegramLink) document.getElementById('footerTelegram').href = screenData.telegramLink;
+    if (screenData.twitterLink) document.getElementById('footerTwitter').href = screenData.twitterLink;
+    if (screenData.linkedinLink) document.getElementById('footerLinkedin').href = screenData.linkedinLink;
+}
+
+// 3. Sidebar Photos अपडेट
+function updateSidebarPhotos() {
+    const container = document.getElementById('sidebarPhotosGrid');
+    if (!container) return;
+    
+    const photos = screenData?.sidebarPhotos || [];
+    container.innerHTML = '';
+    
+    if (!photos.length) { 
+        container.innerHTML = '<p style="font-size:12px;opacity:0.7;text-align:center;">No photos</p>'; 
+        return; 
+    }
+    
+    photos.forEach((photo, i) => {
+        const div = document.createElement('div');
+        div.className = 'sidebar-photo-item';
+        div.innerHTML = `<img src="${photo}" alt="Photo"><button class="delete-photo" onclick="deleteSidebarPhoto(${i})">×</button>`;
+        container.appendChild(div);
+    });
+}
+
+// 4. Sidebar Photos अपलोड - FIXED
+async function handleSidebarPhotoUpload(files) {
+    if (!files.length) return;
+    showLoading(true);
+    
+    try {
+        const base64Images = await processMultipleImages(Array.from(files));
+        const existingPhotos = screenData?.sidebarPhotos || [];
+        const allPhotos = [...existingPhotos, ...base64Images];
         
-        function updateSidebarPhotos() { let container = document.getElementById('sidebarPhotosGrid'); if (!container) return; let photos = screenData?.sidebarPhotos || []; container.innerHTML = ''; if (!photos.length) { container.innerHTML = '<p style="font-size:12px;opacity:0.7;text-align:center;">No photos</p>'; return; } photos.forEach((photo, i) => { let div = document.createElement('div'); div.className = 'sidebar-photo-item'; div.innerHTML = `<img src="${photo}" alt="Photo"><button class="delete-photo" onclick="deleteSidebarPhoto(${i})">×</button>`; container.appendChild(div); }); }
+        // ⭐ सिर्फ वही फील्ड्स भेजें जो सर्वर चाहता है
+        const updateData = {
+            title: screenData?.title || 'BBCC Portal',
+            subTitle: screenData?.subTitle || 'Best Coaching Center',
+            zoomMeetingLink: screenData?.zoomMeetingLink || '',
+            sidebarPhotos: allPhotos,
+            gallery: screenData?.gallery || [],
+            whatsappNumber: screenData?.whatsappNumber || '',
+            whatsappChannelLink: screenData?.whatsappChannelLink || '',
+            youtubeChannelLink: screenData?.youtubeChannelLink || '',
+            facebookLink: screenData?.facebookLink || '',
+            instagramLink: screenData?.instagramLink || '',
+            telegramLink: screenData?.telegramLink || '',
+            twitterLink: screenData?.twitterLink || '',
+            linkedinLink: screenData?.linkedinLink || ''
+        };
         
-        async function handleSidebarPhotoUpload(files) { if (!files.length) return; showLoading(true); try { let base64Images = await processMultipleImages(Array.from(files)); let allPhotos = [...(screenData?.sidebarPhotos || []), ...base64Images]; let body = { title: screenData?.title || '', subTitle: screenData?.subTitle || '', zoomMeetingLink: screenData?.zoomMeetingLink || '', sidebarPhotos: allPhotos, gallery: screenData?.gallery || [], whatsappNumber: screenData?.whatsappNumber || '', whatsappChannelLink: screenData?.whatsappChannelLink || '', youtubeChannelLink: screenData?.youtubeChannelLink || '', facebookLink: screenData?.facebookLink || '', instagramLink: screenData?.instagramLink || '', telegramLink: screenData?.telegramLink || '', twitterLink: screenData?.twitterLink || '', linkedinLink: screenData?.linkedinLink || '' }; let token = localStorage.getItem('adminToken'); let res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) }); let result = await res.json(); if (result.success) { await loadScreenData(); showToast(`${base64Images.length} photo(s) uploaded!`); } else showToast(result.message || 'Upload failed', 'error'); } catch(e) { showToast('Upload failed', 'error'); } finally { showLoading(false); document.getElementById('sidebarPhotoInput').value = ''; } }
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch('/api/screen', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(updateData)
+        });
         
-        async function deleteSidebarPhoto(index) { if (!confirm('Delete this photo?')) return; showLoading(true); let photos = [...(screenData?.sidebarPhotos || [])]; photos.splice(index, 1); let body = { title: screenData?.title || '', subTitle: screenData?.subTitle || '', zoomMeetingLink: screenData?.zoomMeetingLink || '', sidebarPhotos: photos, gallery: screenData?.gallery || [], whatsappNumber: screenData?.whatsappNumber || '', whatsappChannelLink: screenData?.whatsappChannelLink || '', youtubeChannelLink: screenData?.youtubeChannelLink || '', facebookLink: screenData?.facebookLink || '', instagramLink: screenData?.instagramLink || '', telegramLink: screenData?.telegramLink || '', twitterLink: screenData?.twitterLink || '', linkedinLink: screenData?.linkedinLink || '' }; try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) }); let result = await res.json(); if (result.success) { await loadScreenData(); showToast('Photo deleted!'); } else showToast(result.message || 'Delete failed', 'error'); } catch(e) { showToast('Delete failed', 'error'); } finally { showLoading(false); } }
+        const result = await res.json();
+        if (result.success) {
+            await loadScreenData();
+            showToast(`${base64Images.length} photo(s) uploaded!`);
+        } else {
+            showToast(result.message || 'Upload failed', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        showToast('Upload failed: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+        document.getElementById('sidebarPhotoInput').value = '';
+    }
+}
+
+// 5. Sidebar Photo Delete - FIXED
+async function deleteSidebarPhoto(index) {
+    if (!confirm('Are you sure you want to delete this photo?')) return;
+    showLoading(true);
+    
+    const photos = [...(screenData?.sidebarPhotos || [])];
+    photos.splice(index, 1);
+    
+    const updateData = {
+        title: screenData?.title || 'BBCC Portal',
+        subTitle: screenData?.subTitle || 'Best Coaching Center',
+        zoomMeetingLink: screenData?.zoomMeetingLink || '',
+        sidebarPhotos: photos,
+        gallery: screenData?.gallery || [],
+        whatsappNumber: screenData?.whatsappNumber || '',
+        whatsappChannelLink: screenData?.whatsappChannelLink || '',
+        youtubeChannelLink: screenData?.youtubeChannelLink || '',
+        facebookLink: screenData?.facebookLink || '',
+        instagramLink: screenData?.instagramLink || '',
+        telegramLink: screenData?.telegramLink || '',
+        twitterLink: screenData?.twitterLink || '',
+        linkedinLink: screenData?.linkedinLink || ''
+    };
+    
+    try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch('/api/screen', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(updateData)
+        });
         
-        async function uploadGalleryFiles() { let files = document.getElementById('galleryFilesInput').files; if (!files.length) return showToast('Select files', 'error'); showLoading(true); try { let base64Images = await processMultipleImages(Array.from(files)); let existingGallery = screenData?.gallery || []; let newItems = base64Images.map(img => ({ type: 'photo', data: img })); let allGallery = [...existingGallery, ...newItems]; let body = { title: screenData?.title || '', subTitle: screenData?.subTitle || '', zoomMeetingLink: screenData?.zoomMeetingLink || '', gallery: allGallery, sidebarPhotos: screenData?.sidebarPhotos || [], whatsappNumber: screenData?.whatsappNumber || '', whatsappChannelLink: screenData?.whatsappChannelLink || '', youtubeChannelLink: screenData?.youtubeChannelLink || '', facebookLink: screenData?.facebookLink || '', instagramLink: screenData?.instagramLink || '', telegramLink: screenData?.telegramLink || '', twitterLink: screenData?.twitterLink || '', linkedinLink: screenData?.linkedinLink || '' }; let token = localStorage.getItem('adminToken'); let res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) }); let result = await res.json(); if (result.success) { await loadScreenData(); document.getElementById('galleryFilesInput').value = ''; document.getElementById('galleryPreview').innerHTML = ''; showToast(`${base64Images.length} photo(s) uploaded!`); } else showToast(result.message || 'Upload failed', 'error'); } catch(e) { showToast('Upload failed', 'error'); } finally { showLoading(false); } }
+        const result = await res.json();
+        if (result.success) {
+            await loadScreenData();
+            showToast('Photo deleted successfully!');
+        } else {
+            showToast(result.message || 'Delete failed', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        showToast('Delete failed: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// 6. Gallery Photos Upload - FIXED
+async function uploadGalleryFiles() {
+    const files = document.getElementById('galleryFilesInput').files;
+    if (!files.length) return showToast('Select files', 'error');
+    showLoading(true);
+    
+    try {
+        const base64Images = await processMultipleImages(Array.from(files));
+        const existingGallery = screenData?.gallery || [];
         
-        function displayGallery() { let grid = document.getElementById('galleryGrid'); if (!grid || !screenData?.gallery) return; grid.innerHTML = ''; selectedGalleryItems.clear(); updateBulkDeleteButton(); screenData.gallery.forEach((item, index) => { let div = document.createElement('div'); div.className = 'gallery-item'; let itemId = item._id || `temp_${index}`; if (item.type === 'photo') { div.innerHTML = `<input type="checkbox" class="gallery-select-checkbox" data-id="${itemId}" onchange="toggleGallerySelect('${itemId}')"><img src="${item.data}" alt="Gallery"><button class="delete-btn" onclick="deleteSingleGalleryItem('${itemId}')">×</button>`; } else { div.innerHTML = `<input type="checkbox" class="gallery-select-checkbox" data-id="${itemId}" onchange="toggleGallerySelect('${itemId}')"><video controls src="${item.url}"></video><button class="delete-btn" onclick="deleteSingleGalleryItem('${itemId}')">×</button>`; } grid.appendChild(div); }); }
+        // ⭐ सर्वर के फॉर्मेट में gallery items बनाएं
+        const newGalleryItems = base64Images.map(img => ({ 
+            type: 'photo', 
+            data: img 
+        }));
         
-        function toggleGallerySelect(id) { if (selectedGalleryItems.has(id)) selectedGalleryItems.delete(id); else selectedGalleryItems.add(id); updateBulkDeleteButton(); updateSelectAllCheckbox(); }
-        function toggleSelectAllGallery() { let selectAll = document.getElementById('selectAllGallery'); let allCheckboxes = document.querySelectorAll('.gallery-select-checkbox'); if (selectAll.checked) { allCheckboxes.forEach(cb => { let id = cb.getAttribute('data-id'); if (id && !selectedGalleryItems.has(id)) { selectedGalleryItems.add(id); cb.checked = true; } }); } else { allCheckboxes.forEach(cb => { let id = cb.getAttribute('data-id'); if (id && selectedGalleryItems.has(id)) { selectedGalleryItems.delete(id); cb.checked = false; } }); } updateBulkDeleteButton(); }
-        function updateSelectAllCheckbox() { let selectAll = document.getElementById('selectAllGallery'); let allCheckboxes = document.querySelectorAll('.gallery-select-checkbox'); if (allCheckboxes.length === 0) { if (selectAll) selectAll.checked = false; return; } let allSelected = Array.from(allCheckboxes).every(cb => selectedGalleryItems.has(cb.getAttribute('data-id'))); if (selectAll) selectAll.checked = allSelected; }
-        function updateBulkDeleteButton() { let btn = document.getElementById('bulkDeleteGalleryBtn'); if (btn) { btn.disabled = selectedGalleryItems.size === 0; btn.textContent = selectedGalleryItems.size > 0 ? `🗑️ Delete Selected (${selectedGalleryItems.size})` : '🗑️ Delete Selected'; } }
-        async function deleteSingleGalleryItem(id) { if (!confirm('Delete this item?')) return; await performGalleryDelete([id]); }
-        async function bulkDeleteGalleryItems() { if (selectedGalleryItems.size === 0) { showToast('No items selected', 'error'); return; } if (!confirm(`Delete ${selectedGalleryItems.size} selected item(s)?`)) return; await performGalleryDelete(Array.from(selectedGalleryItems)); }
-        async function performGalleryDelete(idsToDelete) { showLoading(true); try { let remainingGallery = (screenData?.gallery || []).filter(item => { let itemId = item._id || (item.type === 'photo' ? item.data : item.url); return !idsToDelete.includes(itemId); }); let body = { title: screenData?.title || '', subTitle: screenData?.subTitle || '', zoomMeetingLink: screenData?.zoomMeetingLink || '', gallery: remainingGallery, sidebarPhotos: screenData?.sidebarPhotos || [], whatsappNumber: screenData?.whatsappNumber || '', whatsappChannelLink: screenData?.whatsappChannelLink || '', youtubeChannelLink: screenData?.youtubeChannelLink || '', facebookLink: screenData?.facebookLink || '', instagramLink: screenData?.instagramLink || '', telegramLink: screenData?.telegramLink || '', twitterLink: screenData?.twitterLink || '', linkedinLink: screenData?.linkedinLink || '' }; let token = localStorage.getItem('adminToken'); let res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) }); let result = await res.json(); if (result.success) { await loadScreenData(); selectedGalleryItems.clear(); showToast(`${idsToDelete.length} item(s) deleted!`); } else showToast(result.message || 'Delete failed', 'error'); } catch(e) { showToast('Delete failed', 'error'); } finally { showLoading(false); } }
+        const allGallery = [...existingGallery, ...newGalleryItems];
         
-        async function addVideoLink() { let url = document.getElementById('videoLinkInput').value; if (!url) return showToast('Enter video URL', 'error'); showLoading(true); try { let existingGallery = screenData?.gallery || []; let newItem = { type: 'video', url: url }; let allGallery = [...existingGallery, newItem]; let body = { title: screenData?.title || '', subTitle: screenData?.subTitle || '', zoomMeetingLink: screenData?.zoomMeetingLink || '', gallery: allGallery, sidebarPhotos: screenData?.sidebarPhotos || [], whatsappNumber: screenData?.whatsappNumber || '', whatsappChannelLink: screenData?.whatsappChannelLink || '', youtubeChannelLink: screenData?.youtubeChannelLink || '', facebookLink: screenData?.facebookLink || '', instagramLink: screenData?.instagramLink || '', telegramLink: screenData?.telegramLink || '', twitterLink: screenData?.twitterLink || '', linkedinLink: screenData?.linkedinLink || '' }; let token = localStorage.getItem('adminToken'); let res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) }); let result = await res.json(); if (result.success) { await loadScreenData(); document.getElementById('videoLinkInput').value = ''; showToast('Video link added!'); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Failed', 'error'); } finally { showLoading(false); } }
+        const updateData = {
+            title: screenData?.title || 'BBCC Portal',
+            subTitle: screenData?.subTitle || 'Best Coaching Center',
+            zoomMeetingLink: screenData?.zoomMeetingLink || '',
+            sidebarPhotos: screenData?.sidebarPhotos || [],
+            gallery: allGallery,
+            whatsappNumber: screenData?.whatsappNumber || '',
+            whatsappChannelLink: screenData?.whatsappChannelLink || '',
+            youtubeChannelLink: screenData?.youtubeChannelLink || '',
+            facebookLink: screenData?.facebookLink || '',
+            instagramLink: screenData?.instagramLink || '',
+            telegramLink: screenData?.telegramLink || '',
+            twitterLink: screenData?.twitterLink || '',
+            linkedinLink: screenData?.linkedinLink || ''
+        };
         
-        async function saveBasicSettings() { showLoading(true); let logoBase64 = null; let logoFile = document.getElementById('headerLogoInput').files[0]; if (logoFile) logoBase64 = await processImage(logoFile); let body = { title: document.getElementById('headerTitleInput').value, subTitle: document.getElementById('headerSubTitleInput').value, zoomMeetingLink: document.getElementById('zoomLinkInput').value, logo: logoBase64, gallery: screenData?.gallery || [], sidebarPhotos: screenData?.sidebarPhotos || [], whatsappNumber: document.getElementById('whatsappNumberInput').value, whatsappChannelLink: document.getElementById('whatsappChannelInput').value, youtubeChannelLink: document.getElementById('youtubeChannelInput').value, facebookLink: document.getElementById('facebookLinkInput').value, instagramLink: document.getElementById('instagramLinkInput').value, telegramLink: document.getElementById('telegramLinkInput').value, twitterLink: document.getElementById('twitterLinkInput').value, linkedinLink: document.getElementById('linkedinLinkInput').value }; try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) }); let result = await res.json(); if (result.success) { await loadScreenData(); document.getElementById('headerLogoInput').value = ''; document.getElementById('logoPreview').innerHTML = ''; showToast('Settings saved!'); } else showToast('Error: ' + (result.message || 'Unknown error'), 'error'); } catch(e) { showToast('Save failed: ' + e.message, 'error'); } finally { showLoading(false); } }
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch('/api/screen', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(updateData)
+        });
         
+        const result = await res.json();
+        if (result.success) {
+            await loadScreenData();
+            document.getElementById('galleryFilesInput').value = '';
+            document.getElementById('galleryPreview').innerHTML = '';
+            showToast(`${base64Images.length} photo(s) uploaded!`);
+        } else {
+            showToast(result.message || 'Upload failed', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        showToast('Upload failed: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// 7. Video Link Add - FIXED
+async function addVideoLink() {
+    const url = document.getElementById('videoLinkInput').value;
+    if (!url) return showToast('Enter video URL', 'error');
+    showLoading(true);
+    
+    try {
+        const existingGallery = screenData?.gallery || [];
+        const newVideoItem = { type: 'video', url: url };
+        const allGallery = [...existingGallery, newVideoItem];
+        
+        const updateData = {
+            title: screenData?.title || 'BBCC Portal',
+            subTitle: screenData?.subTitle || 'Best Coaching Center',
+            zoomMeetingLink: screenData?.zoomMeetingLink || '',
+            sidebarPhotos: screenData?.sidebarPhotos || [],
+            gallery: allGallery,
+            whatsappNumber: screenData?.whatsappNumber || '',
+            whatsappChannelLink: screenData?.whatsappChannelLink || '',
+            youtubeChannelLink: screenData?.youtubeChannelLink || '',
+            facebookLink: screenData?.facebookLink || '',
+            instagramLink: screenData?.instagramLink || '',
+            telegramLink: screenData?.telegramLink || '',
+            twitterLink: screenData?.twitterLink || '',
+            linkedinLink: screenData?.linkedinLink || ''
+        };
+        
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch('/api/screen', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        const result = await res.json();
+        if (result.success) {
+            await loadScreenData();
+            document.getElementById('videoLinkInput').value = '';
+            showToast('Video link added!');
+        } else {
+            showToast(result.message || 'Failed', 'error');
+        }
+    } catch(e) {
+        showToast('Failed: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// 8. Settings Save - FIXED (सबसे महत्वपूर्ण)
+async function saveBasicSettings() {
+    showLoading(true);
+    let logoBase64 = null;
+    
+    // Logo file check
+    const logoFile = document.getElementById('headerLogoInput').files[0];
+    if (logoFile) {
+        try {
+            logoBase64 = await processImage(logoFile);
+        } catch(e) {
+            showToast('Logo compression failed', 'error');
+            showLoading(false);
+            return;
+        }
+    }
+    
+    // ⭐ सिर्फ वही फील्ड्स भेजें जो सर्वर स्कीमा में हैं
+    const updateData = {
+        title: document.getElementById('headerTitleInput').value || 'BBCC Portal',
+        subTitle: document.getElementById('headerSubTitleInput').value || 'Best Coaching Center',
+        zoomMeetingLink: document.getElementById('zoomLinkInput').value || '',
+        whatsappNumber: document.getElementById('whatsappNumberInput').value || '',
+        whatsappChannelLink: document.getElementById('whatsappChannelInput').value || '',
+        youtubeChannelLink: document.getElementById('youtubeChannelInput').value || '',
+        facebookLink: document.getElementById('facebookLinkInput').value || '',
+        instagramLink: document.getElementById('instagramLinkInput').value || '',
+        telegramLink: document.getElementById('telegramLinkInput').value || '',
+        twitterLink: document.getElementById('twitterLinkInput').value || '',
+        linkedinLink: document.getElementById('linkedinLinkInput').value || ''
+    };
+    
+    // Logo को अलग से ऐड करें (अगर है तो)
+    if (logoBase64) {
+        updateData.logo = logoBase64;
+    }
+    
+    // Sidebar Photos और Gallery को मेंटेन करें
+    if (screenData?.sidebarPhotos) {
+        updateData.sidebarPhotos = screenData.sidebarPhotos;
+    }
+    if (screenData?.gallery) {
+        updateData.gallery = screenData.gallery;
+    }
+    
+    try {
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch('/api/screen', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        const result = await res.json();
+        if (result.success) {
+            await loadScreenData();
+            document.getElementById('headerLogoInput').value = '';
+            document.getElementById('logoPreview').innerHTML = '';
+            showToast('Settings saved successfully!');
+        } else {
+            showToast('Error: ' + (result.message || 'Unknown error'), 'error');
+        }
+    } catch(e) {
+        console.error('Save error:', e);
+        showToast('Save failed: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// 9. Gallery Bulk Delete - FIXED
+async function performGalleryDelete(idsToDelete) {
+    showLoading(true);
+    try {
+        const remainingGallery = (screenData?.gallery || []).filter(item => {
+            const itemId = item._id || (item.type === 'photo' ? item.data : item.url);
+            return !idsToDelete.includes(itemId);
+        });
+        
+        const updateData = {
+            title: screenData?.title || 'BBCC Portal',
+            subTitle: screenData?.subTitle || 'Best Coaching Center',
+            zoomMeetingLink: screenData?.zoomMeetingLink || '',
+            sidebarPhotos: screenData?.sidebarPhotos || [],
+            gallery: remainingGallery,
+            whatsappNumber: screenData?.whatsappNumber || '',
+            whatsappChannelLink: screenData?.whatsappChannelLink || '',
+            youtubeChannelLink: screenData?.youtubeChannelLink || '',
+            facebookLink: screenData?.facebookLink || '',
+            instagramLink: screenData?.instagramLink || '',
+            telegramLink: screenData?.telegramLink || '',
+            twitterLink: screenData?.twitterLink || '',
+            linkedinLink: screenData?.linkedinLink || ''
+        };
+        
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch('/api/screen', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        const result = await res.json();
+        if (result.success) {
+            await loadScreenData();
+            selectedGalleryItems.clear();
+            showToast(`${idsToDelete.length} item(s) deleted!`);
+        } else {
+            showToast(result.message || 'Delete failed', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        showToast('Delete failed: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
         // ============ ADMIN PASSWORD & ID ============
         async function changePassword() { let current = document.getElementById('currentPassword').value; let newPwd = document.getElementById('newPassword').value; let confirm = document.getElementById('confirmPassword').value; if (!current || !newPwd) return showToast('Fill all fields', 'error'); if (newPwd !== confirm) return showToast('Passwords do not match', 'error'); if (newPwd.length < 4) return showToast('Password min 4 chars', 'error'); showLoading(true); try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) }); let result = await res.json(); if (result.success) { showToast('Password changed!'); closePasswordModal(); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error', 'error'); } finally { showLoading(false); } }
         
