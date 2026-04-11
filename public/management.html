@@ -10,6 +10,46 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            backdrop-filter: blur(5px);
+        }
+        .loading-spinner {
+            text-align: center;
+            background: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .loading-spinner .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-spinner p {
+            color: #333;
+            font-size: 14px;
+        }
+        
         .site-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .header-left { display: flex; align-items: center; gap: 20px; }
         .header-logo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: white; padding: 5px; cursor: pointer; transition: transform 0.3s; }
@@ -88,8 +128,6 @@
         .btn-primary { background: #007bff; color: white; }
         .btn-primary:hover { background: #0056b3; }
         .btn-danger { background: #dc3545; color: white; }
-        .loading-indicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px 40px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 10000; display: none; }
-        .loading-indicator.active { display: block; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: 10px; width: 450px; max-width: 90%; }
@@ -234,7 +272,13 @@
     <div id="adminIdModal" class="modal"><div class="modal-content"><h3>Change Admin ID</h3><div class="form-row"><label>Current Admin ID</label><input type="text" id="currentAdminId" readonly style="background:#f0f0f0"></div><div class="form-row"><label>New Admin ID</label><input type="text" id="newAdminId" placeholder="Enter new admin ID"></div><div class="form-row"><label>Password</label><input type="password" id="verifyPassword" placeholder="Enter your password"></div><div style="display:flex;gap:10px;margin-top:20px"><button class="btn btn-primary" onclick="changeAdminId()">Change ID</button><button class="btn btn-danger" onclick="closeAdminIdModal()">Cancel</button></div></div></div>
     <div id="adminPhotoModal" class="modal"><div class="modal-content"><h3>Update Admin Photo</h3><div class="form-row"><label>Current Photo</label><div style="text-align:center;margin:10px 0"><img id="currentAdminPhotoPreview" src="" style="width:100px;height:100px;border-radius:50%;object-fit:cover"></div></div><div class="form-row"><label>Upload New Photo</label><input type="file" id="adminPhotoInput" accept="image/*" onchange="previewAdminPhoto(this)"></div><div style="display:flex;gap:10px;margin-top:20px"><button class="btn btn-primary" onclick="updateAdminPhoto()">Update Photo</button><button class="btn btn-danger" onclick="closeAdminPhotoModal()">Cancel</button></div></div></div>
     
-    <div class="loading-indicator" id="loadingIndicator">Loading...</div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Processing...</p>
+        </div>
+    </div>
 
     <script>
         let currentModule = 'dashboard';
@@ -251,41 +295,47 @@
         let teacherAttendanceChart = null;
         let revenueChart = null;
         
+        // ============ LOADING ANIMATION ============
+        function showLoading(message = 'Processing...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const msgSpan = document.getElementById('loadingMessage');
+            if (msgSpan) msgSpan.textContent = message;
+            if (overlay) overlay.style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+        
         // ============ FAVICON UPDATE ============
         async function updateFavicon() { try { if (screenData && screenData.logo) document.getElementById('dynamicFavicon').href = screenData.logo; } catch(e) {} }
         
-        // ============ FAST COMPRESSION - OPTIMIZED ============
+        // ============ FAST COMPRESSION ============
         async function fastCompress(file, targetMaxKB = 198) {
             if (file.size <= targetMaxKB * 1024) return file;
-            
-            // Single compression attempt with good quality for speed
             try {
-                const options = {
-                    maxSizeMB: targetMaxKB / 1024,
-                    maxWidthOrHeight: 1024,
-                    useWebWorker: false,
-                    initialQuality: 0.8
-                };
+                const options = { maxSizeMB: targetMaxKB / 1024, maxWidthOrHeight: 1024, useWebWorker: false, initialQuality: 0.8 };
                 const compressed = await imageCompression(file, options);
                 if (compressed.size <= targetMaxKB * 1024) return compressed;
-                
-                // Second attempt with lower quality
                 options.initialQuality = 0.6;
                 options.maxWidthOrHeight = 800;
-                const compressed2 = await imageCompression(file, options);
-                return compressed2;
-            } catch(e) {
-                console.log('Compression failed, using original:', e);
-                return file;
-            }
+                return await imageCompression(file, options);
+            } catch(e) { return file; }
         }
         
         function fileToBase64(file) { return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); }); }
         async function processImage(file) { return await fileToBase64(await fastCompress(file)); }
         async function processMultipleImages(files) { let results = []; for (let file of files) if (file.type.startsWith('image/')) results.push(await processImage(file)); return results; }
         
-        function showToast(message, type = 'success') { let toast = document.createElement('div'); toast.className = 'toast-notification'; toast.style.background = type === 'success' ? '#28a745' : '#dc3545'; toast.textContent = message; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
-        function showLoading(show) { document.getElementById('loadingIndicator').classList.toggle('active', show); }
+        function showToast(message, type = 'success') { 
+            let toast = document.createElement('div'); 
+            toast.className = 'toast-notification'; 
+            toast.style.background = type === 'success' ? '#28a745' : '#dc3545'; 
+            toast.textContent = message; 
+            document.body.appendChild(toast); 
+            setTimeout(() => toast.remove(), 3000); 
+        }
         
         // ============ FILTER FUNCTIONS ============
         function setFilter(filter) {
@@ -296,14 +346,14 @@
             if (filter !== 'custom') { customStartDate = null; customEndDate = null; }
             loadDashboardData();
         }
-        function applyCustomRange() { let start = document.getElementById('startDate').value; let end = document.getElementById('endDate').value; if (start && end) { customStartDate = new Date(start); customEndDate = new Date(end); loadDashboardData(); } else showToast('Please select both dates', 'error'); }
+        function applyCustomRange() { let start = document.getElementById('startDate').value; let end = document.getElementById('startDate').value; if (start && end) { customStartDate = new Date(start); customEndDate = new Date(end); loadDashboardData(); } else showToast('Please select both dates', 'error'); }
         
         // ============ ADMIN FUNCTIONS ============
         async function loadAdminPhoto() { try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/photo', { headers: { 'Authorization': `Bearer ${token}` } }); let result = await res.json(); if (result.success && result.photo) document.getElementById('adminPhoto').src = result.photo; } catch(e) {} }
         function openAdminPhotoModal() { document.getElementById('currentAdminPhotoPreview').src = document.getElementById('adminPhoto').src || ''; document.getElementById('adminPhotoModal').classList.add('active'); }
         function closeAdminPhotoModal() { document.getElementById('adminPhotoModal').classList.remove('active'); document.getElementById('adminPhotoInput').value = ''; }
         function previewAdminPhoto(input) { if (input.files && input.files[0]) { let reader = new FileReader(); reader.onload = e => document.getElementById('currentAdminPhotoPreview').src = e.target.result; reader.readAsDataURL(input.files[0]); } }
-        async function updateAdminPhoto() { let file = document.getElementById('adminPhotoInput').files[0]; if (!file) return showToast('Please select a photo', 'error'); showLoading(true); try { let base64 = await processImage(file); let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/photo', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ photoBase64: base64 }) }); let result = await res.json(); if (result.success) { document.getElementById('adminPhoto').src = base64; showToast('Admin photo updated!'); closeAdminPhotoModal(); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error updating photo', 'error'); } finally { showLoading(false); } }
+        async function updateAdminPhoto() { let file = document.getElementById('adminPhotoInput').files[0]; if (!file) return showToast('Please select a photo', 'error'); showLoading('Updating admin photo...'); try { let base64 = await processImage(file); let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/photo', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ photoBase64: base64 }) }); let result = await res.json(); if (result.success) { document.getElementById('adminPhoto').src = base64; showToast('Admin photo updated!'); closeAdminPhotoModal(); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error updating photo', 'error'); } finally { hideLoading(); } }
         
         function previewLogo(input) { 
             let container = document.getElementById('logoPreview'); 
@@ -367,9 +417,10 @@
         
         function updateRecentActivity(students, teachers) { let container = document.getElementById('recentActivity'); let activities = []; students.forEach(s => { (s.feesHistory || []).forEach(f => { if(f.paymentDate) activities.push({ type: '💰', msg: `${s.studentName?.first || 'Student'} paid ₹${f.paidAmount}`, date: new Date(f.paymentDate) }); }); }); teachers.forEach(t => { (t.salaryPayments || []).forEach(p => { if(p.paymentDate) activities.push({ type: '💵', msg: `Salary paid to ${t.personal?.name} ₹${p.paidAmount}`, date: new Date(p.paymentDate) }); }); }); activities.sort((a,b) => b.date - a.date); container.innerHTML = activities.slice(0,10).map(a => `<div class="activity-item"><span>${a.type} ${a.msg}</span><small>${a.date.toLocaleDateString()}</small></div>`).join(''); if (!activities.length) container.innerHTML = '<div class="activity-item">No recent activity</div>'; }
         
-        // ============ SCREEN MANAGEMENT - FAST & RELIABLE ============
+        // ============ SCREEN MANAGEMENT - FULLY FIXED ============
         async function loadScreenData() {
             try {
+                showLoading('Loading data...');
                 const res = await fetch('/api/screen');
                 const result = await res.json();
                 if (result.success) { 
@@ -380,6 +431,8 @@
                 }
             } catch(e) { 
                 console.error('Load screen error:', e);
+            } finally {
+                hideLoading();
             }
             return null;
         }
@@ -430,10 +483,10 @@
             });
         }
         
-        // ✅ FAST SIDEBAR PHOTOS UPLOAD
+        // ✅ SIDEBAR PHOTOS UPLOAD
         async function uploadSidebarPhotos(files) {
             if (!files.length) return;
-            showLoading(true);
+            showLoading('Uploading sidebar photos...');
             try {
                 const base64Images = await processMultipleImages(Array.from(files));
                 const existingPhotos = screenData?.sidebarPhotos || [];
@@ -444,6 +497,7 @@
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
                     sidebarPhotos: JSON.stringify(allPhotos),
+                    gallery: JSON.stringify(screenData?.gallery || []),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
                     youtubeChannelLink: screenData?.youtubeChannelLink || '',
@@ -462,46 +516,47 @@
                     showToast(`${base64Images.length} sidebar photo(s) uploaded!`); 
                 } else showToast(result.message || 'Upload failed', 'error');
             } catch(e) { showToast('Upload failed', 'error'); } 
-            finally { showLoading(false); document.getElementById('sidebarPhotoInput').value = ''; }
+            finally { hideLoading(); document.getElementById('sidebarPhotoInput').value = ''; }
         }
         
-        // ✅ FAST SIDEBAR PHOTO DELETE
+        // ✅ SIDEBAR PHOTO DELETE - FIXED
         async function deleteSidebarPhoto(index) {
             if (!confirm('Delete this photo?')) return;
-            showLoading(true);
-            const photos = [...(screenData?.sidebarPhotos || [])];
-            photos.splice(index, 1);
-            
-            const updateData = {
-                title: screenData?.title || 'BBCC Portal',
-                subTitle: screenData?.subTitle || 'Best Coaching Center',
-                zoomMeetingLink: screenData?.zoomMeetingLink || '',
-                sidebarPhotos: JSON.stringify(photos),
-                whatsappNumber: screenData?.whatsappNumber || '',
-                whatsappChannelLink: screenData?.whatsappChannelLink || '',
-                youtubeChannelLink: screenData?.youtubeChannelLink || '',
-                facebookLink: screenData?.facebookLink || '',
-                instagramLink: screenData?.instagramLink || '',
-                telegramLink: screenData?.telegramLink || '',
-                twitterLink: screenData?.twitterLink || '',
-                linkedinLink: screenData?.linkedinLink || ''
-            };
-            
+            showLoading('Deleting photo...');
             try {
+                const photos = [...(screenData?.sidebarPhotos || [])];
+                photos.splice(index, 1);
+                
+                const updateData = {
+                    title: screenData?.title || 'BBCC Portal',
+                    subTitle: screenData?.subTitle || 'Best Coaching Center',
+                    zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                    sidebarPhotos: JSON.stringify(photos),
+                    gallery: JSON.stringify(screenData?.gallery || []),
+                    whatsappNumber: screenData?.whatsappNumber || '',
+                    whatsappChannelLink: screenData?.whatsappChannelLink || '',
+                    youtubeChannelLink: screenData?.youtubeChannelLink || '',
+                    facebookLink: screenData?.facebookLink || '',
+                    instagramLink: screenData?.instagramLink || '',
+                    telegramLink: screenData?.telegramLink || '',
+                    twitterLink: screenData?.twitterLink || '',
+                    linkedinLink: screenData?.linkedinLink || ''
+                };
+                
                 const token = localStorage.getItem('adminToken');
                 const res = await fetch('/api/screen', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(updateData) });
                 const result = await res.json();
                 if (result.success) { await loadScreenData(); showToast('Photo deleted!'); } 
                 else showToast(result.message || 'Delete failed', 'error');
             } catch(e) { showToast('Delete failed', 'error'); } 
-            finally { showLoading(false); }
+            finally { hideLoading(); }
         }
         
-        // ✅ FAST GALLERY PHOTOS UPLOAD
+        // ✅ GALLERY PHOTOS UPLOAD
         async function uploadGalleryPhotos() {
             const files = document.getElementById('galleryFilesInput').files;
             if (!files.length) return showToast('Select files', 'error');
-            showLoading(true);
+            showLoading('Uploading gallery photos...');
             try {
                 const base64Images = await processMultipleImages(Array.from(files));
                 const existingGallery = screenData?.gallery || [];
@@ -512,6 +567,7 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
                     gallery: JSON.stringify(allGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
@@ -533,7 +589,7 @@
                     showToast(`${base64Images.length} gallery photo(s) uploaded!`);
                 } else showToast(result.message || 'Upload failed', 'error');
             } catch(e) { showToast('Upload failed', 'error'); } 
-            finally { showLoading(false); }
+            finally { hideLoading(); }
         }
         
         function displayGallery() {
@@ -589,9 +645,9 @@
         async function deleteSingleGalleryItem(id) { if (!confirm('Delete this item?')) return; await performGalleryDelete([id]); }
         async function bulkDeleteGalleryItems() { if (selectedGalleryItems.size === 0) { showToast('No items selected', 'error'); return; } if (!confirm(`Delete ${selectedGalleryItems.size} selected item(s)?`)) return; await performGalleryDelete(Array.from(selectedGalleryItems)); }
         
-        // ✅ FAST GALLERY DELETE
+        // ✅ GALLERY DELETE - FIXED
         async function performGalleryDelete(idsToDelete) {
-            showLoading(true);
+            showLoading('Deleting gallery items...');
             try {
                 const remainingGallery = (screenData?.gallery || []).filter(item => {
                     const itemId = item._id || (item.type === 'photo' ? item.data : item.url);
@@ -601,6 +657,7 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
                     gallery: JSON.stringify(remainingGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
@@ -617,14 +674,13 @@
                 if (result.success) { await loadScreenData(); selectedGalleryItems.clear(); showToast(`${idsToDelete.length} item(s) deleted!`); } 
                 else showToast(result.message || 'Delete failed', 'error');
             } catch(e) { showToast('Delete failed', 'error'); } 
-            finally { showLoading(false); }
+            finally { hideLoading(); }
         }
         
-        // ✅ FAST VIDEO LINK ADD
         async function addVideoLink() {
             const url = document.getElementById('videoLinkInput').value;
             if (!url) return showToast('Enter video URL', 'error');
-            showLoading(true);
+            showLoading('Adding video link...');
             try {
                 const existingGallery = screenData?.gallery || [];
                 const newItem = { type: 'video', url: url };
@@ -633,6 +689,7 @@
                     title: screenData?.title || 'BBCC Portal',
                     subTitle: screenData?.subTitle || 'Best Coaching Center',
                     zoomMeetingLink: screenData?.zoomMeetingLink || '',
+                    sidebarPhotos: JSON.stringify(screenData?.sidebarPhotos || []),
                     gallery: JSON.stringify(allGallery),
                     whatsappNumber: screenData?.whatsappNumber || '',
                     whatsappChannelLink: screenData?.whatsappChannelLink || '',
@@ -649,15 +706,14 @@
                 if (result.success) { await loadScreenData(); document.getElementById('videoLinkInput').value = ''; showToast('Video link added!'); } 
                 else showToast(result.message || 'Failed', 'error');
             } catch(e) { showToast('Failed', 'error'); } 
-            finally { showLoading(false); }
+            finally { hideLoading(); }
         }
         
-        // ✅ FAST SETTINGS SAVE
         async function saveBasicSettings() {
-            showLoading(true);
+            showLoading('Saving settings...');
             let logoBase64 = null;
             const logoFile = document.getElementById('headerLogoInput').files[0];
-            if (logoFile) { try { logoBase64 = await processImage(logoFile); } catch(e) { showToast('Logo compression failed', 'error'); showLoading(false); return; } }
+            if (logoFile) { try { logoBase64 = await processImage(logoFile); } catch(e) { showToast('Logo compression failed', 'error'); hideLoading(); return; } }
             
             const updateData = {
                 title: document.getElementById('headerTitleInput').value || 'BBCC Portal',
@@ -674,6 +730,8 @@
             };
             
             if (logoBase64) updateData.logo = logoBase64;
+            if (screenData?.sidebarPhotos) updateData.sidebarPhotos = JSON.stringify(screenData.sidebarPhotos);
+            if (screenData?.gallery) updateData.gallery = JSON.stringify(screenData.gallery);
             
             try {
                 const token = localStorage.getItem('adminToken');
@@ -686,17 +744,17 @@
                     showToast('Settings saved successfully!'); 
                 } else showToast('Error: ' + (result.message || 'Unknown error'), 'error');
             } catch(e) { showToast('Save failed: ' + e.message, 'error'); } 
-            finally { showLoading(false); }
+            finally { hideLoading(); }
         }
         
         // ============ ADMIN PASSWORD & ID ============
-        async function changePassword() { let current = document.getElementById('currentPassword').value; let newPwd = document.getElementById('newPassword').value; let confirm = document.getElementById('confirmPassword').value; if (!current || !newPwd) return showToast('Fill all fields', 'error'); if (newPwd !== confirm) return showToast('Passwords do not match', 'error'); if (newPwd.length < 4) return showToast('Password min 4 chars', 'error'); showLoading(true); try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) }); let result = await res.json(); if (result.success) { showToast('Password changed!'); closePasswordModal(); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error', 'error'); } finally { showLoading(false); } }
-        async function changeAdminId() { let newId = document.getElementById('newAdminId').value; let password = document.getElementById('verifyPassword').value; if (!newId) return showToast('Enter new admin ID', 'error'); if (!password) return showToast('Enter password', 'error'); showLoading(true); try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/change-id', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ newAdminId: newId, password: password }) }); let result = await res.json(); if (result.success) { showToast('Admin ID changed! Login again.'); localStorage.removeItem('adminToken'); setTimeout(() => window.location.href = '/login.html', 1500); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error', 'error'); } finally { showLoading(false); } }
+        async function changePassword() { let current = document.getElementById('currentPassword').value; let newPwd = document.getElementById('newPassword').value; let confirm = document.getElementById('confirmPassword').value; if (!current || !newPwd) return showToast('Fill all fields', 'error'); if (newPwd !== confirm) return showToast('Passwords do not match', 'error'); if (newPwd.length < 4) return showToast('Password min 4 chars', 'error'); showLoading('Changing password...'); try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) }); let result = await res.json(); if (result.success) { showToast('Password changed!'); closePasswordModal(); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error', 'error'); } finally { hideLoading(); } }
+        async function changeAdminId() { let newId = document.getElementById('newAdminId').value; let password = document.getElementById('verifyPassword').value; if (!newId) return showToast('Enter new admin ID', 'error'); if (!password) return showToast('Enter password', 'error'); showLoading('Changing Admin ID...'); try { let token = localStorage.getItem('adminToken'); let res = await fetch('/api/admin/change-id', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ newAdminId: newId, password: password }) }); let result = await res.json(); if (result.success) { showToast('Admin ID changed! Login again.'); localStorage.removeItem('adminToken'); setTimeout(() => window.location.href = '/login.html', 1500); } else showToast(result.message || 'Failed', 'error'); } catch(e) { showToast('Error', 'error'); } finally { hideLoading(); } }
         
         // ============ MODULE SWITCHING ============
         window.switchModule = function(module) { currentModule = module; sessionStorage.setItem('activeModule', module); document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active')); event.currentTarget.classList.add('active'); document.querySelectorAll('.module-container').forEach(c => c.classList.remove('active')); document.getElementById(`${module}-module`).classList.add('active'); if (module === 'dashboard') loadDashboardData(); else if (module === 'student' && !studentModuleLoaded) loadStudentModule(); else if (module === 'teacher' && !teacherModuleLoaded) loadTeacherModule(); };
-        function loadStudentModule() { if (studentModuleLoaded) return; showLoading(true); let container = document.getElementById('student-app'); container.innerHTML = ''; let script = document.createElement('script'); script.src = 'js/student-management.js'; script.onload = () => { studentModuleLoaded = true; showLoading(false); if (window.initStudentModule) window.initStudentModule('student-app'); }; script.onerror = () => { showLoading(false); container.innerHTML = '<div style="padding:50px;text-align:center;color:red;">❌ Failed to load Student Management</div>'; }; document.body.appendChild(script); }
-        function loadTeacherModule() { if (teacherModuleLoaded) return; showLoading(true); let container = document.getElementById('teacher-app'); container.innerHTML = ''; let script = document.createElement('script'); script.src = 'js/teacher-management.js'; script.onload = () => { teacherModuleLoaded = true; showLoading(false); if (window.initTeacherModule) window.initTeacherModule('teacher-app'); }; script.onerror = () => { showLoading(false); container.innerHTML = '<div style="padding:50px;text-align:center;color:red;">❌ Failed to load Teacher Management</div>'; }; document.body.appendChild(script); }
+        function loadStudentModule() { if (studentModuleLoaded) return; showLoading('Loading Student Management...'); let container = document.getElementById('student-app'); container.innerHTML = ''; let script = document.createElement('script'); script.src = 'js/student-management.js'; script.onload = () => { studentModuleLoaded = true; hideLoading(); if (window.initStudentModule) window.initStudentModule('student-app'); }; script.onerror = () => { hideLoading(); container.innerHTML = '<div style="padding:50px;text-align:center;color:red;">❌ Failed to load Student Management</div>'; }; document.body.appendChild(script); }
+        function loadTeacherModule() { if (teacherModuleLoaded) return; showLoading('Loading Teacher Management...'); let container = document.getElementById('teacher-app'); container.innerHTML = ''; let script = document.createElement('script'); script.src = 'js/teacher-management.js'; script.onload = () => { teacherModuleLoaded = true; hideLoading(); if (window.initTeacherModule) window.initTeacherModule('teacher-app'); }; script.onerror = () => { hideLoading(); container.innerHTML = '<div style="padding:50px;text-align:center;color:red;">❌ Failed to load Teacher Management</div>'; }; document.body.appendChild(script); }
         
         // ============ MODALS ============
         window.openPasswordModal = () => document.getElementById('passwordModal').classList.add('active');
@@ -705,7 +763,6 @@
         window.closeAdminIdModal = () => document.getElementById('adminIdModal').classList.remove('active');
         window.handleLogout = () => { if (confirm('Logout?')) { localStorage.removeItem('adminToken'); localStorage.removeItem('teacherToken'); sessionStorage.clear(); window.location.href = '/login.html'; } };
         
-        // Make functions global
         window.toggleGallerySelect = toggleGallerySelect;
         window.toggleSelectAllGallery = toggleSelectAllGallery;
         window.bulkDeleteGalleryItems = bulkDeleteGalleryItems;
