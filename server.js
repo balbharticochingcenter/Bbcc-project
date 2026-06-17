@@ -1,11 +1,12 @@
 // ============================================
-// MINIMAL SERVER - ONLY START & DB CONNECTION
+// BBCC SKILL HUB SERVER
 // ============================================
 
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
@@ -13,6 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc_portal';
@@ -20,18 +22,21 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bbcc_porta
 mongoose.connect(MONGO_URI)
     .then(() => {
         console.log('✅ MongoDB Connected Successfully');
-        console.log('📦 Database:', MONGO_URI);
     })
     .catch(err => {
         console.error('❌ MongoDB Connection Error:', err.message);
-        process.exit(1);
     });
 
-// Test Route
+// Serve Index Page
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// API Test Route
+app.get('/api/status', (req, res) => {
     res.json({ 
-        message: 'Server is running!', 
-        status: 'OK',
+        success: true,
+        message: 'BBCC Skill Hub API is running!',
         database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
     });
 });
@@ -39,8 +44,8 @@ app.get('/', (req, res) => {
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`\n✅ Server running on http://localhost:${PORT}`);
-    console.log(`🔗 Test: http://localhost:${PORT}/`);
+    console.log(`\n✅ BBCC Skill Hub Server Running!`);
+    console.log(`🔗 http://localhost:${PORT}`);
     console.log(`📊 Database: ${MONGO_URI}`);
-    console.log('\n✨ Server is ready! No schemas, no models, just pure connection.\n');
+    console.log(`\n✨ Welcome to BBCC Skill Hub!\n`);
 });
