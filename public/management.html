@@ -547,6 +547,15 @@
             background: #27ae60;
         }
 
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
         /* ===== IMAGE UPLOAD ===== */
         .image-upload {
             border: 2px dashed #e0e0e0;
@@ -606,6 +615,101 @@
 
         .social-item input {
             flex: 1;
+        }
+
+        /* ===== SUB TABS ===== */
+        .sub-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .sub-tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .sub-tab-btn:hover {
+            color: #667eea;
+        }
+
+        .sub-tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .sub-tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .sub-tab-content.active {
+            display: block;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input,
+        .search-bar select {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            min-width: 150px;
+        }
+
+        .search-bar input:focus,
+        .search-bar select:focus {
+            border-color: #667eea;
+        }
+
+        /* ===== BUTTON SIZES ===== */
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-sm.btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-sm.btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-sm.btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-sm.btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-sm:hover {
+            transform: scale(1.05);
         }
 
         /* ===== TOAST ===== */
@@ -709,100 +813,15 @@
             .id-change-group {
                 flex-direction: column;
             }
-            /* ===== SUB TABS ===== */
-.sub-tabs {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #e0e0e0;
-}
 
-.sub-tab-btn {
-    padding: 10px 20px;
-    border: none;
-    background: none;
-    font-size: 14px;
-    font-weight: 600;
-    color: #888;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s ease;
-}
+            .search-bar {
+                flex-direction: column;
+            }
 
-.sub-tab-btn:hover {
-    color: #667eea;
-}
-
-.sub-tab-btn.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
-}
-
-.sub-tab-content {
-    display: none;
-    animation: fadeIn 0.5s ease;
-}
-
-.sub-tab-content.active {
-    display: block;
-}
-
-/* ===== SEARCH BAR ===== */
-.search-bar {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.search-bar input,
-.search-bar select {
-    flex: 1;
-    padding: 10px 14px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    min-width: 150px;
-}
-
-.search-bar input:focus,
-.search-bar select:focus {
-    border-color: #667eea;
-}
-
-/* ===== BUTTON SIZES ===== */
-.btn-sm {
-    padding: 5px 12px;
-    font-size: 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-sm.btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.btn-sm.btn-warning {
-    background: #f39c12;
-    color: white;
-}
-
-.btn-sm.btn-danger {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn-sm.btn-success {
-    background: #2ecc71;
-    color: white;
-}
-
-.btn-sm:hover {
-    transform: scale(1.05);
-}
+            .search-bar input,
+            .search-bar select {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
@@ -919,9 +938,9 @@
         <button class="tab-btn" data-tab="footer">
             📱 Footer & Social Media
         </button>
-        <div class="tab-content" id="tab-students">
-    <div id="studentManagementApp"></div>
-</div>
+        <button class="tab-btn" data-tab="students">
+            👨‍🎓 Student Management
+        </button>
     </div>
 
     <!-- ===== CONTENT ===== -->
@@ -1011,6 +1030,11 @@
                     <button type="submit" class="btn btn-primary" style="margin-top:10px;">💾 Save Footer</button>
                 </form>
             </div>
+        </div>
+
+        <!-- ===== TAB 3: STUDENT MANAGEMENT ===== -->
+        <div class="tab-content" id="tab-students">
+            <div id="studentManagementApp"></div>
         </div>
 
     </div>
@@ -1107,11 +1131,9 @@
                 if (data.success) {
                     adminProfileData = data.admin;
                     
-                    // Update popup fields
                     document.getElementById('popupAdminName').value = data.admin.name || '';
                     document.getElementById('popupAdminID').value = data.admin.adminID || '';
                     
-                    // Update photo
                     if (data.admin.photo) {
                         document.getElementById('popupPhotoImg').src = data.admin.photo;
                         document.getElementById('popupPhotoImg').style.display = 'block';
@@ -1123,7 +1145,6 @@
                         document.getElementById('removePhotoBtn').style.display = 'none';
                     }
                     
-                    // Update header avatar
                     updateHeaderAvatar(data.admin);
                 }
             } catch (error) {
@@ -1157,15 +1178,11 @@
             const file = this.files[0];
             if (!file) return;
             
-            // Compress image to 5KB
             compressImage(file, 5, function(compressedBase64) {
-                // Show preview
                 document.getElementById('popupPhotoImg').src = compressedBase64;
                 document.getElementById('popupPhotoImg').style.display = 'block';
                 document.getElementById('popupPhotoPlaceholder').style.display = 'none';
                 document.getElementById('removePhotoBtn').style.display = 'inline-block';
-                
-                // Store for saving
                 adminProfileData.photo = compressedBase64;
                 showToast('Photo compressed and ready to save!');
             });
@@ -1184,7 +1201,6 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    // Resize if too large
                     const maxDimension = 200;
                     if (width > maxDimension || height > maxDimension) {
                         const ratio = Math.min(maxDimension / width, maxDimension / height);
@@ -1198,7 +1214,6 @@
                     
                     let base64 = canvas.toDataURL('image/jpeg', quality);
                     
-                    // Reduce quality until size is under maxSizeKB
                     while (base64.length / 1024 > maxSizeKB && quality > 0.1) {
                         quality -= 0.1;
                         base64 = canvas.toDataURL('image/jpeg', quality);
@@ -1241,15 +1256,12 @@
                 
                 if (data.success) {
                     showToast('Profile saved successfully!');
-                    // Update header
                     document.getElementById('adminName').textContent = data.admin.name;
                     updateHeaderAvatar(data.admin);
-                    // Update stored admin data
                     const adminData = JSON.parse(localStorage.getItem('admin') || '{}');
                     adminData.name = data.admin.name;
                     adminData.photo = data.admin.photo;
                     localStorage.setItem('admin', JSON.stringify(adminData));
-                    // Close popup
                     closeAdminPopup();
                 } else {
                     showToast('Failed to save profile', true);
@@ -1273,23 +1285,14 @@
             
             let score = 0;
             
-            // Length check
             if (password.length >= 8) score += 25;
             else if (password.length >= 4) score += 10;
             
-            // Contains lowercase
             if (/[a-z]/.test(password)) score += 25;
-            
-            // Contains uppercase
             if (/[A-Z]/.test(password)) score += 25;
-            
-            // Contains number
             if (/[0-9]/.test(password)) score += 15;
-            
-            // Contains special character
             if (/[^a-zA-Z0-9]/.test(password)) score += 10;
             
-            // Update UI
             fill.style.width = score + '%';
             
             if (score >= 80) {
@@ -1413,13 +1416,11 @@
                 if (data.success) {
                     const settings = data.data;
                     
-                    // Update header
                     document.getElementById('headerTitle').textContent = settings.title || 'BBCC Skill Hub';
                     document.getElementById('headerSubtitle').textContent = settings.subTitle || 'Empowering Skills, Building Futures';
                     document.getElementById('titleInput').value = settings.title || '';
                     document.getElementById('subTitleInput').value = settings.subTitle || '';
                     
-                    // Update logo
                     if (settings.logo) {
                         document.getElementById('logoPreviewImg').src = settings.logo;
                         document.getElementById('logoPreviewImg').style.display = 'block';
@@ -1427,7 +1428,6 @@
                         document.querySelector('.header-logo').innerHTML = `<img src="${settings.logo}" alt="Logo">`;
                     }
                     
-                    // Update footer
                     document.getElementById('whatsappNumber').value = settings.whatsappNumber || '';
                     document.getElementById('whatsappChannelLink').value = settings.whatsappChannelLink || '';
                     document.getElementById('youtubeChannelLink').value = settings.youtubeChannelLink || '';
@@ -1453,12 +1453,10 @@
             reader.onload = async function(e) {
                 const base64 = e.target.result;
                 
-                // Show preview
                 document.getElementById('logoPreviewImg').src = base64;
                 document.getElementById('logoPreviewImg').style.display = 'block';
                 document.getElementById('logoPlaceholder').style.display = 'none';
                 
-                // Save to server
                 try {
                     const data = await apiCall('/api/settings', {
                         method: 'PUT',
@@ -1467,7 +1465,6 @@
                     
                     if (data.success) {
                         showToast('Logo uploaded successfully!');
-                        // Update header
                         document.querySelector('.header-logo').innerHTML = `<img src="${base64}" alt="Logo">`;
                     } else {
                         showToast('Failed to upload logo', true);
@@ -1496,7 +1493,6 @@
                 
                 if (data.success) {
                     showToast('Header updated successfully!');
-                    // Update header
                     document.getElementById('headerTitle').textContent = title || 'BBCC Skill Hub';
                     document.getElementById('headerSubtitle').textContent = subTitle || 'Empowering Skills, Building Futures';
                 } else {
@@ -1551,6 +1547,8 @@
         // Start the app
         init();
     </script>
-    <script src="/student-management.js"></script>
+    
+    <!-- ===== STUDENT MANAGEMENT JS ===== -->
+    <script src="/js/student-management.js"></script>
 </body>
 </html>
