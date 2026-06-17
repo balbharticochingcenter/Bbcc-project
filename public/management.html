@@ -709,6 +709,100 @@
             .id-change-group {
                 flex-direction: column;
             }
+            /* ===== SUB TABS ===== */
+.sub-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.sub-tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.sub-tab-btn:hover {
+    color: #667eea;
+}
+
+.sub-tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.sub-tab-content {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.sub-tab-content.active {
+    display: block;
+}
+
+/* ===== SEARCH BAR ===== */
+.search-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.search-bar input,
+.search-bar select {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    min-width: 150px;
+}
+
+.search-bar input:focus,
+.search-bar select:focus {
+    border-color: #667eea;
+}
+
+/* ===== BUTTON SIZES ===== */
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-sm.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-sm.btn-warning {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-sm.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-sm.btn-success {
+    background: #2ecc71;
+    color: white;
+}
+
+.btn-sm:hover {
+    transform: scale(1.05);
+}
         }
     </style>
 </head>
@@ -1457,6 +1551,6 @@
         // Start the app
         init();
     </script>
-    <script src="/js/student-management.js"></script>
+    <script src="/student-management.js"></script>
 </body>
 </html>
