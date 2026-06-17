@@ -350,6 +350,408 @@ app.put('/api/admin/change-id', verifyToken, async (req, res) => {
     }
 });
 // ============================================
+// STUDENT MANAGEMENT APIS
+// ============================================
+
+// Student Schema
+const StudentSchema = new mongoose.Schema({
+    studentId: { type: String, required: true, unique: true },
+    aadharNumber: { type: String, required: true, unique: true },
+    photo: { type: String, default: '' },
+    
+    name: {
+        first: { type: String, required: true },
+        middle: { type: String, default: '' },
+        last: { type: String, required: true }
+    },
+    fullName: { type: String },
+    
+    dob: { type: Date, required: true },
+    gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
+    studentMobile: { type: String, required: true },
+    email: { type: String, default: '' },
+    address: { type: String, default: '' },
+    
+    parentType: { type: String, enum: ['Father', 'Mother', 'Guardian'], default: 'Father' },
+    fatherName: { type: String, default: '' },
+    fatherMobile: { type: String, default: '' },
+    motherName: { type: String, default: '' },
+    motherMobile: { type: String, default: '' },
+    guardianName: { type: String, default: '' },
+    guardianMobile: { type: String, default: '' },
+    guardianRelation: { type: String, default: '' },
+    
+    currentClass: { type: String, required: true },
+    currentBoard: { type: String, enum: ['CBSE', 'BSEB', 'ICSE'], required: true },
+    joiningDate: { type: Date, required: true },
+    monthlyFees: { type: Number, required: true, default: 0 },
+    
+    educationHistory: [{
+        class: { type: String, required: true },
+        board: { type: String, required: true },
+        joiningDate: { type: Date, required: true },
+        endDate: { type: Date },
+        monthlyFees: { type: Number, required: true },
+        isActive: { type: Boolean, default: true },
+        isCompleted: { type: Boolean, default: false },
+        promotedTo: { type: String, default: '' },
+        promotedDate: { type: Date },
+        totalMonths: { type: Number, default: 0 },
+        totalFees: { type: Number, default: 0 },
+        totalPaid: { type: Number, default: 0 },
+        totalDue: { type: Number, default: 0 },
+        fees: [{
+            month: { type: String },
+            year: { type: Number },
+            amount: { type: Number, default: 0 },
+            paidAmount: { type: Number, default: 0 },
+            dueAmount: { type: Number, default: 0 },
+            status: { type: String, enum: ['paid', 'partial', 'unpaid'], default: 'unpaid' },
+            paymentDate: { type: Date },
+            paymentMode: { type: String, enum: ['cash', 'cheque', 'online', 'card'] },
+            remarks: { type: String }
+        }]
+    }],
+    
+    totalMonths: { type: Number, default: 0 },
+    totalFees: { type: Number, default: 0 },
+    totalPaid: { type: Number, default: 0 },
+    totalDue: { type: Number, default: 0 },
+    
+    isActive: { type: Boolean, default: true },
+    isBlocked: { type: Boolean, default: false },
+    blockReason: { type: String },
+    
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+
+const Student = mongoose.model('Student', StudentSchema);
+
+// ===== GET ALL STUDENTS =====
+app.get('/api/students', verifyToken, async (req, res) => {
+    try {
+        const students = await Student.find().sort({ createdAt: -1 });
+        res.json({ success: true, data: students });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== GET SINGLE STUDENT =====
+app.get('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        res.json({ success: true, data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== ADD STUDENT =====
+app.post('/api/students', verifyToken, async (req, res) => {
+    try {
+        const data = req.body;
+        
+        // Check if aadhar exists
+        const existing = await Student.findOne({ aadharNumber: data.aadharNumber });
+        if (existing) {
+            return res.status(400).json({ success: false, message: "Aadhar number already registered" });
+        }
+        
+        // Generate student ID
+        const count = await Student.countDocuments();
+        const studentId = `STU${String(count + 1).padStart(4, '0')}`;
+        
+        // Create full name
+        const fullName = [data.name.first, data.name.middle, data.name.last].filter(Boolean).join(' ');
+        
+        // Create education history entry
+        const joiningDate = new Date(data.joiningDate);
+        const educationEntry = {
+            class: data.currentClass,
+            board: data.currentBoard,
+            joiningDate: joiningDate,
+            monthlyFees: data.monthlyFees,
+            isActive: true,
+            isCompleted: false,
+            fees: []
+        };
+        
+        // Generate months from joining date to current date
+        const currentDate = new Date();
+        let startDate = new Date(joiningDate);
+        startDate.setDate(1);
+        
+        while (startDate <= currentDate) {
+            const monthName = startDate.toLocaleString('default', { month: 'short' });
+            const year = startDate.getFullYear();
+            
+            educationEntry.fees.push({
+                month: monthName,
+                year: year,
+                amount: data.monthlyFees,
+                paidAmount: 0,
+                dueAmount: data.monthlyFees,
+                status: 'unpaid'
+            });
+            
+            startDate.setMonth(startDate.getMonth() + 1);
+        }
+        
+        const totalMonths = educationEntry.fees.length;
+        const totalFees = totalMonths * data.monthlyFees;
+        
+        const student = new Student({
+            studentId: studentId,
+            aadharNumber: data.aadharNumber,
+            photo: data.photo || '',
+            name: data.name,
+            fullName: fullName,
+            dob: new Date(data.dob),
+            gender: data.gender,
+            studentMobile: data.studentMobile,
+            email: data.email || '',
+            address: data.address || '',
+            parentType: data.parentType || 'Father',
+            fatherName: data.fatherName || '',
+            fatherMobile: data.fatherMobile || '',
+            motherName: data.motherName || '',
+            motherMobile: data.motherMobile || '',
+            guardianName: data.guardianName || '',
+            guardianMobile: data.guardianMobile || '',
+            guardianRelation: data.guardianRelation || '',
+            currentClass: data.currentClass,
+            currentBoard: data.currentBoard,
+            joiningDate: joiningDate,
+            monthlyFees: data.monthlyFees,
+            educationHistory: [educationEntry],
+            totalMonths: totalMonths,
+            totalFees: totalFees,
+            totalPaid: 0,
+            totalDue: totalFees
+        });
+        
+        await student.save();
+        res.json({ success: true, message: "Student added successfully", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== UPDATE STUDENT =====
+app.put('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        const updates = req.body;
+        const allowedFields = ['name', 'dob', 'gender', 'studentMobile', 'email', 'address', 
+                               'fatherName', 'fatherMobile', 'motherName', 'motherMobile',
+                               'guardianName', 'guardianMobile', 'guardianRelation', 'photo'];
+        
+        for (const field of allowedFields) {
+            if (updates[field] !== undefined) {
+                if (field === 'name') {
+                    student.name = { ...student.name, ...updates.name };
+                    student.fullName = [student.name.first, student.name.middle, student.name.last].filter(Boolean).join(' ');
+                } else {
+                    student[field] = updates[field];
+                }
+            }
+        }
+        
+        student.updatedAt = new Date();
+        await student.save();
+        
+        res.json({ success: true, message: "Student updated successfully", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== DELETE STUDENT =====
+app.delete('/api/students/:id', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        await Student.deleteOne({ studentId: req.params.id });
+        res.json({ success: true, message: "Student deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== ADD PAYMENT =====
+app.post('/api/students/:id/payment', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        const { month, year, paidAmount, paymentMode, remarks } = req.body;
+        
+        // Find current education history
+        const currentHistory = student.educationHistory.find(h => h.isActive === true);
+        if (!currentHistory) {
+            return res.status(404).json({ success: false, message: "No active class found" });
+        }
+        
+        // Find the fee record
+        const feeRecord = currentHistory.fees.find(f => f.month === month && f.year === year);
+        if (!feeRecord) {
+            return res.status(404).json({ success: false, message: "Fee record not found" });
+        }
+        
+        // Update fee record
+        const newPaidAmount = (feeRecord.paidAmount || 0) + paidAmount;
+        feeRecord.paidAmount = newPaidAmount;
+        feeRecord.dueAmount = feeRecord.amount - newPaidAmount;
+        feeRecord.status = newPaidAmount >= feeRecord.amount ? 'paid' : newPaidAmount > 0 ? 'partial' : 'unpaid';
+        feeRecord.paymentDate = new Date();
+        feeRecord.paymentMode = paymentMode || 'cash';
+        if (remarks) feeRecord.remarks = remarks;
+        
+        // Update totals for this class
+        currentHistory.totalPaid = currentHistory.fees.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
+        currentHistory.totalDue = currentHistory.totalFees - currentHistory.totalPaid;
+        
+        // Update overall totals
+        student.totalPaid = student.educationHistory.reduce((sum, h) => sum + (h.totalPaid || 0), 0);
+        student.totalDue = student.totalFees - student.totalPaid;
+        
+        student.updatedAt = new Date();
+        await student.save();
+        
+        res.json({ success: true, message: "Payment added successfully", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== PROMOTE STUDENT =====
+app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
+    try {
+        const student = await Student.findOne({ studentId: req.params.id });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student not found" });
+        }
+        
+        const { newClass, newBoard, newFees, promotionDate } = req.body;
+        
+        // Find current active class
+        const currentHistory = student.educationHistory.find(h => h.isActive === true);
+        if (!currentHistory) {
+            return res.status(404).json({ success: false, message: "No active class found" });
+        }
+        
+        // Check if all fees are paid
+        const dueAmount = currentHistory.fees.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
+        if (dueAmount > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Please clear all dues (₹${dueAmount}) before promotion` 
+            });
+        }
+        
+        // Mark current class as completed
+        currentHistory.isActive = false;
+        currentHistory.isCompleted = true;
+        currentHistory.endDate = new Date(promotionDate);
+        currentHistory.promotedTo = newClass;
+        currentHistory.promotedDate = new Date(promotionDate);
+        
+        // Create new education entry
+        const newJoiningDate = new Date(promotionDate);
+        const newEntry = {
+            class: newClass,
+            board: newBoard,
+            joiningDate: newJoiningDate,
+            monthlyFees: newFees,
+            isActive: true,
+            isCompleted: false,
+            fees: [],
+            totalMonths: 0,
+            totalFees: 0,
+            totalPaid: 0,
+            totalDue: 0
+        };
+        
+        // Generate months from promotion date
+        const currentDate = new Date();
+        let startDate = new Date(newJoiningDate);
+        startDate.setDate(1);
+        
+        while (startDate <= currentDate) {
+            const monthName = startDate.toLocaleString('default', { month: 'short' });
+            const year = startDate.getFullYear();
+            
+            newEntry.fees.push({
+                month: monthName,
+                year: year,
+                amount: newFees,
+                paidAmount: 0,
+                dueAmount: newFees,
+                status: 'unpaid'
+            });
+            
+            startDate.setMonth(startDate.getMonth() + 1);
+        }
+        
+        newEntry.totalMonths = newEntry.fees.length;
+        newEntry.totalFees = newEntry.totalMonths * newFees;
+        newEntry.totalDue = newEntry.totalFees;
+        
+        student.educationHistory.push(newEntry);
+        
+        // Update current class details
+        student.currentClass = newClass;
+        student.currentBoard = newBoard;
+        student.joiningDate = newJoiningDate;
+        student.monthlyFees = newFees;
+        
+        // Update overall totals
+        student.totalMonths = student.educationHistory.reduce((sum, h) => sum + (h.totalMonths || 0), 0);
+        student.totalFees = student.educationHistory.reduce((sum, h) => sum + (h.totalFees || 0), 0);
+        student.totalPaid = student.educationHistory.reduce((sum, h) => sum + (h.totalPaid || 0), 0);
+        student.totalDue = student.totalFees - student.totalPaid;
+        
+        student.updatedAt = new Date();
+        await student.save();
+        
+        res.json({ success: true, message: "Student promoted successfully", data: student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== SEARCH STUDENTS =====
+app.get('/api/students/search/:query', verifyToken, async (req, res) => {
+    try {
+        const query = req.params.query;
+        const students = await Student.find({
+            $or: [
+                { aadharNumber: { $regex: query, $options: 'i' } },
+                { fullName: { $regex: query, $options: 'i' } },
+                { studentId: { $regex: query, $options: 'i' } },
+                { currentClass: { $regex: query, $options: 'i' } }
+            ]
+        });
+        res.json({ success: true, data: students });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+// ============================================
 // SERVE HTML PAGES
 // ============================================
 app.get('/', (req, res) => {
