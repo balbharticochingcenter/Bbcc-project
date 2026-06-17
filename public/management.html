@@ -88,6 +88,287 @@
             transform: scale(1.05);
         }
 
+        /* ===== ADMIN PROFILE IN HEADER ===== */
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .admin-profile:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .admin-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .admin-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-name {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .admin-role {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+        }
+
+        .dropdown-arrow {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 10px;
+            margin-left: 5px;
+        }
+
+        /* ===== ADMIN POPUP ===== */
+        .admin-popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .admin-popup-overlay.active {
+            display: flex;
+        }
+
+        .admin-popup {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .popup-header {
+            padding: 20px 25px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            z-index: 1;
+        }
+
+        .popup-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .popup-close {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-close:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .popup-body {
+            padding: 25px;
+        }
+
+        .popup-section {
+            margin-bottom: 20px;
+        }
+
+        .popup-section label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .popup-section input[type="text"],
+        .popup-section input[type="password"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .popup-section input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .popup-section input:disabled {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        /* Photo Upload */
+        .photo-upload-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            border: 3px dashed #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .photo-preview:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-upload-info {
+            flex: 1;
+        }
+
+        .photo-upload-info .btn-sm {
+            padding: 6px 15px;
+            font-size: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-upload-info .btn-sm.btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .photo-upload-info .btn-sm.btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .photo-upload-info .btn-sm.btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .photo-upload-info .btn-sm.btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .photo-upload-info .btn-sm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .photo-hint {
+            display: block;
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Password Strength */
+        .password-strength {
+            margin-top: 8px;
+        }
+
+        .strength-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        .strength-text {
+            display: block;
+            font-size: 12px;
+            margin-top: 4px;
+            color: #888;
+        }
+
+        /* ID Change */
+        .id-change-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .id-change-group input {
+            flex: 1;
+        }
+
         /* ===== TABS ===== */
         .tabs {
             background: white;
@@ -149,6 +430,11 @@
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -342,9 +628,19 @@
             background: #e74c3c;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* ===== SCROLLBAR ===== */
+        .admin-popup::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .admin-popup::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .admin-popup::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
         }
 
         /* ===== RESPONSIVE ===== */
@@ -358,6 +654,19 @@
             .header-right {
                 width: 100%;
                 justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .admin-profile {
+                padding: 5px 8px;
+            }
+            
+            .admin-info {
+                display: none;
+            }
+            
+            .dropdown-arrow {
+                display: none;
             }
 
             .tabs {
@@ -383,6 +692,23 @@
             .social-grid {
                 grid-template-columns: 1fr;
             }
+
+            .admin-popup {
+                max-width: 100%;
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+            
+            .photo-upload-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .id-change-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -397,10 +723,99 @@
             </div>
         </div>
         <div class="header-right">
-            <span style="color:white;font-size:14px;" id="adminName">Admin</span>
+            <!-- ADMIN PROFILE ICON - Clickable -->
+            <div class="admin-profile" id="adminProfileBtn" onclick="toggleAdminPopup()">
+                <div class="admin-avatar" id="adminAvatar">
+                    <span id="adminAvatarText">👤</span>
+                    <img id="adminAvatarImg" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="Admin">
+                </div>
+                <div class="admin-info">
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="admin-role" id="adminRole">Super Admin</span>
+                </div>
+                <span class="dropdown-arrow">▼</span>
+            </div>
             <button class="logout-btn" onclick="logout()">🚪 Logout</button>
         </div>
     </header>
+
+    <!-- ===== ADMIN POPUP ===== -->
+    <div class="admin-popup-overlay" id="adminPopup" onclick="closeAdminPopup()">
+        <div class="admin-popup" onclick="event.stopPropagation()">
+            <div class="popup-header">
+                <h2>👤 Admin Profile</h2>
+                <button class="popup-close" onclick="closeAdminPopup()">✕</button>
+            </div>
+            
+            <div class="popup-body">
+                <!-- Photo Upload -->
+                <div class="popup-section">
+                    <label>Profile Photo</label>
+                    <div class="photo-upload-container">
+                        <div class="photo-preview" id="popupPhotoPreview" onclick="document.getElementById('popupPhotoInput').click()">
+                            <img id="popupPhotoImg" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="Admin Photo">
+                            <span id="popupPhotoPlaceholder" style="font-size:40px;">📷</span>
+                        </div>
+                        <div class="photo-upload-info">
+                            <button type="button" class="btn-sm btn-primary" onclick="document.getElementById('popupPhotoInput').click()">
+                                📸 Upload Photo
+                            </button>
+                            <span class="photo-hint">Max 5KB (auto-compressed)</span>
+                            <input type="file" id="popupPhotoInput" accept="image/*" style="display:none;">
+                            <button type="button" class="btn-sm btn-danger" onclick="removePhoto()" id="removePhotoBtn" style="display:none;">
+                                🗑️ Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Name -->
+                <div class="popup-section">
+                    <label>Full Name</label>
+                    <input type="text" id="popupAdminName" placeholder="Enter admin name">
+                </div>
+                
+                <!-- Admin ID -->
+                <div class="popup-section">
+                    <label>Admin ID</label>
+                    <div class="id-change-group">
+                        <input type="text" id="popupAdminID" placeholder="Current Admin ID" disabled>
+                        <button type="button" class="btn-sm btn-warning" onclick="toggleIDEdit()">✏️ Change</button>
+                    </div>
+                    <div id="idChangeForm" style="display:none;margin-top:10px;">
+                        <input type="text" id="popupNewAdminID" placeholder="New Admin ID" style="width:100%;padding:8px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:14px;margin-bottom:8px;">
+                        <input type="password" id="popupIDPassword" placeholder="Enter current password" style="width:100%;padding:8px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:14px;margin-bottom:8px;">
+                        <button type="button" class="btn-sm btn-success" onclick="changeAdminID()" style="width:100%;">✅ Update ID</button>
+                    </div>
+                </div>
+                
+                <!-- Password Change -->
+                <div class="popup-section">
+                    <label>Change Password</label>
+                    <input type="password" id="popupCurrentPassword" placeholder="Current Password" style="width:100%;padding:8px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:14px;margin-bottom:8px;">
+                    <input type="password" id="popupNewPassword" placeholder="New Password" style="width:100%;padding:8px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:14px;margin-bottom:8px;" oninput="checkPasswordStrength(this.value)">
+                    <input type="password" id="popupConfirmPassword" placeholder="Confirm New Password" style="width:100%;padding:8px 12px;border:2px solid #e0e0e0;border-radius:6px;font-size:14px;margin-bottom:8px;">
+                    
+                    <!-- Password Strength Indicator -->
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill" style="width:0%;"></div>
+                        </div>
+                        <span class="strength-text" id="strengthText">Enter password to check strength</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" onclick="changePassword()" style="width:100%;margin-top:5px;">
+                        🔒 Change Password
+                    </button>
+                </div>
+                
+                <!-- Save Profile -->
+                <button type="button" class="btn btn-success" onclick="saveProfile()" style="width:100%;margin-top:10px;">
+                    💾 Save Profile
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== TABS ===== -->
     <div class="tabs">
@@ -570,6 +985,329 @@
         });
 
         // ============================================
+        // ADMIN PROFILE FUNCTIONS
+        // ============================================
+
+        let adminProfileData = {};
+
+        // Toggle Admin Popup
+        function toggleAdminPopup() {
+            const popup = document.getElementById('adminPopup');
+            popup.classList.toggle('active');
+            if (popup.classList.contains('active')) {
+                loadAdminProfile();
+            }
+        }
+
+        function closeAdminPopup() {
+            document.getElementById('adminPopup').classList.remove('active');
+        }
+
+        // Load Admin Profile
+        async function loadAdminProfile() {
+            try {
+                const data = await apiCall('/api/admin/profile');
+                if (data.success) {
+                    adminProfileData = data.admin;
+                    
+                    // Update popup fields
+                    document.getElementById('popupAdminName').value = data.admin.name || '';
+                    document.getElementById('popupAdminID').value = data.admin.adminID || '';
+                    
+                    // Update photo
+                    if (data.admin.photo) {
+                        document.getElementById('popupPhotoImg').src = data.admin.photo;
+                        document.getElementById('popupPhotoImg').style.display = 'block';
+                        document.getElementById('popupPhotoPlaceholder').style.display = 'none';
+                        document.getElementById('removePhotoBtn').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('popupPhotoImg').style.display = 'none';
+                        document.getElementById('popupPhotoPlaceholder').style.display = 'block';
+                        document.getElementById('removePhotoBtn').style.display = 'none';
+                    }
+                    
+                    // Update header avatar
+                    updateHeaderAvatar(data.admin);
+                }
+            } catch (error) {
+                showToast('Error loading profile', true);
+            }
+        }
+
+        // Update Header Avatar
+        function updateHeaderAvatar(admin) {
+            const avatarText = document.getElementById('adminAvatarText');
+            const avatarImg = document.getElementById('adminAvatarImg');
+            const nameEl = document.getElementById('adminName');
+            const roleEl = document.getElementById('adminRole');
+            
+            if (admin.photo) {
+                avatarText.style.display = 'none';
+                avatarImg.style.display = 'block';
+                avatarImg.src = admin.photo;
+            } else {
+                avatarText.style.display = 'block';
+                avatarImg.style.display = 'none';
+                avatarText.textContent = admin.name ? admin.name.charAt(0).toUpperCase() : '👤';
+            }
+            
+            nameEl.textContent = admin.name || 'Admin';
+            roleEl.textContent = admin.role === 'super_admin' ? 'Super Admin' : 'Admin';
+        }
+
+        // Photo Upload with Compression
+        document.getElementById('popupPhotoInput').addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (!file) return;
+            
+            // Compress image to 5KB
+            compressImage(file, 5, function(compressedBase64) {
+                // Show preview
+                document.getElementById('popupPhotoImg').src = compressedBase64;
+                document.getElementById('popupPhotoImg').style.display = 'block';
+                document.getElementById('popupPhotoPlaceholder').style.display = 'none';
+                document.getElementById('removePhotoBtn').style.display = 'inline-block';
+                
+                // Store for saving
+                adminProfileData.photo = compressedBase64;
+                showToast('Photo compressed and ready to save!');
+            });
+        });
+
+        // Compress Image Function
+        function compressImage(file, maxSizeKB, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    let quality = 0.9;
+                    let canvas = document.createElement('canvas');
+                    let ctx = canvas.getContext('2d');
+                    
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Resize if too large
+                    const maxDimension = 200;
+                    if (width > maxDimension || height > maxDimension) {
+                        const ratio = Math.min(maxDimension / width, maxDimension / height);
+                        width = Math.round(width * ratio);
+                        height = Math.round(height * ratio);
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    let base64 = canvas.toDataURL('image/jpeg', quality);
+                    
+                    // Reduce quality until size is under maxSizeKB
+                    while (base64.length / 1024 > maxSizeKB && quality > 0.1) {
+                        quality -= 0.1;
+                        base64 = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    
+                    callback(base64);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Remove Photo
+        function removePhoto() {
+            document.getElementById('popupPhotoImg').src = '';
+            document.getElementById('popupPhotoImg').style.display = 'none';
+            document.getElementById('popupPhotoPlaceholder').style.display = 'block';
+            document.getElementById('removePhotoBtn').style.display = 'none';
+            adminProfileData.photo = '';
+            showToast('Photo removed');
+        }
+
+        // Save Profile
+        async function saveProfile() {
+            const name = document.getElementById('popupAdminName').value.trim();
+            
+            if (!name) {
+                showToast('Please enter your name', true);
+                return;
+            }
+            
+            try {
+                const data = await apiCall('/api/admin/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        name: name,
+                        photo: adminProfileData.photo || ''
+                    })
+                });
+                
+                if (data.success) {
+                    showToast('Profile saved successfully!');
+                    // Update header
+                    document.getElementById('adminName').textContent = data.admin.name;
+                    updateHeaderAvatar(data.admin);
+                    // Update stored admin data
+                    const adminData = JSON.parse(localStorage.getItem('admin') || '{}');
+                    adminData.name = data.admin.name;
+                    adminData.photo = data.admin.photo;
+                    localStorage.setItem('admin', JSON.stringify(adminData));
+                    // Close popup
+                    closeAdminPopup();
+                } else {
+                    showToast('Failed to save profile', true);
+                }
+            } catch (error) {
+                showToast('Error saving profile', true);
+            }
+        }
+
+        // Password Strength Check
+        function checkPasswordStrength(password) {
+            const fill = document.getElementById('strengthFill');
+            const text = document.getElementById('strengthText');
+            
+            if (!password) {
+                fill.style.width = '0%';
+                fill.style.background = '#e0e0e0';
+                text.textContent = 'Enter password to check strength';
+                return;
+            }
+            
+            let score = 0;
+            
+            // Length check
+            if (password.length >= 8) score += 25;
+            else if (password.length >= 4) score += 10;
+            
+            // Contains lowercase
+            if (/[a-z]/.test(password)) score += 25;
+            
+            // Contains uppercase
+            if (/[A-Z]/.test(password)) score += 25;
+            
+            // Contains number
+            if (/[0-9]/.test(password)) score += 15;
+            
+            // Contains special character
+            if (/[^a-zA-Z0-9]/.test(password)) score += 10;
+            
+            // Update UI
+            fill.style.width = score + '%';
+            
+            if (score >= 80) {
+                fill.style.background = '#2ecc71';
+                text.textContent = '💪 Strong password';
+            } else if (score >= 50) {
+                fill.style.background = '#f39c12';
+                text.textContent = '🔶 Medium password';
+            } else if (score >= 25) {
+                fill.style.background = '#e67e22';
+                text.textContent = '🔴 Weak password';
+            } else {
+                fill.style.background = '#e74c3c';
+                text.textContent = '❌ Very weak password';
+            }
+        }
+
+        // Change Password
+        async function changePassword() {
+            const current = document.getElementById('popupCurrentPassword').value;
+            const newPass = document.getElementById('popupNewPassword').value;
+            const confirm = document.getElementById('popupConfirmPassword').value;
+            
+            if (!current || !newPass || !confirm) {
+                showToast('Please fill all password fields', true);
+                return;
+            }
+            
+            if (newPass !== confirm) {
+                showToast('New passwords do not match', true);
+                return;
+            }
+            
+            if (newPass.length < 4) {
+                showToast('Password must be at least 4 characters', true);
+                return;
+            }
+            
+            try {
+                const data = await apiCall('/api/admin/change-password', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        currentPassword: current,
+                        newPassword: newPass
+                    })
+                });
+                
+                if (data.success) {
+                    showToast('Password changed successfully!');
+                    document.getElementById('popupCurrentPassword').value = '';
+                    document.getElementById('popupNewPassword').value = '';
+                    document.getElementById('popupConfirmPassword').value = '';
+                    document.getElementById('strengthFill').style.width = '0%';
+                    document.getElementById('strengthText').textContent = 'Enter password to check strength';
+                } else {
+                    showToast(data.message || 'Failed to change password', true);
+                }
+            } catch (error) {
+                showToast('Error changing password', true);
+            }
+        }
+
+        // Toggle ID Edit
+        function toggleIDEdit() {
+            const form = document.getElementById('idChangeForm');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        // Change Admin ID
+        async function changeAdminID() {
+            const newID = document.getElementById('popupNewAdminID').value.trim();
+            const password = document.getElementById('popupIDPassword').value;
+            
+            if (!newID) {
+                showToast('Please enter new Admin ID', true);
+                return;
+            }
+            
+            if (newID.length < 3) {
+                showToast('Admin ID must be at least 3 characters', true);
+                return;
+            }
+            
+            if (!password) {
+                showToast('Please enter your password', true);
+                return;
+            }
+            
+            try {
+                const data = await apiCall('/api/admin/change-id', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        newAdminID: newID,
+                        password: password
+                    })
+                });
+                
+                if (data.success) {
+                    showToast('Admin ID changed! Please login again.');
+                    setTimeout(() => {
+                        logout();
+                    }, 2000);
+                } else {
+                    showToast(data.message || 'Failed to change ID', true);
+                }
+            } catch (error) {
+                showToast('Error changing ID', true);
+            }
+        }
+
+        // ============================================
         // LOAD SETTINGS
         // ============================================
         async function loadSettings() {
@@ -589,6 +1327,7 @@
                         document.getElementById('logoPreviewImg').src = settings.logo;
                         document.getElementById('logoPreviewImg').style.display = 'block';
                         document.getElementById('logoPlaceholder').style.display = 'none';
+                        document.querySelector('.header-logo').innerHTML = `<img src="${settings.logo}" alt="Logo">`;
                     }
                     
                     // Update footer
@@ -707,11 +1446,13 @@
         // ============================================
         // INIT
         // ============================================
-        loadSettings();
+        async function init() {
+            await loadSettings();
+            await loadAdminProfile();
+        }
 
-        // Load admin name
-        const adminData = JSON.parse(localStorage.getItem('admin') || '{}');
-        document.getElementById('adminName').textContent = adminData.name || 'Admin';
+        // Start the app
+        init();
     </script>
 </body>
 </html>
