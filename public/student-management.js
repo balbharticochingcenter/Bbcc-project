@@ -5,7 +5,7 @@
 
 // ===== INITIALIZE STUDENT MANAGEMENT =====
 document.addEventListener('DOMContentLoaded', function() {
-    const studentTab = document.querySelector('[data-tab="students"]');
+    var studentTab = document.querySelector('[data-tab="students"]');
     if (studentTab) {
         studentTab.addEventListener('click', function() {
             setTimeout(function() {
@@ -563,12 +563,10 @@ async function showStudentDetails(studentId) {
                         <div>✅ Paid: ₹${hist.totalPaid || 0}</div>
                         <div>⚠️ Due: ₹${hist.totalDue || 0}</div>
                     </div>
-            `;
-            
-            if (hist.isActive) {
-                educationHTML += `
+                    
+                    <!-- Month wise fees for THIS class -->
                     <div style="margin-top:10px;">
-                        <div style="font-weight:600;font-size:14px;margin-bottom:8px;">💰 Month wise fees (Current Class - Excel View)</div>
+                        <div style="font-weight:600;font-size:14px;margin-bottom:8px;">💰 Month wise fees</div>
                         <div style="overflow-x:auto;">
                             <table style="width:100%;border-collapse:collapse;font-size:12px;background:white;border-radius:8px;">
                                 <thead>
@@ -584,44 +582,50 @@ async function showStudentDetails(studentId) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                `;
-                
-                for (var f = 0; f < hist.fees.length; f++) {
-                    var fee = hist.fees[f];
-                    var statusIcon = fee.status === 'paid' ? '✅' : (fee.status === 'partial' ? '⚠️' : '❌');
-                    var statusColorFee = fee.status === 'paid' ? '#2ecc71' : (fee.status === 'partial' ? '#f39c12' : '#e74c3c');
-                    
-                    educationHTML += `
-                        <tr style="border-bottom:1px solid #f0f0f0;">
-                            <td style="padding:6px 10px;">${f+1}</td>
-                            <td style="padding:6px 10px;">${fee.month}</td>
-                            <td style="padding:6px 10px;">${fee.year}</td>
-                            <td style="padding:6px 10px;">₹${fee.amount}</td>
-                            <td style="padding:6px 10px;">₹${fee.paidAmount || 0}</td>
-                            <td style="padding:6px 10px;">₹${fee.dueAmount || 0}</td>
-                            <td style="padding:6px 10px;color:${statusColorFee};font-weight:600;">${statusIcon} ${fee.status}</td>
-                            <td style="padding:6px 10px;">
-                                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation();addPayment('${student.studentId}','${fee.month}',${fee.year})">💰 Pay</button>
-                            </td>
-                        </tr>
-                    `;
-                }
+            `;
+            
+            for (var f = 0; f < hist.fees.length; f++) {
+                var fee = hist.fees[f];
+                var statusIcon = fee.status === 'paid' ? '✅' : (fee.status === 'partial' ? '⚠️' : '❌');
+                var statusColorFee = fee.status === 'paid' ? '#2ecc71' : (fee.status === 'partial' ? '#f39c12' : '#e74c3c');
                 
                 educationHTML += `
+                    <tr style="border-bottom:1px solid #f0f0f0;">
+                        <td style="padding:6px 10px;">${f+1}</td>
+                        <td style="padding:6px 10px;">${fee.month}</td>
+                        <td style="padding:6px 10px;">${fee.year}</td>
+                        <td style="padding:6px 10px;">₹${fee.amount}</td>
+                        <td style="padding:6px 10px;">₹${fee.paidAmount || 0}</td>
+                        <td style="padding:6px 10px;">₹${fee.dueAmount || 0}</td>
+                        <td style="padding:6px 10px;color:${statusColorFee};font-weight:600;">${statusIcon} ${fee.status}</td>
+                        <td style="padding:6px 10px;">
+                            ${hist.isActive ? `<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();addPayment('${student.studentId}','${fee.month}',${fee.year})">💰 Pay</button>` : '🔒 Locked'}
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            educationHTML += `
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                `;
-            } else {
-                educationHTML += `
-                    <div style="margin-top:10px;font-size:13px;color:#666;">
-                        ✅ This class is completed. Total paid: ₹${hist.totalPaid || 0} | Total due: ₹${hist.totalDue || 0}
+                    
+                    <!-- Action buttons for this class -->
+                    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+                        ${hist.isActive ? `
+                            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();closeClass('${student.studentId}', '${hist.class}')">
+                                🔒 Close Class
+                            </button>
+                        ` : `
+                            <span style="font-size:12px;color:#888;">✅ This class is closed</span>
+                        `}
+                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation();exportClassFees('${student.studentId}', '${hist.class}')">
+                            📥 Export
+                        </button>
                     </div>
-                `;
-            }
-            
-            educationHTML += `</div>`;
+                </div>
+            `;
         }
         
         modal.innerHTML = `
@@ -680,6 +684,34 @@ async function showStudentDetails(studentId) {
     }
 }
 
+// ===== CLOSE CLASS =====
+async function closeClass(studentId, className) {
+    if (!confirm('Are you sure you want to close this class: ' + className + '?')) return;
+    
+    try {
+        var data = await apiCall('/api/students/' + studentId + '/close-class', {
+            method: 'POST',
+            body: { className: className }
+        });
+        
+        if (data.success) {
+            showToast('Class closed successfully!');
+            document.getElementById('studentDetailModal').remove();
+            showStudentDetails(studentId);
+            loadStudents();
+        } else {
+            showToast(data.message || 'Failed to close class', true);
+        }
+    } catch (error) {
+        showToast('Error closing class', true);
+    }
+}
+
+// ===== EXPORT CLASS FEES =====
+function exportClassFees(studentId, className) {
+    showToast('Export feature coming soon!');
+}
+
 // ===== ADD PAYMENT =====
 async function addPayment(studentId, month, year) {
     var amount = prompt('Enter amount to pay for ' + month + ' ' + year + ':');
@@ -734,8 +766,7 @@ async function promoteStudent(studentId) {
                 <div><strong>Student:</strong> ${student.fullName}</div>
                 <div><strong>Current Class:</strong> ${student.currentClass} (${student.currentBoard})</div>
                 <div><strong>Current Fees:</strong> ₹${student.monthlyFees}</div>
-                <div><strong>Total Due:</strong> ₹${student.totalDue}</div>
-                ${student.totalDue > 0 ? '<div style="color:#e74c3c;font-weight:600;">⚠️ Please clear all dues first!</div>' : ''}
+                <div style="color:#f39c12;font-weight:600;">ℹ️ Promotion will happen regardless of dues</div>
             </div>
             
             <div class="form-group">
@@ -786,12 +817,11 @@ async function promoteStudent(studentId) {
             </div>
             
             <div style="display:flex;gap:10px;margin-top:20px;">
-                <button onclick="confirmPromote('${studentId}')" class="btn btn-success" style="flex:1;" ${student.totalDue > 0 ? 'disabled' : ''}>
+                <button onclick="confirmPromote('${studentId}')" class="btn btn-success" style="flex:1;">
                     ✅ Promote
                 </button>
                 <button onclick="this.closest(\'div[style]\').remove()" class="btn" style="flex:1;background:#e0e0e0;">❌ Cancel</button>
             </div>
-            ${student.totalDue > 0 ? '<div style="color:#e74c3c;margin-top:10px;text-align:center;">Please clear all dues before promotion</div>' : ''}
         </div>
     `;
     
