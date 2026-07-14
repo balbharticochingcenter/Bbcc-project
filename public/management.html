@@ -1090,6 +1090,121 @@
             text-overflow: ellipsis;
         }
 
+        /* ===== SIDEBAR BANNER SPECIFIC ===== */
+        .banner-slide-container {
+            position: relative;
+            background: #0b0e1a;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .banner-slide-wrapper {
+            position: relative;
+            padding-top: 33.33%;
+            background: #0b0e1a;
+        }
+
+        .banner-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .banner-slide-item {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .banner-slide-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .banner-slide-item .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .banner-slide-item .banner-overlay .banner-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .banner-slide-item .banner-overlay .banner-link {
+            color: #ffd700;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .banner-slide-item .banner-overlay .banner-link:hover {
+            text-decoration: underline;
+        }
+
+        .banner-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .banner-nav-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .banner-nav-btn.prev { left: 10px; }
+        .banner-nav-btn.next { right: 10px; }
+
+        .banner-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .banner-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .banner-dot.active {
+            background: #ffd700;
+        }
+
+        .banner-dot:hover {
+            transform: scale(1.2);
+        }
+
         .text-center {
             text-align: center;
         }
@@ -1211,6 +1326,7 @@
         <button class="tab-btn" data-tab="students">👨‍🎓 Student Management <span class="badge" id="studentCountBadge">0</span></button>
         <button class="tab-btn" data-tab="studymaterial">📚 Study Material <span class="badge" id="studyMaterialBadge">0</span></button>
         <button class="tab-btn" data-tab="gallery">📸 Gallery <span class="badge" id="galleryBadge">0</span></button>
+        <button class="tab-btn" data-tab="sidebarbanner">🖼️ Sidebar Banner <span class="badge" id="sidebarBannerBadge">0</span></button>
     </div>
 
     <!-- ===== CONTENT ===== -->
@@ -1317,6 +1433,11 @@
             <div id="galleryApp"></div>
         </div>
 
+        <!-- ===== TAB 6: SIDEBAR BANNER ===== -->
+        <div class="tab-content" id="tab-sidebarbanner">
+            <div id="sidebarBannerApp"></div>
+        </div>
+
     </div>
 
     <!-- ===== TOAST ===== -->
@@ -1376,7 +1497,7 @@
         }
 
         // ============================================
-        // TABS - UPDATED WITH STUDY MATERIAL & GALLERY
+        // TABS - UPDATED WITH STUDY MATERIAL, GALLERY & SIDEBAR BANNER
         // ============================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -1410,6 +1531,15 @@
                     setTimeout(() => {
                         if (typeof initGallery === 'function') {
                             initGallery();
+                        }
+                    }, 100);
+                }
+                
+                // Initialize Sidebar Banner
+                if (tabName === 'sidebarbanner') {
+                    setTimeout(() => {
+                        if (typeof initSidebarBanner === 'function') {
+                            initSidebarBanner();
                         }
                     }, 100);
                 }
@@ -1880,6 +2010,15 @@
                     }
                 }, 200);
             }
+            
+            // Check if sidebar banner tab is active
+            if (document.getElementById('tab-sidebarbanner').classList.contains('active')) {
+                setTimeout(() => {
+                    if (typeof initSidebarBanner === 'function') {
+                        initSidebarBanner();
+                    }
+                }, 200);
+            }
         }
 
         // Start the app
@@ -1894,5 +2033,8 @@
     
     <!-- ===== GALLERY JS ===== -->
     <script src="/gallery.js"></script>
+    
+    <!-- ===== SIDEBAR BANNER JS ===== -->
+    <script src="/sidebar-banner.js"></script>
 </body>
 </html>
