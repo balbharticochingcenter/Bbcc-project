@@ -31,6 +31,84 @@
             overflow-x: hidden;
         }
 
+        /* ===== NOTIFICATION POPUP ===== */
+        .notification-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            background: rgba(11, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 16px;
+            padding: 20px 25px;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideInRight 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+            transform: translateX(120%);
+        }
+
+        @keyframes slideInRight {
+            0% { transform: translateX(120%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification-popup .notif-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .notification-popup .notif-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .notification-popup .notif-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        .notification-popup .notif-close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .notification-popup .notif-close:hover {
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+        .notification-popup .notif-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 20px;
+            background: linear-gradient(135deg, #ffd700, #f5a623);
+            border: none;
+            border-radius: 20px;
+            color: #0b0e1a;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .notification-popup .notif-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+
         /* ===== ANIMATED BACKGROUND LINES ===== */
         .bg-lines {
             position: fixed;
@@ -47,23 +125,6 @@
             width: 100%;
             height: 100%;
             display: block;
-        }
-
-        /* ===== WATERMARK ===== */
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: clamp(60px, 12vw, 120px);
-            font-weight: 900;
-            color: rgba(255, 215, 0, 0.04);
-            letter-spacing: 10px;
-            pointer-events: none;
-            z-index: 0;
-            white-space: nowrap;
-            text-shadow: 0 0 50px rgba(255, 215, 0, 0.02);
-            user-select: none;
         }
 
         /* ===== FLOATING CALL BUTTON ===== */
@@ -119,14 +180,8 @@
         }
 
         @keyframes pulseRing {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
 
         .call-float .call-label {
@@ -262,7 +317,7 @@
         .banner-section {
             position: relative;
             width: 100%;
-            height: 400px;
+            height: 420px;
             overflow: hidden;
             background: #0b0e1a;
         }
@@ -279,6 +334,99 @@
             height: 100%;
             position: relative;
             flex-shrink: 0;
+            opacity: 0;
+            animation: none;
+        }
+
+        .banner-slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        /* ===== BANNER SPLIT ANIMATIONS ===== */
+        .banner-slide.anim-split-h {
+            animation: splitHorizontal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .banner-slide.anim-split-v {
+            animation: splitVertical 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .banner-slide.anim-split-corner {
+            animation: splitCorner 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .banner-slide.anim-split-diag {
+            animation: splitDiagonal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .banner-slide.anim-split-radial {
+            animation: splitRadial 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes splitHorizontal {
+            0% {
+                opacity: 0;
+                clip-path: inset(50% 0 50% 0);
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                clip-path: inset(0 0 0 0);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes splitVertical {
+            0% {
+                opacity: 0;
+                clip-path: inset(0 50% 0 50%);
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                clip-path: inset(0 0 0 0);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes splitCorner {
+            0% {
+                opacity: 0;
+                clip-path: polygon(50% 50%, 50% 50%, 50% 50%, 50% 50%);
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes splitDiagonal {
+            0% {
+                opacity: 0;
+                clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+                transform: scale(0.8) rotate(10deg);
+            }
+            100% {
+                opacity: 1;
+                clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes splitRadial {
+            0% {
+                opacity: 0;
+                clip-path: circle(0% at 50% 50%);
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                clip-path: circle(100% at 50% 50%);
+                transform: scale(1);
+            }
         }
 
         .banner-slide img {
@@ -286,30 +434,6 @@
             height: 100%;
             object-fit: contain;
             background: #0b0e1a;
-        }
-
-        /* ===== BANNER SPLIT ANIMATION ===== */
-        .banner-slide {
-            opacity: 0;
-            animation: splitReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-
-        .banner-slide:nth-child(1) { animation-delay: 0s; }
-        .banner-slide:nth-child(2) { animation-delay: 0.1s; }
-        .banner-slide:nth-child(3) { animation-delay: 0.2s; }
-        .banner-slide:nth-child(4) { animation-delay: 0.3s; }
-
-        @keyframes splitReveal {
-            0% {
-                opacity: 0;
-                clip-path: inset(50% 0 50% 0);
-                transform: scale(0.8);
-            }
-            100% {
-                opacity: 1;
-                clip-path: inset(0 0 0 0);
-                transform: scale(1);
-            }
         }
 
         .banner-slide .banner-overlay {
@@ -979,7 +1103,7 @@
             }
             .header-center { width: 100%; }
             .header-right { width: 100%; justify-content: center; }
-            .banner-section { height: 250px; }
+            .banner-section { height: 280px; }
             .banner-slide .banner-overlay { padding: 20px; }
             .banner-slide .banner-overlay h2 { font-size: 18px; }
             .videos-section { padding: 0 15px 30px; }
@@ -991,28 +1115,40 @@
             .video-modal-content iframe { height: 300px; }
             .call-float { bottom: 15px; left: 15px; }
             .call-float .call-btn { width: 55px; height: 55px; font-size: 22px; }
-            .watermark { font-size: 40px; }
+            .notification-popup { max-width: 320px; padding: 15px 20px; top: 15px; right: 15px; }
         }
 
         @media (max-width: 480px) {
-            .banner-section { height: 200px; }
+            .banner-section { height: 220px; }
             .gallery-slideshow { height: 220px; }
             .video-modal-content iframe { height: 220px; }
             .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
             .call-float .call-btn { width: 48px; height: 48px; font-size: 18px; }
             .call-float .call-label { font-size: 8px; max-width: 60px; }
+            .notification-popup { max-width: 280px; padding: 12px 15px; }
+            .notification-popup .notif-title { font-size: 14px; }
+            .notification-popup .notif-text { font-size: 12px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- ===== NOTIFICATION POPUP ===== -->
+    <div class="notification-popup" id="notificationPopup">
+        <button class="notif-close" id="notifClose">✕</button>
+        <span class="notif-icon">🎉</span>
+        <div class="notif-title">Welcome to BBCC Skill Hub!</div>
+        <div class="notif-text">
+            🌟 Empowering Skills, Building Futures.<br>
+            📚 Explore our courses, videos, and resources.
+        </div>
+        <a href="/management" class="notif-btn">🚀 Get Started</a>
+    </div>
+
     <!-- ===== ANIMATED BACKGROUND LINES ===== -->
     <div class="bg-lines">
         <canvas id="bgCanvas"></canvas>
     </div>
-
-    <!-- ===== WATERMARK ===== -->
-    <div class="watermark">WEBSITE IS UNDER MAINTENANCE</div>
 
     <!-- ===== FLOATING CALL BUTTON ===== -->
     <div class="call-float">
@@ -1043,8 +1179,8 @@
     <!-- ===== BANNER SECTION ===== -->
     <section class="banner-section" id="bannerSection">
         <div class="banner-slides" id="bannerSlides">
-            <div class="banner-slide">
-                <div class="banner-overlay" id="bannerOverlay">
+            <div class="banner-slide anim-split-h active">
+                <div class="banner-overlay">
                     <h2 id="bannerTitle">Welcome to BBCC Skill Hub</h2>
                     <p id="bannerDesc">Empowering Skills, Building Futures</p>
                 </div>
@@ -1142,6 +1278,47 @@
     ============================================ -->
     <script>
         const API_BASE = window.location.origin + '/api';
+
+        // ============================================
+        // NOTIFICATION POPUP
+        // ============================================
+        function initNotification() {
+            const popup = document.getElementById('notificationPopup');
+            const closeBtn = document.getElementById('notifClose');
+
+            // Show popup after 1.5 seconds
+            setTimeout(() => {
+                popup.style.display = 'block';
+            }, 1500);
+
+            // Close on button click
+            closeBtn.addEventListener('click', function() {
+                popup.style.animation = 'slideOutRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 500);
+            });
+
+            // Auto close after 8 seconds
+            setTimeout(() => {
+                if (popup.style.display !== 'none') {
+                    popup.style.animation = 'slideOutRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards';
+                    setTimeout(() => {
+                        popup.style.display = 'none';
+                    }, 500);
+                }
+            }, 8000);
+        }
+
+        // Add slideOutRight animation
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes slideOutRight {
+                0% { transform: translateX(0); opacity: 1; }
+                100% { transform: translateX(120%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(styleSheet);
 
         // ============================================
         // ANIMATED BACKGROUND LINES
@@ -1384,6 +1561,13 @@
         let bannerData = [];
         let currentBannerIndex = 0;
         let bannerInterval = null;
+        const bannerAnimations = [
+            'anim-split-h',
+            'anim-split-v',
+            'anim-split-corner',
+            'anim-split-diag',
+            'anim-split-radial'
+        ];
 
         async function fetchBanners() {
             try {
@@ -1421,7 +1605,7 @@
 
             if (!bannerData || bannerData.length === 0) {
                 slidesContainer.innerHTML = `
-                    <div class="banner-slide">
+                    <div class="banner-slide anim-split-h active">
                         <div class="banner-overlay">
                             <h2>Welcome to BBCC Skill Hub</h2>
                             <p>Empowering Skills, Building Futures</p>
@@ -1439,14 +1623,14 @@
 
             let slidesHtml = '';
             let dotsHtml = '';
+            const shuffledAnims = [...bannerAnimations].sort(() => Math.random() - 0.5);
 
             for (let i = 0; i < bannerData.length; i++) {
                 const b = bannerData[i];
+                const animClass = shuffledAnims[i % shuffledAnims.length];
                 const isActive = i === 0 ? 'active' : '';
-                // Split animation classes
-                const splitClass = i === 0 ? 'banner-slide' : 'banner-slide';
                 slidesHtml += `
-                    <div class="${splitClass}" style="${i === 0 ? 'display:block;' : 'display:none;'}">
+                    <div class="banner-slide ${animClass} ${isActive}" style="${i === 0 ? 'display:block;' : 'display:none;'}">
                         ${b.image && b.image.length > 50 ? `<img src="${b.image}" alt="${b.title || 'Banner'}">` : ''}
                         <div class="banner-overlay">
                             <h2>${b.title || 'Welcome to BBCC Skill Hub'}</h2>
@@ -1459,15 +1643,6 @@
             slidesContainer.innerHTML = slidesHtml;
             dotsContainer.innerHTML = dotsHtml;
             currentBannerIndex = 0;
-
-            // Re-apply split animation on first slide
-            const firstSlide = slidesContainer.querySelector('.banner-slide');
-            if (firstSlide) {
-                firstSlide.style.animation = 'none';
-                setTimeout(() => {
-                    firstSlide.style.animation = 'splitReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
-                }, 50);
-            }
 
             dotsContainer.querySelectorAll('.banner-dot').forEach(dot => {
                 dot.addEventListener('click', function() {
@@ -1484,16 +1659,22 @@
             const dots = document.querySelectorAll('.banner-dot');
             if (index < 0) index = slides.length - 1;
             if (index >= slides.length) index = 0;
+
             slides.forEach((slide, i) => {
                 slide.style.display = i === index ? 'block' : 'none';
-                // Re-trigger split animation for new slide
                 if (i === index) {
+                    // Remove all anim classes and add random new one
+                    slide.classList.remove(...bannerAnimations);
+                    const randomAnim = bannerAnimations[Math.floor(Math.random() * bannerAnimations.length)];
+                    slide.classList.add(randomAnim);
+                    // Reset animation
                     slide.style.animation = 'none';
                     setTimeout(() => {
-                        slide.style.animation = 'splitReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+                        slide.style.animation = '';
                     }, 50);
                 }
             });
+
             dots.forEach((dot, i) => {
                 dot.classList.toggle('active', i === index);
             });
@@ -1821,6 +2002,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initBgLines();
             checkAuth();
+            initNotification();
             document.getElementById('currentYear').textContent = new Date().getFullYear();
 
             fetchSettings();
