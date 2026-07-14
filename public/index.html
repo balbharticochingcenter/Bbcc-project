@@ -1620,7 +1620,7 @@
         }
 
         // ============================================
-        // FETCH PARTNER CENTERS
+        // FETCH PARTNER CENTERS - UPDATED WITH clogo
         // ============================================
         let partnerCenters = [];
 
@@ -1669,7 +1669,7 @@
                 html += `
                     <div class="partner-item">
                         <div class="partner-logo">
-                            ${c.logo && c.logo.length > 50 ? `<img src="${c.logo}" alt="${c.centerName}">` : initials}
+                            ${c.clogo && c.clogo.length > 50 ? `<img src="${c.clogo}" alt="${c.centerName}">` : initials}
                         </div>
                         <div class="partner-info">
                             <div class="p-name">${c.centerName}</div>
