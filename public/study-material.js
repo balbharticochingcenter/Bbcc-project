@@ -42,7 +42,7 @@ function initStudyMaterial() {
                                     <img src="" alt="Thumbnail" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;" id="videoThumbImg">
                                     <span id="videoThumbPlaceholder" style="font-size:40px;">🖼️</span>
                                 </div>
-                                <div class="hint">Click to upload thumbnail (JPG, PNG)</div>
+                                <div class="hint">Click to upload thumbnail (Optional - Auto-fetch from link)</div>
                                 <input type="file" id="videoThumbInput" accept="image/*" onchange="handleVideoThumb(event)">
                             </div>
                         </div>
@@ -53,7 +53,7 @@ function initStudyMaterial() {
                     </div>
                     <div class="form-group">
                         <label>Video Link *</label>
-                        <input type="url" id="videoLink" placeholder="https://youtube.com/watch?v=..." required>
+                        <input type="url" id="videoLink" placeholder="https://youtube.com/watch?v=..." required onchange="fetchVideoThumbnail()">
                     </div>
                     <div class="form-group">
                         <label>Description</label>
@@ -96,7 +96,7 @@ function initStudyMaterial() {
                                     <span id="notePdfPlaceholder" style="font-size:40px;">📄</span>
                                     <span id="notePdfName" style="display:none;font-size:14px;color:#667eea;font-weight:600;"></span>
                                 </div>
-                                <div class="hint">Click to upload PDF file (Max 5MB)</div>
+                                <div class="hint">Click to upload PDF file (Max 25MB)</div>
                                 <input type="file" id="notePdfInput" accept=".pdf" onchange="handleNotePdf(event)">
                             </div>
                         </div>
@@ -131,6 +131,86 @@ function initStudyMaterial() {
     `;
     
     loadStudyMaterial();
+}
+
+// ============================================
+// FETCH VIDEO THUMBNAIL FROM LINK
+// ============================================
+function fetchVideoThumbnail() {
+    const link = document.getElementById('videoLink').value.trim();
+    if (!link) return;
+    
+    // YouTube Thumbnail
+    const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const youtubeMatch = link.match(youtubeRegex);
+    
+    if (youtubeMatch) {
+        const videoId = youtubeMatch[1];
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        
+        // Check if thumbnail exists
+        const img = new Image();
+        img.onload = function() {
+            document.getElementById('videoThumbImg').src = thumbnailUrl;
+            document.getElementById('videoThumbImg').style.display = 'block';
+            document.getElementById('videoThumbPlaceholder').style.display = 'none';
+        };
+        img.onerror = function() {
+            // Fallback to medium quality
+            const fallbackUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            document.getElementById('videoThumbImg').src = fallbackUrl;
+            document.getElementById('videoThumbImg').style.display = 'block';
+            document.getElementById('videoThumbPlaceholder').style.display = 'none';
+        };
+        img.src = thumbnailUrl;
+        return;
+    }
+    
+    // Vimeo Thumbnail
+    const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
+    const vimeoMatch = link.match(vimeoRegex);
+    
+    if (vimeoMatch) {
+        const videoId = vimeoMatch[1];
+        fetch(`https://vimeo.com/api/v2/video/${videoId}.json`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data[0] && data[0].thumbnail_large) {
+                    document.getElementById('videoThumbImg').src = data[0].thumbnail_large;
+                    document.getElementById('videoThumbImg').style.display = 'block';
+                    document.getElementById('videoThumbPlaceholder').style.display = 'none';
+                }
+            })
+            .catch(() => {
+                // Silent fail, user can upload manually
+            });
+        return;
+    }
+    
+    // Dailymotion Thumbnail
+    const dailymotionRegex = /(?:dailymotion\.com\/video\/)([a-zA-Z0-9]+)/;
+    const dailymotionMatch = link.match(dailymotionRegex);
+    
+    if (dailymotionMatch) {
+        const videoId = dailymotionMatch[1];
+        const thumbnailUrl = `https://www.dailymotion.com/thumbnail/video/${videoId}`;
+        document.getElementById('videoThumbImg').src = thumbnailUrl;
+        document.getElementById('videoThumbImg').style.display = 'block';
+        document.getElementById('videoThumbPlaceholder').style.display = 'none';
+        return;
+    }
+    
+    // Generic - try to get favicon or page preview
+    try {
+        const url = new URL(link);
+        const domain = url.hostname;
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        document.getElementById('videoThumbImg').src = faviconUrl;
+        document.getElementById('videoThumbImg').style.display = 'block';
+        document.getElementById('videoThumbPlaceholder').style.display = 'none';
+    } catch (e) {
+        // Silent fail
+    }
 }
 
 // ============================================
@@ -170,8 +250,8 @@ function handleNotePdf(event) {
         return;
     }
     
-    if (file.size > 5 * 1024 * 1024) {
-        showToast('PDF file must be less than 5MB', true);
+    if (file.size > 25 * 1024 * 1024) { // 25MB limit
+        showToast('PDF file must be less than 25MB', true);
         return;
     }
     
@@ -262,11 +342,29 @@ function renderVideos(videoList) {
     
     for (let i = 0; i < videoList.length; i++) {
         const v = videoList[i];
+        
+        // Generate thumbnail from link if not available
+        let thumbnailHtml = '';
+        if (v.thumbnail) {
+            thumbnailHtml = `<img src="${v.thumbnail}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">`;
+        } else if (v.link) {
+            // Try to generate thumbnail from link
+            const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const youtubeMatch = v.link.match(youtubeRegex);
+            if (youtubeMatch) {
+                const videoId = youtubeMatch[1];
+                thumbnailHtml = `<img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">`;
+            } else {
+                thumbnailHtml = `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;">🎬</div>`;
+            }
+        } else {
+            thumbnailHtml = `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;">🎬</div>`;
+        }
+        
         html += `
             <div style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.08);transition:all 0.3s ease;border:1px solid #f0f0f0;">
                 <div style="position:relative;padding-top:56.25%;background:#0b0e1a;">
-                    ${v.thumbnail ? `<img src="${v.thumbnail}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">` : 
-                    `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;">🎬</div>`}
+                    ${thumbnailHtml}
                     <a href="${v.link}" target="_blank" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;background:rgba(255,0,0,0.8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;text-decoration:none;transition:all 0.3s ease;border:3px solid white;box-shadow:0 0 30px rgba(0,0,0,0.3);"
                         onmouseover="this.style.transform='translate(-50%,-50%) scale(1.1)'" 
                         onmouseout="this.style.transform='translate(-50%,-50%) scale(1)'">
@@ -347,10 +445,15 @@ async function saveVideo(event) {
     const title = document.getElementById('videoTitle').value.trim();
     const link = document.getElementById('videoLink').value.trim();
     const description = document.getElementById('videoDescription').value.trim();
-    const thumbnail = document.getElementById('videoThumbImg').src || '';
+    let thumbnail = document.getElementById('videoThumbImg').src || '';
     
     if (!title) { showToast('Please enter video title', true); return; }
     if (!link) { showToast('Please enter video link', true); return; }
+    
+    // If thumbnail is placeholder or empty, try to fetch from link
+    if (!thumbnail || thumbnail === '') {
+        thumbnail = await getThumbnailFromLink(link);
+    }
     
     const data = { title, link, description, thumbnail };
     
@@ -378,6 +481,53 @@ async function saveVideo(event) {
     } catch (error) {
         showToast('Error saving video', true);
     }
+}
+
+// ============================================
+// GET THUMBNAIL FROM LINK
+// ============================================
+function getThumbnailFromLink(link) {
+    return new Promise((resolve) => {
+        // YouTube
+        const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+        const youtubeMatch = link.match(youtubeRegex);
+        if (youtubeMatch) {
+            const videoId = youtubeMatch[1];
+            const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            resolve(thumbnailUrl);
+            return;
+        }
+        
+        // Vimeo
+        const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
+        const vimeoMatch = link.match(vimeoRegex);
+        if (vimeoMatch) {
+            const videoId = vimeoMatch[1];
+            fetch(`https://vimeo.com/api/v2/video/${videoId}.json`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data[0] && data[0].thumbnail_large) {
+                        resolve(data[0].thumbnail_large);
+                    } else {
+                        resolve('');
+                    }
+                })
+                .catch(() => resolve(''));
+            return;
+        }
+        
+        // Dailymotion
+        const dailymotionRegex = /(?:dailymotion\.com\/video\/)([a-zA-Z0-9]+)/;
+        const dailymotionMatch = link.match(dailymotionRegex);
+        if (dailymotionMatch) {
+            const videoId = dailymotionMatch[1];
+            resolve(`https://www.dailymotion.com/thumbnail/video/${videoId}`);
+            return;
+        }
+        
+        // No thumbnail found
+        resolve('');
+    });
 }
 
 // ============================================
