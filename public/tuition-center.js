@@ -59,56 +59,15 @@ function initTuitionCenter() {
                         </div>
                     </div>
 
+                    <!-- From Class - Text Input -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>From Class *</label>
-                            <select id="fromClass" required>
-                                <option value="">Select Class</option>
-                                <option value="Class 1st">Class 1st</option>
-                                <option value="Class 2nd">Class 2nd</option>
-                                <option value="Class 3rd">Class 3rd</option>
-                                <option value="Class 4th">Class 4th</option>
-                                <option value="Class 5th">Class 5th</option>
-                                <option value="Class 6th">Class 6th</option>
-                                <option value="Class 7th">Class 7th</option>
-                                <option value="Class 8th">Class 8th</option>
-                                <option value="Class 9th">Class 9th</option>
-                                <option value="Class 10th">Class 10th</option>
-                                <option value="B.Com">B.Com</option>
-                                <option value="B.Sc">B.Sc</option>
-                                <option value="B.A">B.A</option>
-                                <option value="M.Com">M.Com</option>
-                                <option value="M.Sc">M.Sc</option>
-                                <option value="M.A">M.A</option>
-                                <option value="Diploma">Diploma</option>
-                                <option value="ITI">ITI</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <input type="text" id="fromClass" placeholder="e.g., Class 1st, Nursery, LKG" required>
                         </div>
                         <div class="form-group">
                             <label>To Class *</label>
-                            <select id="toClass" required>
-                                <option value="">Select Class</option>
-                                <option value="Class 1st">Class 1st</option>
-                                <option value="Class 2nd">Class 2nd</option>
-                                <option value="Class 3rd">Class 3rd</option>
-                                <option value="Class 4th">Class 4th</option>
-                                <option value="Class 5th">Class 5th</option>
-                                <option value="Class 6th">Class 6th</option>
-                                <option value="Class 7th">Class 7th</option>
-                                <option value="Class 8th">Class 8th</option>
-                                <option value="Class 9th">Class 9th</option>
-                                <option value="Class 10th">Class 10th</option>
-                                <option value="B.Com">B.Com</option>
-                                <option value="B.Sc">B.Sc</option>
-                                <option value="B.A">B.A</option>
-                                <option value="M.Com">M.Com</option>
-                                <option value="M.Sc">M.Sc</option>
-                                <option value="M.A">M.A</option>
-                                <option value="Diploma">Diploma</option>
-                                <option value="ITI">ITI</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <input type="text" id="toClass" placeholder="e.g., Class 10th, 12th, Graduation" required>
                         </div>
                     </div>
 
@@ -397,8 +356,8 @@ async function saveCenter(event) {
     const data = {
         centerName: document.getElementById('centerName').value.trim(),
         directorName: document.getElementById('directorName').value.trim(),
-        fromClass: document.getElementById('fromClass').value,
-        toClass: document.getElementById('toClass').value,
+        fromClass: document.getElementById('fromClass').value.trim(),
+        toClass: document.getElementById('toClass').value.trim(),
         address: document.getElementById('centerAddress').value.trim(),
         contactNumber: document.getElementById('contactNumber').value.trim(),
         email: document.getElementById('centerEmail').value.trim(),
@@ -417,8 +376,8 @@ async function saveCenter(event) {
     // Validation
     if (!data.centerName) { showToast('Please enter center name', true); return; }
     if (!data.directorName) { showToast('Please enter director name', true); return; }
-    if (!data.fromClass) { showToast('Please select from class', true); return; }
-    if (!data.toClass) { showToast('Please select to class', true); return; }
+    if (!data.fromClass) { showToast('Please enter from class', true); return; }
+    if (!data.toClass) { showToast('Please enter to class', true); return; }
     
     try {
         let response;
@@ -620,6 +579,9 @@ function manageTeachers(centerId) {
     currentCenterId = centerId;
     editingTeacherId = null;
     
+    // Get center data first to know class range
+    fetchCenterData(centerId);
+    
     const modal = document.createElement('div');
     modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
     modal.onclick = function(e) { if (e.target === this) this.remove(); };
@@ -648,22 +610,11 @@ function manageTeachers(centerId) {
                     <div class="form-row">
                         <div class="form-group">
                             <label>Class *</label>
-                            <select id="teacherClass" required>
-                                <option value="">Select Class</option>
-                                <option value="Class 1st">Class 1st</option>
-                                <option value="Class 2nd">Class 2nd</option>
-                                <option value="Class 3rd">Class 3rd</option>
-                                <option value="Class 4th">Class 4th</option>
-                                <option value="Class 5th">Class 5th</option>
-                                <option value="Class 6th">Class 6th</option>
-                                <option value="Class 7th">Class 7th</option>
-                                <option value="Class 8th">Class 8th</option>
-                                <option value="Class 9th">Class 9th</option>
-                                <option value="Class 10th">Class 10th</option>
-                                <option value="B.Com">B.Com</option>
-                                <option value="B.Sc">B.Sc</option>
-                                <option value="B.A">B.A</option>
-                            </select>
+                            <input type="text" id="teacherClass" placeholder="e.g., Class 10th, B.Com" list="classOptions" required>
+                            <datalist id="classOptions">
+                                <!-- Will be filled dynamically -->
+                            </datalist>
+                            <small style="color:#888;font-size:11px;">Type to search or add new class</small>
                         </div>
                         <div class="form-group">
                             <label>Teacher Photo</label>
@@ -696,6 +647,75 @@ function manageTeachers(centerId) {
     document.body.appendChild(modal);
     
     loadTeachersForCenter(centerId);
+}
+
+// ============================================
+// FETCH CENTER DATA FOR CLASS OPTIONS
+// ============================================
+async function fetchCenterData(centerId) {
+    try {
+        const data = await apiCall('/api/tuition-centers/' + centerId);
+        if (data.success) {
+            const center = data.data;
+            const fromClass = center.fromClass || '';
+            const toClass = center.toClass || '';
+            
+            // Generate class options based on from-to range
+            const classOptions = generateClassOptions(fromClass, toClass);
+            
+            const datalist = document.getElementById('classOptions');
+            if (datalist) {
+                datalist.innerHTML = classOptions.map(c => `<option value="${c}">`).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching center data:', error);
+    }
+}
+
+// ============================================
+// GENERATE CLASS OPTIONS
+// ============================================
+function generateClassOptions(fromClass, toClass) {
+    const allClasses = [
+        'Nursery', 'LKG', 'UKG',
+        'Class 1st', 'Class 2nd', 'Class 3rd', 'Class 4th', 'Class 5th',
+        'Class 6th', 'Class 7th', 'Class 8th', 'Class 9th', 'Class 10th',
+        'Class 11th', 'Class 12th',
+        'B.Com', 'B.Sc', 'B.A', 'BBA', 'BCA',
+        'M.Com', 'M.Sc', 'M.A', 'MBA', 'MCA',
+        'Diploma', 'ITI', 'Polytechnic',
+        'Other'
+    ];
+    
+    // If both from and to are provided, filter classes in range
+    if (fromClass && toClass) {
+        const fromIndex = allClasses.indexOf(fromClass);
+        const toIndex = allClasses.indexOf(toClass);
+        
+        if (fromIndex !== -1 && toIndex !== -1 && fromIndex <= toIndex) {
+            return allClasses.slice(fromIndex, toIndex + 1);
+        }
+    }
+    
+    // If only from is provided
+    if (fromClass) {
+        const fromIndex = allClasses.indexOf(fromClass);
+        if (fromIndex !== -1) {
+            return allClasses.slice(fromIndex);
+        }
+    }
+    
+    // If only to is provided
+    if (toClass) {
+        const toIndex = allClasses.indexOf(toClass);
+        if (toIndex !== -1) {
+            return allClasses.slice(0, toIndex + 1);
+        }
+    }
+    
+    // Default: return all classes
+    return allClasses;
 }
 
 // ============================================
@@ -772,7 +792,7 @@ async function saveTeacher(event, centerId) {
     const editId = document.getElementById('editTeacherId').value;
     const name = document.getElementById('teacherName').value.trim();
     const subject = document.getElementById('teacherSubject').value.trim();
-    const classVal = document.getElementById('teacherClass').value;
+    const classVal = document.getElementById('teacherClass').value.trim();
     const photo = document.getElementById('teacherPhotoImg').src || '';
     
     if (!name || !subject || !classVal) {
