@@ -180,13 +180,13 @@ function initTuitionCenter() {
                     <div class="form-row">
                         <div class="form-group">
                             <label>Center Logo</label>
-                            <div class="image-upload" onclick="document.getElementById('logoInput').click()">
-                                <div class="preview" id="logoPreview">
-                                    <img src="" alt="Logo" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;" id="logoPreviewImg">
-                                    <span id="logoPlaceholder" style="font-size:40px;">📷</span>
+                            <div class="image-upload" onclick="document.getElementById('clogoInput').click()">
+                                <div class="preview" id="clogoPreview">
+                                    <img src="" alt="Logo" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:8px;" id="clogoPreviewImg">
+                                    <span id="clogoPlaceholder" style="font-size:40px;">📷</span>
                                 </div>
                                 <div class="hint">Click to upload logo</div>
-                                <input type="file" id="logoInput" accept="image/*" onchange="handleCenterLogo(event)">
+                                <input type="file" id="clogoInput" accept="image/*" onchange="handleCenterLogo(event)">
                             </div>
                         </div>
                         <div class="form-group">
@@ -238,9 +238,9 @@ function handleCenterLogo(event) {
     const file = event.target.files[0];
     if (!file) return;
     compressImage(file, 50, function(compressedBase64) {
-        document.getElementById('logoPreviewImg').src = compressedBase64;
-        document.getElementById('logoPreviewImg').style.display = 'block';
-        document.getElementById('logoPlaceholder').style.display = 'none';
+        document.getElementById('clogoPreviewImg').src = compressedBase64;
+        document.getElementById('clogoPreviewImg').style.display = 'block';
+        document.getElementById('clogoPlaceholder').style.display = 'none';
         showTuitionToast('Center logo uploaded successfully!');
     });
 }
@@ -342,7 +342,7 @@ function renderCenters(centerList) {
                 <!-- Header with Logo -->
                 <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:20px;display:flex;align-items:center;gap:15px;">
                     <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;overflow:hidden;flex-shrink:0;">
-                        ${c.logo && c.logo.length > 50 ? `<img src="${c.logo}" style="width:100%;height:100%;object-fit:cover;">` : initials}
+                        ${c.clogo && c.clogo.length > 50 ? `<img src="${c.clogo}" style="width:100%;height:100%;object-fit:cover;">` : initials}
                     </div>
                     <div style="flex:1;color:white;">
                         <h3 style="font-size:18px;font-weight:700;">${c.centerName}</h3>
@@ -424,7 +424,7 @@ async function saveCenter(event) {
         telegramLink: document.getElementById('telegramLink').value.trim(),
         twitterLink: document.getElementById('twitterLink').value.trim(),
         linkedinLink: document.getElementById('linkedinLink').value.trim(),
-        logo: document.getElementById('logoPreviewImg').src || '',
+        clogo: document.getElementById('clogoPreviewImg').src || '',     // ✅ clogo
         directorPhoto: document.getElementById('directorPhotoImg').src || '',
         description: document.getElementById('centerDescription').value.trim()
     };
@@ -491,10 +491,10 @@ async function editCenter(centerId) {
         document.getElementById('linkedinLink').value = c.linkedinLink || '';
         document.getElementById('centerDescription').value = c.description || '';
         
-        if (c.logo) {
-            document.getElementById('logoPreviewImg').src = c.logo;
-            document.getElementById('logoPreviewImg').style.display = 'block';
-            document.getElementById('logoPlaceholder').style.display = 'none';
+        if (c.clogo) {                                                      // ✅ clogo
+            document.getElementById('clogoPreviewImg').src = c.clogo;
+            document.getElementById('clogoPreviewImg').style.display = 'block';
+            document.getElementById('clogoPlaceholder').style.display = 'none';
         }
         if (c.directorPhoto) {
             document.getElementById('directorPhotoImg').src = c.directorPhoto;
@@ -556,7 +556,7 @@ async function viewCenter(centerId) {
                 <div style="position:sticky;top:0;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:20px 25px;border-radius:20px 20px 0 0;display:flex;justify-content:space-between;align-items:center;">
                     <div style="display:flex;align-items:center;gap:15px;color:white;">
                         <div style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;overflow:hidden;">
-                            ${c.logo ? `<img src="${c.logo}" style="width:100%;height:100%;object-fit:cover;">` : c.centerName.split(' ').map(w=>w[0]).join('').slice(0,4).toUpperCase()}
+                            ${c.clogo ? `<img src="${c.clogo}" style="width:100%;height:100%;object-fit:cover;">` : c.centerName.split(' ').map(w=>w[0]).join('').slice(0,4).toUpperCase()}
                         </div>
                         <div>
                             <h2 style="font-size:20px;">${c.centerName}</h2>
@@ -947,9 +947,9 @@ async function deleteTeacherModal(teacherId) {
 function resetCenterForm() {
     document.getElementById('centerForm').reset();
     document.getElementById('editCenterId').value = '';
-    document.getElementById('logoPreviewImg').src = '';
-    document.getElementById('logoPreviewImg').style.display = 'none';
-    document.getElementById('logoPlaceholder').style.display = 'block';
+    document.getElementById('clogoPreviewImg').src = '';
+    document.getElementById('clogoPreviewImg').style.display = 'none';
+    document.getElementById('clogoPlaceholder').style.display = 'block';
     document.getElementById('directorPhotoImg').src = '';
     document.getElementById('directorPhotoImg').style.display = 'none';
     document.getElementById('directorPhotoPlaceholder').style.display = 'block';
