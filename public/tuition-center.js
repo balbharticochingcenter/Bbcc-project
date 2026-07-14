@@ -1,11 +1,34 @@
 // ============================================
-// TUITION CENTER MANAGEMENT - COMPLETE
+// TUITION CENTER MANAGEMENT - COMPLETE (FIXED)
 // ============================================
 
 let centers = [];
 let currentCenterId = null;
 let editingTeacherId = null;
 let editingCenterId = null;
+
+// ============================================
+// API CALL - TUITION CENTER SPECIFIC (NO SETTINGS)
+// ============================================
+async function tuitionApiCall(url, options = {}) {
+    const token = localStorage.getItem('token');
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+    
+    const config = {
+        method: options.method || 'GET',
+        headers: headers
+    };
+    
+    if (options.body) {
+        config.body = JSON.stringify(options.body);
+    }
+    
+    const response = await fetch(url, config);
+    return await response.json();
+}
 
 // ============================================
 // INIT TUITION CENTER
@@ -59,7 +82,6 @@ function initTuitionCenter() {
                         </div>
                     </div>
 
-                    <!-- From Class - Text Input -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>From Class *</label>
@@ -185,7 +207,7 @@ function handleCenterLogo(event) {
         document.getElementById('logoPreviewImg').src = compressedBase64;
         document.getElementById('logoPreviewImg').style.display = 'block';
         document.getElementById('logoPlaceholder').style.display = 'none';
-        showToast('Logo uploaded successfully!');
+        showToast('Center logo uploaded successfully!');
     });
 }
 
@@ -248,7 +270,7 @@ function compressImage(file, maxSizeKB, callback) {
 // ============================================
 async function loadCenters() {
     try {
-        const data = await apiCall('/api/tuition-centers');
+        const data = await tuitionApiCall('/api/tuition-centers');
         if (data.success) {
             centers = data.data || [];
             renderCenters(centers);
@@ -382,12 +404,12 @@ async function saveCenter(event) {
     try {
         let response;
         if (editId) {
-            response = await apiCall('/api/tuition-centers/' + editId, {
+            response = await tuitionApiCall('/api/tuition-centers/' + editId, {
                 method: 'PUT',
                 body: data
             });
         } else {
-            response = await apiCall('/api/tuition-centers', {
+            response = await tuitionApiCall('/api/tuition-centers', {
                 method: 'POST',
                 body: data
             });
@@ -411,7 +433,7 @@ async function saveCenter(event) {
 // ============================================
 async function editCenter(centerId) {
     try {
-        const data = await apiCall('/api/tuition-centers/' + centerId);
+        const data = await tuitionApiCall('/api/tuition-centers/' + centerId);
         if (!data.success) {
             showToast('Center not found', true);
             return;
@@ -462,7 +484,7 @@ async function editCenter(centerId) {
 // ============================================
 async function viewCenter(centerId) {
     try {
-        const data = await apiCall('/api/tuition-centers/' + centerId);
+        const data = await tuitionApiCall('/api/tuition-centers/' + centerId);
         if (!data.success) {
             showToast('Center not found', true);
             return;
@@ -557,7 +579,7 @@ async function deleteCenter(centerId) {
     if (!confirm('Are you sure you want to delete this center? All teachers will also be deleted.')) return;
     
     try {
-        const response = await apiCall('/api/tuition-centers/' + centerId, {
+        const response = await tuitionApiCall('/api/tuition-centers/' + centerId, {
             method: 'DELETE'
         });
         
@@ -579,7 +601,6 @@ function manageTeachers(centerId) {
     currentCenterId = centerId;
     editingTeacherId = null;
     
-    // Get center data first to know class range
     fetchCenterData(centerId);
     
     const modal = document.createElement('div');
@@ -654,13 +675,12 @@ function manageTeachers(centerId) {
 // ============================================
 async function fetchCenterData(centerId) {
     try {
-        const data = await apiCall('/api/tuition-centers/' + centerId);
+        const data = await tuitionApiCall('/api/tuition-centers/' + centerId);
         if (data.success) {
             const center = data.data;
             const fromClass = center.fromClass || '';
             const toClass = center.toClass || '';
             
-            // Generate class options based on from-to range
             const classOptions = generateClassOptions(fromClass, toClass);
             
             const datalist = document.getElementById('classOptions');
@@ -688,7 +708,6 @@ function generateClassOptions(fromClass, toClass) {
         'Other'
     ];
     
-    // If both from and to are provided, filter classes in range
     if (fromClass && toClass) {
         const fromIndex = allClasses.indexOf(fromClass);
         const toIndex = allClasses.indexOf(toClass);
@@ -698,7 +717,6 @@ function generateClassOptions(fromClass, toClass) {
         }
     }
     
-    // If only from is provided
     if (fromClass) {
         const fromIndex = allClasses.indexOf(fromClass);
         if (fromIndex !== -1) {
@@ -706,7 +724,6 @@ function generateClassOptions(fromClass, toClass) {
         }
     }
     
-    // If only to is provided
     if (toClass) {
         const toIndex = allClasses.indexOf(toClass);
         if (toIndex !== -1) {
@@ -714,7 +731,6 @@ function generateClassOptions(fromClass, toClass) {
         }
     }
     
-    // Default: return all classes
     return allClasses;
 }
 
@@ -723,7 +739,7 @@ function generateClassOptions(fromClass, toClass) {
 // ============================================
 async function loadTeachersForCenter(centerId) {
     try {
-        const data = await apiCall('/api/tuition-centers/' + centerId);
+        const data = await tuitionApiCall('/api/tuition-centers/' + centerId);
         if (data.success) {
             const teachers = data.data.teachers || [];
             renderTeachersModal(teachers);
@@ -779,7 +795,7 @@ function handleTeacherPhoto(event) {
         document.getElementById('teacherPhotoImg').src = compressedBase64;
         document.getElementById('teacherPhotoImg').style.display = 'block';
         document.getElementById('teacherPhotoPlaceholder').style.display = 'none';
-        showToast('Photo uploaded successfully!');
+        showToast('Teacher photo uploaded successfully!');
     });
 }
 
@@ -805,12 +821,12 @@ async function saveTeacher(event, centerId) {
     try {
         let response;
         if (editId) {
-            response = await apiCall('/api/tuition-centers/' + centerId + '/teacher/' + editId, {
+            response = await tuitionApiCall('/api/tuition-centers/' + centerId + '/teacher/' + editId, {
                 method: 'PUT',
                 body: data
             });
         } else {
-            response = await apiCall('/api/tuition-centers/' + centerId + '/teacher', {
+            response = await tuitionApiCall('/api/tuition-centers/' + centerId + '/teacher', {
                 method: 'POST',
                 body: data
             });
@@ -825,7 +841,7 @@ async function saveTeacher(event, centerId) {
             document.getElementById('teacherPhotoPlaceholder').style.display = 'block';
             document.querySelector('#teacherForm button[type="submit"]').textContent = '✅ Add Teacher';
             loadTeachersForCenter(centerId);
-            loadCenters(); // Update main list
+            loadCenters();
         } else {
             showToast(response.message || 'Failed to save teacher', true);
         }
@@ -839,7 +855,7 @@ async function saveTeacher(event, centerId) {
 // ============================================
 async function editTeacherModal(teacherId) {
     try {
-        const data = await apiCall('/api/tuition-centers/' + currentCenterId);
+        const data = await tuitionApiCall('/api/tuition-centers/' + currentCenterId);
         if (!data.success) return;
         
         const teacher = data.data.teachers.find(t => (t._id || t.id) == teacherId);
@@ -875,7 +891,7 @@ async function deleteTeacherModal(teacherId) {
     if (!confirm('Are you sure you want to delete this teacher?')) return;
     
     try {
-        const response = await apiCall('/api/tuition-centers/' + currentCenterId + '/teacher/' + teacherId, {
+        const response = await tuitionApiCall('/api/tuition-centers/' + currentCenterId + '/teacher/' + teacherId, {
             method: 'DELETE'
         });
         
