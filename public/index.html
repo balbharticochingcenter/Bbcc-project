@@ -5,13 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BBCC Skill Hub</title>
 
-    <!-- ===== DYNAMIC FAVICON - Will be set by JavaScript ===== -->
+    <!-- ===== DYNAMIC FAVICON ===== -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E" id="dynamicFavicon" />
-    
-    <!-- Fallback PNG favicon for older browsers -->
     <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfklEQVR4nO2WPUvDQBzGf0k7OTh1c3QRBB1cBbHq4KCY4uCkk4OCCg6Cq06CDq6Ci4I6ugrqouhSVBHFr1CcXJw6OIhU9wf0D7mTvCR3aQp98JCH3OWe/N6X5J5HAoFAIBAIBAKBwB8Jf7M+WJcLAEyzzRttL9thh00CjnqVx7IsFyIin3YUEuCLMR8AMyCkdVAUZ1AEt9xtv3/Yifb4XPDOdgKIYALwGQCaSAjBQ+JYYR5MQJgEAwAqHXH/ZOQDmJaqy0+5t0YAMH2rmCvWrcE7cAMsb6wXJgAmYl/8lxyA2F2SAB4AQEjMfaekwTpwR8S0AmP/h0cPFDhZ3livyQO4eABUKiwHcM0NTMzk5smnyx75AGDmub18uMPawRSED7En2g7rBSIDCO+yQVMAhJDI0wMk5utHnwaXQhdy7UM8ZvJ8ksPDM/+ECaCMJ6u88sho9dnAL1DRCSACjNsIeS6EdQAA6B4POY5Znm79c++ksESf4jKQb5+9QCAQCAQCgcCfhC+ToZv5dd4YlAAAAABJRU5ErkJggg==" />
-
-    <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Ccircle cx='90' cy='90' r='80' fill='%230b0e1a' stroke='%23ffd700' stroke-width='4'/%3E%3Ctext x='90' y='102' font-family='Inter, sans-serif' font-size='48' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E" id="dynamicAppleTouchIcon" />
 
     <!-- Font Awesome -->
@@ -21,9 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
 
     <style>
-        /* ============================================
-           RESET
-           ============================================ */
         * {
             margin: 0;
             padding: 0;
@@ -33,323 +26,497 @@
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             background: #0b0e1a;
             color: #ffffff;
             overflow-x: hidden;
         }
 
-        /* ============================================
-           BACKGROUND PARTICLES
-           ============================================ */
-        .bg-particles {
-            position: fixed;
+        /* ===== HEADER ===== */
+        .header {
+            background: rgba(11, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            animation: floatParticle linear infinite;
-        }
-
-        .particle:nth-child(1) {
-            width: 350px;
-            height: 350px;
-            top: -120px;
-            right: -120px;
-            animation-duration: 28s;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.05), transparent 70%);
-        }
-
-        .particle:nth-child(2) {
-            width: 450px;
-            height: 450px;
-            bottom: -180px;
-            left: -180px;
-            animation-duration: 32s;
-            background: radial-gradient(circle, rgba(0, 150, 255, 0.04), transparent 70%);
-        }
-
-        .particle:nth-child(3) {
-            width: 250px;
-            height: 250px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-duration: 22s;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.03), transparent 70%);
-        }
-
-        @keyframes floatParticle {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-            33% {
-                transform: translate(40px, -40px) scale(1.1);
-            }
-            66% {
-                transform: translate(-30px, 30px) scale(0.9);
-            }
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-        }
-
-        /* ============================================
-           GLOW OVERLAY
-           ============================================ */
-        .glow-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(255, 215, 0, 0.02) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 50%, rgba(0, 150, 255, 0.02) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* ============================================
-           MAIN WRAPPER
-           ============================================ */
-        .main-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-            min-height: 75vh;
-        }
-
-        /* ============================================
-           LOGO
-           ============================================ */
-        .logo-container {
-            margin-bottom: 2.5rem;
-        }
-
-        .logo-wrapper {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto;
-            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        /* Rotating Rings */
-        .logo-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 215, 0, 0.12);
-            animation: spinRing 14s linear infinite;
-        }
-
-        .logo-ring::before {
-            content: '';
-            position: absolute;
-            top: -3px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ffd700;
-            box-shadow: 0 0 25px #ffd700, 0 0 50px rgba(255, 215, 0, 0.2);
-        }
-
-        .logo-ring:nth-child(2) {
-            width: 112%;
-            height: 112%;
-            top: -6%;
-            left: -6%;
-            border-color: rgba(0, 150, 255, 0.08);
-            animation-duration: 20s;
-            animation-direction: reverse;
-        }
-
-        .logo-ring:nth-child(2)::before {
-            background: #0096ff;
-            box-shadow: 0 0 25px #0096ff, 0 0 50px rgba(0, 150, 255, 0.2);
-            top: auto;
-            bottom: -3px;
-        }
-
-        @keyframes spinRing {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Logo Icon */
-        .logo-icon {
-            width: 85px;
-            height: 85px;
-            border-radius: 50%;
             background: #0b0e1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            box-shadow:
-                0 0 50px rgba(255, 215, 0, 0.06),
-                inset 0 0 50px rgba(255, 215, 0, 0.02);
-            border: 2px solid rgba(255, 215, 0, 0.10);
-            overflow: hidden;
-            padding: 12px;
-            transition: all 0.5s ease;
-            animation: pulseLogo 3.5s ease-in-out infinite;
+            border: 2px solid rgba(255, 215, 0, 0.15);
+            flex-shrink: 0;
         }
 
-        .logo-icon img {
+        .header-logo img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            border-radius: 50%;
+            object-fit: cover;
         }
 
-        .logo-icon:hover {
-            transform: scale(1.06);
-            box-shadow: 0 0 70px rgba(255, 215, 0, 0.12);
-            border-color: rgba(255, 215, 0, 0.25);
-        }
-
-        @keyframes pulseLogo {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.04);
-            }
-        }
-
-        /* ============================================
-           TEXT CONTENT
-           ============================================ */
-        .content {
-            text-align: center;
-            max-width: 750px;
-        }
-
-        .title {
-            font-size: clamp(2.8rem, 7vw, 5rem);
+        .header-logo span {
+            font-size: 20px;
             font-weight: 900;
-            letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #ffd700 0%, #f5a623 35%, #ffd700 65%, #f5a623 100%);
-            background-size: 200% 200%;
+            color: #ffd700;
+        }
+
+        .header-center {
+            text-align: center;
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: clamp(1.2rem, 2.5vw, 2rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd700 0%, #f5a623 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: shimmerText 5s ease-in-out infinite;
-            margin-bottom: 0.75rem;
-            line-height: 1.1;
         }
 
-        @keyframes shimmerText {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        .subtitle {
-            font-size: clamp(1rem, 1.8vw, 1.3rem);
-            font-weight: 300;
-            color: rgba(255, 255, 255, 0.5);
-            letter-spacing: 0.35em;
+        .header-subtitle {
+            font-size: clamp(0.6rem, 1vw, 0.8rem);
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.2em;
             text-transform: uppercase;
-            margin-bottom: 2.5rem;
-            position: relative;
-            display: inline-block;
         }
 
-        .subtitle::after {
-            content: '';
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-btn {
+            padding: 8px 20px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            border-radius: 25px;
+            background: transparent;
+            color: #ffd700;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        /* ===== BANNER SECTION ===== */
+        .banner-section {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            background: #0b0e1a;
+        }
+
+        .banner-slides {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s ease;
+        }
+
+        .banner-slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .banner-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .banner-slide .banner-overlay {
             position: absolute;
-            bottom: -10px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        }
+
+        .banner-slide .banner-overlay h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .banner-slide .banner-overlay p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .banner-slide .banner-overlay a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .banner-slide .banner-overlay a:hover {
+            text-decoration: underline;
+        }
+
+        .banner-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        .banner-nav:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        .banner-nav.prev {
+            left: 15px;
+        }
+
+        .banner-nav.next {
+            right: 15px;
+        }
+
+        .banner-dots {
+            position: absolute;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 70px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
-        }
-
-        /* ============================================
-           MAINTENANCE BANNER
-           ============================================ */
-        .maintenance-banner {
-            display: inline-flex;
-            align-items: center;
+            display: flex;
             gap: 10px;
-            padding: 0.7rem 2.2rem;
-            border: 1px solid rgba(255, 215, 0, 0.10);
-            border-radius: 50px;
-            background: rgba(255, 215, 0, 0.03);
-            backdrop-filter: blur(12px);
-            font-size: 0.8rem;
-            letter-spacing: 0.12em;
-            color: rgba(255, 215, 0, 0.6);
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-top: 0.5rem;
+            z-index: 10;
         }
 
-        .maintenance-banner .dot {
-            width: 8px;
-            height: 8px;
+        .banner-dot {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .banner-dot.active {
             background: #ffd700;
-            animation: blinkDot 1.6s ease-in-out infinite;
+            transform: scale(1.2);
         }
 
-        @keyframes blinkDot {
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.2;
-                transform: scale(0.6);
-            }
+        .banner-dot:hover {
+            transform: scale(1.3);
         }
 
-        /* ============================================
-           FOOTER
-           ============================================ */
+        /* ===== SECTION TITLE ===== */
+        .section-title {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+
+        .section-title h2 {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd700 0%, #f5a623 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-title p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* ===== VIDEOS SECTION ===== */
+        .videos-section {
+            padding: 0 30px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .video-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            padding-top: 56.25%;
+            background: #1a1f35;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 65px;
+            height: 65px;
+            background: rgba(255, 0, 0, 0.85);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 26px;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
+        }
+
+        .video-card:hover .video-play-icon {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: rgba(255, 0, 0, 1);
+        }
+
+        .video-card .video-info {
+            padding: 18px;
+        }
+
+        .video-card .video-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-card .video-info p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .video-card .video-info .video-date {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+            margin-top: 8px;
+        }
+
+        .no-videos {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 16px;
+        }
+
+        /* ===== GALLERY SECTION ===== */
+        .gallery-section {
+            padding: 0 30px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .gallery-slideshow {
+            position: relative;
+            height: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #1a1f35;
+        }
+
+        .gallery-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .gallery-slide.active {
+            opacity: 1;
+        }
+
+        .gallery-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-slide .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 30px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        }
+
+        .gallery-slide .gallery-overlay h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .gallery-slide .gallery-overlay p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        .gallery-nav:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        .gallery-nav.prev {
+            left: 15px;
+        }
+
+        .gallery-nav.next {
+            right: 15px;
+        }
+
+        .gallery-dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .gallery-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-dot.active {
+            background: #ffd700;
+            transform: scale(1.2);
+        }
+
+        .gallery-view-all {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px 30px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            border-radius: 30px;
+            color: #ffd700;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .gallery-view-all:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        .no-gallery {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .no-gallery i {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* ===== FOOTER ===== */
         footer {
             width: 100%;
             padding: 2rem 2rem 1.5rem;
-            background: rgba(11, 14, 26, 0.85);
+            background: rgba(11, 14, 26, 0.95);
             backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255, 255, 255, 0.02);
-            position: relative;
-            z-index: 1;
             margin-top: auto;
         }
 
@@ -362,7 +529,6 @@
             gap: 1.2rem;
         }
 
-        /* Social Icons */
         .social-links {
             display: flex;
             flex-wrap: wrap;
@@ -383,17 +549,6 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-decoration: none;
             border: 1px solid rgba(255, 255, 255, 0.04);
-            position: relative;
-        }
-
-        .social-links a::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.08), transparent 70%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
         }
 
         .social-links a:hover {
@@ -401,10 +556,6 @@
             color: #ffd700;
             border-color: rgba(255, 215, 0, 0.12);
             box-shadow: 0 10px 40px rgba(255, 215, 0, 0.05);
-        }
-
-        .social-links a:hover::before {
-            opacity: 1;
         }
 
         .social-links a:hover .fa-whatsapp {
@@ -433,7 +584,6 @@
             color: #25D366;
         }
 
-        /* WhatsApp Number */
         .whatsapp-number {
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.18);
@@ -445,7 +595,6 @@
             margin-right: 8px;
         }
 
-        /* Footer Text */
         .footer-text {
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.10);
@@ -457,123 +606,210 @@
             color: rgba(255, 215, 0, 0.15);
         }
 
-        /* ============================================
-           LOADING STATE
-           ============================================ */
-        .loading-text {
-            color: rgba(255, 255, 255, 0.15);
-            font-size: 0.75rem;
-            animation: pulseText 1.8s ease-in-out infinite;
+        /* ===== VIDEO MODAL ===== */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        @keyframes pulseText {
-            0%,
-            100% {
-                opacity: 0.3;
-            }
-            50% {
-                opacity: 1;
-            }
+        .video-modal.active {
+            display: flex;
         }
 
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
+        .video-modal-content {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .video-modal-content iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        .video-modal-close {
+            position: absolute;
+            top: -45px;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .video-modal-close:hover {
+            background: rgba(255, 0, 0, 0.6);
+            transform: rotate(90deg);
+        }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .logo-wrapper {
-                width: 110px;
-                height: 110px;
+            .header {
+                padding: 12px 15px;
+                flex-direction: column;
+                align-items: center;
             }
-            .logo-icon {
-                width: 65px;
-                height: 65px;
-                padding: 8px;
+
+            .header-center {
+                width: 100%;
             }
-            .social-links a {
-                width: 40px;
-                height: 40px;
-                font-size: 0.95rem;
+
+            .header-right {
+                width: 100%;
+                justify-content: center;
             }
-            .main-wrapper {
-                padding: 1.5rem;
-                min-height: 70vh;
+
+            .banner-section {
+                height: 250px;
             }
-            .subtitle {
-                letter-spacing: 0.2em;
+
+            .banner-slide .banner-overlay {
+                padding: 20px;
             }
-            .maintenance-banner {
-                font-size: 0.7rem;
-                padding: 0.5rem 1.4rem;
+
+            .banner-slide .banner-overlay h2 {
+                font-size: 18px;
+            }
+
+            .banner-slide .banner-overlay p {
+                font-size: 12px;
+            }
+
+            .videos-section {
+                padding: 0 15px 30px;
+            }
+
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gallery-section {
+                padding: 0 15px 30px;
+            }
+
+            .gallery-slideshow {
+                height: 250px;
+            }
+
+            .gallery-slide .gallery-overlay {
+                padding: 20px;
+            }
+
+            .gallery-slide .gallery-overlay h3 {
+                font-size: 16px;
+            }
+
+            .banner-nav,
+            .gallery-nav {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+
+            .video-modal-content iframe {
+                height: 300px;
             }
         }
 
         @media (max-width: 480px) {
-            .logo-wrapper {
-                width: 85px;
-                height: 85px;
+            .banner-section {
+                height: 200px;
             }
-            .logo-icon {
-                width: 50px;
-                height: 50px;
-                padding: 6px;
+
+            .gallery-slideshow {
+                height: 200px;
             }
-            .social-links {
-                gap: 0.4rem;
-            }
-            .social-links a {
-                width: 36px;
-                height: 36px;
-                font-size: 0.8rem;
-            }
-            .maintenance-banner {
-                font-size: 0.6rem;
-                padding: 0.4rem 1rem;
+
+            .video-modal-content iframe {
+                height: 220px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== BACKGROUND ===== -->
-    <div class="bg-particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
-    <div class="glow-overlay"></div>
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-left">
+            <div class="header-logo" id="headerLogo">
+                <span>BBCC</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="header-title" id="headerTitle">BBCC Skill Hub</div>
+            <div class="header-subtitle" id="headerSubtitle">Empowering Skills, Building Futures</div>
+        </div>
+        <div class="header-right">
+            <a href="/management" class="header-btn">🔑 Admin</a>
+        </div>
+    </header>
 
-    <!-- ===== MAIN CONTENT ===== -->
-    <div class="main-wrapper">
-
-        <!-- Logo -->
-        <div class="logo-container">
-            <div class="logo-wrapper">
-                <div class="logo-ring"></div>
-                <div class="logo-ring"></div>
-                <div class="logo-icon" id="logoDisplay">
-                    <span class="loading-text">Loading...</span>
+    <!-- ===== BANNER SECTION ===== -->
+    <section class="banner-section" id="bannerSection">
+        <div class="banner-slides" id="bannerSlides">
+            <div class="banner-slide">
+                <img src="" alt="Banner" id="bannerPlaceholder" style="display:none;">
+                <div class="banner-overlay" id="bannerOverlay">
+                    <h2 id="bannerTitle">Welcome to BBCC Skill Hub</h2>
+                    <p id="bannerDesc">Empowering Skills, Building Futures</p>
                 </div>
             </div>
         </div>
+        <button class="banner-nav prev" id="bannerPrev">◀</button>
+        <button class="banner-nav next" id="bannerNext">▶</button>
+        <div class="banner-dots" id="bannerDots"></div>
+    </section>
 
-        <!-- Text -->
-        <div class="content">
-            <h1 class="title" id="siteTitle">Loading...</h1>
-            <p class="subtitle" id="siteSubtitle">Loading...</p>
-
-            <div class="maintenance-banner">
-                <span class="dot"></span>
-                Website is Under Maintenance
-            </div>
-        </div>
-
+    <!-- ===== VIDEOS SECTION ===== -->
+    <div class="section-title">
+        <h2>📹 Featured Videos</h2>
+        <p>Watch our latest educational content</p>
     </div>
+    <section class="videos-section">
+        <div class="videos-grid" id="videosGrid">
+            <div class="no-videos">Loading videos...</div>
+        </div>
+    </section>
+
+    <!-- ===== GALLERY SECTION ===== -->
+    <div class="section-title">
+        <h2>📸 Photo Gallery</h2>
+        <p>Explore our moments</p>
+    </div>
+    <section class="gallery-section">
+        <div class="gallery-slideshow" id="gallerySlideshow">
+            <div class="no-gallery" id="galleryPlaceholder">
+                <i class="fas fa-images"></i>
+                <p>Loading gallery...</p>
+            </div>
+            <button class="gallery-nav prev" id="galleryPrev">◀</button>
+            <button class="gallery-nav next" id="galleryNext">▶</button>
+            <div class="gallery-dots" id="galleryDots"></div>
+        </div>
+        <a href="/management" class="gallery-view-all">📷 View All Photos</a>
+    </section>
 
     <!-- ===== FOOTER ===== -->
     <footer>
         <div class="footer-inner">
-
-            <!-- Social Links -->
             <div class="social-links" id="socialLinks">
                 <a href="#" id="whatsappLink" target="_blank" title="WhatsApp" style="display:none;">
                     <i class="fab fa-whatsapp"></i>
@@ -600,22 +836,25 @@
                     <i class="fab fa-linkedin"></i>
                 </a>
             </div>
-
-            <!-- WhatsApp Number -->
             <div class="whatsapp-number">
                 <i class="fab fa-whatsapp"></i>
                 <span id="whatsappNumber">Loading...</span>
             </div>
-
-            <!-- Footer Text -->
             <div class="footer-text">
                 &copy; <span id="currentYear"></span>
-                <span id="footerTitle">Loading...</span>
+                <span id="footerTitle">BBCC Skill Hub</span>
                 &mdash; All Rights Reserved
             </div>
-
         </div>
     </footer>
+
+    <!-- ===== VIDEO MODAL ===== -->
+    <div class="video-modal" id="videoModal">
+        <div class="video-modal-content">
+            <button class="video-modal-close" id="videoModalClose">✕</button>
+            <iframe id="videoFrame" src="" allowfullscreen></iframe>
+        </div>
+    </div>
 
     <!-- ============================================
     JAVASCRIPT
@@ -623,19 +862,32 @@
     <script>
         const API_BASE = window.location.origin + '/api';
 
-        /**
-         * Set favicon dynamically from logo URL
-         */
+        // ============================================
+        // STATE
+        // ============================================
+        let bannerData = [];
+        let currentBannerIndex = 0;
+        let bannerInterval = null;
+
+        let galleryPhotos = [];
+        let currentGalleryIndex = 0;
+        let galleryInterval = null;
+
+        let videosData = [];
+
+        // ============================================
+        // SET FAVICON
+        // ============================================
         function setFavicon(logoUrl) {
             if (!logoUrl || logoUrl.trim() === '' || logoUrl.trim().length < 10) {
-                // If no logo, use default BBCC favicon
-                const defaultSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E";
+                const defaultSvg =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E";
                 document.querySelector('link[rel="icon"]').href = defaultSvg;
-                document.querySelector('link[rel="apple-touch-icon"]').href = defaultSvg.replace('viewBox="0 0 100 100"', 'viewBox="0 0 180 180"').replace('font-size="32"', 'font-size="48"').replace('r="45"', 'r="80"');
+                document.querySelector('link[rel="apple-touch-icon"]').href = defaultSvg.replace('viewBox="0 0 100 100"',
+                    'viewBox="0 0 180 180"').replace('font-size="32"', 'font-size="48"').replace('r="45"', 'r="80"');
                 return;
             }
 
-            // Create a canvas to convert SVG/Image to favicon format
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = function() {
@@ -646,7 +898,6 @@
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
 
-                    // Draw white background circle with dark border
                     ctx.beginPath();
                     ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
                     ctx.fillStyle = '#0b0e1a';
@@ -655,92 +906,58 @@
                     ctx.lineWidth = 2;
                     ctx.stroke();
 
-                    // Clip to circle
                     ctx.beginPath();
                     ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
                     ctx.clip();
 
-                    // Draw the image
                     const imgSize = size - 12;
                     const offset = (size - imgSize) / 2;
                     ctx.drawImage(img, offset, offset, imgSize, imgSize);
 
-                    // Convert to ICO/PNG
                     const dataUrl = canvas.toDataURL('image/png');
+                    document.querySelector('link[rel="icon"]').href = dataUrl;
 
-                    // Update favicon links
-                    const faviconLink = document.querySelector('link[rel="icon"]');
-                    if (faviconLink) {
-                        faviconLink.href = dataUrl;
-                    }
+                    const bigCanvas = document.createElement('canvas');
+                    bigCanvas.width = 180;
+                    bigCanvas.height = 180;
+                    const bigCtx = bigCanvas.getContext('2d');
 
-                    // Update apple touch icon
-                    const appleLink = document.querySelector('link[rel="apple-touch-icon"]');
-                    if (appleLink) {
-                        // For apple touch, use larger size
-                        const bigCanvas = document.createElement('canvas');
-                        bigCanvas.width = 180;
-                        bigCanvas.height = 180;
-                        const bigCtx = bigCanvas.getContext('2d');
+                    bigCtx.beginPath();
+                    bigCtx.arc(90, 90, 88, 0, Math.PI * 2);
+                    bigCtx.fillStyle = '#0b0e1a';
+                    bigCtx.fill();
+                    bigCtx.strokeStyle = '#ffd700';
+                    bigCtx.lineWidth = 3;
+                    bigCtx.stroke();
 
-                        bigCtx.beginPath();
-                        bigCtx.arc(90, 90, 88, 0, Math.PI * 2);
-                        bigCtx.fillStyle = '#0b0e1a';
-                        bigCtx.fill();
-                        bigCtx.strokeStyle = '#ffd700';
-                        bigCtx.lineWidth = 3;
-                        bigCtx.stroke();
+                    bigCtx.beginPath();
+                    bigCtx.arc(90, 90, 84, 0, Math.PI * 2);
+                    bigCtx.clip();
 
-                        bigCtx.beginPath();
-                        bigCtx.arc(90, 90, 84, 0, Math.PI * 2);
-                        bigCtx.clip();
+                    const bigImgSize = 160;
+                    const bigOffset = (180 - bigImgSize) / 2;
+                    bigCtx.drawImage(img, bigOffset, bigOffset, bigImgSize, bigImgSize);
 
-                        const bigImgSize = 160;
-                        const bigOffset = (180 - bigImgSize) / 2;
-                        bigCtx.drawImage(img, bigOffset, bigOffset, bigImgSize, bigImgSize);
-
-                        appleLink.href = bigCanvas.toDataURL('image/png');
-                    }
+                    document.querySelector('link[rel="apple-touch-icon"]').href = bigCanvas.toDataURL('image/png');
                 } catch (err) {
                     console.warn('Favicon generation failed:', err);
                 }
             };
-
             img.onerror = function() {
-                console.warn('Failed to load logo for favicon, using default');
-                // Use default on error
-                const defaultSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E";
+                const defaultSvg =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E";
                 document.querySelector('link[rel="icon"]').href = defaultSvg;
             };
-
-            // If logo is SVG data URL or regular URL
-            if (logoUrl.startsWith('data:image/svg+xml')) {
-                // For SVG data URLs, we need to handle differently
-                try {
-                    const decoded = decodeURIComponent(logoUrl.replace('data:image/svg+xml,', ''));
-                    const parser = new DOMParser();
-                    const svgDoc = parser.parseFromString(decoded, 'image/svg+xml');
-                    const svgEl = svgDoc.documentElement;
-                    if (svgEl) {
-                        const svgData = new XMLSerializer().serializeToString(svgEl);
-                        const blob = new Blob([svgData], { type: 'image/svg+xml' });
-                        const url = URL.createObjectURL(blob);
-                        img.src = url;
-                        return;
-                    }
-                } catch (e) {
-                    console.warn('SVG parsing failed:', e);
-                }
-            }
-
             img.src = logoUrl;
         }
 
+        // ============================================
+        // FETCH SETTINGS
+        // ============================================
         async function fetchSettings() {
             try {
                 const res = await fetch(`${API_BASE}/settings`);
                 const result = await res.json();
-
                 if (result.success && result.data) {
                     applySettings(result.data);
                 } else {
@@ -753,48 +970,23 @@
         }
 
         function applySettings(data) {
-            // ===== FAVICON - Set from logo =====
             if (data.logo && data.logo.trim().length > 10) {
                 setFavicon(data.logo);
+                document.querySelector('.header-logo').innerHTML = `<img src="${data.logo}" alt="Logo">`;
             } else {
-                setFavicon(null); // Use default
+                document.querySelector('.header-logo').innerHTML = `<span>BBCC</span>`;
             }
 
-            // ===== LOGO =====
-            const logoEl = document.getElementById('logoDisplay');
-            if (data.logo && data.logo.trim().length > 10) {
-                logoEl.innerHTML = `<img src="${data.logo}" alt="Logo" />`;
-                logoEl.style.background = 'transparent';
-                logoEl.style.boxShadow = 'none';
-                logoEl.style.border = 'none';
-                logoEl.style.padding = '0';
-            } else {
-                const title = data.title || 'BBCC Skill Hub';
-                const initials = title
-                    .split(' ')
-                    .filter(w => w.length > 0)
-                    .map(w => w[0])
-                    .join('')
-                    .slice(0, 4)
-                    .toUpperCase();
-                logoEl.innerHTML =
-                    `<span style="font-size:2.2rem;font-weight:900;color:#ffd700;">${initials || 'BBCC'}</span>`;
-                logoEl.style.background = '#0b0e1a';
-                logoEl.style.boxShadow = '0 0 50px rgba(255, 215, 0, 0.06)';
-                logoEl.style.border = '2px solid rgba(255, 215, 0, 0.10)';
-                logoEl.style.padding = '12px';
+            if (data.title) {
+                document.getElementById('headerTitle').textContent = data.title;
+                document.getElementById('footerTitle').textContent = data.title;
+                document.title = data.title;
+            }
+            if (data.subTitle) {
+                document.getElementById('headerSubtitle').textContent = data.subTitle;
             }
 
-            // ===== TITLE =====
-            if (data.title) document.getElementById('siteTitle').textContent = data.title;
-
-            // ===== SUBTITLE =====
-            if (data.subTitle) document.getElementById('siteSubtitle').textContent = data.subTitle;
-
-            // ===== FOOTER TITLE =====
-            if (data.title) document.getElementById('footerTitle').textContent = data.title;
-
-            // ===== SOCIAL LINKS =====
+            // Social Links
             const socialMap = {
                 'whatsappLink': data.whatsappLink,
                 'whatsappChannelLink': data.whatsappChannelLink,
@@ -818,7 +1010,6 @@
                 }
             }
 
-            // ===== WHATSAPP NUMBER =====
             const numEl = document.getElementById('whatsappNumber');
             if (data.whatsappNumber && data.whatsappNumber.trim() !== '') {
                 numEl.textContent = data.whatsappNumber;
@@ -833,32 +1024,479 @@
             } else {
                 numEl.textContent = 'Not available';
             }
-
-            // ===== PAGE TITLE =====
-            if (data.title) {
-                document.title = data.title;
-            }
         }
 
         function fallbackSettings() {
-            document.getElementById('logoDisplay').innerHTML =
-                `<span style="font-size:2.2rem;font-weight:900;color:#ffd700;">BBCC</span>`;
-            document.getElementById('siteTitle').textContent = 'BBCC Skill Hub';
-            document.getElementById('siteSubtitle').textContent = 'Empowering Skills, Building Futures';
+            document.querySelector('.header-logo').innerHTML = `<span>BBCC</span>`;
+            document.getElementById('headerTitle').textContent = 'BBCC Skill Hub';
+            document.getElementById('headerSubtitle').textContent = 'Empowering Skills, Building Futures';
             document.getElementById('footerTitle').textContent = 'BBCC Skill Hub';
             document.getElementById('whatsappNumber').textContent = 'Not available';
-            setFavicon(null); // Use default favicon
         }
 
-        function setYear() {
+        // ============================================
+        // FETCH BANNERS
+        // ============================================
+        async function fetchBanners() {
+            try {
+                const res = await fetch(`${API_BASE}/sidebar-banner`);
+                const result = await res.json();
+                if (result.success && result.data && result.data.banners.length > 0) {
+                    bannerData = result.data.banners;
+                    renderBanners();
+                } else {
+                    // Default banner if no data
+                    bannerData = [{
+                        image: '',
+                        title: 'Welcome to BBCC Skill Hub',
+                        link: '',
+                        _id: 'default'
+                    }];
+                    renderBanners();
+                }
+            } catch (err) {
+                console.error('❌ Banner fetch failed:', err);
+                bannerData = [{
+                    image: '',
+                    title: 'Welcome to BBCC Skill Hub',
+                    link: '',
+                    _id: 'default'
+                }];
+                renderBanners();
+            }
+        }
+
+        function renderBanners() {
+            const slidesContainer = document.getElementById('bannerSlides');
+            const dotsContainer = document.getElementById('bannerDots');
+            const prevBtn = document.getElementById('bannerPrev');
+            const nextBtn = document.getElementById('bannerNext');
+
+            if (!bannerData || bannerData.length === 0) {
+                slidesContainer.innerHTML = `
+                    <div class="banner-slide">
+                        <div class="banner-overlay">
+                            <h2>Welcome to BBCC Skill Hub</h2>
+                            <p>Empowering Skills, Building Futures</p>
+                        </div>
+                    </div>
+                `;
+                dotsContainer.innerHTML = '';
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                return;
+            }
+
+            prevBtn.style.display = 'block';
+            nextBtn.style.display = 'block';
+
+            // Build slides
+            let slidesHtml = '';
+            let dotsHtml = '';
+
+            for (let i = 0; i < bannerData.length; i++) {
+                const b = bannerData[i];
+                const isActive = i === 0 ? 'active' : '';
+                slidesHtml += `
+                    <div class="banner-slide ${isActive}" style="${i === 0 ? 'display:block;' : 'display:none;'}">
+                        ${b.image && b.image.length > 50 ? `<img src="${b.image}" alt="${b.title || 'Banner'}">` : ''}
+                        <div class="banner-overlay">
+                            <h2>${b.title || 'Welcome to BBCC Skill Hub'}</h2>
+                            ${b.link ? `<p><a href="${b.link}" target="_blank">🔗 Visit Link</a></p>` : ''}
+                        </div>
+                    </div>
+                `;
+                dotsHtml += `<span class="banner-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
+            }
+
+            slidesContainer.innerHTML = slidesHtml;
+            dotsContainer.innerHTML = dotsHtml;
+
+            currentBannerIndex = 0;
+
+            // Dot click events
+            dotsContainer.querySelectorAll('.banner-dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    goToBanner(index);
+                });
+            });
+
+            // Start auto-slide
+            startBannerSlideshow();
+        }
+
+        function goToBanner(index) {
+            const slides = document.querySelectorAll('.banner-slide');
+            const dots = document.querySelectorAll('.banner-dot');
+
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+
+            slides.forEach((slide, i) => {
+                slide.style.display = i === index ? 'block' : 'none';
+            });
+
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+
+            currentBannerIndex = index;
+        }
+
+        function changeBanner(direction) {
+            goToBanner(currentBannerIndex + direction);
+        }
+
+        function startBannerSlideshow() {
+            if (bannerInterval) clearInterval(bannerInterval);
+            if (bannerData.length > 1) {
+                bannerInterval = setInterval(() => {
+                    changeBanner(1);
+                }, 5000);
+            }
+        }
+
+        // ============================================
+        // FETCH VIDEOS
+        // ============================================
+        async function fetchVideos() {
+            try {
+                const res = await fetch(`${API_BASE}/study-material`);
+                const result = await res.json();
+                if (result.success && result.data && result.data.videos.length > 0) {
+                    videosData = result.data.videos;
+                    renderVideos();
+                } else {
+                    videosData = [];
+                    renderVideos();
+                }
+            } catch (err) {
+                console.error('❌ Videos fetch failed:', err);
+                videosData = [];
+                renderVideos();
+            }
+        }
+
+        function renderVideos() {
+            const grid = document.getElementById('videosGrid');
+
+            if (!videosData || videosData.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-videos">
+                        <i class="fas fa-video" style="font-size:36px;display:block;margin-bottom:10px;"></i>
+                        No videos available
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            for (let i = 0; i < videosData.length; i++) {
+                const v = videosData[i];
+                // Extract video ID from YouTube URL
+                let videoId = '';
+                if (v.link) {
+                    const match = v.link.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?#]+)/);
+                    if (match) videoId = match[1];
+                }
+
+                html += `
+                    <div class="video-card" onclick="openVideo('${videoId}', '${v.link}')">
+                        <div class="video-thumbnail">
+                            ${v.thumbnail && v.thumbnail.length > 50 ? 
+                                `<img src="${v.thumbnail}" alt="${v.title}">` : 
+                                `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${v.title}">`
+                            }
+                            <div class="video-play-icon">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3>${v.title || 'Untitled'}</h3>
+                            ${v.description ? `<p>${v.description}</p>` : ''}
+                            <div class="video-date">${v.createdAt ? new Date(v.createdAt).toLocaleDateString() : ''}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            grid.innerHTML = html;
+        }
+
+        function openVideo(videoId, directLink) {
+            const modal = document.getElementById('videoModal');
+            const frame = document.getElementById('videoFrame');
+
+            if (videoId) {
+                frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+            } else if (directLink) {
+                frame.src = directLink;
+            } else {
+                showToast('Video link not available', true);
+                return;
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const frame = document.getElementById('videoFrame');
+            modal.classList.remove('active');
+            frame.src = '';
+            document.body.style.overflow = '';
+        }
+
+        // ============================================
+        // FETCH GALLERY
+        // ============================================
+        async function fetchGallery() {
+            try {
+                const res = await fetch(`${API_BASE}/gallery`);
+                const result = await res.json();
+                if (result.success && result.data && result.data.photos.length > 0) {
+                    galleryPhotos = result.data.photos;
+                    renderGallery();
+                } else {
+                    galleryPhotos = [];
+                    renderGallery();
+                }
+            } catch (err) {
+                console.error('❌ Gallery fetch failed:', err);
+                galleryPhotos = [];
+                renderGallery();
+            }
+        }
+
+        function renderGallery() {
+            const slideshow = document.getElementById('gallerySlideshow');
+            const dotsContainer = document.getElementById('galleryDots');
+            const prevBtn = document.getElementById('galleryPrev');
+            const nextBtn = document.getElementById('galleryNext');
+
+            // Remove placeholder
+            const placeholder = document.getElementById('galleryPlaceholder');
+            if (placeholder) placeholder.remove();
+
+            if (!galleryPhotos || galleryPhotos.length === 0) {
+                slideshow.innerHTML = `
+                    <div class="no-gallery" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
+                        <i class="fas fa-images" style="font-size:48px;margin-bottom:15px;"></i>
+                        <p style="color:rgba(255,255,255,0.3);">No photos available</p>
+                    </div>
+                `;
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                dotsContainer.innerHTML = '';
+                return;
+            }
+
+            prevBtn.style.display = 'block';
+            nextBtn.style.display = 'block';
+
+            // Build slides
+            let slidesHtml = '';
+            let dotsHtml = '';
+
+            for (let i = 0; i < galleryPhotos.length; i++) {
+                const p = galleryPhotos[i];
+                const isActive = i === 0 ? 'active' : '';
+                slidesHtml += `
+                    <div class="gallery-slide ${isActive}">
+                        <img src="${p.image}" alt="${p.title || 'Gallery'}" loading="lazy">
+                        <div class="gallery-overlay">
+                            <h3>${p.title || 'Photo ' + (i + 1)}</h3>
+                            ${p.description ? `<p>${p.description}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                dotsHtml += `<span class="gallery-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>`;
+            }
+
+            // Clear slideshow and add slides
+            slideshow.innerHTML = slidesHtml;
+            dotsContainer.innerHTML = dotsHtml;
+
+            // Add nav buttons back
+            slideshow.appendChild(prevBtn);
+            slideshow.appendChild(nextBtn);
+            slideshow.appendChild(dotsContainer);
+
+            currentGalleryIndex = 0;
+
+            // Dot click events
+            dotsContainer.querySelectorAll('.gallery-dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    goToGallery(index);
+                });
+            });
+
+            // Start auto-slide
+            startGallerySlideshow();
+        }
+
+        function goToGallery(index) {
+            const slides = document.querySelectorAll('.gallery-slide');
+            const dots = document.querySelectorAll('.gallery-dot');
+
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+
+            currentGalleryIndex = index;
+        }
+
+        function changeGallery(direction) {
+            goToGallery(currentGalleryIndex + direction);
+        }
+
+        function startGallerySlideshow() {
+            if (galleryInterval) clearInterval(galleryInterval);
+            if (galleryPhotos.length > 1) {
+                galleryInterval = setInterval(() => {
+                    changeGallery(1);
+                }, 4000);
+            }
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Year
             document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // Fetch all data
+            fetchSettings();
+            fetchBanners();
+            fetchVideos();
+            fetchGallery();
+
+            // Banner navigation
+            document.getElementById('bannerPrev').addEventListener('click', function() {
+                changeBanner(-1);
+                resetBannerInterval();
+            });
+            document.getElementById('bannerNext').addEventListener('click', function() {
+                changeBanner(1);
+                resetBannerInterval();
+            });
+
+            // Gallery navigation
+            document.getElementById('galleryPrev').addEventListener('click', function() {
+                changeGallery(-1);
+                resetGalleryInterval();
+            });
+            document.getElementById('galleryNext').addEventListener('click', function() {
+                changeGallery(1);
+                resetGalleryInterval();
+            });
+
+            // Video modal close
+            document.getElementById('videoModalClose').addEventListener('click', closeVideoModal);
+            document.getElementById('videoModal').addEventListener('click', function(e) {
+                if (e.target === this) closeVideoModal();
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeVideoModal();
+                }
+                if (e.key === 'ArrowLeft') {
+                    if (document.getElementById('videoModal').classList.contains('active')) return;
+                    changeBanner(-1);
+                    resetBannerInterval();
+                }
+                if (e.key === 'ArrowRight') {
+                    if (document.getElementById('videoModal').classList.contains('active')) return;
+                    changeBanner(1);
+                    resetBannerInterval();
+                }
+            });
+
+            // Refresh every 60 seconds
+            setInterval(() => {
+                fetchBanners();
+                fetchVideos();
+                fetchGallery();
+            }, 60000);
+        });
+
+        function resetBannerInterval() {
+            if (bannerInterval) {
+                clearInterval(bannerInterval);
+                if (bannerData.length > 1) {
+                    bannerInterval = setInterval(() => {
+                        changeBanner(1);
+                    }, 5000);
+                }
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setYear();
-            fetchSettings();
-            setInterval(fetchSettings, 60000);
-        });
+        function resetGalleryInterval() {
+            if (galleryInterval) {
+                clearInterval(galleryInterval);
+                if (galleryPhotos.length > 1) {
+                    galleryInterval = setInterval(() => {
+                        changeGallery(1);
+                    }, 4000);
+                }
+            }
+        }
+
+        // ============================================
+        // TOAST (for errors)
+        // ============================================
+        function showToast(message, isError = false) {
+            const existing = document.querySelector('.custom-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: ${isError ? '#e74c3c' : '#2ecc71'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                z-index: 3000;
+                animation: slideUp 0.5s ease;
+                max-width: 400px;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // Add animation style
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 
 </body>
