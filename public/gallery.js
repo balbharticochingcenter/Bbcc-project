@@ -25,6 +25,22 @@ function initGallery() {
                 <input type="file" id="galleryInput" accept="image/*" multiple onchange="handleGalleryFiles(event)">
             </div>
             <div id="galleryPreviewContainer" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;"></div>
+            
+            <!-- Upload Progress -->
+            <div id="galleryUploadProgress" style="display:none;margin-top:15px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                    <span style="font-size:14px;color:#667eea;font-weight:600;">
+                        <span id="galleryProgressIcon">📸</span> 
+                        <span id="galleryProgressMessage">Uploading Photos...</span>
+                    </span>
+                    <span id="galleryProgressText" style="font-size:14px;color:#667eea;font-weight:700;">0%</span>
+                </div>
+                <div style="width:100%;height:8px;background:#e9ecef;border-radius:10px;overflow:hidden;">
+                    <div id="galleryProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,#f093fb,#f5576c);border-radius:10px;transition:width 0.3s ease;"></div>
+                </div>
+                <div id="galleryProgressDetails" style="font-size:12px;color:#888;margin-top:5px;text-align:center;"></div>
+            </div>
+            
             <button class="btn btn-success" onclick="uploadGalleryPhotos()" id="galleryUploadBtn" style="display:none;margin-top:15px;width:100%;padding:12px;">
                 ✅ Upload Selected Photos
             </button>
@@ -82,6 +98,9 @@ function handleGalleryFiles(event) {
     selectedFiles = [];
     previewContainer.innerHTML = '';
     
+    let validFiles = 0;
+    let totalFiles = files.length;
+    
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file.type.startsWith('image/')) {
@@ -95,6 +114,7 @@ function handleGalleryFiles(event) {
         }
         
         selectedFiles.push(file);
+        validFiles++;
         
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -137,6 +157,62 @@ function removeFromSelected(fileName) {
 }
 
 // ============================================
+// PROGRESS BAR FUNCTIONS - GALLERY
+// ============================================
+function showGalleryProgress(percent, message = 'Uploading...', details = '') {
+    const progressDiv = document.getElementById('galleryUploadProgress');
+    const progressBar = document.getElementById('galleryProgressBar');
+    const progressText = document.getElementById('galleryProgressText');
+    const progressMessage = document.getElementById('galleryProgressMessage');
+    const progressDetails = document.getElementById('galleryProgressDetails');
+    const uploadBtn = document.getElementById('galleryUploadBtn');
+    const icon = document.getElementById('galleryProgressIcon');
+    
+    if (progressDiv) {
+        progressDiv.style.display = 'block';
+        const p = Math.min(Math.max(percent, 0), 100);
+        if (progressBar) progressBar.style.width = p + '%';
+        if (progressText) progressText.textContent = Math.round(p) + '%';
+        if (progressMessage) progressMessage.textContent = message;
+        if (progressDetails) progressDetails.textContent = details;
+        if (uploadBtn) uploadBtn.disabled = true;
+        
+        // Change icon based on progress
+        if (icon) {
+            if (p < 30) icon.textContent = '📸';
+            else if (p < 60) icon.textContent = '⚡';
+            else if (p < 90) icon.textContent = '🚀';
+            else icon.textContent = '✅';
+        }
+    }
+}
+
+function hideGalleryProgress() {
+    const progressDiv = document.getElementById('galleryUploadProgress');
+    const uploadBtn = document.getElementById('galleryUploadBtn');
+    if (progressDiv) {
+        setTimeout(() => {
+            progressDiv.style.display = 'none';
+            const progressBar = document.getElementById('galleryProgressBar');
+            const progressText = document.getElementById('galleryProgressText');
+            const progressMessage = document.getElementById('galleryProgressMessage');
+            const progressDetails = document.getElementById('galleryProgressDetails');
+            const icon = document.getElementById('galleryProgressIcon');
+            
+            if (progressBar) progressBar.style.width = '0%';
+            if (progressText) progressText.textContent = '0%';
+            if (progressMessage) progressMessage.textContent = 'Uploading Photos...';
+            if (progressDetails) progressDetails.textContent = '';
+            if (icon) icon.textContent = '📸';
+        }, 500);
+    }
+    if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = `✅ Upload ${selectedFiles.length} Photos`;
+    }
+}
+
+// ============================================
 // UPLOAD GALLERY PHOTOS
 // ============================================
 async function uploadGalleryPhotos() {
@@ -149,34 +225,82 @@ async function uploadGalleryPhotos() {
     uploadBtn.disabled = true;
     uploadBtn.textContent = '⏳ Uploading...';
     
+    // Show initial progress
+    showGalleryProgress(0, 'Preparing photos...', `0/${selectedFiles.length} photos`);
+    
     try {
         const photos = [];
+        const totalFiles = selectedFiles.length;
+        
         for (let i = 0; i < selectedFiles.length; i++) {
-            const base64 = await fileToBase64(selectedFiles[i]);
+            const file = selectedFiles[i];
+            const progressPercent = Math.round((i / totalFiles) * 30);
+            showGalleryProgress(
+                progressPercent, 
+                `Compressing photo ${i+1}/${totalFiles}...`,
+                `${file.name} (${(file.size / 1024).toFixed(0)}KB)`
+            );
+            
+            const base64 = await fileToBase64WithProgress(file, function(compressProgress) {
+                const totalProgress = 30 + (compressProgress * 0.3);
+                showGalleryProgress(
+                    Math.min(totalProgress, 60),
+                    `Compressing ${file.name}...`,
+                    `${Math.round(compressProgress * 100)}% done`
+                );
+            });
+            
             photos.push({
                 image: base64,
-                title: selectedFiles[i].name.split('.')[0],
+                title: file.name.split('.')[0],
                 description: ''
             });
+            
+            // Update progress after each photo
+            const afterProgress = 30 + Math.round(((i + 1) / totalFiles) * 30);
+            showGalleryProgress(
+                Math.min(afterProgress, 60),
+                `Processed ${i+1}/${totalFiles} photos`,
+                `${file.name} ✓`
+            );
         }
+        
+        // Upload to server
+        showGalleryProgress(65, 'Uploading to server...', `Sending ${totalFiles} photos`);
         
         const data = await apiCall('/api/gallery/photos', {
             method: 'POST',
             body: { photos: photos }
+        }, function(uploadProgress) {
+            const totalProgress = 65 + (uploadProgress * 0.3);
+            showGalleryProgress(
+                Math.min(totalProgress, 95),
+                'Uploading to server...',
+                `${Math.round(uploadProgress * 100)}% uploaded`
+            );
         });
         
+        showGalleryProgress(98, 'Finalizing...', 'Almost done!');
+        
         if (data.success) {
-            showToast(`${selectedFiles.length} photos uploaded successfully!`);
-            selectedFiles = [];
-            document.getElementById('galleryPreviewContainer').innerHTML = '';
-            document.getElementById('galleryInput').value = '';
-            uploadBtn.style.display = 'none';
-            loadGallery();
+            showGalleryProgress(100, 'Complete!', `✅ ${totalFiles} photos uploaded!`);
+            setTimeout(() => {
+                showToast(`${totalFiles} photos uploaded successfully!`);
+                selectedFiles = [];
+                document.getElementById('galleryPreviewContainer').innerHTML = '';
+                document.getElementById('galleryInput').value = '';
+                uploadBtn.style.display = 'none';
+                loadGallery();
+                hideGalleryProgress();
+            }, 800);
         } else {
+            hideGalleryProgress();
             showToast(data.message || 'Failed to upload photos', true);
         }
     } catch (error) {
+        hideGalleryProgress();
         showToast('Error uploading photos', true);
+        console.error('Upload error:', error);
     } finally {
         uploadBtn.disabled = false;
         uploadBtn.textContent = `✅ Upload ${selectedFiles.length} Photos`;
@@ -184,13 +308,90 @@ async function uploadGalleryPhotos() {
 }
 
 // ============================================
-// FILE TO BASE64
+// FILE TO BASE64 WITH PROGRESS
+// ============================================
+function fileToBase64WithProgress(file, progressCallback) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            compressImageFileWithProgress(file, 200, function(compressed, progress) {
+                if (progressCallback) progressCallback(progress);
+                resolve(compressed);
+            });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// ============================================
+// COMPRESS IMAGE FILE WITH PROGRESS
+// ============================================
+function compressImageFileWithProgress(file, maxSizeKB, callback) {
+    const reader = new FileReader();
+    reader.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const percent = (e.loaded / e.total) * 0.4;
+            if (callback) callback(percent);
+        }
+    };
+    
+    reader.onload = function(e) {
+        if (callback) callback(0.4);
+        
+        const img = new Image();
+        img.onload = function() {
+            if (callback) callback(0.5);
+            
+            let quality = 0.9;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            let width = img.width;
+            let height = img.height;
+            
+            const maxDimension = 800;
+            if (width > maxDimension || height > maxDimension) {
+                const ratio = Math.min(maxDimension / width, maxDimension / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            let base64 = canvas.toDataURL('image/jpeg', quality);
+            let attempts = 0;
+            
+            if (callback) callback(0.6);
+            
+            while (base64.length / 1024 > maxSizeKB && quality > 0.1 && attempts < 15) {
+                quality -= 0.05;
+                base64 = canvas.toDataURL('image/jpeg', quality);
+                attempts++;
+                if (callback) {
+                    const progress = 0.6 + (attempts * 0.025);
+                    callback(Math.min(progress, 0.95));
+                }
+            }
+            
+            if (callback) callback(0.98);
+            callback(base64);
+            if (callback) callback(1.0);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ============================================
+// FILE TO BASE64 (Backward compatibility)
 // ============================================
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Compress image before saving
             compressImageFile(file, 200, function(compressed) {
                 resolve(compressed);
             });
@@ -201,7 +402,7 @@ function fileToBase64(file) {
 }
 
 // ============================================
-// COMPRESS IMAGE FILE
+// COMPRESS IMAGE FILE (Backward compatibility)
 // ============================================
 function compressImageFile(file, maxSizeKB, callback) {
     const reader = new FileReader();
