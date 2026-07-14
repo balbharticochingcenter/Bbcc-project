@@ -60,7 +60,19 @@ function initStudyMaterial() {
                         <textarea id="videoDescription" rows="2" placeholder="Enter video description"></textarea>
                     </div>
                     <input type="hidden" id="editVideoId" value="">
-                    <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">
+                    
+                    <!-- Upload Progress -->
+                    <div id="videoUploadProgress" style="display:none;margin:10px 0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-size:14px;color:#667eea;font-weight:600;">📤 Uploading Video...</span>
+                            <span id="videoProgressText" style="font-size:14px;color:#667eea;font-weight:700;">0%</span>
+                        </div>
+                        <div style="width:100%;height:8px;background:#e9ecef;border-radius:10px;overflow:hidden;">
+                            <div id="videoProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:10px;transition:width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;" id="videoSubmitBtn">
                         ✅ Add Video
                     </button>
                 </form>
@@ -110,7 +122,19 @@ function initStudyMaterial() {
                         <textarea id="noteDescription" rows="2" placeholder="Enter notes description"></textarea>
                     </div>
                     <input type="hidden" id="editNoteId" value="">
-                    <button type="submit" class="btn btn-success" style="width:100%;padding:12px;">
+                    
+                    <!-- Upload Progress -->
+                    <div id="noteUploadProgress" style="display:none;margin:10px 0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-size:14px;color:#28a745;font-weight:600;">📤 Uploading PDF...</span>
+                            <span id="noteProgressText" style="font-size:14px;color:#28a745;font-weight:700;">0%</span>
+                        </div>
+                        <div style="width:100%;height:8px;background:#e9ecef;border-radius:10px;overflow:hidden;">
+                            <div id="noteProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,#28a745,#20c997);border-radius:10px;transition:width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success" style="width:100%;padding:12px;" id="noteSubmitBtn">
                         📄 Add PDF Note
                     </button>
                 </form>
@@ -230,11 +254,18 @@ function handleVideoThumb(event) {
     const file = event.target.files[0];
     if (!file) return;
     
+    // Show progress for thumbnail compression
+    showVideoProgress(10, 'Compressing thumbnail...');
+    
     compressImage(file, 50, function(compressedBase64) {
         document.getElementById('videoThumbImg').src = compressedBase64;
         document.getElementById('videoThumbImg').style.display = 'block';
         document.getElementById('videoThumbPlaceholder').style.display = 'none';
+        hideVideoProgress();
         showToast('Thumbnail uploaded successfully!');
+    }, function(progress) {
+        // Update compression progress
+        showVideoProgress(10 + (progress * 0.8), 'Compressing...');
     });
 }
 
@@ -255,26 +286,55 @@ function handleNotePdf(event) {
         return;
     }
     
+    // Show upload progress for PDF
+    showNoteProgress(10, 'Reading PDF...');
+    
     const reader = new FileReader();
+    reader.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            const progress = 10 + (percent * 0.8);
+            showNoteProgress(Math.min(progress, 90), 'Uploading...');
+        }
+    };
+    
     reader.onload = function(e) {
         const base64 = e.target.result;
         document.getElementById('notePdfName').textContent = file.name;
         document.getElementById('notePdfName').style.display = 'block';
         document.getElementById('notePdfPlaceholder').style.display = 'none';
         document.getElementById('notePdfPreview').dataset.pdfBase64 = base64;
+        hideNoteProgress();
         showToast('PDF uploaded successfully!');
     };
+    
+    reader.onerror = function() {
+        hideNoteProgress();
+        showToast('Error reading PDF file', true);
+    };
+    
     reader.readAsDataURL(file);
 }
 
 // ============================================
-// COMPRESS IMAGE
+// COMPRESS IMAGE WITH PROGRESS
 // ============================================
-function compressImage(file, maxSizeKB, callback) {
+function compressImage(file, maxSizeKB, callback, progressCallback) {
     const reader = new FileReader();
+    reader.onprogress = function(e) {
+        if (e.lengthComputable && progressCallback) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressCallback(percent * 0.3);
+        }
+    };
+    
     reader.onload = function(e) {
+        if (progressCallback) progressCallback(30);
+        
         const img = new Image();
         img.onload = function() {
+            if (progressCallback) progressCallback(40);
+            
             let quality = 0.9;
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -295,17 +355,90 @@ function compressImage(file, maxSizeKB, callback) {
             ctx.drawImage(img, 0, 0, width, height);
             
             let base64 = canvas.toDataURL('image/jpeg', quality);
+            let attempts = 0;
             
-            while (base64.length / 1024 > maxSizeKB && quality > 0.1) {
+            if (progressCallback) progressCallback(60);
+            
+            while (base64.length / 1024 > maxSizeKB && quality > 0.1 && attempts < 10) {
                 quality -= 0.1;
                 base64 = canvas.toDataURL('image/jpeg', quality);
+                attempts++;
+                if (progressCallback) progressCallback(60 + (attempts * 3));
             }
             
+            if (progressCallback) progressCallback(95);
             callback(base64);
+            if (progressCallback) progressCallback(100);
         };
         img.src = e.target.result;
     };
     reader.readAsDataURL(file);
+}
+
+// ============================================
+// PROGRESS BAR FUNCTIONS - VIDEO
+// ============================================
+function showVideoProgress(percent, message = 'Uploading...') {
+    const progressDiv = document.getElementById('videoUploadProgress');
+    const progressBar = document.getElementById('videoProgressBar');
+    const progressText = document.getElementById('videoProgressText');
+    const submitBtn = document.getElementById('videoSubmitBtn');
+    
+    if (progressDiv) {
+        progressDiv.style.display = 'block';
+        const p = Math.min(Math.max(percent, 0), 100);
+        if (progressBar) progressBar.style.width = p + '%';
+        if (progressText) progressText.textContent = Math.round(p) + '%';
+        if (submitBtn) submitBtn.disabled = true;
+    }
+}
+
+function hideVideoProgress() {
+    const progressDiv = document.getElementById('videoUploadProgress');
+    const submitBtn = document.getElementById('videoSubmitBtn');
+    if (progressDiv) {
+        setTimeout(() => {
+            progressDiv.style.display = 'none';
+            const progressBar = document.getElementById('videoProgressBar');
+            const progressText = document.getElementById('videoProgressText');
+            if (progressBar) progressBar.style.width = '0%';
+            if (progressText) progressText.textContent = '0%';
+        }, 500);
+    }
+    if (submitBtn) submitBtn.disabled = false;
+}
+
+// ============================================
+// PROGRESS BAR FUNCTIONS - NOTE
+// ============================================
+function showNoteProgress(percent, message = 'Uploading...') {
+    const progressDiv = document.getElementById('noteUploadProgress');
+    const progressBar = document.getElementById('noteProgressBar');
+    const progressText = document.getElementById('noteProgressText');
+    const submitBtn = document.getElementById('noteSubmitBtn');
+    
+    if (progressDiv) {
+        progressDiv.style.display = 'block';
+        const p = Math.min(Math.max(percent, 0), 100);
+        if (progressBar) progressBar.style.width = p + '%';
+        if (progressText) progressText.textContent = Math.round(p) + '%';
+        if (submitBtn) submitBtn.disabled = true;
+    }
+}
+
+function hideNoteProgress() {
+    const progressDiv = document.getElementById('noteUploadProgress');
+    const submitBtn = document.getElementById('noteSubmitBtn');
+    if (progressDiv) {
+        setTimeout(() => {
+            progressDiv.style.display = 'none';
+            const progressBar = document.getElementById('noteProgressBar');
+            const progressText = document.getElementById('noteProgressText');
+            if (progressBar) progressBar.style.width = '0%';
+            if (progressText) progressText.textContent = '0%';
+        }, 500);
+    }
+    if (submitBtn) submitBtn.disabled = false;
 }
 
 // ============================================
@@ -450,35 +583,57 @@ async function saveVideo(event) {
     if (!title) { showToast('Please enter video title', true); return; }
     if (!link) { showToast('Please enter video link', true); return; }
     
+    // Show progress
+    showVideoProgress(5, 'Preparing...');
+    
     // If thumbnail is placeholder or empty, try to fetch from link
     if (!thumbnail || thumbnail === '') {
+        showVideoProgress(10, 'Fetching thumbnail...');
         thumbnail = await getThumbnailFromLink(link);
     }
     
     const data = { title, link, description, thumbnail };
     
     try {
+        showVideoProgress(20, 'Saving to server...');
+        
         let response;
         if (editId) {
             response = await apiCall('/api/study-material/video/' + editId, {
                 method: 'PUT',
                 body: data
+            }, function(progress) {
+                // Update progress during upload
+                const percent = 20 + (progress * 0.7);
+                showVideoProgress(Math.min(percent, 95), 'Uploading...');
             });
         } else {
             response = await apiCall('/api/study-material/video', {
                 method: 'POST',
                 body: data
+            }, function(progress) {
+                // Update progress during upload
+                const percent = 20 + (progress * 0.7);
+                showVideoProgress(Math.min(percent, 95), 'Uploading...');
             });
         }
         
+        showVideoProgress(98, 'Finalizing...');
+        
         if (response.success) {
-            showToast(editId ? 'Video updated!' : 'Video added!');
-            resetVideoForm();
-            loadStudyMaterial();
+            showVideoProgress(100, 'Complete!');
+            setTimeout(() => {
+                showToast(editId ? 'Video updated!' : 'Video added!');
+                resetVideoForm();
+                loadStudyMaterial();
+                hideVideoProgress();
+            }, 500);
         } else {
+            hideVideoProgress();
             showToast(response.message || 'Failed to save video', true);
         }
     } catch (error) {
+        hideVideoProgress();
         showToast('Error saving video', true);
     }
 }
@@ -544,30 +699,49 @@ async function saveNote(event) {
     if (!title) { showToast('Please enter notes title', true); return; }
     if (!pdf) { showToast('Please upload a PDF file', true); return; }
     
+    // Show progress
+    showNoteProgress(5, 'Preparing...');
+    
     const data = { title, description, pdf };
     
     try {
+        showNoteProgress(20, 'Saving to server...');
+        
         let response;
         if (editId) {
             response = await apiCall('/api/study-material/note/' + editId, {
                 method: 'PUT',
                 body: data
+            }, function(progress) {
+                const percent = 20 + (progress * 0.7);
+                showNoteProgress(Math.min(percent, 95), 'Uploading...');
             });
         } else {
             response = await apiCall('/api/study-material/note', {
                 method: 'POST',
                 body: data
+            }, function(progress) {
+                const percent = 20 + (progress * 0.7);
+                showNoteProgress(Math.min(percent, 95), 'Uploading...');
             });
         }
         
+        showNoteProgress(98, 'Finalizing...');
+        
         if (response.success) {
-            showToast(editId ? 'Note updated!' : 'Note added!');
-            resetNoteForm();
-            loadStudyMaterial();
+            showNoteProgress(100, 'Complete!');
+            setTimeout(() => {
+                showToast(editId ? 'Note updated!' : 'Note added!');
+                resetNoteForm();
+                loadStudyMaterial();
+                hideNoteProgress();
+            }, 500);
         } else {
+            hideNoteProgress();
             showToast(response.message || 'Failed to save note', true);
         }
     } catch (error) {
+        hideNoteProgress();
         showToast('Error saving note', true);
     }
 }
@@ -627,6 +801,7 @@ function resetVideoForm() {
     document.getElementById('videoThumbPlaceholder').style.display = 'block';
     document.getElementById('videoFormTitle').textContent = 'Add New Video';
     document.querySelector('#videoForm button[type="submit"]').textContent = '✅ Add Video';
+    hideVideoProgress();
 }
 
 function resetNoteForm() {
@@ -637,4 +812,11 @@ function resetNoteForm() {
     document.getElementById('notePdfPreview').dataset.pdfBase64 = '';
     document.getElementById('noteFormTitle').textContent = 'Add New PDF Note';
     document.querySelector('#noteForm button[type="submit"]').textContent = '📄 Add PDF Note';
+    hideNoteProgress();
 }
+
+// ============================================
+// API CALL WITH PROGRESS
+// ============================================
+// Note: आपके existing apiCall function को modify करना होगा
+// या progress callback को support करने के लिए इसे update करें
