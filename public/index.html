@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BBCC Skill Hub</title>
 
-    <!-- ===== FAVICON - BBCC Logo Style ===== -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E" />
+    <!-- ===== DYNAMIC FAVICON - Will be set by JavaScript ===== -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E" id="dynamicFavicon" />
     
     <!-- Fallback PNG favicon for older browsers -->
     <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfklEQVR4nO2WPUvDQBzGf0k7OTh1c3QRBB1cBbHq4KCY4uCkk4OCCg6Cq06CDq6Ci4I6ugrqouhSVBHFr1CcXJw6OIhU9wf0D7mTvCR3aQp98JCH3OWe/N6X5J5HAoFAIBAIBAKBwB8Jf7M+WJcLAEyzzRttL9thh00CjnqVx7IsFyIin3YUEuCLMR8AMyCkdVAUZ1AEt9xtv3/Yifb4XPDOdgKIYALwGQCaSAjBQ+JYYR5MQJgEAwAqHXH/ZOQDmJaqy0+5t0YAMH2rmCvWrcE7cAMsb6wXJgAmYl/8lxyA2F2SAB4AQEjMfaekwTpwR8S0AmP/h0cPFDhZ3livyQO4eABUKiwHcM0NTMzk5smnyx75AGDmub18uMPawRSED7En2g7rBSIDCO+yQVMAhJDI0wMk5utHnwaXQhdy7UM8ZvJ8ksPDM/+ECaCMJ6u88sho9dnAL1DRCSACjNsIeS6EdQAA6B4POY5Znm79c++ksESf4jKQb5+9QCAQCAQCgcCfhC+ToZv5dd4YlAAAAABJRU5ErkJggg==" />
 
     <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Ccircle cx='90' cy='90' r='80' fill='%230b0e1a' stroke='%23ffd700' stroke-width='4'/%3E%3Ctext x='90' y='102' font-family='Inter, sans-serif' font-size='48' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Ccircle cx='90' cy='90' r='80' fill='%230b0e1a' stroke='%23ffd700' stroke-width='4'/%3E%3Ctext x='90' y='102' font-family='Inter, sans-serif' font-size='48' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E" id="dynamicAppleTouchIcon" />
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -623,6 +623,119 @@
     <script>
         const API_BASE = window.location.origin + '/api';
 
+        /**
+         * Set favicon dynamically from logo URL
+         */
+        function setFavicon(logoUrl) {
+            if (!logoUrl || logoUrl.trim() === '' || logoUrl.trim().length < 10) {
+                // If no logo, use default BBCC favicon
+                const defaultSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E";
+                document.querySelector('link[rel="icon"]').href = defaultSvg;
+                document.querySelector('link[rel="apple-touch-icon"]').href = defaultSvg.replace('viewBox="0 0 100 100"', 'viewBox="0 0 180 180"').replace('font-size="32"', 'font-size="48"').replace('r="45"', 'r="80"');
+                return;
+            }
+
+            // Create a canvas to convert SVG/Image to favicon format
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const size = 64;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+
+                    // Draw white background circle with dark border
+                    ctx.beginPath();
+                    ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+                    ctx.fillStyle = '#0b0e1a';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Clip to circle
+                    ctx.beginPath();
+                    ctx.arc(size / 2, size / 2, size / 2 - 4, 0, Math.PI * 2);
+                    ctx.clip();
+
+                    // Draw the image
+                    const imgSize = size - 12;
+                    const offset = (size - imgSize) / 2;
+                    ctx.drawImage(img, offset, offset, imgSize, imgSize);
+
+                    // Convert to ICO/PNG
+                    const dataUrl = canvas.toDataURL('image/png');
+
+                    // Update favicon links
+                    const faviconLink = document.querySelector('link[rel="icon"]');
+                    if (faviconLink) {
+                        faviconLink.href = dataUrl;
+                    }
+
+                    // Update apple touch icon
+                    const appleLink = document.querySelector('link[rel="apple-touch-icon"]');
+                    if (appleLink) {
+                        // For apple touch, use larger size
+                        const bigCanvas = document.createElement('canvas');
+                        bigCanvas.width = 180;
+                        bigCanvas.height = 180;
+                        const bigCtx = bigCanvas.getContext('2d');
+
+                        bigCtx.beginPath();
+                        bigCtx.arc(90, 90, 88, 0, Math.PI * 2);
+                        bigCtx.fillStyle = '#0b0e1a';
+                        bigCtx.fill();
+                        bigCtx.strokeStyle = '#ffd700';
+                        bigCtx.lineWidth = 3;
+                        bigCtx.stroke();
+
+                        bigCtx.beginPath();
+                        bigCtx.arc(90, 90, 84, 0, Math.PI * 2);
+                        bigCtx.clip();
+
+                        const bigImgSize = 160;
+                        const bigOffset = (180 - bigImgSize) / 2;
+                        bigCtx.drawImage(img, bigOffset, bigOffset, bigImgSize, bigImgSize);
+
+                        appleLink.href = bigCanvas.toDataURL('image/png');
+                    }
+                } catch (err) {
+                    console.warn('Favicon generation failed:', err);
+                }
+            };
+
+            img.onerror = function() {
+                console.warn('Failed to load logo for favicon, using default');
+                // Use default on error
+                const defaultSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E";
+                document.querySelector('link[rel="icon"]').href = defaultSvg;
+            };
+
+            // If logo is SVG data URL or regular URL
+            if (logoUrl.startsWith('data:image/svg+xml')) {
+                // For SVG data URLs, we need to handle differently
+                try {
+                    const decoded = decodeURIComponent(logoUrl.replace('data:image/svg+xml,', ''));
+                    const parser = new DOMParser();
+                    const svgDoc = parser.parseFromString(decoded, 'image/svg+xml');
+                    const svgEl = svgDoc.documentElement;
+                    if (svgEl) {
+                        const svgData = new XMLSerializer().serializeToString(svgEl);
+                        const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                        const url = URL.createObjectURL(blob);
+                        img.src = url;
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('SVG parsing failed:', e);
+                }
+            }
+
+            img.src = logoUrl;
+        }
+
         async function fetchSettings() {
             try {
                 const res = await fetch(`${API_BASE}/settings`);
@@ -640,9 +753,16 @@
         }
 
         function applySettings(data) {
-            // LOGO
+            // ===== FAVICON - Set from logo =====
+            if (data.logo && data.logo.trim().length > 10) {
+                setFavicon(data.logo);
+            } else {
+                setFavicon(null); // Use default
+            }
+
+            // ===== LOGO =====
             const logoEl = document.getElementById('logoDisplay');
-            if (data.logo && data.logo.trim().length > 50) {
+            if (data.logo && data.logo.trim().length > 10) {
                 logoEl.innerHTML = `<img src="${data.logo}" alt="Logo" />`;
                 logoEl.style.background = 'transparent';
                 logoEl.style.boxShadow = 'none';
@@ -658,25 +778,25 @@
                     .slice(0, 4)
                     .toUpperCase();
                 logoEl.innerHTML =
-                `<span style="font-size:2.2rem;font-weight:900;color:#ffd700;">${initials || 'BBCC'}</span>`;
+                    `<span style="font-size:2.2rem;font-weight:900;color:#ffd700;">${initials || 'BBCC'}</span>`;
                 logoEl.style.background = '#0b0e1a';
                 logoEl.style.boxShadow = '0 0 50px rgba(255, 215, 0, 0.06)';
                 logoEl.style.border = '2px solid rgba(255, 215, 0, 0.10)';
                 logoEl.style.padding = '12px';
             }
 
-            // TITLE
+            // ===== TITLE =====
             if (data.title) document.getElementById('siteTitle').textContent = data.title;
 
-            // SUBTITLE
+            // ===== SUBTITLE =====
             if (data.subTitle) document.getElementById('siteSubtitle').textContent = data.subTitle;
 
-            // FOOTER TITLE
+            // ===== FOOTER TITLE =====
             if (data.title) document.getElementById('footerTitle').textContent = data.title;
 
-            // SOCIAL LINKS
+            // ===== SOCIAL LINKS =====
             const socialMap = {
-                'whatsappLink': data.whatsappChannelLink,
+                'whatsappLink': data.whatsappLink,
                 'whatsappChannelLink': data.whatsappChannelLink,
                 'youtubeLink': data.youtubeChannelLink,
                 'facebookLink': data.facebookLink,
@@ -698,7 +818,7 @@
                 }
             }
 
-            // WHATSAPP NUMBER
+            // ===== WHATSAPP NUMBER =====
             const numEl = document.getElementById('whatsappNumber');
             if (data.whatsappNumber && data.whatsappNumber.trim() !== '') {
                 numEl.textContent = data.whatsappNumber;
@@ -713,6 +833,11 @@
             } else {
                 numEl.textContent = 'Not available';
             }
+
+            // ===== PAGE TITLE =====
+            if (data.title) {
+                document.title = data.title;
+            }
         }
 
         function fallbackSettings() {
@@ -722,6 +847,7 @@
             document.getElementById('siteSubtitle').textContent = 'Empowering Skills, Building Futures';
             document.getElementById('footerTitle').textContent = 'BBCC Skill Hub';
             document.getElementById('whatsappNumber').textContent = 'Not available';
+            setFavicon(null); // Use default favicon
         }
 
         function setYear() {
