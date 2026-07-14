@@ -477,7 +477,8 @@
         }
 
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 10px 14px;
             border: 2px solid #e0e0e0;
@@ -489,7 +490,8 @@
         }
 
         .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group textarea:focus,
+        .form-group select:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
@@ -556,6 +558,15 @@
 
         .btn-warning:hover {
             background: #e67e22;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
         }
 
         /* ===== IMAGE UPLOAD ===== */
@@ -1205,6 +1216,91 @@
             transform: scale(1.2);
         }
 
+        /* ===== TUITION CENTER SPECIFIC ===== */
+        .center-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .center-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .center-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .center-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .center-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .center-body {
+            padding: 15px;
+        }
+
+        .teacher-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .teacher-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #f0f0f0;
+        }
+
+        .teacher-card .teacher-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 8px;
+            display: block;
+            border: 3px solid #667eea;
+        }
+
+        .teacher-card .teacher-avatar-placeholder {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 28px;
+            color: white;
+        }
+
         .text-center {
             text-align: center;
         }
@@ -1327,6 +1423,7 @@
         <button class="tab-btn" data-tab="studymaterial">📚 Study Material <span class="badge" id="studyMaterialBadge">0</span></button>
         <button class="tab-btn" data-tab="gallery">📸 Gallery <span class="badge" id="galleryBadge">0</span></button>
         <button class="tab-btn" data-tab="sidebarbanner">🖼️ Sidebar Banner <span class="badge" id="sidebarBannerBadge">0</span></button>
+        <button class="tab-btn" data-tab="tuitioncenter">🏫 Tuition Centers <span class="badge" id="tuitionCenterBadge">0</span></button>
     </div>
 
     <!-- ===== CONTENT ===== -->
@@ -1438,6 +1535,11 @@
             <div id="sidebarBannerApp"></div>
         </div>
 
+        <!-- ===== TAB 7: TUITION CENTER ===== -->
+        <div class="tab-content" id="tab-tuitioncenter">
+            <div id="tuitionCenterApp"></div>
+        </div>
+
     </div>
 
     <!-- ===== TOAST ===== -->
@@ -1497,7 +1599,7 @@
         }
 
         // ============================================
-        // TABS - UPDATED WITH STUDY MATERIAL, GALLERY & SIDEBAR BANNER
+        // TABS - UPDATED WITH ALL TABS
         // ============================================
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -1540,6 +1642,15 @@
                     setTimeout(() => {
                         if (typeof initSidebarBanner === 'function') {
                             initSidebarBanner();
+                        }
+                    }, 100);
+                }
+                
+                // Initialize Tuition Center
+                if (tabName === 'tuitioncenter') {
+                    setTimeout(() => {
+                        if (typeof initTuitionCenter === 'function') {
+                            initTuitionCenter();
                         }
                     }, 100);
                 }
@@ -2019,6 +2130,15 @@
                     }
                 }, 200);
             }
+            
+            // Check if tuition center tab is active
+            if (document.getElementById('tab-tuitioncenter').classList.contains('active')) {
+                setTimeout(() => {
+                    if (typeof initTuitionCenter === 'function') {
+                        initTuitionCenter();
+                    }
+                }, 200);
+            }
         }
 
         // Start the app
@@ -2036,5 +2156,8 @@
     
     <!-- ===== SIDEBAR BANNER JS ===== -->
     <script src="/sidebar-banner.js"></script>
+    
+    <!-- ===== TUITION CENTER JS ===== -->
+    <script src="/tuition-center.js"></script>
 </body>
 </html>
