@@ -105,12 +105,45 @@ const SidebarBannerSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now }
 });
 
+// ============================================
+// TUITION CENTER SCHEMA
+// ============================================
+const TuitionCenterSchema = new mongoose.Schema({
+    centerName: { type: String, required: true },
+    logo: { type: String, default: '' },
+    directorName: { type: String, required: true },
+    directorPhoto: { type: String, default: '' },
+    fromClass: { type: String, required: true },
+    toClass: { type: String, required: true },
+    address: { type: String, default: '' },
+    contactNumber: { type: String, default: '' },
+    email: { type: String, default: '' },
+    whatsappNumber: { type: String, default: '' },
+    youtubeLink: { type: String, default: '' },
+    facebookLink: { type: String, default: '' },
+    instagramLink: { type: String, default: '' },
+    telegramLink: { type: String, default: '' },
+    twitterLink: { type: String, default: '' },
+    linkedinLink: { type: String, default: '' },
+    description: { type: String, default: '' },
+    teachers: [{
+        name: { type: String, required: true },
+        photo: { type: String, default: '' },
+        subject: { type: String, required: true },
+        class: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+
 // Create Models
 const Admin = mongoose.model('Admin', AdminSchema);
 const Settings = mongoose.model('Settings', SettingsSchema);
 const StudyMaterial = mongoose.model('StudyMaterial', StudyMaterialSchema);
 const Gallery = mongoose.model('Gallery', GallerySchema);
 const SidebarBanner = mongoose.model('SidebarBanner', SidebarBannerSchema);
+const TuitionCenter = mongoose.model('TuitionCenter', TuitionCenterSchema);
 
 // ============================================
 // DATABASE CONNECTION
@@ -168,6 +201,19 @@ mongoose.connect(MONGO_URI)
                 banners: []
             });
             console.log('✅ Default sidebar banner created');
+        }
+        
+        // Check if tuition center exists, if not create default
+        const tuitionExists = await TuitionCenter.findOne();
+        if (!tuitionExists) {
+            await TuitionCenter.create({
+                centerName: 'BBCC Skill Hub',
+                directorName: '',
+                fromClass: '',
+                toClass: '',
+                teachers: []
+            });
+            console.log('✅ Default tuition center created');
         }
     })
     .catch(err => {
@@ -1325,6 +1371,205 @@ app.put('/api/sidebar-banner/banner/:id', verifyToken, async (req, res) => {
             message: "Banner updated successfully",
             data: banner
         });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ============================================
+// TUITION CENTER APIS
+// ============================================
+
+// ===== GET ALL TUITION CENTERS =====
+app.get('/api/tuition-centers', async (req, res) => {
+    try {
+        const centers = await TuitionCenter.find().sort({ createdAt: -1 });
+        res.json({ success: true, data: centers });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== GET SINGLE TUITION CENTER =====
+app.get('/api/tuition-centers/:id', async (req, res) => {
+    try {
+        const center = await TuitionCenter.findById(req.params.id);
+        if (!center) {
+            return res.status(404).json({ success: false, message: "Center not found" });
+        }
+        res.json({ success: true, data: center });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== ADD TUITION CENTER =====
+app.post('/api/tuition-centers', verifyToken, async (req, res) => {
+    try {
+        const data = req.body;
+        
+        // Validation
+        if (!data.centerName || !data.directorName || !data.fromClass || !data.toClass) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Center name, director name, from class and to class are required" 
+            });
+        }
+        
+        const center = new TuitionCenter({
+            centerName: data.centerName,
+            logo: data.logo || '',
+            directorName: data.directorName,
+            directorPhoto: data.directorPhoto || '',
+            fromClass: data.fromClass,
+            toClass: data.toClass,
+            address: data.address || '',
+            contactNumber: data.contactNumber || '',
+            email: data.email || '',
+            whatsappNumber: data.whatsappNumber || '',
+            youtubeLink: data.youtubeLink || '',
+            facebookLink: data.facebookLink || '',
+            instagramLink: data.instagramLink || '',
+            telegramLink: data.telegramLink || '',
+            twitterLink: data.twitterLink || '',
+            linkedinLink: data.linkedinLink || '',
+            description: data.description || '',
+            teachers: []
+        });
+        
+        await center.save();
+        res.json({ success: true, message: "Center added successfully", data: center });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== UPDATE TUITION CENTER =====
+app.put('/api/tuition-centers/:id', verifyToken, async (req, res) => {
+    try {
+        const center = await TuitionCenter.findById(req.params.id);
+        if (!center) {
+            return res.status(404).json({ success: false, message: "Center not found" });
+        }
+        
+        const updates = req.body;
+        const allowedFields = [
+            'centerName', 'logo', 'directorName', 'directorPhoto', 
+            'fromClass', 'toClass', 'address', 'contactNumber', 'email',
+            'whatsappNumber', 'youtubeLink', 'facebookLink', 'instagramLink',
+            'telegramLink', 'twitterLink', 'linkedinLink', 'description'
+        ];
+        
+        for (const field of allowedFields) {
+            if (updates[field] !== undefined) {
+                center[field] = updates[field];
+            }
+        }
+        
+        center.updatedAt = new Date();
+        await center.save();
+        
+        res.json({ success: true, message: "Center updated successfully", data: center });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== DELETE TUITION CENTER =====
+app.delete('/api/tuition-centers/:id', verifyToken, async (req, res) => {
+    try {
+        const center = await TuitionCenter.findById(req.params.id);
+        if (!center) {
+            return res.status(404).json({ success: false, message: "Center not found" });
+        }
+        
+        await TuitionCenter.deleteOne({ _id: req.params.id });
+        res.json({ success: true, message: "Center deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== ADD TEACHER TO CENTER =====
+app.post('/api/tuition-centers/:id/teacher', verifyToken, async (req, res) => {
+    try {
+        const center = await TuitionCenter.findById(req.params.id);
+        if (!center) {
+            return res.status(404).json({ success: false, message: "Center not found" });
+        }
+        
+        const { name, photo, subject, class: classVal } = req.body;
+        
+        if (!name || !subject || !classVal) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Name, subject and class are required" 
+            });
+        }
+        
+        center.teachers.push({
+            name,
+            photo: photo || '',
+            subject,
+            class: classVal
+        });
+        
+        center.updatedAt = new Date();
+        await center.save();
+        
+        res.json({ success: true, message: "Teacher added successfully", data: center });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== UPDATE TEACHER =====
+app.put('/api/tuition-centers/:id/teacher/:tid', verifyToken, async (req, res) => {
+    try {
+        const center = await TuitionCenter.findById(req.params.id);
+        if (!center) {
+            return res.status(404).json({ success: false, message: "Center not found" });
+        }
+        
+        const teacher = center.teachers.id(req.params.tid);
+        if (!teacher) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        const { name, photo, subject, class: classVal } = req.body;
+        
+        if (name !== undefined) teacher.name = name;
+        if (photo !== undefined) teacher.photo = photo;
+        if (subject !== undefined) teacher.subject = subject;
+        if (classVal !== undefined) teacher.class = classVal;
+        
+        center.updatedAt = new Date();
+        await center.save();
+        
+        res.json({ success: true, message: "Teacher updated successfully", data: center });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== DELETE TEACHER =====
+app.delete('/api/tuition-centers/:id/teacher/:tid', verifyToken, async (req, res) => {
+    try {
+        const center = await TuitionCenter.findById(req.params.id);
+        if (!center) {
+            return res.status(404).json({ success: false, message: "Center not found" });
+        }
+        
+        const teacherIndex = center.teachers.findIndex(t => t._id.toString() === req.params.tid);
+        if (teacherIndex === -1) {
+            return res.status(404).json({ success: false, message: "Teacher not found" });
+        }
+        
+        center.teachers.splice(teacherIndex, 1);
+        center.updatedAt = new Date();
+        await center.save();
+        
+        res.json({ success: true, message: "Teacher deleted successfully", data: center });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
