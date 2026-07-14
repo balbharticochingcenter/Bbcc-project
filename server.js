@@ -39,7 +39,7 @@ const AdminSchema = new mongoose.Schema({
 // Settings Schema - For all site settings
 const SettingsSchema = new mongoose.Schema({
     // Header Settings
-    logo: { type: String, default: '' },           // Base64
+    logo: { type: String, default: '' },           // Base64 - MAIN WEBSITE LOGO
     title: { type: String, default: 'BBCC Skill Hub' },
     subTitle: { type: String, default: 'Empowering Skills, Building Futures' },
     
@@ -106,11 +106,11 @@ const SidebarBannerSchema = new mongoose.Schema({
 });
 
 // ============================================
-// TUITION CENTER SCHEMA
+// TUITION CENTER SCHEMA - FIXED (logo → clogo)
 // ============================================
 const TuitionCenterSchema = new mongoose.Schema({
     centerName: { type: String, required: true },
-    logo: { type: String, default: '' },
+    clogo: { type: String, default: '' },           // ✅ CENTER LOGO - ALAG FIELD
     directorName: { type: String, required: true },
     directorPhoto: { type: String, default: '' },
     fromClass: { type: String, required: true },
@@ -208,6 +208,7 @@ mongoose.connect(MONGO_URI)
         if (!tuitionExists) {
             await TuitionCenter.create({
                 centerName: 'BBCC Skill Hub',
+                clogo: '',
                 directorName: '',
                 fromClass: '',
                 toClass: '',
@@ -1377,7 +1378,7 @@ app.put('/api/sidebar-banner/banner/:id', verifyToken, async (req, res) => {
 });
 
 // ============================================
-// TUITION CENTER APIS - FIXED (NO SETTINGS AFFECT)
+// TUITION CENTER APIS - FIXED (clogo - NO SETTINGS AFFECT)
 // ============================================
 
 // ===== GET ALL TUITION CENTERS =====
@@ -1418,7 +1419,7 @@ app.post('/api/tuition-centers', verifyToken, async (req, res) => {
         
         const center = new TuitionCenter({
             centerName: data.centerName,
-            logo: data.logo || '',
+            clogo: data.clogo || '',                    // ✅ CENTER LOGO
             directorName: data.directorName,
             directorPhoto: data.directorPhoto || '',
             fromClass: data.fromClass,
@@ -1455,7 +1456,7 @@ app.put('/api/tuition-centers/:id', verifyToken, async (req, res) => {
         
         const updates = req.body;
         const allowedFields = [
-            'centerName', 'logo', 'directorName', 'directorPhoto', 
+            'centerName', 'clogo', 'directorName', 'directorPhoto',      // ✅ clogo
             'fromClass', 'toClass', 'address', 'contactNumber', 'email',
             'whatsappNumber', 'youtubeLink', 'facebookLink', 'instagramLink',
             'telegramLink', 'twitterLink', 'linkedinLink', 'description'
