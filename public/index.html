@@ -1,10 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BBCC Skill Hub</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+
     <style>
+        /* ============================================
+           RESET
+           ============================================ */
         * {
             margin: 0;
             padding: 0;
@@ -12,277 +22,709 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+            flex-direction: column;
+            background: #0b0e1a;
+            color: #ffffff;
+            overflow-x: hidden;
         }
 
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 60px 80px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 700px;
+        /* ============================================
+           BACKGROUND PARTICLES
+           ============================================ */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            animation: fadeIn 1s ease-in;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: floatParticle linear infinite;
+        }
+
+        .particle:nth-child(1) {
+            width: 350px;
+            height: 350px;
+            top: -120px;
+            right: -120px;
+            animation-duration: 28s;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.05), transparent 70%);
+        }
+
+        .particle:nth-child(2) {
+            width: 450px;
+            height: 450px;
+            bottom: -180px;
+            left: -180px;
+            animation-duration: 32s;
+            background: radial-gradient(circle, rgba(0, 150, 255, 0.04), transparent 70%);
+        }
+
+        .particle:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-duration: 22s;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.03), transparent 70%);
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translate(0, 0) scale(1);
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            33% {
+                transform: translate(40px, -40px) scale(1.1);
+            }
+            66% {
+                transform: translate(-30px, 30px) scale(0.9);
+            }
+            100% {
+                transform: translate(0, 0) scale(1);
             }
         }
 
-        .logo {
-            font-size: 60px;
-            margin-bottom: 15px;
-            display: block;
+        /* ============================================
+           GLOW OVERLAY
+           ============================================ */
+        .glow-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(255, 215, 0, 0.02) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(0, 150, 255, 0.02) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
         }
 
-        h1 {
-            font-size: 42px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* ============================================
+           MAIN WRAPPER
+           ============================================ */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+            min-height: 75vh;
+        }
+
+        /* ============================================
+           LOGO
+           ============================================ */
+        .logo-container {
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-wrapper {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Rotating Rings */
+        .logo-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 215, 0, 0.12);
+            animation: spinRing 14s linear infinite;
+        }
+
+        .logo-ring::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffd700;
+            box-shadow: 0 0 25px #ffd700, 0 0 50px rgba(255, 215, 0, 0.2);
+        }
+
+        .logo-ring:nth-child(2) {
+            width: 112%;
+            height: 112%;
+            top: -6%;
+            left: -6%;
+            border-color: rgba(0, 150, 255, 0.08);
+            animation-duration: 20s;
+            animation-direction: reverse;
+        }
+
+        .logo-ring:nth-child(2)::before {
+            background: #0096ff;
+            box-shadow: 0 0 25px #0096ff, 0 0 50px rgba(0, 150, 255, 0.2);
+            top: auto;
+            bottom: -3px;
+        }
+
+        @keyframes spinRing {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Logo Icon */
+        .logo-icon {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background: #0b0e1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            box-shadow:
+                0 0 50px rgba(255, 215, 0, 0.06),
+                inset 0 0 50px rgba(255, 215, 0, 0.02);
+            border: 2px solid rgba(255, 215, 0, 0.10);
+            overflow: hidden;
+            padding: 12px;
+            transition: all 0.5s ease;
+            animation: pulseLogo 3.5s ease-in-out infinite;
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.06);
+            box-shadow: 0 0 70px rgba(255, 215, 0, 0.12);
+            border-color: rgba(255, 215, 0, 0.25);
+        }
+
+        @keyframes pulseLogo {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.04);
+            }
+        }
+
+        /* ============================================
+           TEXT CONTENT
+           ============================================ */
+        .content {
+            text-align: center;
+            max-width: 750px;
+        }
+
+        .title {
+            font-size: clamp(2.8rem, 7vw, 5rem);
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffd700 0%, #f5a623 35%, #ffd700 65%, #f5a623 100%);
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
+            animation: shimmerText 5s ease-in-out infinite;
+            margin-bottom: 0.75rem;
+            line-height: 1.1;
+        }
+
+        @keyframes shimmerText {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .subtitle {
-            font-size: 20px;
-            color: #555;
-            margin-bottom: 30px;
+            font-size: clamp(1rem, 1.8vw, 1.3rem);
             font-weight: 300;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+            position: relative;
+            display: inline-block;
         }
 
-        .status-card {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 20px 0;
-            border-left: 4px solid #667eea;
+        .subtitle::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
         }
 
-        .status-item {
-            display: flex;
-            justify-content: space-between;
+        /* ============================================
+           MAINTENANCE BANNER
+           ============================================ */
+        .maintenance-banner {
+            display: inline-flex;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .status-item:last-child {
-            border-bottom: none;
-        }
-
-        .status-label {
-            color: #555;
-            font-weight: 500;
-        }
-
-        .status-value {
+            gap: 10px;
+            padding: 0.7rem 2.2rem;
+            border: 1px solid rgba(255, 215, 0, 0.10);
+            border-radius: 50px;
+            background: rgba(255, 215, 0, 0.03);
+            backdrop-filter: blur(12px);
+            font-size: 0.8rem;
+            letter-spacing: 0.12em;
+            color: rgba(255, 215, 0, 0.6);
+            text-transform: uppercase;
             font-weight: 600;
-            color: #333;
+            margin-top: 0.5rem;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .status-badge.online {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-badge.offline {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 30px 0;
-        }
-
-        .feature {
-            background: #f8f9fa;
-            padding: 20px 10px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .feature:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-icon {
-            font-size: 30px;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .feature-text {
-            font-size: 14px;
-            color: #555;
-            font-weight: 500;
-        }
-
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-            color: #888;
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+        .maintenance-banner .dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            background: #ffd700;
+            animation: blinkDot 1.6s ease-in-out infinite;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes blinkDot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.2;
+                transform: scale(0.6);
+            }
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 40px 25px;
-            }
+        /* ============================================
+           FOOTER
+           ============================================ */
+        footer {
+            width: 100%;
+            padding: 2rem 2rem 1.5rem;
+            background: rgba(11, 14, 26, 0.85);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
+            position: relative;
+            z-index: 1;
+            margin-top: auto;
+        }
 
-            h1 {
-                font-size: 32px;
-            }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+        }
 
-            .features {
-                grid-template-columns: 1fr;
-            }
+        /* Social Icons */
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.7rem;
+        }
 
-            .logo {
-                font-size: 45px;
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 1.1rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+        }
+
+        .social-links a::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, rgba(255, 215, 0, 0.08), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .social-links a:hover {
+            transform: translateY(-4px) scale(1.06);
+            color: #ffd700;
+            border-color: rgba(255, 215, 0, 0.12);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.05);
+        }
+
+        .social-links a:hover::before {
+            opacity: 1;
+        }
+
+        .social-links a:hover .fa-whatsapp {
+            color: #25D366;
+        }
+        .social-links a:hover .fa-youtube {
+            color: #FF0000;
+        }
+        .social-links a:hover .fa-facebook {
+            color: #1877F2;
+        }
+        .social-links a:hover .fa-instagram {
+            color: #E4405F;
+        }
+        .social-links a:hover .fa-telegram {
+            color: #0088cc;
+        }
+        .social-links a:hover .fa-twitter {
+            color: #1DA1F2;
+        }
+        .social-links a:hover .fa-linkedin {
+            color: #0A66C2;
+        }
+
+        .social-links a .fa-whatsapp {
+            color: #25D366;
+        }
+
+        /* WhatsApp Number */
+        .whatsapp-number {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.18);
+            letter-spacing: 0.05em;
+        }
+
+        .whatsapp-number i {
+            color: #25D366;
+            margin-right: 8px;
+        }
+
+        /* Footer Text */
+        .footer-text {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.10);
+            letter-spacing: 0.06em;
+            text-align: center;
+        }
+
+        .footer-text span {
+            color: rgba(255, 215, 0, 0.15);
+        }
+
+        /* ============================================
+           LOADING STATE
+           ============================================ */
+        .loading-text {
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 0.75rem;
+            animation: pulseText 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulseText {
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .logo-wrapper {
+                width: 110px;
+                height: 110px;
+            }
+            .logo-icon {
+                width: 65px;
+                height: 65px;
+                padding: 8px;
+            }
+            .social-links a {
+                width: 40px;
+                height: 40px;
+                font-size: 0.95rem;
+            }
+            .main-wrapper {
+                padding: 1.5rem;
+                min-height: 70vh;
+            }
+            .subtitle {
+                letter-spacing: 0.2em;
+            }
+            .maintenance-banner {
+                font-size: 0.7rem;
+                padding: 0.5rem 1.4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-wrapper {
+                width: 85px;
+                height: 85px;
+            }
+            .logo-icon {
+                width: 50px;
+                height: 50px;
+                padding: 6px;
+            }
+            .social-links {
+                gap: 0.4rem;
+            }
+            .social-links a {
+                width: 36px;
+                height: 36px;
+                font-size: 0.8rem;
+            }
+            .maintenance-banner {
+                font-size: 0.6rem;
+                padding: 0.4rem 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <span class="logo">🚀</span>
-        <h1>Welcome to BBCC Skill Hub</h1>
-        <p class="subtitle">Empowering Skills, Building Futures</p>
 
-        <div class="status-card">
-            <div class="status-item">
-                <span class="status-label">🟢 Server Status</span>
-                <span class="status-value">
-                    <span class="status-badge online" id="serverStatus">Online</span>
-                </span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">🗄️ Database Status</span>
-                <span class="status-value">
-                    <span id="dbStatus">
-                        <span class="loading"></span> Connecting...
-                    </span>
-                </span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">⏰ Server Time</span>
-                <span class="status-value" id="serverTime">Loading...</span>
+    <!-- ===== BACKGROUND ===== -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    <div class="glow-overlay"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-wrapper">
+
+        <!-- Logo -->
+        <div class="logo-container">
+            <div class="logo-wrapper">
+                <div class="logo-ring"></div>
+                <div class="logo-ring"></div>
+                <div class="logo-icon" id="logoDisplay">
+                    <span class="loading-text">Loading...</span>
+                </div>
             </div>
         </div>
 
-        <div class="features">
-            <div class="feature">
-                <span class="feature-icon">📚</span>
-                <span class="feature-text">Student Management</span>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">👨‍🏫</span>
-                <span class="feature-text">Teacher Portal</span>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">📊</span>
-                <span class="feature-text">Analytics Dashboard</span>
+        <!-- Text -->
+        <div class="content">
+            <h1 class="title" id="siteTitle">Loading...</h1>
+            <p class="subtitle" id="siteSubtitle">Loading...</p>
+
+            <div class="maintenance-banner">
+                <span class="dot"></span>
+                Website is Under Maintenance
             </div>
         </div>
 
-        <div class="footer">
-            <p>© 2026 <a href="#">BBCC Skill Hub</a> | All Rights Reserved</p>
-        </div>
     </div>
 
-    <script>
-        // Update Server Time
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('serverTime').textContent = now.toLocaleString('en-IN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-        }
-        updateTime();
-        setInterval(updateTime, 1000);
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="footer-inner">
 
-        // Check Database Status
-        async function checkDatabase() {
+            <!-- Social Links -->
+            <div class="social-links" id="socialLinks">
+                <a href="#" id="whatsappLink" target="_blank" title="WhatsApp" style="display:none;">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="#" id="whatsappChannelLink" target="_blank" title="WhatsApp Channel" style="display:none;">
+                    <i class="fas fa-broadcast"></i>
+                </a>
+                <a href="#" id="youtubeLink" target="_blank" title="YouTube" style="display:none;">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="#" id="facebookLink" target="_blank" title="Facebook" style="display:none;">
+                    <i class="fab fa-facebook"></i>
+                </a>
+                <a href="#" id="instagramLink" target="_blank" title="Instagram" style="display:none;">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" id="telegramLink" target="_blank" title="Telegram" style="display:none;">
+                    <i class="fab fa-telegram"></i>
+                </a>
+                <a href="#" id="twitterLink" target="_blank" title="Twitter" style="display:none;">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" id="linkedinLink" target="_blank" title="LinkedIn" style="display:none;">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+            </div>
+
+            <!-- WhatsApp Number -->
+            <div class="whatsapp-number">
+                <i class="fab fa-whatsapp"></i>
+                <span id="whatsappNumber">Loading...</span>
+            </div>
+
+            <!-- Footer Text -->
+            <div class="footer-text">
+                &copy; <span id="currentYear"></span>
+                <span id="footerTitle">Loading...</span>
+                &mdash; All Rights Reserved
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- ============================================
+    JAVASCRIPT
+    ============================================ -->
+    <script>
+        const API_BASE = window.location.origin + '/api';
+
+        async function fetchSettings() {
             try {
-                const response = await fetch('/api/status');
-                const data = await response.json();
-                
-                const dbStatus = document.getElementById('dbStatus');
-                if (data.database === 'Connected') {
-                    dbStatus.innerHTML = '<span class="status-badge online">✅ Connected</span>';
+                const res = await fetch(`${API_BASE}/settings`);
+                const result = await res.json();
+
+                if (result.success && result.data) {
+                    applySettings(result.data);
                 } else {
-                    dbStatus.innerHTML = '<span class="status-badge offline">❌ Disconnected</span>';
+                    fallbackSettings();
                 }
-            } catch (error) {
-                document.getElementById('dbStatus').innerHTML = '<span class="status-badge offline">❌ Connection Failed</span>';
+            } catch (err) {
+                console.error('❌ Settings fetch failed:', err);
+                fallbackSettings();
             }
         }
 
-        // Check status on load
-        checkDatabase();
-        // Check every 30 seconds
-        setInterval(checkDatabase, 30000);
+        function applySettings(data) {
+            // LOGO
+            const logoEl = document.getElementById('logoDisplay');
+            if (data.logo && data.logo.trim().length > 50) {
+                logoEl.innerHTML = `<img src="${data.logo}" alt="Logo" />`;
+                logoEl.style.background = 'transparent';
+                logoEl.style.boxShadow = 'none';
+                logoEl.style.border = 'none';
+                logoEl.style.padding = '0';
+            } else {
+                const title = data.title || 'BBCC Skill Hub';
+                const initials = title
+                    .split(' ')
+                    .filter(w => w.length > 0)
+                    .map(w => w[0])
+                    .join('')
+                    .slice(0, 4)
+                    .toUpperCase();
+                logoEl.innerHTML =
+                `<span style="font-size:2.2rem;font-weight:900;color:#ffd700;">${initials || 'BBCC'}</span>`;
+                logoEl.style.background = '#0b0e1a';
+                logoEl.style.boxShadow = '0 0 50px rgba(255, 215, 0, 0.06)';
+                logoEl.style.border = '2px solid rgba(255, 215, 0, 0.10)';
+                logoEl.style.padding = '12px';
+            }
+
+            // TITLE
+            if (data.title) document.getElementById('siteTitle').textContent = data.title;
+
+            // SUBTITLE
+            if (data.subTitle) document.getElementById('siteSubtitle').textContent = data.subTitle;
+
+            // FOOTER TITLE
+            if (data.title) document.getElementById('footerTitle').textContent = data.title;
+
+            // SOCIAL LINKS
+            const socialMap = {
+                'whatsappLink': data.whatsappChannelLink,
+                'whatsappChannelLink': data.whatsappChannelLink,
+                'youtubeLink': data.youtubeChannelLink,
+                'facebookLink': data.facebookLink,
+                'instagramLink': data.instagramLink,
+                'telegramLink': data.telegramLink,
+                'twitterLink': data.twitterLink,
+                'linkedinLink': data.linkedinLink,
+            };
+
+            for (const [id, url] of Object.entries(socialMap)) {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (url && url.trim() !== '' && url.trim() !== '#') {
+                        el.href = url.trim();
+                        el.style.display = 'inline-flex';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                }
+            }
+
+            // WHATSAPP NUMBER
+            const numEl = document.getElementById('whatsappNumber');
+            if (data.whatsappNumber && data.whatsappNumber.trim() !== '') {
+                numEl.textContent = data.whatsappNumber;
+                const waLink = document.getElementById('whatsappLink');
+                if (waLink) {
+                    const clean = data.whatsappNumber.replace(/\D/g, '');
+                    if (clean) {
+                        waLink.href = `https://wa.me/${clean}`;
+                        waLink.style.display = 'inline-flex';
+                    }
+                }
+            } else {
+                numEl.textContent = 'Not available';
+            }
+        }
+
+        function fallbackSettings() {
+            document.getElementById('logoDisplay').innerHTML =
+                `<span style="font-size:2.2rem;font-weight:900;color:#ffd700;">BBCC</span>`;
+            document.getElementById('siteTitle').textContent = 'BBCC Skill Hub';
+            document.getElementById('siteSubtitle').textContent = 'Empowering Skills, Building Futures';
+            document.getElementById('footerTitle').textContent = 'BBCC Skill Hub';
+            document.getElementById('whatsappNumber').textContent = 'Not available';
+        }
+
+        function setYear() {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setYear();
+            fetchSettings();
+            setInterval(fetchSettings, 60000);
+        });
     </script>
+
 </body>
 </html>
