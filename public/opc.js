@@ -2,7 +2,9 @@
 // OPC.JS - Partner Coaching Centers + PDF Notes Module
 // ============================================
 
-const API_BASE = window.location.origin + '/api';
+// ❌ REMOVE THIS LINE - Already declared in index.html
+// const API_BASE = window.location.origin + '/api';
+
 let partnerCenters = [];
 
 // ============================================
