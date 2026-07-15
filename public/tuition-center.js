@@ -1,5 +1,5 @@
 // ============================================
-// TUITION CENTER MANAGEMENT - COMPLETE (FIXED)
+// TUITION CENTER MANAGEMENT - COMPLETE (WITH ENCRYPTED CALL LINK)
 // ============================================
 
 let centers = [];
@@ -34,7 +34,6 @@ async function tuitionApiCall(url, options = {}) {
 // INDEPENDENT TOAST - NO SETTINGS AFFECT
 // ============================================
 function showTuitionToast(message, isError = false) {
-    // Remove existing toast
     const existing = document.querySelector('.tuition-toast');
     if (existing) existing.remove();
 
@@ -146,6 +145,18 @@ function initTuitionCenter() {
                     <div class="form-group">
                         <label>WhatsApp Number</label>
                         <input type="text" id="whatsappNumber" placeholder="9876543210">
+                    </div>
+
+                    <!-- ===== ENCRYPTED CALL LINK - NEW FIELD ===== -->
+                    <div class="form-group" style="background:#f0f4ff;padding:15px;border-radius:12px;border:2px solid #667eea;margin:10px 0;">
+                        <label style="font-weight:700;color:#667eea;">
+                            🔒 Encrypted Call Link
+                            <span style="font-weight:400;font-size:12px;color:#888;display:block;">Add your encrypted call link (e.g., https://call.doorvi.co/xxxxx)</span>
+                        </label>
+                        <input type="url" id="encryptedCallLink" placeholder="https://call.doorvi.co/your-unique-link" style="border:2px solid #667eea;background:white;">
+                        <small style="color:#888;font-size:11px;display:block;margin-top:5px;">
+                            💡 This link will appear as a "🔒 Encrypted Call" button on the frontend for this center
+                        </small>
                     </div>
 
                     <!-- Social Media Links -->
@@ -316,7 +327,7 @@ async function loadCenters() {
 }
 
 // ============================================
-// RENDER CENTERS
+// RENDER CENTERS - UPDATED WITH ENCRYPTED CALL LINK
 // ============================================
 function renderCenters(centerList) {
     const container = document.getElementById('centersListContainer');
@@ -361,6 +372,15 @@ function renderCenters(centerList) {
                     
                     ${c.address ? `<div style="font-size:12px;color:#888;margin-bottom:10px;">📍 ${c.address}</div>` : ''}
                     
+                    <!-- ===== ENCRYPTED CALL LINK - DISPLAY ===== -->
+                    ${c.encryptedCallLink ? `
+                        <div style="background:#f0f4ff;padding:8px 12px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:8px;border:1px solid #667eea;">
+                            <span style="font-size:16px;">🔒</span>
+                            <span style="font-size:12px;color:#667eea;font-weight:600;">Encrypted Call:</span>
+                            <a href="${c.encryptedCallLink}" target="_blank" style="font-size:12px;color:#667eea;text-decoration:none;word-break:break-all;">${c.encryptedCallLink.length > 40 ? c.encryptedCallLink.substring(0,40)+'...' : c.encryptedCallLink}</a>
+                        </div>
+                    ` : ''}
+                    
                     <!-- Social Icons -->
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
                         ${c.youtubeLink ? `<a href="${c.youtubeLink}" target="_blank" style="color:#FF0000;font-size:16px;"><i class="fab fa-youtube"></i></a>` : ''}
@@ -370,6 +390,7 @@ function renderCenters(centerList) {
                         ${c.twitterLink ? `<a href="${c.twitterLink}" target="_blank" style="color:#1DA1F2;font-size:16px;"><i class="fab fa-twitter"></i></a>` : ''}
                         ${c.linkedinLink ? `<a href="${c.linkedinLink}" target="_blank" style="color:#0A66C2;font-size:16px;"><i class="fab fa-linkedin"></i></a>` : ''}
                         ${c.whatsappNumber ? `<a href="https://wa.me/${c.whatsappNumber.replace(/\D/g,'')}" target="_blank" style="color:#25D366;font-size:16px;"><i class="fab fa-whatsapp"></i></a>` : ''}
+                        ${c.encryptedCallLink ? `<a href="${c.encryptedCallLink}" target="_blank" style="color:#667eea;font-size:16px;" title="Encrypted Call"><i class="fas fa-lock"></i></a>` : ''}
                     </div>
                     
                     <!-- Actions -->
@@ -403,7 +424,7 @@ function updateCenterCount(count) {
 }
 
 // ============================================
-// SAVE CENTER (Add/Edit)
+// SAVE CENTER (Add/Edit) - UPDATED WITH ENCRYPTED CALL LINK
 // ============================================
 async function saveCenter(event) {
     event.preventDefault();
@@ -418,13 +439,14 @@ async function saveCenter(event) {
         contactNumber: document.getElementById('contactNumber').value.trim(),
         email: document.getElementById('centerEmail').value.trim(),
         whatsappNumber: document.getElementById('whatsappNumber').value.trim(),
+        encryptedCallLink: document.getElementById('encryptedCallLink').value.trim(), // ✅ NEW FIELD
         youtubeLink: document.getElementById('youtubeLink').value.trim(),
         facebookLink: document.getElementById('facebookLink').value.trim(),
         instagramLink: document.getElementById('instagramLink').value.trim(),
         telegramLink: document.getElementById('telegramLink').value.trim(),
         twitterLink: document.getElementById('twitterLink').value.trim(),
         linkedinLink: document.getElementById('linkedinLink').value.trim(),
-        clogo: document.getElementById('clogoPreviewImg').src || '',     // ✅ clogo
+        clogo: document.getElementById('clogoPreviewImg').src || '',
         directorPhoto: document.getElementById('directorPhotoImg').src || '',
         description: document.getElementById('centerDescription').value.trim()
     };
@@ -463,7 +485,7 @@ async function saveCenter(event) {
 }
 
 // ============================================
-// EDIT CENTER
+// EDIT CENTER - UPDATED WITH ENCRYPTED CALL LINK
 // ============================================
 async function editCenter(centerId) {
     try {
@@ -483,6 +505,7 @@ async function editCenter(centerId) {
         document.getElementById('contactNumber').value = c.contactNumber || '';
         document.getElementById('centerEmail').value = c.email || '';
         document.getElementById('whatsappNumber').value = c.whatsappNumber || '';
+        document.getElementById('encryptedCallLink').value = c.encryptedCallLink || ''; // ✅ NEW FIELD
         document.getElementById('youtubeLink').value = c.youtubeLink || '';
         document.getElementById('facebookLink').value = c.facebookLink || '';
         document.getElementById('instagramLink').value = c.instagramLink || '';
@@ -491,7 +514,7 @@ async function editCenter(centerId) {
         document.getElementById('linkedinLink').value = c.linkedinLink || '';
         document.getElementById('centerDescription').value = c.description || '';
         
-        if (c.clogo) {                                                      // ✅ clogo
+        if (c.clogo) {
             document.getElementById('clogoPreviewImg').src = c.clogo;
             document.getElementById('clogoPreviewImg').style.display = 'block';
             document.getElementById('clogoPlaceholder').style.display = 'none';
@@ -514,7 +537,7 @@ async function editCenter(centerId) {
 }
 
 // ============================================
-// VIEW CENTER
+// VIEW CENTER - UPDATED WITH ENCRYPTED CALL LINK
 // ============================================
 async function viewCenter(centerId) {
     try {
@@ -574,6 +597,12 @@ async function viewCenter(centerId) {
                         ${c.email ? `<div><strong>📧 Email:</strong> ${c.email}</div>` : ''}
                         ${c.whatsappNumber ? `<div><strong>💬 WhatsApp:</strong> ${c.whatsappNumber}</div>` : ''}
                         ${c.address ? `<div style="grid-column:1/-1;"><strong>📍 Address:</strong> ${c.address}</div>` : ''}
+                        ${c.encryptedCallLink ? `
+                            <div style="grid-column:1/-1;background:#f0f4ff;padding:10px;border-radius:8px;border:1px solid #667eea;">
+                                <strong>🔒 Encrypted Call:</strong>
+                                <a href="${c.encryptedCallLink}" target="_blank" style="color:#667eea;word-break:break-all;">${c.encryptedCallLink}</a>
+                            </div>
+                        ` : ''}
                     </div>
                     
                     ${c.description ? `<div style="background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:15px;"><strong>📄 Description:</strong><br>${c.description}</div>` : ''}
@@ -586,6 +615,7 @@ async function viewCenter(centerId) {
                             ${c.telegramLink ? `<a href="${c.telegramLink}" target="_blank" style="color:#0088cc;font-size:20px;"><i class="fab fa-telegram"></i></a>` : ''}
                             ${c.twitterLink ? `<a href="${c.twitterLink}" target="_blank" style="color:#1DA1F2;font-size:20px;"><i class="fab fa-twitter"></i></a>` : ''}
                             ${c.linkedinLink ? `<a href="${c.linkedinLink}" target="_blank" style="color:#0A66C2;font-size:20px;"><i class="fab fa-linkedin"></i></a>` : ''}
+                            ${c.encryptedCallLink ? `<a href="${c.encryptedCallLink}" target="_blank" style="color:#667eea;font-size:20px;" title="Encrypted Call"><i class="fas fa-lock"></i></a>` : ''}
                         </div>
                     ` : ''}
                     
