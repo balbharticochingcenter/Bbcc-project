@@ -3,7 +3,43 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BBCC Skill Hub</title>
+    
+    <!-- ===== SEO META TAGS ===== -->
+    <title>BBCC Skill Hub - Best Coaching Centers & Education Platform</title>
+    <meta name="description" content="BBCC Skill Hub - Empowering Skills, Building Futures. Find the best coaching centers, expert teachers, study materials, and educational resources near you." />
+    <meta name="keywords" content="BBCC Skill Hub, coaching centers, education, teachers, study material, online learning, skill development, best coaching near me, BBCC, skill hub" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="BBCC Skill Hub" />
+    <link rel="canonical" href="https://bbccskillhub.com/" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="BBCC Skill Hub - Best Coaching Centers & Education Platform" />
+    <meta property="og:description" content="Empowering Skills, Building Futures. Find the best coaching centers, expert teachers, and educational resources." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://bbccskillhub.com/" />
+    <meta property="og:image" content="https://bbccskillhub.com/og-image.jpg" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BBCC Skill Hub - Best Coaching Centers & Education Platform" />
+    <meta name="twitter:description" content="Empowering Skills, Building Futures. Find the best coaching centers and educational resources." />
+    
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "BBCC Skill Hub",
+        "description": "Empowering Skills, Building Futures - A platform connecting students with the best coaching centers and teachers.",
+        "url": "https://bbccskillhub.com/",
+        "logo": "https://bbccskillhub.com/logo.png",
+        "sameAs": [
+            "https://youtube.com/@bbccskillhub",
+            "https://facebook.com/bbccskillhub",
+            "https://instagram.com/bbccskillhub"
+        ]
+    }
+    </script>
 
     <!-- ===== DYNAMIC FAVICON ===== -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230b0e1a' stroke='%23ffd700' stroke-width='3'/%3E%3Ctext x='50' y='58' font-family='Inter, sans-serif' font-size='32' font-weight='900' fill='%23ffd700' text-anchor='middle' dominant-baseline='central'%3EBBCC%3C/text%3E%3C/svg%3E" id="dynamicFavicon" />
@@ -479,19 +515,36 @@
             margin-top: 5px;
         }
 
-        /* ===== PARTNER COACHING CENTERS - UPDATED CARD VIEW ===== */
+        /* ===== PARTNER COACHING CENTERS - UPDATED CARD VIEW WITH AUTO-SCROLL ===== */
         .partner-section {
             padding: 0 30px 40px;
             max-width: 1200px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
+            overflow: hidden;
         }
 
-        .partner-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        .partner-scroll-container {
+            overflow: hidden;
+            position: relative;
+            padding: 10px 0;
+        }
+
+        .partner-scroll-track {
+            display: flex;
             gap: 25px;
+            animation: scrollPartners 40s linear infinite;
+            width: max-content;
+        }
+
+        .partner-scroll-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollPartners {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
 
         .partner-card {
@@ -501,12 +554,16 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             backdrop-filter: blur(10px);
+            min-width: 320px;
+            max-width: 320px;
+            flex-shrink: 0;
         }
 
         .partner-card:hover {
             transform: translateY(-10px) scale(1.02);
             border-color: rgba(255, 215, 0, 0.25);
             box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+            z-index: 10;
         }
 
         .partner-card-header {
@@ -613,6 +670,7 @@
             color: #fff;
         }
 
+        /* ===== ENCRYPTED CALL LINK - PRIORITY OVER NUMBER ===== */
         .partner-card .director-section .director-details .director-contact {
             font-size: 12px;
             color: rgba(255, 255, 255, 0.35);
@@ -623,6 +681,32 @@
             margin-right: 5px;
             color: rgba(255, 215, 0, 0.3);
             font-size: 11px;
+        }
+
+        .partner-card .director-section .director-details .encrypted-call-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .partner-card .director-section .director-details .encrypted-call-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.6); }
         }
 
         /* ===== TEACHERS LIST INSIDE CARD ===== */
@@ -749,6 +833,7 @@
         .partner-card .card-social a:hover .fa-telegram { color: #0088cc; }
         .partner-card .card-social a:hover .fa-twitter { color: #1DA1F2; }
         .partner-card .card-social a:hover .fa-linkedin { color: #0A66C2; }
+        .partner-card .card-social a:hover .fa-lock { color: #667eea; }
 
         .no-partners {
             grid-column: 1/-1;
@@ -1359,7 +1444,8 @@
             .banner-slide .banner-overlay { padding: 20px; }
             .banner-slide .banner-overlay h2 { font-size: 18px; }
             .partner-section { padding: 0 15px 30px; }
-            .partner-grid { grid-template-columns: 1fr; }
+            .partner-card { min-width: 280px; max-width: 280px; }
+            .partner-scroll-track { gap: 15px; }
             .videos-section { padding: 0 15px 30px; }
             .videos-grid { grid-template-columns: 1fr; }
             .teachers-section { padding: 0 15px 30px; }
@@ -1384,7 +1470,7 @@
             .notification-popup { max-width: 280px; padding: 12px 15px; }
             .notification-popup .notif-title { font-size: 14px; }
             .notification-popup .notif-text { font-size: 12px; }
-            .partner-grid { grid-template-columns: 1fr; }
+            .partner-card { min-width: 260px; max-width: 260px; }
         }
     </style>
 </head>
@@ -1448,14 +1534,16 @@
         <div class="banner-dots" id="bannerDots"></div>
     </section>
 
-    <!-- ===== PARTNER COACHING CENTERS - UPDATED CARD VIEW ===== -->
+    <!-- ===== PARTNER COACHING CENTERS - AUTO-SCROLL ===== -->
     <div class="section-title">
         <h2>🤝 Our Partner Coaching Centers</h2>
         <p>Excellence in Education, Together</p>
     </div>
     <section class="partner-section" id="partnerSection">
-        <div class="partner-grid" id="partnerGrid">
-            <!-- Will be filled by JavaScript -->
+        <div class="partner-scroll-container">
+            <div class="partner-scroll-track" id="partnerTrack">
+                <!-- Will be filled by JavaScript -->
+            </div>
         </div>
     </section>
 
@@ -1771,7 +1859,7 @@
             if (data.title) {
                 document.getElementById('headerTitle').textContent = data.title;
                 document.getElementById('footerTitle').textContent = data.title;
-                document.title = data.title;
+                document.title = data.title + ' - Best Coaching Centers & Education Platform';
             }
             if (data.subTitle) {
                 document.getElementById('headerSubtitle').textContent = data.subTitle;
@@ -1825,7 +1913,7 @@
         }
 
         // ============================================
-        // FETCH PARTNER CENTERS - UPDATED CARD VIEW WITH DIRECTOR & PHOTO
+        // FETCH PARTNER CENTERS - AUTO-SCROLL WITH ENCRYPTED CALL PRIORITY
         // ============================================
         let partnerCenters = [];
 
@@ -1848,30 +1936,31 @@
         }
 
         function renderPartnerCenters() {
-            const grid = document.getElementById('partnerGrid');
-            if (!grid) return;
+            const track = document.getElementById('partnerTrack');
+            if (!track) return;
 
             if (!partnerCenters || partnerCenters.length === 0) {
-                grid.innerHTML = `
-                    <div class="no-partners">
-                        <i class="fas fa-building"></i>
-                        No partner coaching centers available
+                track.innerHTML = `
+                    <div class="partner-card" style="min-width:100%;max-width:100%;">
+                        <div style="padding:40px;text-align:center;color:rgba(255,255,255,0.3);">
+                            <i class="fas fa-building" style="font-size:48px;display:block;margin-bottom:15px;"></i>
+                            No partner coaching centers available
+                        </div>
                     </div>
                 `;
                 return;
             }
 
+            // Double the items for seamless scroll
+            const items = [...partnerCenters, ...partnerCenters];
             let html = '';
 
-            for (let i = 0; i < partnerCenters.length; i++) {
-                const c = partnerCenters[i];
+            for (let i = 0; i < items.length; i++) {
+                const c = items[i];
                 const initials = c.centerName.split(' ').filter(w => w.length > 0).map(w => w[0]).join('').slice(0, 4)
                     .toUpperCase();
                 
-                // Director initials
                 const dirInitials = c.directorName ? c.directorName.split(' ').filter(w => w.length > 0).map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'D';
-                
-                // Teachers count
                 const teacherCount = c.teachers ? c.teachers.length : 0;
 
                 // Build social links
@@ -1886,9 +1975,14 @@
                     { icon: 'fa-linkedin', url: c.linkedinLink || '' },
                 ];
 
+                // Add encrypted call link to social
+                if (c.encryptedCallLink && c.encryptedCallLink.trim() !== '') {
+                    socialLinks.push({ icon: 'fa-lock', url: c.encryptedCallLink });
+                }
+
                 for (const link of socialLinks) {
                     if (link.url && link.url.trim() !== '' && link.url.trim() !== '#') {
-                        socialHtml += `<a href="${link.url}" target="_blank" title="${link.icon.replace('fa-', '')}"><i class="fab ${link.icon}"></i></a>`;
+                        socialHtml += `<a href="${link.url}" target="_blank" title="${link.icon.replace('fa-', '')}"><i class="fas ${link.icon}"></i></a>`;
                     }
                 }
 
@@ -1920,6 +2014,20 @@
                     teachersHtml = `<span class="no-teachers">No teachers listed</span>`;
                 }
 
+                // Director contact - PRIORITY: Encrypted Call Link > Contact Number
+                let directorContactHtml = '';
+                if (c.encryptedCallLink && c.encryptedCallLink.trim() !== '') {
+                    directorContactHtml = `
+                        <a href="${c.encryptedCallLink}" target="_blank" class="encrypted-call-btn">
+                            🔒 Encrypted Call
+                        </a>
+                    `;
+                } else if (c.contactNumber) {
+                    directorContactHtml = `
+                        <div class="director-contact"><i class="fas fa-phone"></i> ${c.contactNumber}</div>
+                    `;
+                }
+
                 html += `
                     <div class="partner-card">
                         <!-- Header with Center Logo & Name -->
@@ -1948,8 +2056,7 @@
                             <div class="director-details">
                                 <div class="director-label">👤 Director</div>
                                 <div class="director-name">${c.directorName || 'Not specified'}</div>
-                                ${c.contactNumber ? `<div class="director-contact"><i class="fas fa-phone"></i> ${c.contactNumber}</div>` : ''}
-                                ${c.email ? `<div class="director-contact"><i class="fas fa-envelope"></i> ${c.email}</div>` : ''}
+                                ${directorContactHtml}
                             </div>
                         </div>
 
@@ -1970,7 +2077,7 @@
                 `;
             }
 
-            grid.innerHTML = html;
+            track.innerHTML = html;
         }
 
         // ============================================
