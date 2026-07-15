@@ -2534,6 +2534,249 @@
             .splash-title { font-size: 20px; }
             .splash-logo { width: 70px; height: 70px; font-size: 28px; }
         }
+        /* ===== PARTNER CARD IMPROVEMENTS ===== */
+.partner-card {
+    position: relative;
+    overflow: visible !important;
+}
+
+.card-glow {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255,215,0,0.03), transparent 70%);
+    pointer-events: none;
+    animation: glowPulse 4s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% { transform: scale(0.8); opacity: 0.3; }
+    50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* ===== LOGO RING ANIMATION ===== */
+.center-logo {
+    position: relative;
+}
+
+.logo-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #ffd700;
+    border-right-color: #f5a623;
+    animation: logoRingSpin 3s linear infinite;
+    z-index: 0;
+}
+
+@keyframes logoRingSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== VERIFIED BADGE ===== */
+.verified-badge {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background: #22c55e;
+    border-radius: 50%;
+    color: white;
+    font-size: 11px;
+    text-align: center;
+    line-height: 18px;
+    margin-left: 6px;
+    animation: verifyPulse 2s ease-in-out infinite;
+}
+
+@keyframes verifyPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* ===== DIRECTOR RING ===== */
+.director-avatar {
+    position: relative;
+}
+
+.director-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-bottom-color: #facc15;
+    border-left-color: #facc15;
+    animation: directorRingSpin 3s linear infinite reverse;
+    z-index: 0;
+}
+
+@keyframes directorRingSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== TEACHER COUNT BADGE ===== */
+.teacher-count-badge {
+    display: inline-block;
+    padding: 1px 10px;
+    background: rgba(255,215,0,0.15);
+    border-radius: 12px;
+    font-size: 11px;
+    color: #ffd700;
+    margin-left: 6px;
+}
+
+/* ===== MORE TEACHERS BADGE ===== */
+.more-teachers-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 15px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    border: 1px dashed rgba(255,255,255,0.05);
+}
+
+/* ===== SOCIAL ICON LINK ===== */
+.social-icon-link {
+    position: relative;
+}
+
+.encrypted-link {
+    position: relative;
+}
+
+.encrypted-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    font-size: 8px;
+    background: #2563eb;
+    border-radius: 50%;
+    padding: 2px;
+}
+
+/* ===== CALL PULSE ===== */
+.encrypted-call-btn {
+    position: relative;
+}
+
+.call-pulse {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: callPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes callPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* ===== POPUP IMPROVEMENTS ===== */
+.popup-close-btn {
+    position: sticky;
+    top: 0;
+    float: right;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    margin-bottom: 10px;
+}
+
+.popup-close-btn:hover {
+    background: rgba(255,0,0,0.3);
+    transform: rotate(90deg);
+}
+
+.popup-close-main {
+    padding: 10px 30px;
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 25px;
+    color: #ffd700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.popup-close-main:hover {
+    background: rgba(255,215,0,0.2);
+}
+
+.popup-center-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255,215,0,0.2);
+    background: #1a1f35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #ffd700;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.popup-center-logo::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #ffd700;
+    border-bottom-color: #f5a623;
+    animation: logoRingSpin 3s linear infinite;
+    z-index: 0;
+}
+
+.popup-center-logo > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== VIEW DETAILS BUTTON ===== */
+.view-details-btn {
+    padding: 8px 20px;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 25px;
+    color: #ffd700;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin: 0 25px 15px;
+    width: calc(100% - 50px);
+}
+
+.view-details-btn:hover {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255,215,0,0.1);
+}
+
+.view-details-btn i {
+    margin-right: 6px;
+}
     </style>
 </head>
 <body>
