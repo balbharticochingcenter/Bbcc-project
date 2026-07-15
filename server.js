@@ -140,7 +140,6 @@ const TuitionCenterSchema = new mongoose.Schema({
 
 // ============================================
 // ===== TRACKING SCHEMA - START =====
-// ===== [DELETE THIS SECTION TO REMOVE TRACKING] =====
 // ============================================
 const TrackingSchema = new mongoose.Schema({
     trackId: { type: String, required: true, unique: true },
@@ -151,6 +150,8 @@ const TrackingSchema = new mongoose.Schema({
         city: { type: String, default: 'Unknown' },
         region: { type: String, default: 'Unknown' },
         country: { type: String, default: 'Unknown' },
+        lat: { type: Number, default: null },
+        lng: { type: Number, default: null },
         device: { type: String, default: 'Unknown' },
         browser: { type: String, default: 'Unknown' },
         os: { type: String, default: 'Unknown' },
@@ -175,7 +176,7 @@ const StudyMaterial = mongoose.model('StudyMaterial', StudyMaterialSchema);
 const Gallery = mongoose.model('Gallery', GallerySchema);
 const SidebarBanner = mongoose.model('SidebarBanner', SidebarBannerSchema);
 const TuitionCenter = mongoose.model('TuitionCenter', TuitionCenterSchema);
-const Tracking = mongoose.model('Tracking', TrackingSchema); // TRACKING MODEL
+const Tracking = mongoose.model('Tracking', TrackingSchema);
 
 // ============================================
 // DATABASE CONNECTION
@@ -184,7 +185,6 @@ mongoose.connect(MONGO_URI)
     .then(async () => {
         console.log('✅ MongoDB Connected Successfully');
         
-        // Check if admin exists, if not create default
         const adminExists = await Admin.findOne({ adminID: 'admin' });
         if (!adminExists) {
             const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -197,7 +197,6 @@ mongoose.connect(MONGO_URI)
             console.log('✅ Default admin created: admin / admin123');
         }
         
-        // Check if settings exist, if not create default
         const settingsExists = await Settings.findOne();
         if (!settingsExists) {
             await Settings.create({
@@ -207,7 +206,6 @@ mongoose.connect(MONGO_URI)
             console.log('✅ Default settings created');
         }
         
-        // Check if study material exists, if not create default
         const studyMaterialExists = await StudyMaterial.findOne();
         if (!studyMaterialExists) {
             await StudyMaterial.create({
@@ -217,7 +215,6 @@ mongoose.connect(MONGO_URI)
             console.log('✅ Default study material created');
         }
         
-        // Check if gallery exists, if not create default
         const galleryExists = await Gallery.findOne();
         if (!galleryExists) {
             await Gallery.create({
@@ -226,7 +223,6 @@ mongoose.connect(MONGO_URI)
             console.log('✅ Default gallery created');
         }
         
-        // Check if sidebar banner exists, if not create default
         const bannerExists = await SidebarBanner.findOne();
         if (!bannerExists) {
             await SidebarBanner.create({
@@ -235,7 +231,6 @@ mongoose.connect(MONGO_URI)
             console.log('✅ Default sidebar banner created');
         }
         
-        // Check if tuition center exists, if not create default
         const tuitionExists = await TuitionCenter.findOne();
         if (!tuitionExists) {
             await TuitionCenter.create({
@@ -278,7 +273,6 @@ const verifyToken = (req, res, next) => {
 // AUTH APIs
 // ============================================
 
-// Admin Login
 app.post('/api/admin/login', async (req, res) => {
     const { adminID, password } = req.body;
     
@@ -318,7 +312,6 @@ app.post('/api/admin/login', async (req, res) => {
     }
 });
 
-// Verify Token
 app.get('/api/admin/verify', verifyToken, async (req, res) => {
     try {
         const admin = await Admin.findOne({ adminID: req.user.adminID }).select('-pws');
@@ -332,7 +325,6 @@ app.get('/api/admin/verify', verifyToken, async (req, res) => {
 // SETTINGS APIs
 // ============================================
 
-// Get Settings
 app.get('/api/settings', async (req, res) => {
     try {
         let settings = await Settings.findOne();
@@ -348,7 +340,6 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// Update Settings
 app.put('/api/settings', verifyToken, async (req, res) => {
     try {
         let settings = await Settings.findOne();
@@ -358,12 +349,10 @@ app.put('/api/settings', verifyToken, async (req, res) => {
         
         const updates = req.body;
         
-        // Update header
         if (updates.logo !== undefined) settings.logo = updates.logo;
         if (updates.title !== undefined) settings.title = updates.title;
         if (updates.subTitle !== undefined) settings.subTitle = updates.subTitle;
         
-        // Update footer - social media
         const socialFields = [
             'whatsappNumber', 'whatsappChannelLink', 'youtubeChannelLink',
             'facebookLink', 'instagramLink', 'telegramLink', 'twitterLink', 'linkedinLink'
@@ -392,7 +381,6 @@ app.put('/api/settings', verifyToken, async (req, res) => {
 // ADMIN PROFILE APIS
 // ============================================
 
-// Update Admin Profile (Name, Photo)
 app.put('/api/admin/profile', verifyToken, async (req, res) => {
     try {
         const { name, photo } = req.body;
@@ -422,7 +410,6 @@ app.put('/api/admin/profile', verifyToken, async (req, res) => {
     }
 });
 
-// Get Admin Profile
 app.get('/api/admin/profile', verifyToken, async (req, res) => {
     try {
         const admin = await Admin.findOne({ adminID: req.user.adminID }).select('-pws');
@@ -432,7 +419,6 @@ app.get('/api/admin/profile', verifyToken, async (req, res) => {
     }
 });
 
-// Change Admin Password with Strength Check
 app.put('/api/admin/change-password', verifyToken, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
@@ -442,13 +428,11 @@ app.put('/api/admin/change-password', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Admin not found" });
         }
         
-        // Verify current password
         const isValid = await bcrypt.compare(currentPassword, admin.pws);
         if (!isValid) {
             return res.status(401).json({ success: false, message: "Current password is incorrect" });
         }
         
-        // Check password strength
         if (newPassword.length < 4) {
             return res.status(400).json({ 
                 success: false, 
@@ -456,7 +440,6 @@ app.put('/api/admin/change-password', verifyToken, async (req, res) => {
             });
         }
         
-        // Hash and save new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         admin.pws = hashedPassword;
         await admin.save();
@@ -470,7 +453,6 @@ app.put('/api/admin/change-password', verifyToken, async (req, res) => {
     }
 });
 
-// Change Admin ID
 app.put('/api/admin/change-id', verifyToken, async (req, res) => {
     try {
         const { newAdminID, password } = req.body;
@@ -487,13 +469,11 @@ app.put('/api/admin/change-id', verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, message: "Admin not found" });
         }
         
-        // Verify password
         const isValid = await bcrypt.compare(password, admin.pws);
         if (!isValid) {
             return res.status(401).json({ success: false, message: "Password is incorrect" });
         }
         
-        // Check if new ID already exists
         const existing = await Admin.findOne({ adminID: newAdminID });
         if (existing) {
             return res.status(400).json({ success: false, message: "Admin ID already exists" });
@@ -515,25 +495,21 @@ app.put('/api/admin/change-id', verifyToken, async (req, res) => {
 // STUDENT MANAGEMENT APIS
 // ============================================
 
-// Student Schema
 const StudentSchema = new mongoose.Schema({
     studentId: { type: String, required: true, unique: true },
     aadharNumber: { type: String, required: true, unique: true },
     photo: { type: String, default: '' },
-    
     name: {
         first: { type: String, required: true },
         middle: { type: String, default: '' },
         last: { type: String, required: true }
     },
     fullName: { type: String },
-    
     dob: { type: Date, required: true },
     gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
     studentMobile: { type: String, required: true },
     email: { type: String, default: '' },
     address: { type: String, default: '' },
-    
     parentType: { type: String, enum: ['Father', 'Mother', 'Guardian'], default: 'Father' },
     fatherName: { type: String, default: '' },
     fatherMobile: { type: String, default: '' },
@@ -542,12 +518,10 @@ const StudentSchema = new mongoose.Schema({
     guardianName: { type: String, default: '' },
     guardianMobile: { type: String, default: '' },
     guardianRelation: { type: String, default: '' },
-    
     currentClass: { type: String, required: true },
     currentBoard: { type: String, enum: ['CBSE', 'BSEB', 'ICSE'], required: true },
     joiningDate: { type: Date, required: true },
     monthlyFees: { type: Number, required: true, default: 0 },
-    
     educationHistory: [{
         class: { type: String, required: true },
         board: { type: String, required: true },
@@ -574,23 +548,20 @@ const StudentSchema = new mongoose.Schema({
             remarks: { type: String }
         }]
     }],
-    
     totalMonths: { type: Number, default: 0 },
     totalFees: { type: Number, default: 0 },
     totalPaid: { type: Number, default: 0 },
     totalDue: { type: Number, default: 0 },
-    
     isActive: { type: Boolean, default: true },
     isBlocked: { type: Boolean, default: false },
     blockReason: { type: String },
-    
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
 
 const Student = mongoose.model('Student', StudentSchema);
 
-// ===== GET ALL STUDENTS =====
+// Student APIs
 app.get('/api/students', verifyToken, async (req, res) => {
     try {
         const students = await Student.find().sort({ createdAt: -1 });
@@ -600,7 +571,6 @@ app.get('/api/students', verifyToken, async (req, res) => {
     }
 });
 
-// ===== GET SINGLE STUDENT =====
 app.get('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
@@ -613,25 +583,19 @@ app.get('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ===== ADD STUDENT =====
 app.post('/api/students', verifyToken, async (req, res) => {
     try {
         const data = req.body;
         
-        // Check if aadhar exists
         const existing = await Student.findOne({ aadharNumber: data.aadharNumber });
         if (existing) {
             return res.status(400).json({ success: false, message: "Aadhar number already registered" });
         }
         
-        // Generate student ID
         const count = await Student.countDocuments();
         const studentId = `STU${String(count + 1).padStart(4, '0')}`;
-        
-        // Create full name
         const fullName = [data.name.first, data.name.middle, data.name.last].filter(Boolean).join(' ');
         
-        // Create education history entry
         const joiningDate = new Date(data.joiningDate);
         const educationEntry = {
             class: data.currentClass,
@@ -643,7 +607,6 @@ app.post('/api/students', verifyToken, async (req, res) => {
             fees: []
         };
         
-        // Generate months from joining date to current date
         const currentDate = new Date();
         let startDate = new Date(joiningDate);
         startDate.setDate(1);
@@ -651,7 +614,6 @@ app.post('/api/students', verifyToken, async (req, res) => {
         while (startDate <= currentDate) {
             const monthName = startDate.toLocaleString('default', { month: 'short' });
             const year = startDate.getFullYear();
-            
             educationEntry.fees.push({
                 month: monthName,
                 year: year,
@@ -660,7 +622,6 @@ app.post('/api/students', verifyToken, async (req, res) => {
                 dueAmount: data.monthlyFees,
                 status: 'unpaid'
             });
-            
             startDate.setMonth(startDate.getMonth() + 1);
         }
         
@@ -704,7 +665,6 @@ app.post('/api/students', verifyToken, async (req, res) => {
     }
 });
 
-// ===== UPDATE STUDENT =====
 app.put('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
@@ -737,14 +697,12 @@ app.put('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ===== DELETE STUDENT =====
 app.delete('/api/students/:id', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
         if (!student) {
             return res.status(404).json({ success: false, message: "Student not found" });
         }
-        
         await Student.deleteOne({ studentId: req.params.id });
         res.json({ success: true, message: "Student deleted successfully" });
     } catch (err) {
@@ -752,7 +710,6 @@ app.delete('/api/students/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ===== ADD PAYMENT =====
 app.post('/api/students/:id/payment', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
@@ -761,20 +718,16 @@ app.post('/api/students/:id/payment', verifyToken, async (req, res) => {
         }
         
         const { month, year, paidAmount, paymentMode, remarks } = req.body;
-        
-        // Find current education history
         const currentHistory = student.educationHistory.find(h => h.isActive === true);
         if (!currentHistory) {
             return res.status(404).json({ success: false, message: "No active class found" });
         }
         
-        // Find the fee record
         const feeRecord = currentHistory.fees.find(f => f.month === month && f.year === year);
         if (!feeRecord) {
             return res.status(404).json({ success: false, message: "Fee record not found" });
         }
         
-        // Update fee record
         const newPaidAmount = (feeRecord.paidAmount || 0) + paidAmount;
         feeRecord.paidAmount = newPaidAmount;
         feeRecord.dueAmount = feeRecord.amount - newPaidAmount;
@@ -783,14 +736,11 @@ app.post('/api/students/:id/payment', verifyToken, async (req, res) => {
         feeRecord.paymentMode = paymentMode || 'cash';
         if (remarks) feeRecord.remarks = remarks;
         
-        // Update totals for this class
         currentHistory.totalPaid = currentHistory.fees.reduce((sum, f) => sum + (f.paidAmount || 0), 0);
         currentHistory.totalDue = currentHistory.totalFees - currentHistory.totalPaid;
         
-        // Update overall totals
         student.totalPaid = student.educationHistory.reduce((sum, h) => sum + (h.totalPaid || 0), 0);
         student.totalDue = student.totalFees - student.totalPaid;
-        
         student.updatedAt = new Date();
         await student.save();
         
@@ -800,7 +750,6 @@ app.post('/api/students/:id/payment', verifyToken, async (req, res) => {
     }
 });
 
-// ===== PROMOTE STUDENT =====
 app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
@@ -809,14 +758,11 @@ app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
         }
         
         const { newClass, newBoard, newFees, promotionDate } = req.body;
-        
-        // Find current active class
         const currentHistory = student.educationHistory.find(h => h.isActive === true);
         if (!currentHistory) {
             return res.status(404).json({ success: false, message: "No active class found" });
         }
         
-        // Check if all fees are paid
         const dueAmount = currentHistory.fees.reduce((sum, f) => sum + (f.dueAmount || 0), 0);
         if (dueAmount > 0) {
             return res.status(400).json({ 
@@ -825,14 +771,12 @@ app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
             });
         }
         
-        // Mark current class as completed
         currentHistory.isActive = false;
         currentHistory.isCompleted = true;
         currentHistory.endDate = new Date(promotionDate);
         currentHistory.promotedTo = newClass;
         currentHistory.promotedDate = new Date(promotionDate);
         
-        // Create new education entry
         const newJoiningDate = new Date(promotionDate);
         const newEntry = {
             class: newClass,
@@ -848,7 +792,6 @@ app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
             totalDue: 0
         };
         
-        // Generate months from promotion date
         const currentDate = new Date();
         let startDate = new Date(newJoiningDate);
         startDate.setDate(1);
@@ -856,7 +799,6 @@ app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
         while (startDate <= currentDate) {
             const monthName = startDate.toLocaleString('default', { month: 'short' });
             const year = startDate.getFullYear();
-            
             newEntry.fees.push({
                 month: monthName,
                 year: year,
@@ -865,7 +807,6 @@ app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
                 dueAmount: newFees,
                 status: 'unpaid'
             });
-            
             startDate.setMonth(startDate.getMonth() + 1);
         }
         
@@ -874,19 +815,15 @@ app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
         newEntry.totalDue = newEntry.totalFees;
         
         student.educationHistory.push(newEntry);
-        
-        // Update current class details
         student.currentClass = newClass;
         student.currentBoard = newBoard;
         student.joiningDate = newJoiningDate;
         student.monthlyFees = newFees;
         
-        // Update overall totals
         student.totalMonths = student.educationHistory.reduce((sum, h) => sum + (h.totalMonths || 0), 0);
         student.totalFees = student.educationHistory.reduce((sum, h) => sum + (h.totalFees || 0), 0);
         student.totalPaid = student.educationHistory.reduce((sum, h) => sum + (h.totalPaid || 0), 0);
         student.totalDue = student.totalFees - student.totalPaid;
-        
         student.updatedAt = new Date();
         await student.save();
         
@@ -896,7 +833,6 @@ app.post('/api/students/:id/promote', verifyToken, async (req, res) => {
     }
 });
 
-// ===== SEARCH STUDENTS =====
 app.get('/api/students/search/:query', verifyToken, async (req, res) => {
     try {
         const query = req.params.query;
@@ -914,7 +850,6 @@ app.get('/api/students/search/:query', verifyToken, async (req, res) => {
     }
 });
 
-// ===== CLOSE CLASS =====
 app.post('/api/students/:id/close-class', verifyToken, async (req, res) => {
     try {
         const student = await Student.findOne({ studentId: req.params.id });
@@ -923,19 +858,15 @@ app.post('/api/students/:id/close-class', verifyToken, async (req, res) => {
         }
         
         const { className } = req.body;
-        
-        // Find the class in education history
         const classIndex = student.educationHistory.findIndex(h => h.class === className && h.isActive === true);
         if (classIndex === -1) {
             return res.status(404).json({ success: false, message: "Active class not found" });
         }
         
-        // Mark class as completed
         student.educationHistory[classIndex].isActive = false;
         student.educationHistory[classIndex].isCompleted = true;
         student.educationHistory[classIndex].endDate = new Date();
         
-        // Check if there's any other active class
         const hasActiveClass = student.educationHistory.some(h => h.isActive === true);
         if (!hasActiveClass) {
             student.isActive = false;
@@ -954,7 +885,6 @@ app.post('/api/students/:id/close-class', verifyToken, async (req, res) => {
 // STUDY MATERIAL APIS
 // ============================================
 
-// ===== GET ALL STUDY MATERIAL =====
 app.get('/api/study-material', async (req, res) => {
     try {
         let studyMaterial = await StudyMaterial.findOne();
@@ -970,199 +900,135 @@ app.get('/api/study-material', async (req, res) => {
     }
 });
 
-// ===== ADD VIDEO =====
 app.post('/api/study-material/video', verifyToken, async (req, res) => {
     try {
         const { thumbnail, title, link, description } = req.body;
-        
         if (!title || !link) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Title and link are required" 
-            });
+            return res.status(400).json({ success: false, message: "Title and link are required" });
         }
-        
         let studyMaterial = await StudyMaterial.findOne();
         if (!studyMaterial) {
             studyMaterial = new StudyMaterial({ videos: [], notes: [] });
         }
-        
         studyMaterial.videos.push({
             thumbnail: thumbnail || '',
             title: title,
             link: link,
             description: description || ''
         });
-        
         studyMaterial.updatedAt = new Date();
         await studyMaterial.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Video added successfully",
-            data: studyMaterial
-        });
+        res.json({ success: true, message: "Video added successfully", data: studyMaterial });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== DELETE VIDEO =====
 app.delete('/api/study-material/video/:id', verifyToken, async (req, res) => {
     try {
         const videoId = req.params.id;
-        
         let studyMaterial = await StudyMaterial.findOne();
         if (!studyMaterial) {
             return res.status(404).json({ success: false, message: "Study material not found" });
         }
-        
         const videoIndex = studyMaterial.videos.findIndex(v => v._id.toString() === videoId);
         if (videoIndex === -1) {
             return res.status(404).json({ success: false, message: "Video not found" });
         }
-        
         studyMaterial.videos.splice(videoIndex, 1);
         studyMaterial.updatedAt = new Date();
         await studyMaterial.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Video deleted successfully",
-            data: studyMaterial
-        });
+        res.json({ success: true, message: "Video deleted successfully", data: studyMaterial });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== ADD PDF NOTE =====
 app.post('/api/study-material/note', verifyToken, async (req, res) => {
     try {
         const { pdf, title, description } = req.body;
-        
         if (!pdf || !title) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "PDF and title are required" 
-            });
+            return res.status(400).json({ success: false, message: "PDF and title are required" });
         }
-        
         let studyMaterial = await StudyMaterial.findOne();
         if (!studyMaterial) {
             studyMaterial = new StudyMaterial({ videos: [], notes: [] });
         }
-        
         studyMaterial.notes.push({
             pdf: pdf,
             title: title,
             description: description || ''
         });
-        
         studyMaterial.updatedAt = new Date();
         await studyMaterial.save();
-        
-        res.json({ 
-            success: true, 
-            message: "PDF note added successfully",
-            data: studyMaterial
-        });
+        res.json({ success: true, message: "PDF note added successfully", data: studyMaterial });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== DELETE PDF NOTE =====
 app.delete('/api/study-material/note/:id', verifyToken, async (req, res) => {
     try {
         const noteId = req.params.id;
-        
         let studyMaterial = await StudyMaterial.findOne();
         if (!studyMaterial) {
             return res.status(404).json({ success: false, message: "Study material not found" });
         }
-        
         const noteIndex = studyMaterial.notes.findIndex(n => n._id.toString() === noteId);
         if (noteIndex === -1) {
             return res.status(404).json({ success: false, message: "PDF note not found" });
         }
-        
         studyMaterial.notes.splice(noteIndex, 1);
         studyMaterial.updatedAt = new Date();
         await studyMaterial.save();
-        
-        res.json({ 
-            success: true, 
-            message: "PDF note deleted successfully",
-            data: studyMaterial
-        });
+        res.json({ success: true, message: "PDF note deleted successfully", data: studyMaterial });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== UPDATE VIDEO =====
 app.put('/api/study-material/video/:id', verifyToken, async (req, res) => {
     try {
         const videoId = req.params.id;
         const { thumbnail, title, link, description } = req.body;
-        
         let studyMaterial = await StudyMaterial.findOne();
         if (!studyMaterial) {
             return res.status(404).json({ success: false, message: "Study material not found" });
         }
-        
         const video = studyMaterial.videos.id(videoId);
         if (!video) {
             return res.status(404).json({ success: false, message: "Video not found" });
         }
-        
         if (thumbnail !== undefined) video.thumbnail = thumbnail;
         if (title !== undefined) video.title = title;
         if (link !== undefined) video.link = link;
         if (description !== undefined) video.description = description;
-        
         studyMaterial.updatedAt = new Date();
         await studyMaterial.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Video updated successfully",
-            data: studyMaterial
-        });
+        res.json({ success: true, message: "Video updated successfully", data: studyMaterial });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== UPDATE PDF NOTE =====
 app.put('/api/study-material/note/:id', verifyToken, async (req, res) => {
     try {
         const noteId = req.params.id;
         const { pdf, title, description } = req.body;
-        
         let studyMaterial = await StudyMaterial.findOne();
         if (!studyMaterial) {
             return res.status(404).json({ success: false, message: "Study material not found" });
         }
-        
         const note = studyMaterial.notes.id(noteId);
         if (!note) {
             return res.status(404).json({ success: false, message: "PDF note not found" });
         }
-        
         if (pdf !== undefined) note.pdf = pdf;
         if (title !== undefined) note.title = title;
         if (description !== undefined) note.description = description;
-        
         studyMaterial.updatedAt = new Date();
         await studyMaterial.save();
-        
-        res.json({ 
-            success: true, 
-            message: "PDF note updated successfully",
-            data: studyMaterial
-        });
+        res.json({ success: true, message: "PDF note updated successfully", data: studyMaterial });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -1172,7 +1038,6 @@ app.put('/api/study-material/note/:id', verifyToken, async (req, res) => {
 // GALLERY APIS
 // ============================================
 
-// ===== GET ALL GALLERY PHOTOS =====
 app.get('/api/gallery', async (req, res) => {
     try {
         let gallery = await Gallery.findOne();
@@ -1185,23 +1050,16 @@ app.get('/api/gallery', async (req, res) => {
     }
 });
 
-// ===== ADD MULTIPLE PHOTOS =====
 app.post('/api/gallery/photos', verifyToken, async (req, res) => {
     try {
         const { photos } = req.body;
-        
         if (!photos || !Array.isArray(photos) || photos.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "At least one photo is required" 
-            });
+            return res.status(400).json({ success: false, message: "At least one photo is required" });
         }
-        
         let gallery = await Gallery.findOne();
         if (!gallery) {
             gallery = new Gallery({ photos: [] });
         }
-        
         const currentOrder = gallery.photos.length;
         for (let i = 0; i < photos.length; i++) {
             gallery.photos.push({
@@ -1211,76 +1069,51 @@ app.post('/api/gallery/photos', verifyToken, async (req, res) => {
                 order: currentOrder + i
             });
         }
-        
         gallery.updatedAt = new Date();
         await gallery.save();
-        
-        res.json({ 
-            success: true, 
-            message: `${photos.length} photos added successfully`,
-            data: gallery
-        });
+        res.json({ success: true, message: `${photos.length} photos added successfully`, data: gallery });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== DELETE SINGLE PHOTO =====
 app.delete('/api/gallery/photo/:id', verifyToken, async (req, res) => {
     try {
         const photoId = req.params.id;
-        
         let gallery = await Gallery.findOne();
         if (!gallery) {
             return res.status(404).json({ success: false, message: "Gallery not found" });
         }
-        
         const photoIndex = gallery.photos.findIndex(p => p._id.toString() === photoId);
         if (photoIndex === -1) {
             return res.status(404).json({ success: false, message: "Photo not found" });
         }
-        
         gallery.photos.splice(photoIndex, 1);
         gallery.updatedAt = new Date();
         await gallery.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Photo deleted successfully",
-            data: gallery
-        });
+        res.json({ success: true, message: "Photo deleted successfully", data: gallery });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== UPDATE PHOTO DETAILS =====
 app.put('/api/gallery/photo/:id', verifyToken, async (req, res) => {
     try {
         const photoId = req.params.id;
         const { title, description } = req.body;
-        
         let gallery = await Gallery.findOne();
         if (!gallery) {
             return res.status(404).json({ success: false, message: "Gallery not found" });
         }
-        
         const photo = gallery.photos.id(photoId);
         if (!photo) {
             return res.status(404).json({ success: false, message: "Photo not found" });
         }
-        
         if (title !== undefined) photo.title = title;
         if (description !== undefined) photo.description = description;
-        
         gallery.updatedAt = new Date();
         await gallery.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Photo updated successfully",
-            data: gallery
-        });
+        res.json({ success: true, message: "Photo updated successfully", data: gallery });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -1290,7 +1123,6 @@ app.put('/api/gallery/photo/:id', verifyToken, async (req, res) => {
 // SIDEBAR BANNER APIS
 // ============================================
 
-// ===== GET ALL BANNERS =====
 app.get('/api/sidebar-banner', async (req, res) => {
     try {
         let banner = await SidebarBanner.findOne();
@@ -1303,23 +1135,16 @@ app.get('/api/sidebar-banner', async (req, res) => {
     }
 });
 
-// ===== ADD MULTIPLE BANNERS =====
 app.post('/api/sidebar-banner/banners', verifyToken, async (req, res) => {
     try {
         const { banners } = req.body;
-        
         if (!banners || !Array.isArray(banners) || banners.length === 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "At least one banner is required" 
-            });
+            return res.status(400).json({ success: false, message: "At least one banner is required" });
         }
-        
         let banner = await SidebarBanner.findOne();
         if (!banner) {
             banner = new SidebarBanner({ banners: [] });
         }
-        
         const currentOrder = banner.banners.length;
         for (let i = 0; i < banners.length; i++) {
             banner.banners.push({
@@ -1330,87 +1155,61 @@ app.post('/api/sidebar-banner/banners', verifyToken, async (req, res) => {
                 isActive: true
             });
         }
-        
         banner.updatedAt = new Date();
         await banner.save();
-        
-        res.json({ 
-            success: true, 
-            message: `${banners.length} banners added successfully`,
-            data: banner
-        });
+        res.json({ success: true, message: `${banners.length} banners added successfully`, data: banner });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== DELETE SINGLE BANNER =====
 app.delete('/api/sidebar-banner/banner/:id', verifyToken, async (req, res) => {
     try {
         const bannerId = req.params.id;
-        
         let banner = await SidebarBanner.findOne();
         if (!banner) {
             return res.status(404).json({ success: false, message: "Banner not found" });
         }
-        
         const bannerIndex = banner.banners.findIndex(b => b._id.toString() === bannerId);
         if (bannerIndex === -1) {
             return res.status(404).json({ success: false, message: "Banner not found" });
         }
-        
         banner.banners.splice(bannerIndex, 1);
         banner.updatedAt = new Date();
         await banner.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Banner deleted successfully",
-            data: banner
-        });
+        res.json({ success: true, message: "Banner deleted successfully", data: banner });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== UPDATE BANNER =====
 app.put('/api/sidebar-banner/banner/:id', verifyToken, async (req, res) => {
     try {
         const bannerId = req.params.id;
         const { title, link, isActive } = req.body;
-        
         let banner = await SidebarBanner.findOne();
         if (!banner) {
             return res.status(404).json({ success: false, message: "Banner not found" });
         }
-        
         const bannerItem = banner.banners.id(bannerId);
         if (!bannerItem) {
             return res.status(404).json({ success: false, message: "Banner not found" });
         }
-        
         if (title !== undefined) bannerItem.title = title;
         if (link !== undefined) bannerItem.link = link;
         if (isActive !== undefined) bannerItem.isActive = isActive;
-        
         banner.updatedAt = new Date();
         await banner.save();
-        
-        res.json({ 
-            success: true, 
-            message: "Banner updated successfully",
-            data: banner
-        });
+        res.json({ success: true, message: "Banner updated successfully", data: banner });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
 // ============================================
-// TUITION CENTER APIS - FIXED (WITH ENCRYPTED CALL LINK)
+// TUITION CENTER APIS
 // ============================================
 
-// ===== GET ALL TUITION CENTERS =====
 app.get('/api/tuition-centers', async (req, res) => {
     try {
         const centers = await TuitionCenter.find().sort({ createdAt: -1 });
@@ -1420,7 +1219,6 @@ app.get('/api/tuition-centers', async (req, res) => {
     }
 });
 
-// ===== GET SINGLE TUITION CENTER =====
 app.get('/api/tuition-centers/:id', async (req, res) => {
     try {
         const center = await TuitionCenter.findById(req.params.id);
@@ -1433,19 +1231,15 @@ app.get('/api/tuition-centers/:id', async (req, res) => {
     }
 });
 
-// ===== ADD TUITION CENTER - FIXED =====
 app.post('/api/tuition-centers', verifyToken, async (req, res) => {
     try {
         const data = req.body;
-        
-        // Validation
         if (!data.centerName || !data.directorName || !data.fromClass || !data.toClass) {
             return res.status(400).json({ 
                 success: false, 
                 message: "Center name, director name, from class and to class are required" 
             });
         }
-        
         const center = new TuitionCenter({
             centerName: data.centerName,
             clogo: data.clogo || '',
@@ -1467,7 +1261,6 @@ app.post('/api/tuition-centers', verifyToken, async (req, res) => {
             description: data.description || '',
             teachers: []
         });
-        
         await center.save();
         res.json({ success: true, message: "Center added successfully", data: center });
     } catch (err) {
@@ -1475,14 +1268,12 @@ app.post('/api/tuition-centers', verifyToken, async (req, res) => {
     }
 });
 
-// ===== UPDATE TUITION CENTER - FIXED =====
 app.put('/api/tuition-centers/:id', verifyToken, async (req, res) => {
     try {
         const center = await TuitionCenter.findById(req.params.id);
         if (!center) {
             return res.status(404).json({ success: false, message: "Center not found" });
         }
-        
         const updates = req.body;
         const allowedFields = [
             'centerName', 'clogo', 'directorName', 'directorPhoto',
@@ -1491,30 +1282,25 @@ app.put('/api/tuition-centers/:id', verifyToken, async (req, res) => {
             'youtubeLink', 'facebookLink', 'instagramLink',
             'telegramLink', 'twitterLink', 'linkedinLink', 'description'
         ];
-        
         for (const field of allowedFields) {
             if (updates[field] !== undefined) {
                 center[field] = updates[field];
             }
         }
-        
         center.updatedAt = new Date();
         await center.save();
-        
         res.json({ success: true, message: "Center updated successfully", data: center });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== DELETE TUITION CENTER =====
 app.delete('/api/tuition-centers/:id', verifyToken, async (req, res) => {
     try {
         const center = await TuitionCenter.findById(req.params.id);
         if (!center) {
             return res.status(404).json({ success: false, message: "Center not found" });
         }
-        
         await TuitionCenter.deleteOne({ _id: req.params.id });
         res.json({ success: true, message: "Center deleted successfully" });
     } catch (err) {
@@ -1522,85 +1308,66 @@ app.delete('/api/tuition-centers/:id', verifyToken, async (req, res) => {
     }
 });
 
-// ===== ADD TEACHER TO CENTER =====
 app.post('/api/tuition-centers/:id/teacher', verifyToken, async (req, res) => {
     try {
         const center = await TuitionCenter.findById(req.params.id);
         if (!center) {
             return res.status(404).json({ success: false, message: "Center not found" });
         }
-        
         const { name, photo, subject, class: classVal } = req.body;
-        
         if (!name || !subject || !classVal) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Name, subject and class are required" 
-            });
+            return res.status(400).json({ success: false, message: "Name, subject and class are required" });
         }
-        
         center.teachers.push({
             name,
             photo: photo || '',
             subject,
             class: classVal
         });
-        
         center.updatedAt = new Date();
         await center.save();
-        
         res.json({ success: true, message: "Teacher added successfully", data: center });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== UPDATE TEACHER =====
 app.put('/api/tuition-centers/:id/teacher/:tid', verifyToken, async (req, res) => {
     try {
         const center = await TuitionCenter.findById(req.params.id);
         if (!center) {
             return res.status(404).json({ success: false, message: "Center not found" });
         }
-        
         const teacher = center.teachers.id(req.params.tid);
         if (!teacher) {
             return res.status(404).json({ success: false, message: "Teacher not found" });
         }
-        
         const { name, photo, subject, class: classVal } = req.body;
-        
         if (name !== undefined) teacher.name = name;
         if (photo !== undefined) teacher.photo = photo;
         if (subject !== undefined) teacher.subject = subject;
         if (classVal !== undefined) teacher.class = classVal;
-        
         center.updatedAt = new Date();
         await center.save();
-        
         res.json({ success: true, message: "Teacher updated successfully", data: center });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// ===== DELETE TEACHER =====
 app.delete('/api/tuition-centers/:id/teacher/:tid', verifyToken, async (req, res) => {
     try {
         const center = await TuitionCenter.findById(req.params.id);
         if (!center) {
             return res.status(404).json({ success: false, message: "Center not found" });
         }
-        
         const teacherIndex = center.teachers.findIndex(t => t._id.toString() === req.params.tid);
         if (teacherIndex === -1) {
             return res.status(404).json({ success: false, message: "Teacher not found" });
         }
-        
         center.teachers.splice(teacherIndex, 1);
         center.updatedAt = new Date();
         await center.save();
-        
         res.json({ success: true, message: "Teacher deleted successfully", data: center });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -1609,7 +1376,6 @@ app.delete('/api/tuition-centers/:id/teacher/:tid', verifyToken, async (req, res
 
 // ============================================
 // ===== TRACKING APIs - START =====
-// ===== [DELETE THIS SECTION TO REMOVE TRACKING] =====
 // ============================================
 
 // ===== GENERATE TRACKING LINK =====
@@ -1624,7 +1390,6 @@ app.post('/api/tracking/generate', async (req, res) => {
             });
         }
 
-        // Check if already exists
         let tracking = await Tracking.findOne({ imageUrl: imageUrl });
         if (tracking) {
             return res.json({
@@ -1633,17 +1398,15 @@ app.post('/api/tracking/generate', async (req, res) => {
                 data: {
                     trackId: tracking.trackId,
                     imageUrl: tracking.imageUrl,
-                    link: `${req.protocol}://${req.get('host')}/track/${tracking.trackId}`,
+                    link: `${req.protocol}://${req.get('host')}/image?id=${tracking.trackId}`,
                     totalClicks: tracking.totalClicks,
                     visits: tracking.visits
                 }
             });
         }
 
-        // Generate unique track ID
         const trackId = 'trk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         
-        // Create new tracking record
         tracking = new Tracking({
             trackId: trackId,
             imageUrl: imageUrl,
@@ -1660,7 +1423,7 @@ app.post('/api/tracking/generate', async (req, res) => {
             data: {
                 trackId: tracking.trackId,
                 imageUrl: tracking.imageUrl,
-                link: `${req.protocol}://${req.get('host')}/track/${tracking.trackId}`,
+                link: `${req.protocol}://${req.get('host')}/image?id=${tracking.trackId}`,
                 totalClicks: 0,
                 visits: []
             }
@@ -1670,94 +1433,110 @@ app.post('/api/tracking/generate', async (req, res) => {
     }
 });
 
-// ===== TRACK VISITOR - GET IMAGE + SAVE DATA =====
-app.get('/track/:trackId', async (req, res) => {
+// ===== GET IMAGE FOR TRACKING =====
+app.get('/api/tracking/image/:trackId', async (req, res) => {
     try {
         const { trackId } = req.params;
-        
-        // Find tracking record
         const tracking = await Tracking.findOne({ trackId });
+        
         if (!tracking) {
-            return res.status(404).send(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Link Not Found</title>
-                    <style>
-                        body {
-                            margin: 0;
-                            background: #0b0e1a;
-                            color: #fff;
-                            font-family: 'Inter', sans-serif;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            height: 100vh;
-                            flex-direction: column;
-                            text-align: center;
-                            padding: 20px;
-                        }
-                        h1 { color: #ffd700; font-size: 32px; }
-                        p { color: rgba(255,255,255,0.5); }
-                    </style>
-                </head>
-                <body>
-                    <h1>🔗 Link Not Found</h1>
-                    <p>This tracking link does not exist or has been removed.</p>
-                </body>
-                </html>
-            `);
+            return res.status(404).json({ 
+                success: false, 
+                message: "Tracking link not found" 
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                image_url: tracking.imageUrl,
+                track_id: tracking.trackId
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// ===== TRACK VISITOR - AUTO CAPTURE =====
+app.post('/api/tracking/visit', async (req, res) => {
+    try {
+        const { track_id, lat, lng } = req.body;
+        
+        if (!track_id) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Track ID is required" 
+            });
         }
 
-        // Get visitor info from request
+        const tracking = await Tracking.findOne({ trackId: track_id });
+        if (!tracking) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Tracking link not found" 
+            });
+        }
+
         const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'Unknown';
         const userAgent = req.headers['user-agent'] || 'Unknown';
         const referrer = req.headers['referer'] || 'Unknown';
 
-        // Parse user agent
         const deviceInfo = getUserAgentInfo(userAgent);
 
-        // Get location from IP using free API
         let location = 'Unknown';
         let city = 'Unknown';
         let region = 'Unknown';
         let country = 'Unknown';
 
-        try {
-            const ipRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,city,region,country`);
-            const ipData = await ipRes.json();
-            if (ipData.status === 'success') {
-                city = ipData.city || 'Unknown';
-                region = ipData.region || 'Unknown';
-                country = ipData.country || 'Unknown';
-                location = [city, region, country].filter(Boolean).join(', ');
-            }
-        } catch (e) {
-            console.log('IP lookup failed:', e.message);
+        // Use GPS location if available
+        if (lat && lng) {
+            try {
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+                const geoData = await geoRes.json();
+                if (geoData && geoData.address) {
+                    const addr = geoData.address;
+                    city = addr.city || addr.town || addr.village || 'Unknown';
+                    region = addr.state || 'Unknown';
+                    country = addr.country || 'Unknown';
+                    location = [city, region, country].filter(Boolean).join(', ');
+                }
+            } catch (e) {}
         }
 
-        // Create visit record
+        // Fallback to IP location
+        if (location === 'Unknown' && ip !== '127.0.0.1' && ip !== '::1') {
+            try {
+                const ipRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,city,region,country`);
+                const ipData = await ipRes.json();
+                if (ipData.status === 'success') {
+                    city = ipData.city || city;
+                    region = ipData.region || region;
+                    country = ipData.country || country;
+                    location = [city, region, country].filter(Boolean).join(', ');
+                }
+            } catch (e) {}
+        }
+
         const visit = {
             ip: ip,
             location: location,
             city: city,
             region: region,
             country: country,
+            lat: lat || null,
+            lng: lng || null,
             device: deviceInfo.device,
             browser: deviceInfo.browser,
             os: deviceInfo.os,
-            screen: req.query.screen || 'Unknown',
-            referrer: referrer,
             userAgent: userAgent,
+            referrer: referrer,
             visitedAt: new Date()
         };
 
-        // Check if visitor already exists (by IP)
-        const existingVisitIndex = tracking.visits.findIndex(v => v.ip === ip);
-        if (existingVisitIndex !== -1) {
-            tracking.visits[existingVisitIndex] = visit;
+        const existingIndex = tracking.visits.findIndex(v => v.ip === ip);
+        if (existingIndex !== -1) {
+            tracking.visits[existingIndex] = visit;
         } else {
             tracking.visits.push(visit);
             tracking.uniqueVisitors = tracking.visits.length;
@@ -1767,94 +1546,9 @@ app.get('/track/:trackId', async (req, res) => {
         tracking.updatedAt = new Date();
         await tracking.save();
 
-        // Return HTML with image
-        res.send(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Tracking Image</title>
-                <style>
-                    body {
-                        margin: 0;
-                        background: #0b0e1a;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        min-height: 100vh;
-                        font-family: 'Inter', sans-serif;
-                        padding: 20px;
-                    }
-                    .image-container {
-                        max-width: 90vw;
-                        max-height: 90vh;
-                        position: relative;
-                        animation: fadeIn 0.8s ease;
-                    }
-                    .image-container img {
-                        max-width: 100%;
-                        max-height: 85vh;
-                        border-radius: 16px;
-                        box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-                        background: #1a1f35;
-                    }
-                    .watermark {
-                        position: fixed;
-                        bottom: 20px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        color: rgba(255,255,255,0.08);
-                        font-size: 12px;
-                        letter-spacing: 0.1em;
-                        font-family: 'Inter', sans-serif;
-                    }
-                    @keyframes fadeIn {
-                        from { opacity: 0; transform: scale(0.95); }
-                        to { opacity: 1; transform: scale(1); }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="image-container">
-                    <img src="${tracking.imageUrl}" alt="Tracking Image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22500%22 height=%22300%22%3E%3Crect width=%22500%22 height=%22300%22 fill=%22%231a1f35%22/%3E%3Ctext x=%22250%22 y=%22150%22 text-anchor=%22middle%22 fill=%22%23ffd700%22 font-size=%2224%22 font-family=%22sans-serif%22%3E🔗 Image Not Found%3C/text%3E%3C/svg%3E'" />
-                </div>
-                <div class="watermark">🔒 Tracked · BBCC Skill Hub</div>
-            </body>
-            </html>
-        `);
+        res.json({ success: true, message: "Visit tracked successfully" });
     } catch (err) {
-        console.error('Tracking error:', err);
-        res.status(500).send(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Server Error</title>
-                <style>
-                    body {
-                        margin: 0;
-                        background: #0b0e1a;
-                        color: #fff;
-                        font-family: 'Inter', sans-serif;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100vh;
-                        flex-direction: column;
-                        text-align: center;
-                        padding: 20px;
-                    }
-                    h1 { color: #ef4444; font-size: 32px; }
-                    p { color: rgba(255,255,255,0.5); }
-                </style>
-            </head>
-            <body>
-                <h1>⚠️ Server Error</h1>
-                <p>Something went wrong. Please try again later.</p>
-            </body>
-            </html>
-        `);
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
@@ -1900,7 +1594,6 @@ function getUserAgentInfo(userAgent) {
     let browser = 'Unknown';
     let os = 'Unknown';
 
-    // Device detection
     if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) {
         if (/iPad|Tablet/i.test(ua)) {
             device = 'Tablet';
@@ -1909,14 +1602,12 @@ function getUserAgentInfo(userAgent) {
         }
     }
 
-    // Browser detection
     if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
     else if (ua.includes('Firefox')) browser = 'Firefox';
     else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
     else if (ua.includes('Edg')) browser = 'Edge';
     else if (ua.includes('Opera')) browser = 'Opera';
 
-    // OS detection
     if (ua.includes('Windows')) os = 'Windows';
     else if (ua.includes('Mac OS')) os = 'macOS';
     else if (ua.includes('Linux')) os = 'Linux';
@@ -1948,6 +1639,11 @@ app.get('/tracking', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'tracking.html'));
 });
 
+// ===== IMAGE VIEWER ROUTE =====
+app.get('/image', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'image.html'));
+});
+
 // ============================================
 // START SERVER
 // ============================================
@@ -1957,5 +1653,6 @@ app.listen(PORT, () => {
     console.log(`🔗 http://localhost:${PORT}`);
     console.log(`🔑 Login: admin / admin123`);
     console.log(`📊 MongoDB: ${MONGO_URI}`);
-    console.log(`📌 Tracking Page: http://localhost:${PORT}/tracking\n`);
+    console.log(`📌 Tracking Page: http://localhost:${PORT}/tracking`);
+    console.log(`📌 Image Viewer: http://localhost:${PORT}/image?id=your_track_id\n`);
 });
