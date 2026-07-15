@@ -1,5 +1,5 @@
 // ============================================
-// OPC.JS - Partner Coaching Centers Module
+// OPC.JS - Partner Coaching Centers + PDF Notes Module
 // ============================================
 
 const API_BASE = window.location.origin + '/api';
@@ -270,11 +270,71 @@ function setupDragEvents(track) {
 }
 
 // ============================================
+// FETCH PDF NOTES FROM SERVER
+// ============================================
+async function fetchPDFNotes() {
+    try {
+        const res = await fetch(`${API_BASE}/study-material`);
+        const result = await res.json();
+        if (result.success && result.data && result.data.notes && result.data.notes.length > 0) {
+            renderPDFNotes(result.data.notes);
+        } else {
+            renderPDFNotes([]);
+        }
+    } catch (err) {
+        console.error('❌ PDF Notes fetch failed:', err);
+        renderPDFNotes([]);
+    }
+}
+
+// ============================================
+// RENDER PDF NOTES
+// ============================================
+function renderPDFNotes(notes) {
+    const container = document.getElementById('pdfNotesContainer');
+    if (!container) return;
+
+    if (!notes || notes.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:40px; color:rgba(255,255,255,0.3);">
+                <i class="fas fa-file-pdf" style="font-size:48px; display:block; margin-bottom:15px; color:rgba(255,255,255,0.1);"></i>
+                No PDF notes available
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    for (let i = 0; i < notes.length; i++) {
+        const note = notes[i];
+        html += `
+            <div class="note-card">
+                <a href="${note.pdf}" download="${note.title || 'note'}.pdf" target="_blank">
+                    <i class="fas fa-file-pdf"></i>
+                    <h3>${note.title || 'Untitled'}</h3>
+                    ${note.description ? `<p>${note.description}</p>` : ''}
+                    <span class="download-btn">📥 Download PDF</span>
+                    <div style="font-size:11px; color:rgba(255,255,255,0.2); margin-top:8px;">
+                        ${note.createdAt ? new Date(note.createdAt).toLocaleDateString() : ''}
+                    </div>
+                </a>
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+}
+
+// ============================================
 // AUTO INITIALIZE
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
     const partnerSection = document.getElementById('partnerSection');
     if (partnerSection) {
         fetchPartnerCenters();
+    }
+    
+    const pdfSection = document.getElementById('pdfNotesSection');
+    if (pdfSection) {
+        fetchPDFNotes();
     }
 });
