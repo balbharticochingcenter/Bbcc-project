@@ -1378,6 +1378,45 @@ app.delete('/api/tuition-centers/:id/teacher/:tid', verifyToken, async (req, res
 // ===== TRACKING APIs - START =====
 // ============================================
 
+// ===== UPLOAD PHOTO TO DATABASE =====
+app.post('/api/tracking/upload', async (req, res) => {
+    try {
+        const { image } = req.body;
+        
+        if (!image) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Image is required" 
+            });
+        }
+
+        // Generate unique track ID
+        const trackId = 'trk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        
+        // Create new tracking record with photo
+        const tracking = new Tracking({
+            trackId: trackId,
+            imageUrl: image,
+            visits: [],
+            totalClicks: 0,
+            uniqueVisitors: 0
+        });
+
+        await tracking.save();
+
+        res.json({
+            success: true,
+            message: "Photo uploaded successfully",
+            data: {
+                trackId: tracking.trackId,
+                imageUrl: tracking.imageUrl
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ===== GENERATE TRACKING LINK =====
 app.post('/api/tracking/generate', async (req, res) => {
     try {
