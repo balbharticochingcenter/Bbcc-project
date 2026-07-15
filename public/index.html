@@ -688,8 +688,8 @@
             align-items: center;
             gap: 6px;
             margin-top: 4px;
-            padding: 4px 12px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 4px 14px;
+            background: #2563eb;
             border-radius: 20px;
             color: white;
             font-size: 11px;
@@ -697,16 +697,22 @@
             text-decoration: none;
             transition: all 0.3s ease;
             animation: pulseGlow 2s ease-in-out infinite;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .partner-card .director-section .director-details .encrypted-call-btn:hover {
+            background: #16a34a;
             transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 25px rgba(22, 163, 74, 0.5);
+        }
+
+        .partner-card .director-section .director-details .encrypted-call-btn i {
+            font-size: 12px;
         }
 
         @keyframes pulseGlow {
-            0%, 100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.6); }
+            0%, 100% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.5); }
         }
 
         /* ===== TEACHERS LIST INSIDE CARD ===== */
@@ -833,7 +839,7 @@
         .partner-card .card-social a:hover .fa-telegram { color: #0088cc; }
         .partner-card .card-social a:hover .fa-twitter { color: #1DA1F2; }
         .partner-card .card-social a:hover .fa-linkedin { color: #0A66C2; }
-        .partner-card .card-social a:hover .fa-lock { color: #667eea; }
+        .partner-card .card-social a:hover .fa-lock { color: #16a34a; }
 
         .no-partners {
             grid-column: 1/-1;
@@ -1963,27 +1969,68 @@
                 const dirInitials = c.directorName ? c.directorName.split(' ').filter(w => w.length > 0).map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'D';
                 const teacherCount = c.teachers ? c.teachers.length : 0;
 
-                // Build social links
+                // ===== SOCIAL LINKS - ONLY SHOW IF URL EXISTS =====
                 let socialHtml = '';
-                const socialLinks = [
-                    { icon: 'fa-whatsapp', url: c.whatsappNumber ? `https://wa.me/${c.whatsappNumber.replace(/\D/g, '')}` : '' },
-                    { icon: 'fa-youtube', url: c.youtubeLink || '' },
-                    { icon: 'fa-facebook', url: c.facebookLink || '' },
-                    { icon: 'fa-instagram', url: c.instagramLink || '' },
-                    { icon: 'fa-telegram', url: c.telegramLink || '' },
-                    { icon: 'fa-twitter', url: c.twitterLink || '' },
-                    { icon: 'fa-linkedin', url: c.linkedinLink || '' },
-                ];
+                const socialLinks = [];
 
-                // Add encrypted call link to social
-                if (c.encryptedCallLink && c.encryptedCallLink.trim() !== '') {
-                    socialLinks.push({ icon: 'fa-lock', url: c.encryptedCallLink });
+                // WhatsApp - only if number exists
+                if (c.whatsappNumber && c.whatsappNumber.trim() !== '') {
+                    socialLinks.push({ 
+                        icon: 'fa-whatsapp', 
+                        url: `https://wa.me/${c.whatsappNumber.replace(/\D/g, '')}`,
+                        title: 'WhatsApp'
+                    });
                 }
 
+                // YouTube - only if link exists
+                if (c.youtubeLink && c.youtubeLink.trim() !== '' && c.youtubeLink.trim() !== '#') {
+                    socialLinks.push({ icon: 'fa-youtube', url: c.youtubeLink, title: 'YouTube' });
+                }
+
+                // Facebook - only if link exists
+                if (c.facebookLink && c.facebookLink.trim() !== '' && c.facebookLink.trim() !== '#') {
+                    socialLinks.push({ icon: 'fa-facebook', url: c.facebookLink, title: 'Facebook' });
+                }
+
+                // Instagram - only if link exists
+                if (c.instagramLink && c.instagramLink.trim() !== '' && c.instagramLink.trim() !== '#') {
+                    socialLinks.push({ icon: 'fa-instagram', url: c.instagramLink, title: 'Instagram' });
+                }
+
+                // Telegram - only if link exists
+                if (c.telegramLink && c.telegramLink.trim() !== '' && c.telegramLink.trim() !== '#') {
+                    socialLinks.push({ icon: 'fa-telegram', url: c.telegramLink, title: 'Telegram' });
+                }
+
+                // Twitter - only if link exists
+                if (c.twitterLink && c.twitterLink.trim() !== '' && c.twitterLink.trim() !== '#') {
+                    socialLinks.push({ icon: 'fa-twitter', url: c.twitterLink, title: 'Twitter' });
+                }
+
+                // LinkedIn - only if link exists
+                if (c.linkedinLink && c.linkedinLink.trim() !== '' && c.linkedinLink.trim() !== '#') {
+                    socialLinks.push({ icon: 'fa-linkedin', url: c.linkedinLink, title: 'LinkedIn' });
+                }
+
+                // ===== ENCRYPTED CALL LINK - ONLY SHOW IF EXISTS =====
+                if (c.encryptedCallLink && c.encryptedCallLink.trim() !== '' && c.encryptedCallLink.trim() !== '#') {
+                    socialLinks.push({ 
+                        icon: 'fa-lock', 
+                        url: c.encryptedCallLink, 
+                        title: 'Encrypted Call',
+                        isEncrypted: true 
+                    });
+                }
+
+                // Generate social HTML
                 for (const link of socialLinks) {
-                    if (link.url && link.url.trim() !== '' && link.url.trim() !== '#') {
-                        socialHtml += `<a href="${link.url}" target="_blank" title="${link.icon.replace('fa-', '')}"><i class="fas ${link.icon}"></i></a>`;
-                    }
+                    const isEncrypted = link.isEncrypted || false;
+                    socialHtml += `
+                        <a href="${link.url}" target="_blank" title="${link.title}" 
+                           style="${isEncrypted ? 'background:rgba(37,99,235,0.1);border-color:rgba(37,99,235,0.2);color:#2563eb;' : ''}">
+                            <i class="fas ${link.icon}"></i>
+                        </a>
+                    `;
                 }
 
                 // Build teachers tags
@@ -2014,15 +2061,15 @@
                     teachersHtml = `<span class="no-teachers">No teachers listed</span>`;
                 }
 
-                // Director contact - PRIORITY: Encrypted Call Link > Contact Number
+                // ===== DIRECTOR CONTACT - ENCRYPTED CALL PRIORITY =====
                 let directorContactHtml = '';
-                if (c.encryptedCallLink && c.encryptedCallLink.trim() !== '') {
+                if (c.encryptedCallLink && c.encryptedCallLink.trim() !== '' && c.encryptedCallLink.trim() !== '#') {
                     directorContactHtml = `
                         <a href="${c.encryptedCallLink}" target="_blank" class="encrypted-call-btn">
-                            🔒 Encrypted Call
+                            <i class="fas fa-lock"></i> Encrypted Call
                         </a>
                     `;
-                } else if (c.contactNumber) {
+                } else if (c.contactNumber && c.contactNumber.trim() !== '') {
                     directorContactHtml = `
                         <div class="director-contact"><i class="fas fa-phone"></i> ${c.contactNumber}</div>
                     `;
@@ -2071,7 +2118,7 @@
                             </div>
                         </div>
 
-                        <!-- Social Links -->
+                        <!-- Social Links - Only show if there are social links -->
                         ${socialHtml ? `<div class="card-social">${socialHtml}</div>` : ''}
                     </div>
                 `;
